@@ -13,6 +13,12 @@ Créer et gérer des fiches de personnages pour différents systèmes de JDR (Mo
 - **PDF** : Puppeteer avec templates HTML/CSS personnalisés
 - **Auth** : Sessions Express avec codes d'accès par rôles
 
+### 💻 Environnement de développement
+- **OS** : Windows 10/11 (commandes Windows uniquement)
+- **Shell** : cmd.exe / PowerShell
+- **Séparateurs** : Antislash `\` pour les chemins
+- **Commandes** : Windows natives (dir, mkdir, del, copy, etc.)
+
 ## Structure du projet
 
 ```
@@ -161,8 +167,8 @@ Chaque système a son **template HTML/CSS unique** avec :
 
 ## Développement
 
-### 🚀 Installation rapide
-```bash
+### 🚀 Installation rapide (Windows)
+```cmd
 git clone <repository>
 cd generateur-pdf-jdr
 npm install
@@ -170,6 +176,43 @@ npm run db:init    # Initialise SQLite
 npm run db:seed    # Données de test
 npm run dev        # Serveur + CSS watch
 ```
+
+### 💡 Commandes Windows pour Claude
+**IMPORTANT** : Ce projet fonctionne sur Windows. Utilisez UNIQUEMENT ces commandes :
+
+**Gestion fichiers/dossiers :**
+```cmd
+dir                    # Lister fichiers (équivalent ls)
+mkdir dossier          # Créer dossier simple
+rmdir /s dossier       # Supprimer dossier et contenu
+del fichier.txt        # Supprimer fichier
+copy source dest       # Copier fichier
+move source dest       # Déplacer/renommer
+type fichier.txt       # Afficher contenu (équivalent cat)
+
+# CRÉATION ARBORESCENCE (PowerShell obligatoire) :
+powershell -Command "New-Item -ItemType Directory -Path 'dossier\sous-dossier' -Force"
+powershell -Command "New-Item -ItemType Directory -Path 'dossier1', 'dossier2\sub' -Force"
+```
+
+**Recherche :**
+```cmd
+findstr "pattern" *.js     # Chercher dans fichiers (équivalent grep)
+where node                 # Localiser exécutable (équivalent which)
+```
+
+**Développement :**
+```cmd
+npm install               # Installer dépendances
+npm run dev              # Mode développement
+node src\app.js          # Lancer application
+```
+
+**ATTENTION** : 
+- Utilisez `\` pour les chemins (pas `/`)
+- **mkdir ne fonctionne que pour dossiers simples** - utilisez PowerShell pour l'arborescence
+- Pour créer des sous-dossiers : **OBLIGATOIRE** PowerShell avec New-Item
+- `cmd /c "commande"` si nécessaire pour autres cas
 
 ### 🛠️ Scripts disponibles
 ```bash

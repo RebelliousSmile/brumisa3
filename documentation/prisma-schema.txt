@@ -1,0 +1,175 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  avatar    String?
+  role      UserRole @default(USER)
+  
+  // Métadonnées
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  isActive  Boolean  @default(true)
+  
+  // Relations
+  characters Character[]
+  templates  Template[]
+  pdfs       PdfDocument[]
+  
+  // Tokens de reset
+  resetTokens PasswordResetToken[]
+  
+  @@map("users")
+}
+
+model Character {
+  id          String      @id @default(cuid())
+  name        String
+  system      GameSystem
+  level       Int?        @default(1)
+  
+  // Données du personnage (JSON flexible)
+  basicInfo   Json        // nom, race, classe, etc.
+  attributes  Json        // stats (force, dex, etc.)
+  skills      Json        // compétences
+  equipment   Json        // équipement et inventaire
+  spells      Json?       // sorts et pouvoirs
+  background  Json?       // histoire, personnalité
+  notes       String?
+  
+  // Image/Avatar
+  avatar      String?
+  
+  // Métadonnées
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  isActive    Boolean     @default(true)
+  
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId  String?
+  template    Template?   @relation(fields: [templateId], references: [id])
+  pdfs        PdfDocument[]
+  
+  @@map("characters")
+}
+
+model Template {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  system      GameSystem
+  
+  // Structure du template (JSON)
+  structure   Json        // Définit les champs disponibles
+  styling     Json        // Styles CSS/mise en page
+  
+  // Métadonnées
+  isPublic    Boolean     @default(false)
+  isOfficial  Boolean     @default(false) // Templates officiels du système
+  version     String      @default("1.0.0")
+  
+  // Dates
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  characters  Character[]
+  pdfs        PdfDocument[]
+  
+  @@map("templates")
+}
+
+model PdfDocument {
+  id          String      @id @default(cuid())
+  filename    String
+  title       String
+  type        PdfType
+  
+  // Métadonnées du PDF
+  fileSize    Int?        // Taille en bytes
+  filePath    String      // Chemin sur le serveur
+  downloadUrl String?     // URL publique temporaire
+  
+  // Configuration utilisée
+  templateData Json?      // Données utilisées pour la génération
+  
+  // Status
+  status      PdfStatus   @default(PENDING)
+  
+  // Dates
+  createdAt   DateTime    @default(now())
+  expiresAt   DateTime?   // Pour les URLs temporaires
+  
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character?  @relation(fields: [characterId], references: [id])
+  templateId  String?
+  template    Template?   @relation(fields: [templateId], references: [id])
+  
+  @@map("pdf_documents")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@map("password_reset_tokens")
+}
+
+// Enums
+enum UserRole {
+  USER      // Utilisateur standard
+  PREMIUM   // Utilisateur premium (plus de templates, stockage)
+  ADMIN     // Administrateur
+}
+
+enum GameSystem {
+  MONSTERHEARTS       // Monsterhearts (PbtA)
+  SEPTIEME_MER        // 7ème Mer 2e édition
+  ENGRENAGES          // Engrenages & Sortilèges (Ecryme System)
+  METRO_2033          // Metro 2033
+  MIST_ENGINE         // Mist Engine (Legend in the Mist, Tokyo:Otherscape)
+  CUSTOM              // Système personnalisé
+}
+
+enum PdfType {
+  CHARACTER_SHEET     // Fiche de personnage
+  NPC_SHEET          // Fiche PNJ
+  INITIATIVE_TRACKER  // Suivi d'initiative
+  ENCOUNTER_SHEET    // Fiche de rencontre
+  REFERENCE_CARD     // Carte de référence
+  CAMPAIGN_NOTE      // Note de campagne
+  CUSTOM             // Document personnalisé
+}
+
+enum PdfStatus {
+  PENDING     // En attente de génération
+  PROCESSING  // En cours de génération
+  COMPLETED   // Généré avec succès
+  FAILED      // Échec de génération
+  EXPIRED     // Expiré (nettoyé)
+}
