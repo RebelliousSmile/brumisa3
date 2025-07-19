@@ -1,90 +1,469 @@
-<%- contentFor('title') %>
-<%= title %>
-
-<%- contentFor('styles') %>
-<link href="/css/style.css" rel="stylesheet">
-
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-  <div class="container mx-auto px-4 py-8">
-    <!-- Header -->
-    <header class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">
-        🎲 Générateur PDF JDR
-      </h1>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        <%= description %>
-      </p>
+<!-- Landing Page Mobile-First -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8" 
+     x-data="window.AlpineComponents.pageAccueil()">
+    
+    <!-- Header Mobile -->
+    <header class="text-center mb-12 px-4">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            🎲 Générateur PDF JDR
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            Créez et partagez des fiches de personnages pour vos jeux de rôle favoris
+        </p>
     </header>
 
-    <!-- Systèmes JDR supportés -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
-        Systèmes supportés
-      </h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Monsterhearts -->
-        <div class="card theme-monsterhearts">
-          <div class="text-center">
-            <div class="text-3xl mb-3">🩸</div>
-            <h3 class="font-gothic text-lg font-semibold mb-2">Monsterhearts</h3>
-            <p class="text-sm text-gray-600">JdR gothique romantique sur les monstres adolescents</p>
-          </div>
-        </div>
+    <!-- Sélection de système -->
+    <section class="px-4 mb-12">
+        <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Choisissez votre système de jeu
+        </h2>
+        
+        <!-- Cartes empilées mobile-first -->
+        <div class="space-y-4 max-w-md mx-auto md:max-w-4xl md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
+            
+            <!-- Monsterhearts -->
+            <div data-carte-systeme 
+                 @click="naviguerVersSysteme('monsterhearts')" 
+                 class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🩸</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Monsterhearts</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            JdR gothique romantique sur les monstres adolescents
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">PbtA</span>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-600">
+                                Commencer →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Engrenages -->
-        <div class="card theme-engrenages">
-          <div class="text-center">
-            <div class="text-3xl mb-3">⚙️</div>
-            <h3 class="font-steampunk text-lg font-semibold mb-2">Engrenages</h3>
-            <p class="text-sm text-gray-600">JdR steampunk mêlant magie et technologie</p>
-          </div>
-        </div>
+            <!-- Engrenages -->
+            <div data-carte-systeme 
+                 @click="naviguerVersSysteme('engrenages')" 
+                 class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-600 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">⚙️</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Engrenages</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            JdR steampunk mêlant magie et technologie
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Steampunk</span>
+                            <button class="bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-yellow-700">
+                                Commencer →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Metro 2033 -->
-        <div class="card theme-metro">
-          <div class="text-center">
-            <div class="text-3xl mb-3">☢️</div>
-            <h3 class="font-dystopian text-lg font-semibold mb-2">Metro 2033</h3>
-            <p class="text-sm text-gray-600">JdR post-apocalyptique dans le métro de Moscou</p>
-          </div>
-        </div>
+            <!-- Metro 2033 -->
+            <div data-carte-systeme 
+                 @click="naviguerVersSysteme('metro2033')" 
+                 class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-gray-600 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">☢️</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Metro 2033</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            JdR post-apocalyptique dans le métro de Moscou
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Post-Apo</span>
+                            <button class="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
+                                Commencer →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Mist Engine -->
-        <div class="card theme-mist">
-          <div class="text-center">
-            <div class="text-3xl mb-3">🌫️</div>
-            <h3 class="font-mystical text-lg font-semibold mb-2">Mist Engine</h3>
-            <p class="text-sm text-gray-600">Moteur narratif mystique</p>
-          </div>
+            <!-- Mist Engine -->
+            <div data-carte-systeme 
+                 @click="naviguerVersSysteme('mistengine')" 
+                 class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-600 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🌫️</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Mist Engine</h3>
+                        <p class="text-sm text-gray-600 mb-3">
+                            Moteur narratif mystique et atmospheric
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Narratif</span>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
+                                Commencer →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </section>
 
-    <!-- Actions principales -->
-    <section class="text-center">
-      <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-        <a href="/personnages" class="btn btn-primary inline-block">
-          ✨ Créer un personnage
-        </a>
-        <a href="/auth/login" class="btn btn-secondary inline-block">
-          🔐 Se connecter
-        </a>
-      </div>
+    <!-- Actions rapides -->
+    <% if (!locals.utilisateur) { %>
+    <section class="px-4 text-center">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Nouveau ici ?</h3>
+            <p class="text-gray-600 mb-4 text-sm">
+                Créez un compte pour sauvegarder vos personnages et générer des PDFs
+            </p>
+            <div class="space-y-3">
+                <a href="/inscription" class="block w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700">
+                    Créer un compte
+                </a>
+                <a href="/connexion" class="block w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-50">
+                    J'ai déjà un compte
+                </a>
+            </div>
+        </div>
+    </section>
+    <% } else { %>
+    <section class="px-4 text-center">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Bon retour, <%= locals.utilisateur.nom %> !
+            </h3>
+            <div class="space-y-3">
+                <a href="/personnages" class="block w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700">
+                    Mes personnages
+                </a>
+                <a href="/pdfs" class="block w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-50">
+                    Mes PDFs
+                </a>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+    <!-- PDFs Récents -->
+    <section class="px-4 mb-16" x-show="pdfsRecents.length > 0">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                📄 Dernières Créations Partagées
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <template x-for="pdf in pdfsRecents" :key="pdf.id">
+                    <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="font-semibold text-gray-900 text-sm" x-text="pdf.personnage_nom"></h3>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded" x-text="pdf.systeme_jeu"></span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-2">
+                            par <span x-text="pdf.auteur_nom"></span>
+                        </p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span x-text="new Date(pdf.date_creation).toLocaleDateString('fr-FR')"></span>
+                            <span x-text="`${pdf.nb_telechargements || 0} téléch.`"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="mt-16 text-center text-gray-500">
-      <p>&copy; 2025 Générateur PDF JDR - v<%= config.version %></p>
-      <p class="text-sm mt-2">
-        Propulsé par Alpine.js, Express & Tailwind CSS
-      </p>
-    </footer>
-  </div>
+    <!-- Newsletter + Actualités -->
+    <section class="px-4 mb-16">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Newsletter -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        📧 Newsletter
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Recevez les dernières nouveautés et systèmes supportés directement dans votre boîte mail.
+                    </p>
+                    
+                    <form @submit.prevent="inscrireNewsletter()" x-show="!newsletterInscrit">
+                        <div class="space-y-3">
+                            <input 
+                                type="email" 
+                                x-model="emailNewsletter"
+                                placeholder="votre@email.com"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input 
+                                type="text" 
+                                x-model="nomNewsletter"
+                                placeholder="Votre nom (optionnel)"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button 
+                                type="submit"
+                                :disabled="chargementNewsletter"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                                <span x-show="!chargementNewsletter">S'inscrire</span>
+                                <span x-show="chargementNewsletter">⏳ Inscription...</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div x-show="newsletterInscrit" class="text-center">
+                        <div class="text-green-600 mb-2">✅ Inscription réussie !</div>
+                        <p class="text-xs text-gray-600">Vous recevrez les prochaines actualités par email.</p>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-xs text-gray-500 text-center">
+                            <span x-text="statistiques.nb_abonnes_newsletter"></span> abonnés •
+                            <a href="/api/actualites/rss" class="text-blue-600 hover:underline">📡 Flux RSS</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Actualités -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        📰 Dernières Actualités
+                    </h3>
+                    
+                    <div class="space-y-4" x-show="actualites.length > 0">
+                        <template x-for="actu in actualites" :key="actu.id">
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <h4 class="font-medium text-gray-900 text-sm" x-text="actu.titre"></h4>
+                                <p class="text-xs text-gray-600 mt-1" x-text="actu.contenu"></p>
+                                <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
+                                    <span x-text="actu.auteur"></span>
+                                    <span x-text="new Date(actu.date_publication).toLocaleDateString('fr-FR')"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <div x-show="actualites.length === 0" class="text-center text-gray-500 text-sm">
+                        Aucune actualité pour le moment
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Témoignages -->
+    <section class="px-4 mb-16" x-show="temoignages.length > 0">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                💬 Ce que disent nos utilisateurs
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="temoignage in temoignages" :key="temoignage.id">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400" x-html="'★'.repeat(temoignage.note) + '☆'.repeat(5-temoignage.note)"></div>
+                            <span class="ml-2 text-sm text-gray-600" x-text="temoignage.note + '/5'"></span>
+                        </div>
+                        
+                        <h4 class="font-semibold text-gray-900 mb-2" x-text="temoignage.titre" x-show="temoignage.titre"></h4>
+                        <p class="text-sm text-gray-700 mb-3" x-text="temoignage.contenu"></p>
+                        
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span x-text="temoignage.nom"></span>
+                            <span x-text="temoignage.systeme_utilise" x-show="temoignage.systeme_utilise" class="bg-gray-100 px-2 py-1 rounded"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- Lien pour ajouter un témoignage -->
+            <div class="text-center mt-8">
+                <button @click="afficherFormulaireTemoignage = !afficherFormulaireTemoignage"
+                        class="bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-green-700">
+                    ✍️ Laisser un témoignage
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulaire de témoignage -->
+    <section class="px-4 mb-16" x-show="afficherFormulaireTemoignage">
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Partagez votre expérience</h3>
+            
+            <form @submit.prevent="ajouterTemoignage()">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input 
+                            type="text" 
+                            x-model="nouveauTemoignage.nom"
+                            placeholder="Votre nom *"
+                            required
+                            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500">
+                        <input 
+                            type="email" 
+                            x-model="nouveauTemoignage.email"
+                            placeholder="Email (optionnel)"
+                            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select x-model="nouveauTemoignage.systeme_utilise" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500">
+                            <option value="">Système utilisé (optionnel)</option>
+                            <option value="monsterhearts">Monsterhearts</option>
+                            <option value="engrenages">Engrenages & Sortilèges</option>
+                            <option value="metro2033">Metro 2033</option>
+                            <option value="mistengine">Mist Engine</option>
+                        </select>
+                        <select x-model="nouveauTemoignage.note" required class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500">
+                            <option value="">Note *</option>
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                            <option value="4">⭐⭐⭐⭐☆ (4/5)</option>
+                            <option value="3">⭐⭐⭐☆☆ (3/5)</option>
+                            <option value="2">⭐⭐☆☆☆ (2/5)</option>
+                            <option value="1">⭐☆☆☆☆ (1/5)</option>
+                        </select>
+                    </div>
+                    
+                    <input 
+                        type="text" 
+                        x-model="nouveauTemoignage.titre"
+                        placeholder="Titre de votre témoignage (optionnel)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500">
+                    
+                    <textarea 
+                        x-model="nouveauTemoignage.contenu"
+                        placeholder="Votre témoignage *"
+                        required
+                        rows="4"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500"></textarea>
+                    
+                    <div class="flex items-center justify-between">
+                        <button 
+                            type="button"
+                            @click="afficherFormulaireTemoignage = false"
+                            class="text-gray-600 hover:text-gray-800">
+                            Annuler
+                        </button>
+                        <button 
+                            type="submit"
+                            :disabled="chargementTemoignage"
+                            class="bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50">
+                            <span x-show="!chargementTemoignage">Envoyer</span>
+                            <span x-show="chargementTemoignage">⏳ Envoi...</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <p class="text-xs text-gray-500 mt-4">
+                Votre témoignage sera examiné avant publication pour s'assurer qu'il respecte nos conditions d'utilisation.
+            </p>
+        </div>
+    </section>
+
+    <!-- Support -->
+    <section class="px-4 mb-16">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 text-white text-center">
+                <h2 class="text-xl md:text-2xl font-bold mb-4">
+                    💝 Soutenez le projet
+                </h2>
+                <p class="text-lg mb-6">
+                    Ce service est gratuit et le restera ! Votre soutien nous aide à développer de nouvelles fonctionnalités.
+                </p>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                    <a href="#" @click="afficherInfosDons = !afficherInfosDons" 
+                       class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        ☕ Offrir un café
+                    </a>
+                    <a href="/temoignages" 
+                       class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition-colors">
+                        💬 Laisser un avis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Informations dons -->
+    <section class="px-4 mb-16" x-show="afficherInfosDons">
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Comment nous soutenir ?</h3>
+            
+            <div class="space-y-4" x-show="infoDons">
+                <p class="text-sm text-gray-600" x-text="infoDons.message"></p>
+                
+                <div class="border rounded-lg p-4">
+                    <h4 class="font-medium text-gray-900 mb-2">Nos objectifs :</h4>
+                    <div class="space-y-2">
+                        <template x-for="objectif in infoDons.objectifs" :key="objectif.montant">
+                            <div class="flex justify-between text-sm">
+                                <span x-text="objectif.description"></span>
+                                <span class="font-medium" x-text="objectif.montant + '€/mois'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <a :href="infoDons.url_don" target="_blank" 
+                       class="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700">
+                        Faire un don via <span x-text="infoDons.plateforme"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="px-4 mt-16">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-xl font-semibold text-gray-800 mb-8 text-center">
+                Pourquoi choisir notre générateur ?
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-3xl mb-4">📱</div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Mobile-First</h3>
+                    <p class="text-sm text-gray-600">
+                        Optimisé pour créer vos fiches sur mobile et tablette
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-3xl mb-4">🎨</div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Thèmes Uniques</h3>
+                    <p class="text-sm text-gray-600">
+                        Chaque système a son propre design visuel immersif
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-3xl mb-4">📤</div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Partage Facile</h3>
+                    <p class="text-sm text-gray-600">
+                        Partagez vos fiches via liens ou QR codes
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
-<%- contentFor('scripts') %>
-<script>
-  // Alpine.js sera chargé ici plus tard
-  console.log('🎲 Générateur PDF JDR - Page d\'accueil chargée');
-</script>
+<!-- CSS pour animations -->
+<style>
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+}
+</style>

@@ -1,0 +1,730 @@
+const BaseService = require('./BaseService');
+const PdfModel = require('../models/Pdf');
+const PersonnageModel = require('../models/Personnage');
+const puppeteer = require('puppeteer');
+const fs = require('fs').promises;
+const path = require('path');
+const crypto = require('crypto');
+const systemesJeu = require('../utils/systemesJeu');
+
+/**
+ * Service pour la génération et gestion des PDFs
+ */
+class PdfService extends BaseService {
+    constructor() {
+        super('PdfService');
+        this.pdfModel = new PdfModel();
+        this.personnageModel = new PersonnageModel();
+        this.outputDir = path.join(process.cwd(), 'output');
+        this.templatesDir = path.join(process.cwd(), 'src', 'templates', 'pdf');
+        
+        // Initialiser le dossier de sortie
+        this.initialiserDossierSortie();
+    }
+
+    /**
+     * Initialise le dossier de sortie
+     */
+    async initialiserDossierSortie() {
+        try {
+            await fs.access(this.outputDir);
+        } catch {
+            await fs.mkdir(this.outputDir, { recursive: true });
+            this.logger.info('Dossier output créé:', this.outputDir);
+        }
+    }
+
+    /**
+     * Liste les PDFs d'un utilisateur
+     */
+    async listerParUtilisateur(utilisateurId, filtres = {}, pagination = {}) {
+        try {
+            const conditions = ['utilisateur_id = ?'];
+            const valeurs = [utilisateurId];
+            
+            // Filtres optionnels
+            if (filtres.statut) {
+                conditions.push('statut = ?');
+                valeurs.push(filtres.statut);
+            }
+            
+            if (filtres.type_pdf) {
+                conditions.push('type_pdf = ?');
+                valeurs.push(filtres.type_pdf);
+            }
+            
+            if (filtres.personnage_id) {
+                conditions.push('personnage_id = ?');
+                valeurs.push(filtres.personnage_id);
+            }
+            
+            const whereClause = conditions.join(' AND ');
+            
+            // Compter le total
+            const total = await this.pdfModel.compter(whereClause, valeurs);
+            
+            // Récupérer les PDFs avec pagination
+            const offset = pagination.offset || 0;
+            const limite = pagination.limite || 20;
+            
+            const pdfs = await this.pdfModel.lister({
+                where: whereClause,
+                valeurs,
+                order: 'date_creation DESC',
+                limit: limite,
+                offset
+            });
+            
+            return { pdfs, total };
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la liste des PDFs:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient un PDF par ID
+     */
+    async obtenirParId(id) {
+        try {
+            return await this.pdfModel.obtenirParId(id);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la récupération du PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient un PDF par token de partage
+     */
+    async obtenirParToken(token) {
+        try {
+            return await this.pdfModel.obtenirParToken(token);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la récupération du PDF par token ${token}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Démarre la génération d'un PDF (asynchrone)
+     */
+    async demarrerGeneration(personnageId, utilisateurId, options = {}) {
+        try {
+            // Vérifier que le personnage existe
+            const personnage = await this.personnageModel.obtenirParId(personnageId);
+            if (!personnage) {
+                throw new Error('Personnage non trouvé');
+            }
+            
+            // Créer l'entrée PDF en base
+            const nomFichier = this.genererNomFichier(personnage, options.type_pdf);
+            const cheminFichier = path.join(this.outputDir, nomFichier);
+            
+            const pdf = await this.pdfModel.creer({
+                personnage_id: personnageId,
+                utilisateur_id: utilisateurId,
+                type_pdf: options.type_pdf || 'fiche_personnage',
+                nom_fichier: nomFichier,
+                chemin_fichier: cheminFichier,
+                options_generation: JSON.stringify(options),
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                est_public: options.est_public || false
+            });
+            
+            // Lancer la génération asynchrone
+            this.genererPdfAsync(pdf.id, personnage, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la génération asynchrone du PDF ${pdf.id}:`, erreur);
+            });
+            
+            return pdf;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du démarrage de génération:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génération asynchrone du PDF
+     */
+    async genererPdfAsync(pdfId, personnage, options = {}) {
+        const debutGeneration = Date.now();
+        
+        try {
+            // Mettre à jour le statut
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'EN_TRAITEMENT',
+                progression: 10
+            });
+            
+            // Générer le HTML
+            const html = await this.genererHtml(personnage, options);
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 30 });
+            
+            // Générer le PDF avec Puppeteer
+            const pdf = await this.obtenirParId(pdfId);
+            await this.genererPdfAvecPuppeteer(html, pdf.chemin_fichier, options);
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 80 });
+            
+            // Vérifier que le fichier existe
+            const stats = await fs.stat(pdf.chemin_fichier);
+            const tailleFichier = stats.size;
+            
+            // Générer l'URL temporaire
+            const urlTemporaire = this.genererUrlTemporaire();
+            
+            // Finaliser
+            const tempsGeneration = Date.now() - debutGeneration;
+            
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'TERMINE',
+                progression: 100,
+                taille_fichier: tailleFichier,
+                url_temporaire: urlTemporaire,
+                temps_generation: tempsGeneration,
+                date_expiration: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
+            });
+            
+            this.logger.info(`PDF généré avec succès:`, {
+                id: pdfId,
+                taille: tailleFichier,
+                temps: `${tempsGeneration}ms`
+            });
+            
+        } catch (erreur) {
+            // Marquer en échec
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'ECHEC',
+                erreur_message: erreur.message,
+                temps_generation: Date.now() - debutGeneration
+            });
+            
+            this.logger.error(`Échec de génération PDF ${pdfId}:`, erreur);
+        }
+    }
+
+    /**
+     * Génère le HTML pour un personnage
+     */
+    async genererHtml(personnage, options = {}) {
+        try {
+            const systeme = systemesJeu[personnage.systeme_jeu];
+            if (!systeme) {
+                throw new Error(`Système ${personnage.systeme_jeu} non supporté`);
+            }
+            
+            // Charger le template approprié
+            const typePdf = options.type_pdf || 'fiche_personnage';
+            const templatePath = path.join(this.templatesDir, personnage.systeme_jeu, `${typePdf}.html`);
+            
+            let template;
+            try {
+                template = await fs.readFile(templatePath, 'utf8');
+            } catch {
+                // Fallback vers template générique
+                const templateGenerique = path.join(this.templatesDir, 'generique', 'fiche_personnage.html');
+                template = await fs.readFile(templateGenerique, 'utf8');
+            }
+            
+            // Préparer les données pour le template
+            const donneesTemplate = this.preparerDonneesTemplate(personnage, systeme, options);
+            
+            // Remplacer les variables dans le template
+            let html = template;
+            Object.entries(donneesTemplate).forEach(([cle, valeur]) => {
+                const regex = new RegExp(`{{\\s*${cle}\\s*}}`, 'g');
+                html = html.replace(regex, String(valeur || ''));
+            });
+            
+            // Ajouter les styles CSS
+            const css = await this.obtenirStylesSysteme(personnage.systeme_jeu);
+            html = html.replace('{{styles}}', css);
+            
+            return html;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la génération HTML:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génère un aperçu HTML (pour preview)
+     */
+    async genererPreviewHtml(personnage, options = {}) {
+        return await this.genererHtml(personnage, { ...options, preview: true });
+    }
+
+    /**
+     * Génère le PDF avec Puppeteer
+     */
+    async genererPdfAvecPuppeteer(html, cheminFichier, options = {}) {
+        let browser;
+        
+        try {
+            browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+            
+            const page = await browser.newPage();
+            
+            // Définir le contenu HTML
+            await page.setContent(html, {
+                waitUntil: 'networkidle0',
+                timeout: 30000
+            });
+            
+            // Options PDF
+            const pdfOptions = {
+                path: cheminFichier,
+                format: options.format || 'A4',
+                landscape: options.orientation === 'landscape',
+                printBackground: true,
+                margin: {
+                    top: '20px',
+                    right: '20px',
+                    bottom: '20px',
+                    left: '20px'
+                },
+                ...options.pdfOptions
+            };
+            
+            // Générer le PDF
+            await page.pdf(pdfOptions);
+            
+        } finally {
+            if (browser) {
+                await browser.close();
+            }
+        }
+    }
+
+    /**
+     * Supprime un PDF
+     */
+    async supprimer(id) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            // Supprimer le fichier physique
+            if (pdf.chemin_fichier) {
+                try {
+                    await fs.unlink(pdf.chemin_fichier);
+                } catch (erreur) {
+                    this.logger.warn(`Impossible de supprimer le fichier ${pdf.chemin_fichier}:`, erreur);
+                }
+            }
+            
+            // Supprimer de la base
+            await this.pdfModel.supprimer(id);
+            
+            this.logger.info('PDF supprimé:', { id, nom: pdf.nom_fichier });
+            return true;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la suppression du PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Supprime les PDFs d'un personnage
+     */
+    async supprimerParPersonnage(personnageId) {
+        try {
+            const pdfs = await this.pdfModel.lister({
+                where: 'personnage_id = ?',
+                valeurs: [personnageId]
+            });
+            
+            for (const pdf of pdfs) {
+                await this.supprimer(pdf.id);
+            }
+            
+            this.logger.info(`${pdfs.length} PDFs supprimés pour le personnage ${personnageId}`);
+            return pdfs.length;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la suppression des PDFs du personnage ${personnageId}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Marque un téléchargement
+     */
+    async marquerTelechargement(id) {
+        try {
+            await this.pdfModel.incrementerTelechargements(id);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors du marquage téléchargement ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génère un lien de partage temporaire
+     */
+    async genererLienPartage(id, dureeHeures = 24) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            const token = this.genererUrlTemporaire();
+            const dateExpiration = new Date(Date.now() + dureeHeures * 60 * 60 * 1000);
+            
+            await this.pdfModel.mettreAJour(id, {
+                url_temporaire: token,
+                date_expiration: dateExpiration
+            });
+            
+            return {
+                token,
+                url: `/api/pdfs/partage/${token}`,
+                date_expiration: dateExpiration
+            };
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la génération du lien de partage ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Relance la génération d'un PDF en échec
+     */
+    async relancerGeneration(id) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            if (pdf.statut !== 'ECHEC') {
+                throw new Error('Seuls les PDFs en échec peuvent être relancés');
+            }
+            
+            // Récupérer le personnage
+            const personnage = await this.personnageModel.obtenirParId(pdf.personnage_id);
+            if (!personnage) {
+                throw new Error('Personnage associé non trouvé');
+            }
+            
+            // Remettre à zéro
+            await this.pdfModel.mettreAJour(id, {
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                erreur_message: null,
+                temps_generation: null
+            });
+            
+            // Relancer la génération
+            const options = JSON.parse(pdf.options_generation || '{}');
+            this.genererPdfAsync(id, personnage, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la relance de génération du PDF ${id}:`, erreur);
+            });
+            
+            return await this.obtenirParId(id);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la relance de génération ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Nettoie les PDFs expirés
+     */
+    async nettoyerPdfsExpires() {
+        try {
+            const maintenant = new Date();
+            const pdfsExpires = await this.pdfModel.lister({
+                where: 'date_expiration < ? AND statut = ?',
+                valeurs: [maintenant, 'TERMINE']
+            });
+            
+            let nbSupprimes = 0;
+            for (const pdf of pdfsExpires) {
+                try {
+                    await this.supprimer(pdf.id);
+                    nbSupprimes++;
+                } catch (erreur) {
+                    this.logger.warn(`Erreur lors de la suppression du PDF expiré ${pdf.id}:`, erreur);
+                }
+            }
+            
+            this.logger.info(`${nbSupprimes} PDFs expirés nettoyés`);
+            return nbSupprimes;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du nettoyage des PDFs expirés:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les statistiques des PDFs
+     */
+    async obtenirStatistiques(utilisateurId) {
+        try {
+            return await this.pdfModel.obtenirStatistiques(utilisateurId);
+        } catch (erreur) {
+            this.logger.error('Erreur lors du calcul des statistiques PDF:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les PDFs publics récents pour la page d'accueil
+     */
+    async obtenirPdfsPublicsRecents(limite = 6, utilisateurRole = 'UTILISATEUR') {
+        try {
+            const conditions = ['statut = ?'];
+            const valeurs = ['TERMINE'];
+            
+            // Seuls les admins et modérateurs voient tous les PDFs
+            if (!['ADMIN', 'MODERATEUR'].includes(utilisateurRole)) {
+                conditions.push('est_public = ?');
+                valeurs.push(true);
+            }
+            
+            const pdfs = await this.pdfModel.lister({
+                where: conditions.join(' AND '),
+                valeurs,
+                order: 'date_creation DESC',
+                limit: limite,
+                // Joindre les informations du personnage et utilisateur
+                joins: [
+                    'LEFT JOIN personnages p ON pdfs.personnage_id = p.id',
+                    'LEFT JOIN utilisateurs u ON pdfs.utilisateur_id = u.id'
+                ],
+                select: [
+                    'pdfs.*',
+                    'p.nom as personnage_nom',
+                    'p.systeme_jeu',
+                    'u.nom as auteur_nom'
+                ]
+            });
+            
+            return pdfs.map(pdf => ({
+                id: pdf.id,
+                nom_fichier: pdf.nom_fichier,
+                type_pdf: pdf.type_pdf,
+                personnage_nom: pdf.personnage_nom,
+                systeme_jeu: pdf.systeme_jeu,
+                auteur_nom: pdf.auteur_nom,
+                date_creation: pdf.date_creation,
+                taille_fichier: pdf.taille_fichier,
+                nb_telechargements: pdf.nb_telechargements || 0,
+                est_public: pdf.est_public
+            }));
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la récupération des PDFs publics récents:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Bascule la visibilité publique d'un PDF
+     */
+    async basculerVisibilitePublique(id, utilisateurId) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            // Vérifier que l'utilisateur est le propriétaire
+            if (pdf.utilisateur_id !== utilisateurId) {
+                throw new Error('Seul le propriétaire peut modifier la visibilité');
+            }
+            
+            // Seuls les PDFs terminés peuvent être rendus publics
+            if (pdf.statut !== 'TERMINE') {
+                throw new Error('Seuls les PDFs terminés peuvent être rendus publics');
+            }
+            
+            const nouvelleVisibilite = !pdf.est_public;
+            
+            await this.pdfModel.mettreAJour(id, {
+                est_public: nouvelleVisibilite
+            });
+            
+            this.logger.info(`PDF ${id} ${nouvelleVisibilite ? 'rendu public' : 'rendu privé'}`);
+            
+            return await this.obtenirParId(id);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors du basculement de visibilité PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les types de PDF disponibles
+     */
+    obtenirTypesPdf() {
+        return {
+            fiche_personnage: 'Fiche de personnage',
+            fiche_pnj: 'Fiche PNJ',
+            carte_reference: 'Carte de référence',
+            guide_moves: 'Guide des moves (PbtA)',
+            suivi_conditions: 'Suivi des conditions',
+            notes_session: 'Notes de session'
+        };
+    }
+
+    /**
+     * Prépare les données pour le template
+     */
+    preparerDonneesTemplate(personnage, systeme, options = {}) {
+        const donnees = {
+            // Informations du personnage
+            nom: personnage.nom,
+            systeme_nom: systeme.nom,
+            description: personnage.description || '',
+            notes: personnage.notes || '',
+            
+            // Métadonnées
+            date_creation: new Date(personnage.date_creation).toLocaleDateString('fr-FR'),
+            date_modification: new Date(personnage.date_modification).toLocaleDateString('fr-FR'),
+            
+            // Attributs formatés
+            attributs_html: this.formaterAttributsHtml(personnage.attributs, systeme.attributs),
+            
+            // Compétences formatées
+            competences_html: this.formaterCompetencesHtml(personnage.competences, systeme.competences),
+            
+            // Inventaire formaté
+            inventaire_html: this.formaterInventaireHtml(personnage.inventaire),
+            
+            // Informations de base
+            infos_base_html: this.formaterInfosBaseHtml(personnage.infos_base, systeme.infos_base),
+            
+            // Couleurs du système
+            couleur_primaire: systeme.couleurs?.primaire || '#3B82F6',
+            couleur_secondaire: systeme.couleurs?.secondaire || '#1E40AF',
+            couleur_accent: systeme.couleurs?.accent || '#F59E0B',
+            
+            // Options
+            preview: options.preview || false
+        };
+        
+        return donnees;
+    }
+
+    /**
+     * Obtient les styles CSS pour un système
+     */
+    async obtenirStylesSysteme(systemeJeu) {
+        try {
+            const stylePath = path.join(this.templatesDir, systemeJeu, 'styles.css');
+            try {
+                return await fs.readFile(stylePath, 'utf8');
+            } catch {
+                // Fallback vers styles génériques
+                const styleGenerique = path.join(this.templatesDir, 'generique', 'styles.css');
+                return await fs.readFile(styleGenerique, 'utf8');
+            }
+        } catch (erreur) {
+            this.logger.warn('Impossible de charger les styles:', erreur);
+            return '/* Styles par défaut */';
+        }
+    }
+
+    /**
+     * Formate les attributs en HTML
+     */
+    formaterAttributsHtml(attributs, configAttributs) {
+        if (!attributs || !configAttributs) return '';
+        
+        return Object.entries(attributs)
+            .map(([nom, valeur]) => {
+                const config = configAttributs[nom] || {};
+                return `<div class="attribut">
+                    <span class="nom">${config.nom_complet || nom}</span>
+                    <span class="valeur">${valeur}</span>
+                </div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Formate les compétences en HTML
+     */
+    formaterCompetencesHtml(competences, configCompetences) {
+        if (!competences || !configCompetences) return '';
+        
+        return Object.entries(competences)
+            .map(([nom, valeur]) => {
+                return `<div class="competence">
+                    <span class="nom">${nom}</span>
+                    <span class="valeur">${valeur}</span>
+                </div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Formate l'inventaire en HTML
+     */
+    formaterInventaireHtml(inventaire) {
+        if (!Array.isArray(inventaire) || inventaire.length === 0) {
+            return '<p class="vide">Aucun objet</p>';
+        }
+        
+        return inventaire
+            .map(objet => `<div class="objet">
+                <span class="nom">${objet.nom || objet}</span>
+                ${objet.description ? `<span class="description">${objet.description}</span>` : ''}
+            </div>`)
+            .join('');
+    }
+
+    /**
+     * Formate les informations de base en HTML
+     */
+    formaterInfosBaseHtml(infosBase, configInfos) {
+        if (!infosBase) return '';
+        
+        return Object.entries(infosBase)
+            .map(([cle, valeur]) => {
+                const label = configInfos?.champs?.[cle]?.label || cle;
+                return `<div class="info-base">
+                    <span class="label">${label}:</span>
+                    <span class="valeur">${valeur}</span>
+                </div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Génère un nom de fichier unique
+     */
+    genererNomFichier(personnage, typePdf) {
+        const timestamp = Date.now();
+        const nomNettoye = personnage.nom.replace(/[^a-zA-Z0-9]/g, '_');
+        return `${nomNettoye}_${typePdf}_${timestamp}.pdf`;
+    }
+
+    /**
+     * Génère une URL temporaire
+     */
+    genererUrlTemporaire() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+}
+
+module.exports = PdfService;
