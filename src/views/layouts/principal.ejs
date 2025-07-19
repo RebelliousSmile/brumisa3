@@ -15,14 +15,15 @@
     <!-- Tailwind CSS -->
     <link href="/css/style.css" rel="stylesheet">
     
-    <!-- Google Fonts pour les thèmes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Google Fonts pour la charte graphique -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,700;1,400&family=Crimson+Text:ital,wght@0,400;1,400&family=Playfair+Display:ital,wght@0,400;1,400&family=Roboto+Condensed:wght@400;700&family=Spectral:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     
     <!-- Gaming Icon Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rpg-awesome/0.2.0/css/rpg-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Adobe Fonts - Shackleton -->
+    <link rel="stylesheet" href="https://use.typekit.net/vpm3oax.css">
     
     <!-- Données serveur pour Alpine.js -->
     <script>
@@ -46,34 +47,45 @@
     <script src="/js/components/PageAccueilComponent.js"></script>
 </head>
 <body class="bg-gray-900 min-h-screen">
+    <!-- Telex Topline -->
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-4 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative z-10 flex items-center justify-center space-x-2 text-sm font-display">
+            <i class="ra ra-lightning-bolt text-yellow-300 animate-pulse"></i>
+            <span class="hidden sm:inline">📢</span>
+            <span>Nouvelle fonctionnalité : Export PDF amélioré pour tous les systèmes !</span>
+            <i class="ra ra-lightning-bolt text-yellow-300 animate-pulse"></i>
+        </div>
+    </div>
+    
     <!-- Navigation -->
     <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40" x-data="window.AlpineComponents.navigationMobile()">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-white flex items-center">
-                        <i class="ra ra-dice-six text-purple-400 text-2xl mr-2"></i>
-                        <span class="hidden sm:inline">brumisa3.fr</span>
+                    <a href="/" class="text-xl font-bold flex items-center font-display">
+                        <i class="ra ra-brain-freeze text-blue-400 text-2xl mr-2"></i>
+                        <span class="hidden sm:inline text-blue-400">brumisa3.fr</span>
                     </a>
                 </div>
                 
                 <!-- Game Links -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="/personnages?systeme=monsterhearts" class="flex items-center text-gray-300 hover:text-red-400 transition-colors">
-                        <i class="ra ra-bleeding-heart text-red-400 mr-2"></i>
+                <div class="hidden md:flex items-center space-x-8 font-display">
+                    <a href="/personnages?systeme=monsterhearts" class="flex items-center text-gray-300 hover:text-purple-400 transition-colors">
+                        <i class="ra ra-heartburn text-purple-400 mr-2"></i>
                         <span class="text-sm">Monsterhearts</span>
                     </a>
-                    <a href="/personnages?systeme=engrenages" class="flex items-center text-gray-300 hover:text-yellow-400 transition-colors">
-                        <i class="ra ra-gear text-yellow-400 mr-2"></i>
+                    <a href="/personnages?systeme=engrenages" class="flex items-center text-gray-300 hover:text-emerald-400 transition-colors">
+                        <i class="ra ra-candle text-emerald-400 mr-2"></i>
                         <span class="text-sm">Engrenages</span>
                     </a>
-                    <a href="/personnages?systeme=metro2033" class="flex items-center text-gray-300 hover:text-green-400 transition-colors">
-                        <i class="ra ra-bomb text-green-400 mr-2"></i>
+                    <a href="/personnages?systeme=metro2033" class="flex items-center text-gray-300 hover:text-red-400 transition-colors">
+                        <i class="ra ra-pills text-red-400 mr-2"></i>
                         <span class="text-sm">Metro 2033</span>
                     </a>
-                    <a href="/personnages?systeme=mistengine" class="flex items-center text-gray-300 hover:text-purple-400 transition-colors">
-                        <i class="ra ra-crystal-ball text-purple-400 mr-2"></i>
+                    <a href="/personnages?systeme=mistengine" class="flex items-center text-gray-300 hover:text-pink-400 transition-colors">
+                        <i class="ra ra-ocarina text-pink-400 mr-2"></i>
                         <span class="text-sm">Mist Engine</span>
                     </a>
                 </div>
@@ -85,7 +97,7 @@
                         <!-- User Icon -->
                         <div class="relative" x-data="window.AlpineComponents.menuUtilisateur()">
                             <button @click="basculer()" class="w-10 h-10 bg-purple-600/20 rounded-full flex items-center justify-center border border-purple-500/30 hover:border-purple-400 transition-colors">
-                                <i class="ra ra-player text-purple-400 text-lg"></i>
+                                <i class="ra ra-player-king text-purple-400 text-lg"></i>
                             </button>
                             
                             <div x-show="ouvert" @click.away="fermer()" x-transition 
@@ -252,13 +264,13 @@
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <!-- Copyright et crédits -->
                 <div class="text-center md:text-left mb-4 md:mb-0">
-                    <p>&copy; 2024 brumisa3.fr. Créé avec ❤️ pour la communauté JDR.</p>
+                    <p>&copy; 2025 brumisa3.fr. Créé avec ❤️ pour la communauté JDR.</p>
                     <p class="text-sm text-gray-400 mt-1">
                         Développé par <a href="https://scriptami.com" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 transition-colors">scriptami.com</a>
                     </p>
                 </div>
                 
-                <!-- Liens légaux -->
+                <!-- Liens légaux et RSS -->
                 <div class="flex space-x-6 text-sm">
                     <a href="/mentions-legales" class="text-gray-400 hover:text-white transition-colors">
                         Mentions légales
@@ -266,9 +278,24 @@
                     <a href="/cgu" class="text-gray-400 hover:text-white transition-colors">
                         CGU
                     </a>
+                    <a href="/api/actualites/rss" class="text-gray-400 hover:text-purple-400 transition-colors flex items-center">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M5 3a1 1 0 000 2c5.523 0 10 4.477 10 10a1 1 0 102 0C17 8.373 11.627 3 5 3z"/>
+                            <path d="M4 9a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1zM3 15a2 2 0 114 0 2 2 0 01-4 0z"/>
+                        </svg>
+                        RSS
+                    </a>
                 </div>
             </div>
         </div>
     </footer>
+    
+    <!-- Bouton de don flottant -->
+    <div class="fixed left-4 top-1/2 transform -translate-y-1/2 z-50">
+        <button @click="afficherInfosDons = !afficherInfosDons" 
+                class="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group">
+            <i class="ra ra-heart text-xl group-hover:animate-pulse"></i>
+        </button>
+    </div>
 </body>
 </html>

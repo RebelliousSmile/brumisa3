@@ -40,7 +40,8 @@
       "WebFetch(domain:cdnjs.com)",
       "Bash(ls:*)",
       "Bash(pnpm test:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

@@ -20,6 +20,15 @@
 | **Gris clair** | `#abb8c3` | rgb(171, 184, 195) | Textes secondaires, placeholders |
 | **Violet électrique** | `#9b51e0` | rgb(155, 81, 224) | Highlights, effets hover spéciaux |
 
+### Couleurs fonctionnelles
+
+| Couleur | Hex | Tailwind | Usage |
+|---------|-----|----------|-------|
+| **Succès** | `#22c55e` | `green-500` | Confirmations, validations (distinct d'emerald) |
+| **Erreur** | `#f97316` | `orange-500` | Erreurs, échecs (distinct du rouge Metro) |
+| **Avertissement** | `#eab308` | `yellow-500` | Alertes, warnings |
+| **Information** | `#06b6d4` | `cyan-500` | Infos, aide (distinct du bleu générique) |
+
 ### Variables CSS
 ```css
 :root {
@@ -35,11 +44,18 @@
   --gris-clair: #abb8c3;
   --violet-electrique: #9b51e0;
   
-  /* Couleurs fonctionnelles */
-  --succes: #10b981;
-  --erreur: #ef4444;
-  --avertissement: #f59e0b;
-  --info: #3b82f6;
+  /* Couleurs système JDR */
+  --monsterhearts: #8b5cf6;  /* purple-500 */
+  --engrenages: #10b981;     /* emerald-500 */
+  --metro2033: #dc2626;      /* red-600 */
+  --mistengine: #ec4899;     /* pink-500 */
+  --generique: #3b82f6;      /* blue-500 */
+  
+  /* Couleurs fonctionnelles (évitent les conflits avec systèmes JDR) */
+  --succes: #22c55e;        /* green-500 (distinct d'emerald) */
+  --erreur: #f97316;        /* orange-500 (distinct du rouge Metro) */
+  --avertissement: #eab308;  /* yellow-500 (neutre) */
+  --info: #06b6d4;          /* cyan-500 (distinct du bleu générique) */
 }
 ```
 
@@ -210,18 +226,26 @@
 
 Chaque système conserve le fond noir principal avec une couleur d'accent spécifique :
 
-| Système | Couleur accent | Usage |
-|---------|---------------|-------|
-| **Monsterhearts** | `#dc2626` (rouge sang) | Éléments romantiques/gothiques |
-| **Engrenages** | `#3b82f6` (bleu) | Éléments steampunk/technologiques |
-| **Metro 2033** | `#dc2626` (rouge) | Éléments post-apocalyptiques/danger |
-| **Mist Engine** | `#ec4899` (rose) | Éléments mystérieux/oniriques |
+| Système | Couleur accent | Hex | Tailwind | Usage |
+|---------|---------------|-----|----------|-------|
+| **Monsterhearts** | Violet (horreur gothique) | `#8b5cf6` | `purple-500` | Romance gothique, monstres adolescents |
+| **Engrenages** | Vert émeraude (fantasy médiéval) | `#10b981` | `emerald-500` | Roue du Temps, médiéval fantastique |
+| **Metro 2033** | Rouge (post-apocalyptique) | `#dc2626` | `red-600` | Post-apocalypse, danger, radiations |
+| **Mist Engine** | Rose (épique/poétique) | `#ec4899` | `pink-500` | Narratif mystique, épique poétique |
+| **Contenu générique** | Bleu (neutre) | `#3b82f6` | `blue-500` | Features, contenus non-spécifiques |
 
 ### Principe d'application
 - **Fond** : Toujours noir (#000) ou noir charbon (#1e1e1e)
-- **Accent** : La couleur du système pour les bordures, hovers, et éléments interactifs
+- **Accent système** : Couleur spécifique au système pour bordures, hovers, badges
+- **Contenu générique** : Bleu pour features, sections d'aide, contenus transversaux
 - **Texte** : Blanc pour le contraste maximal
-- **Cohérence** : Le violet reste la couleur principale du site, les accents système sont subtils
+- **Cohérence** : Le violet reste la couleur principale du site, les accents sont contextuels
+
+### Utilisation des couleurs
+- **Violet brand** : Navigation, CTAs principaux, branding
+- **Couleurs système** : Uniquement pour différencier les systèmes de jeu
+- **Bleu générique** : Pour tous les contenus non liés à un système spécifique
+- **Exemples** : Page d'accueil avec features → bleu, carte Monsterhearts → violet système
 
 ## 📦 Blocs et composants
 
@@ -528,6 +552,12 @@ module.exports = {
         'gris-fonce': '#32373c',
         'gris-clair': '#abb8c3',
         'violet-electrique': '#9b51e0',
+        // Couleurs système JDR
+        'monsterhearts': '#8b5cf6',
+        'engrenages': '#10b981',
+        'metro2033': '#dc2626',
+        'mistengine': '#ec4899',
+        'generique': '#3b82f6',
       },
       fontFamily: {
         'serif': ['Source Serif 4', 'serif'],

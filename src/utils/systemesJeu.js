@@ -126,10 +126,12 @@ const systemesJeu = {
     },
 
     themes: {
-      couleurPrimaire: '#64748b', // gris métallique
-      couleurSecondaire: '#334155', // gris sombre
-      couleurAccent: '#0f172a', // noir profond
+      couleurPrimaire: '#dc2626', // rouge (red-600)
+      couleurSecondaire: '#b91c1c', // rouge foncé (red-700)
+      couleurAccent: '#991b1b', // rouge très foncé (red-800)
+      couleurTailwind: 'red',
       police: 'dystopian',
+      icone: 'ra-radiation', // radiation pour post-apocalyptique
       iconographie: ['masques à gaz', 'tunnels', 'radiations', 'rails', 'flammes']
     }
   },
@@ -168,10 +170,12 @@ const systemesJeu = {
     },
 
     themes: {
-      couleurPrimaire: '#8b5cf6', // violet mystique
-      couleurSecondaire: '#6d28d9', // violet profond
-      couleurAccent: '#4c1d95', // violet sombre
+      couleurPrimaire: '#ec4899', // rose (pink-500)
+      couleurSecondaire: '#db2777', // rose foncé (pink-600)
+      couleurAccent: '#be185d', // rose très foncé (pink-700)
+      couleurTailwind: 'pink',
       police: 'mystical',
+      icone: 'ra-crystal-ball', // boule de cristal pour mystique
       iconographie: ['brouillard', 'runes', 'cristaux', 'spirales', 'étoiles']
     }
   }
