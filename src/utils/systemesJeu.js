@@ -43,52 +43,10 @@ const systemesJeu = {
     }
   },
 
-  // 7th Sea - Maritime Adventure
-  septieme_mer: {
-    nom: '7ème Mer',
-    code: 'septieme_mer',
-    description: 'JdR d\'aventure maritime et de cape et d\'épée',
-    version: '2e édition',
-
-    attributs: {
-      might: { nom: 'Might', min: 1, max: 5, description: 'Force physique et endurance' },
-      grace: { nom: 'Grace', min: 1, max: 5, description: 'Agilité et dextérité' },
-      wits: { nom: 'Wits', min: 1, max: 5, description: 'Intelligence et rapidité d\'esprit' },
-      resolve: { nom: 'Resolve', min: 1, max: 5, description: 'Volonté et détermination' },
-      panache: { nom: 'Panache', min: 1, max: 5, description: 'Charisme et courage' }
-    },
-
-    nations: [
-      'Avalon', 'Castille', 'Eisen', 'Montaigne', 'Ussura', 'Vodacce',
-      'Vestenmennavenjar', 'Sarmatian Commonwealth', 'Crescent Empire'
-    ],
-
-    skills: [
-      'Aim', 'Athletics', 'Brawl', 'Convince', 'Empathy', 'Hide', 'Intimidate',
-      'Notice', 'Perform', 'Ride', 'Sailing', 'Scholarship', 'Tempt', 'Theft', 'Warfare'
-    ],
-
-    mechanics: {
-      heroPoints: { description: 'Points héroïques pour réussites automatiques', usage: 'Activation avantages, bonus dés' },
-      raises: { description: 'Paris sur les jets de dés pour effets supplémentaires' },
-      wounds: { levels: ['Dramatic Wound', 'Critical Wound'], consequences: 'Malus cumulatifs' },
-      reputation: { types: ['Positive', 'Negative'], impact: 'Modificateur interactions sociales' },
-      stories: { description: 'Quêtes personnelles donnant XP', types: ['Personal', 'Romance', 'Adventure'] }
-    },
-
-    themes: {
-      couleurPrimaire: '#0ea5e9', // bleu océan
-      couleurSecondaire: '#0369a1', // bleu marine
-      couleurAccent: '#0c4a6e', // bleu profond
-      police: 'maritime',
-      iconographie: ['ancres', 'voiles', 'boussoles', 'épées', 'cartes']
-    }
-  },
-
-  // Gears & Sorcery - Steampunk
-  engrenages_sortileges: {
-    nom: 'Engrenages & Sortilèges',
-    code: 'engrenages_sortileges',
+  // Engrenages - Steampunk
+  engrenages: {
+    nom: 'Engrenages',
+    code: 'engrenages',
     description: 'JdR steampunk mêlant magie et technologie',
     version: 'Ecryme',
 

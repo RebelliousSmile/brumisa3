@@ -24,7 +24,19 @@
       "Bash(rmdir:*)",
       "Bash(dir:*)",
       "Bash(md:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(node:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(timeout 10 pnpm run dev)",
+      "Bash(timeout:*)",
+      "Bash(del datadb.json)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

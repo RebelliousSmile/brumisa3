@@ -1,0 +1,90 @@
+<%- contentFor('title') %>
+<%= title %>
+
+<%- contentFor('styles') %>
+<link href="/css/style.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        🎲 Générateur PDF JDR
+      </h1>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        <%= description %>
+      </p>
+    </header>
+
+    <!-- Systèmes JDR supportés -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        Systèmes supportés
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Monsterhearts -->
+        <div class="card theme-monsterhearts">
+          <div class="text-center">
+            <div class="text-3xl mb-3">🩸</div>
+            <h3 class="font-gothic text-lg font-semibold mb-2">Monsterhearts</h3>
+            <p class="text-sm text-gray-600">JdR gothique romantique sur les monstres adolescents</p>
+          </div>
+        </div>
+
+        <!-- Engrenages -->
+        <div class="card theme-engrenages">
+          <div class="text-center">
+            <div class="text-3xl mb-3">⚙️</div>
+            <h3 class="font-steampunk text-lg font-semibold mb-2">Engrenages</h3>
+            <p class="text-sm text-gray-600">JdR steampunk mêlant magie et technologie</p>
+          </div>
+        </div>
+
+        <!-- Metro 2033 -->
+        <div class="card theme-metro">
+          <div class="text-center">
+            <div class="text-3xl mb-3">☢️</div>
+            <h3 class="font-dystopian text-lg font-semibold mb-2">Metro 2033</h3>
+            <p class="text-sm text-gray-600">JdR post-apocalyptique dans le métro de Moscou</p>
+          </div>
+        </div>
+
+        <!-- Mist Engine -->
+        <div class="card theme-mist">
+          <div class="text-center">
+            <div class="text-3xl mb-3">🌫️</div>
+            <h3 class="font-mystical text-lg font-semibold mb-2">Mist Engine</h3>
+            <p class="text-sm text-gray-600">Moteur narratif mystique</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions principales -->
+    <section class="text-center">
+      <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+        <a href="/personnages" class="btn btn-primary inline-block">
+          ✨ Créer un personnage
+        </a>
+        <a href="/auth/login" class="btn btn-secondary inline-block">
+          🔐 Se connecter
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center text-gray-500">
+      <p>&copy; 2025 Générateur PDF JDR - v<%= config.version %></p>
+      <p class="text-sm mt-2">
+        Propulsé par Alpine.js, Express & Tailwind CSS
+      </p>
+    </footer>
+  </div>
+</div>
+
+<%- contentFor('scripts') %>
+<script>
+  // Alpine.js sera chargé ici plus tard
+  console.log('🎲 Générateur PDF JDR - Page d\'accueil chargée');
+</script>

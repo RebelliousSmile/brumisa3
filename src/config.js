@@ -9,12 +9,15 @@ const config = {
     env: process.env.NODE_ENV || 'development'
   },
 
-  // Base de données
+  // Base de données PostgreSQL
   database: {
-    path: process.env.DATABASE_PATH || path.join(__dirname, '..', 'data', 'database.sqlite'),
-    options: {
-      verbose: process.env.NODE_ENV === 'development'
-    }
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT) || 5432,
+    database: process.env.POSTGRES_DB || 'generateur_pdf_jdr',
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || 'password',
+    ssl: process.env.NODE_ENV === 'production' ? true : false,
+    connectionString: process.env.DATABASE_URL || null
   },
 
   // Sessions

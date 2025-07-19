@@ -21,20 +21,7 @@ module.exports = {
           800: '#9d174d',
           900: '#831843',
         },
-        // 7th Sea - Maritime Adventure
-        'sea': {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-        },
-        // Gears & Sorcery - Steampunk
+        // Engrenages - Steampunk
         'gear': {
           50: '#fefce8',
           100: '#fef9c3',
@@ -76,7 +63,6 @@ module.exports = {
       },
       fontFamily: {
         'gothic': ['Crimson Text', 'serif'],
-        'maritime': ['Merriweather', 'serif'], 
         'steampunk': ['Playfair Display', 'serif'],
         'dystopian': ['Roboto Condensed', 'sans-serif'],
         'mystical': ['Spectral', 'serif']

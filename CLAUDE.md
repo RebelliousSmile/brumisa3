@@ -5,7 +5,7 @@
 Générateur de PDFs pour fiches de personnages et aides de jeu de rôle, développé en **JavaScript pur** avec une architecture **MVC moderne** utilisant **Alpine.js** pour l'interactivité frontend.
 
 ### 🎯 Objectif
-Créer et gérer des fiches de personnages pour différents systèmes de JDR (Monsterhearts, 7ème Mer, Engrenages & Sortilèges, Metro 2033, Mist Engine) avec génération automatique de PDFs stylisés.
+Créer et gérer des fiches de personnages pour différents systèmes de JDR (Monsterhearts, Engrenages, Metro 2033, Mist Engine) avec génération automatique de PDFs stylisés.
 
 ### 🏗️ Architecture
 - **Backend** : Node.js + Express + SQLite + EJS
@@ -78,12 +78,7 @@ generateur-pdf-jdr/
 - **Mécaniques** : Skins, Moves, Conditions, Strings, Harm
 - **Style PDF** : Gothique romantique avec thème cœurs
 
-### ⚓ 7ème Mer (2e édition)
-- **Attributs** : Might, Grace, Wits, Resolve, Panache (1-5)
-- **Mécaniques** : Nations, Hero Points, Avantages, Reputation
-- **Style PDF** : Maritime avec thème aventure
-
-### ⚙️ Engrenages & Sortilèges (Ecryme)
+### ⚙️ Engrenages (Ecryme)
 - **Attributs** : Corps, Esprit, Âme (1-5)
 - **Mécaniques** : Spécialisations Magie/Science, Santé/Équilibre Mental
 - **Style PDF** : Steampunk avec engrenages
@@ -216,7 +211,10 @@ node src\app.js          # Lancer application
 
 ### 🛠️ Scripts disponibles
 ```bash
-npm run dev         # Mode développement (nodemon + CSS watch)
+npm run dev         # Mode développement serveur uniquement
+npm run dev:full    # Mode développement complet (serveur + CSS watch)
+npm run dev:server  # Serveur nodemon uniquement
+npm run dev:client  # CSS watch uniquement
 npm run build:css   # Compile Tailwind CSS
 npm start          # Production
 npm test           # Tests Jest

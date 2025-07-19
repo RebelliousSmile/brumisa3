@@ -1,170 +1,156 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+const { Pool } = require('pg');
 const config = require('../config');
 const logManager = require('../utils/logManager');
 
-class Database {
+class DatabaseManager {
   constructor() {
-    this.db = null;
+    this.pool = null;
     this.isConnected = false;
-    this.init();
   }
 
   /**
-   * Initialise la connexion à la base de données
+   * Initialise la connexion PostgreSQL
    */
-  init() {
+  async init() {
     try {
-      // Création du dossier data s'il n'existe pas
-      const dataDir = path.dirname(config.database.path);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-        logManager.info('Dossier data créé', { path: dataDir });
-      }
-
-      // Connexion à SQLite
-      this.db = new sqlite3.Database(config.database.path, (err) => {
-        if (err) {
-          logManager.error('Erreur connexion base de données', { 
-            error: err.message,
-            path: config.database.path 
-          });
-          throw err;
-        }
-
-        this.isConnected = true;
-        logManager.info('Connexion base de données réussie', { 
-          path: config.database.path,
-          mode: config.server.env
-        });
+      // Configuration de la pool de connexions PostgreSQL
+      this.pool = new Pool({
+        host: config.database.host,
+        port: config.database.port,
+        database: config.database.database,
+        user: config.database.user,
+        password: config.database.password,
+        ssl: config.database.ssl || false,
+        max: 20, // Maximum 20 connexions dans la pool
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
       });
 
-      // Configuration SQLite
-      this.db.configure('busyTimeout', 30000);
-      this.db.run('PRAGMA foreign_keys = ON');
-      this.db.run('PRAGMA journal_mode = WAL');
-      
-      if (config.database.options.verbose && config.server.env === 'development') {
-        this.db.on('trace', (sql) => {
-          logManager.debug('SQL Query', { sql });
-        });
-      }
+      // Test de connexion
+      const client = await this.pool.connect();
+      await client.query('SELECT NOW()');
+      client.release();
 
+      this.isConnected = true;
+      logManager.info('Base de données PostgreSQL initialisée', {
+        host: config.database.host,
+        port: config.database.port,
+        database: config.database.database
+      });
+      
+      return true;
+      
     } catch (error) {
-      logManager.error('Erreur initialisation base de données', { error: error.message });
+      logManager.error('Erreur initialisation base de données PostgreSQL', { 
+        error: error.message,
+        host: config.database.host,
+        port: config.database.port,
+        database: config.database.database
+      });
       throw error;
     }
   }
 
   /**
-   * Exécute une requête SELECT
+   * Exécute une requête SELECT unique
    */
   async get(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, row) => {
-        if (err) {
-          logManager.logDatabaseOperation('read', 'unknown', null, false, err);
-          reject(err);
-        } else {
-          logManager.logDatabaseOperation('read', 'unknown', row?.id, true);
-          resolve(row);
-        }
-      });
-    });
+    if (!this.isConnected) {
+      await this.init();
+    }
+
+    try {
+      const result = await this.pool.query(sql, params);
+      return result.rows[0] || null;
+    } catch (error) {
+      logManager.error('Erreur requête GET', { sql, params, error: error.message });
+      throw error;
+    }
   }
 
   /**
    * Exécute une requête SELECT multiple
    */
   async all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) {
-          logManager.logDatabaseOperation('read', 'unknown', null, false, err);
-          reject(err);
-        } else {
-          logManager.logDatabaseOperation('read', 'unknown', null, true);
-          resolve(rows);
-        }
-      });
-    });
+    if (!this.isConnected) {
+      await this.init();
+    }
+
+    try {
+      const result = await this.pool.query(sql, params);
+      return result.rows;
+    } catch (error) {
+      logManager.error('Erreur requête ALL', { sql, params, error: error.message });
+      throw error;
+    }
   }
 
   /**
    * Exécute une requête INSERT/UPDATE/DELETE
    */
   async run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function(err) {
-        if (err) {
-          logManager.logDatabaseOperation('write', 'unknown', null, false, err);
-          reject(err);
-        } else {
-          const operation = sql.trim().toLowerCase().startsWith('insert') ? 'create' :
-                           sql.trim().toLowerCase().startsWith('update') ? 'update' : 'delete';
-          logManager.logDatabaseOperation(operation, 'unknown', this.lastID, true);
-          resolve({
-            lastID: this.lastID,
-            changes: this.changes
-          });
-        }
-      });
-    });
+    if (!this.isConnected) {
+      await this.init();
+    }
+
+    try {
+      const result = await this.pool.query(sql, params);
+      return {
+        lastID: result.rows[0]?.id || null,
+        changes: result.rowCount,
+        rows: result.rows
+      };
+    } catch (error) {
+      logManager.error('Erreur requête RUN', { sql, params, error: error.message });
+      throw error;
+    }
   }
 
   /**
-   * Exécute plusieurs requêtes dans une transaction
+   * Exécute une transaction avec callback
    */
-  async transaction(queries) {
-    return new Promise((resolve, reject) => {
-      this.db.serialize(() => {
-        this.db.run('BEGIN TRANSACTION');
-        
-        const results = [];
-        let hasError = false;
+  async transaction(callback) {
+    if (!this.isConnected) {
+      await this.init();
+    }
 
-        queries.forEach((query, index) => {
-          if (hasError) return;
+    const client = await this.pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      // Crée un objet de transaction avec les méthodes de base
+      const transaction = {
+        get: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return result.rows[0] || null;
+        },
+        all: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return result.rows;
+        },
+        run: async (sql, params = []) => {
+          const result = await client.query(sql, params);
+          return {
+            lastID: result.rows[0]?.id || null,
+            changes: result.rowCount,
+            rows: result.rows
+          };
+        }
+      };
 
-          const { sql, params = [] } = query;
-          
-          this.db.run(sql, params, function(err) {
-            if (err) {
-              hasError = true;
-              logManager.error('Erreur dans transaction', { 
-                error: err.message, 
-                queryIndex: index,
-                sql: sql.substring(0, 100) + '...'
-              });
-              
-              this.db.run('ROLLBACK', () => {
-                reject(err);
-              });
-              return;
-            }
-
-            results.push({
-              lastID: this.lastID,
-              changes: this.changes
-            });
-
-            // Si c'est la dernière requête, commit
-            if (index === queries.length - 1) {
-              this.db.run('COMMIT', (commitErr) => {
-                if (commitErr) {
-                  logManager.error('Erreur commit transaction', { error: commitErr.message });
-                  reject(commitErr);
-                } else {
-                  logManager.info('Transaction committée', { queries: queries.length });
-                  resolve(results);
-                }
-              });
-            }
-          });
-        });
-      });
-    });
+      const result = await callback(transaction);
+      await client.query('COMMIT');
+      logManager.info('Transaction committée');
+      return result;
+      
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logManager.error('Erreur transaction', { error: error.message });
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   /**
@@ -224,37 +210,12 @@ class Database {
   }
 
   /**
-   * Sauvegarde de la base de données
-   */
-  async backup(backupPath) {
-    return new Promise((resolve, reject) => {
-      const backupDb = new sqlite3.Database(backupPath);
-      
-      this.db.backup(backupDb, (err) => {
-        backupDb.close();
-        
-        if (err) {
-          logManager.error('Erreur sauvegarde base de données', { 
-            error: err.message,
-            backupPath 
-          });
-          reject(err);
-        } else {
-          logManager.info('Sauvegarde base de données réussie', { backupPath });
-          resolve();
-        }
-      });
-    });
-  }
-
-  /**
-   * Optimisation de la base de données
+   * Optimisation de la base de données PostgreSQL
    */
   async optimize() {
     try {
-      await this.run('VACUUM');
-      await this.run('ANALYZE');
-      logManager.info('Optimisation base de données terminée');
+      await this.run('VACUUM ANALYZE');
+      logManager.info('Optimisation base de données PostgreSQL terminée');
     } catch (error) {
       logManager.error('Erreur optimisation base de données', { error: error.message });
       throw error;
@@ -262,13 +223,14 @@ class Database {
   }
 
   /**
-   * Statistiques de la base de données
+   * Statistiques de la base de données PostgreSQL
    */
   async getStats() {
     try {
       const tables = await this.all(`
-        SELECT name FROM sqlite_master 
-        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+        SELECT table_name as name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
       `);
       
       const stats = {};
@@ -278,13 +240,15 @@ class Database {
         stats[table.name] = count;
       }
 
-      const dbSize = fs.statSync(config.database.path).size;
+      // Taille de la base de données
+      const sizeResult = await this.get(`
+        SELECT pg_size_pretty(pg_database_size(current_database())) as size
+      `);
       
       return {
         tables: stats,
         totalTables: tables.length,
-        fileSize: dbSize,
-        fileSizeFormatted: this.formatBytes(dbSize)
+        databaseSize: sizeResult?.size || 'N/A'
       };
     } catch (error) {
       logManager.error('Erreur récupération statistiques', { error: error.message });
@@ -293,42 +257,57 @@ class Database {
   }
 
   /**
-   * Formate la taille en bytes
+   * Vérifie si la base de données est accessible
    */
-  formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  /**
-   * Ferme la connexion à la base de données
-   */
-  close() {
-    return new Promise((resolve) => {
-      if (this.db) {
-        this.db.close((err) => {
-          if (err) {
-            logManager.error('Erreur fermeture base de données', { error: err.message });
-          } else {
-            logManager.info('Connexion base de données fermée');
-          }
-          this.isConnected = false;
-          resolve();
-        });
-      } else {
-        resolve();
+  async isHealthy() {
+    try {
+      if (!this.isConnected) {
+        return false;
       }
-    });
+      
+      const result = await this.pool.query('SELECT 1 as healthy');
+      return result.rows[0]?.healthy === 1;
+    } catch (error) {
+      logManager.error('Erreur vérification santé base de données', { error: error.message });
+      return false;
+    }
   }
 
   /**
-   * Getter pour l'instance SQLite native (si besoin)
+   * Retourne les statistiques de la pool de connexions
+   */
+  getPoolStats() {
+    if (!this.pool) {
+      return null;
+    }
+
+    return {
+      total: this.pool.totalCount,
+      idle: this.pool.idleCount,
+      waiting: this.pool.waitingCount
+    };
+  }
+
+  /**
+   * Ferme toutes les connexions PostgreSQL
+   */
+  async close() {
+    if (this.pool) {
+      try {
+        await this.pool.end();
+        this.isConnected = false;
+        logManager.info('Connexions PostgreSQL fermées');
+      } catch (error) {
+        logManager.error('Erreur fermeture connexions PostgreSQL', { error: error.message });
+      }
+    }
+  }
+
+  /**
+   * Getter pour l'instance de pool PostgreSQL (si besoin)
    */
   get instance() {
-    return this.db;
+    return this.pool;
   }
 
   /**
@@ -340,4 +319,4 @@ class Database {
 }
 
 // Export singleton
-module.exports = new Database();
+module.exports = new DatabaseManager();
