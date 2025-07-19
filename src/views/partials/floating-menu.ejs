@@ -1,0 +1,55 @@
+<!-- Menu flottant latéral -->
+<div class="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-40 hidden md:flex"
+     x-data="{ 
+         showTooltip: null,
+         links: [
+             { icon: '💝', label: 'Soutenir le projet', href: '#', action: 'toggleDonation' },
+             { icon: '📧', label: 'Newsletter', href: '#newsletter', action: null },
+             { icon: '💬', label: 'Témoignages', href: '#temoignages', action: null },
+             { icon: '📄', label: 'PDFs récents', href: '#pdfs-recents', action: null }
+         ]
+     }">
+    
+    <template x-for="(link, index) in links" :key="index">
+        <div class="relative">
+            <!-- Bouton -->
+            <a :href="link.action ? '#' : link.href"
+               @click="link.action && $dispatch(link.action)"
+               @mouseenter="showTooltip = index"
+               @mouseleave="showTooltip = null"
+               class="w-12 h-12 bg-noir-charbon border-2 border-gris-fonce rounded-full flex items-center justify-center text-lg hover:border-brand-violet hover:translate-x-1 transition-all duration-standard">
+                <span x-text="link.icon"></span>
+            </a>
+            
+            <!-- Tooltip -->
+            <div x-show="showTooltip === index"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-x-2"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 class="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-noir-charbon border border-gris-fonce px-3 py-2 rounded-lg whitespace-nowrap">
+                <span class="text-sm text-white" x-text="link.label"></span>
+                <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-gris-fonce border-b-8 border-b-transparent"></div>
+            </div>
+        </div>
+    </template>
+</div>
+
+<!-- Version mobile en bas -->
+<div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-row gap-3 z-40 md:hidden bg-noir-charbon/90 backdrop-blur-sm px-4 py-3 rounded-full border border-gris-fonce">
+    <a href="#" @click="$dispatch('toggleDonation')" 
+       class="w-10 h-10 bg-noir border border-gris-fonce rounded-full flex items-center justify-center text-base hover:border-brand-violet transition-all duration-standard">
+        💝
+    </a>
+    <a href="#newsletter" 
+       class="w-10 h-10 bg-noir border border-gris-fonce rounded-full flex items-center justify-center text-base hover:border-brand-violet transition-all duration-standard">
+        📧
+    </a>
+    <a href="#temoignages" 
+       class="w-10 h-10 bg-noir border border-gris-fonce rounded-full flex items-center justify-center text-base hover:border-brand-violet transition-all duration-standard">
+        💬
+    </a>
+    <a href="#pdfs-recents" 
+       class="w-10 h-10 bg-noir border border-gris-fonce rounded-full flex items-center justify-center text-base hover:border-brand-violet transition-all duration-standard">
+        📄
+    </a>
+</div>

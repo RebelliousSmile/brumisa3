@@ -1,0 +1,37 @@
+<!-- Bloc de contenu réutilisable -->
+<div class="bg-noir-charbon border border-gris-fonce rounded-xl p-8 md:p-12 relative overflow-hidden hover:border-brand-violet/50 transition-all duration-standard group">
+    <!-- Barre latérale colorée -->
+    <div class="absolute left-0 top-0 w-1 h-full bg-brand-violet opacity-0 group-hover:opacity-100 transition-opacity duration-standard"></div>
+    
+    <!-- Badge (optionnel) -->
+    <% if (locals.blockBadge) { %>
+    <span class="inline-flex items-center px-3 py-1 bg-<%= blockBadgeColor || 'brand-violet' %>/20 text-<%= blockBadgeColor || 'brand-violet' %> border border-<%= blockBadgeColor || 'brand-violet' %> rounded-full text-xs font-medium tracking-wider uppercase mb-4">
+        <%= blockBadge %>
+    </span>
+    <% } %>
+    
+    <!-- Titre -->
+    <% if (locals.blockTitle) { %>
+    <h3 class="font-display text-h3 text-white mb-4">
+        <%= blockTitle %>
+    </h3>
+    <% } %>
+    
+    <!-- Contenu -->
+    <div class="font-serif text-body text-gris-clair leading-relaxed">
+        <%- blockContent %>
+    </div>
+    
+    <!-- CTA (optionnel) -->
+    <% if (locals.blockCTA) { %>
+    <div class="mt-6">
+        <a href="<%= blockCTA.href %>" 
+           class="inline-flex items-center text-brand-violet hover:text-brand-violet-dark font-display text-sm uppercase tracking-wider group/link">
+            <%= blockCTA.text %>
+            <svg class="w-4 h-4 ml-2 group-hover/link:translate-x-1 transition-transform duration-standard" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
+    </div>
+    <% } %>
+</div>
