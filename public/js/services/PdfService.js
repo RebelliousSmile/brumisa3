@@ -4,7 +4,15 @@
 
 class PdfService {
     constructor() {
-        this.store = Alpine.store('app');
+        this.store = null;
+    }
+    
+    // Initialise le store Alpine si pas encore fait
+    initStore() {
+        if (!this.store && typeof Alpine !== 'undefined') {
+            this.store = Alpine.store('app');
+        }
+        return this.store;
     }
     
     /**
@@ -12,8 +20,11 @@ class PdfService {
      */
     async lister(filtres = {}) {
         try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
             const params = new URLSearchParams(filtres);
-            const data = await this.store.requeteApi(`/pdfs?${params}`);
+            const data = await store.requeteApi(`/pdfs?${params}`);
             return data.donnees || [];
         } catch (erreur) {
             console.error('Erreur listage PDFs:', erreur);
@@ -25,232 +36,289 @@ class PdfService {
      * Récupère un PDF par ID
      */
     async obtenirParId(id) {
-        const data = await this.store.requeteApi(`/pdfs/${id}`);
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/pdfs/${id}`);
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur récupération PDF:', erreur);
+            return null;
+        }
     }
     
     /**
-     * Démarre la génération d'un PDF
+     * Génère un PDF
      */
     async generer(personnageId, options = {}) {
-        const data = await this.store.requeteApi('/pdfs/generer', {
-            method: 'POST',
-            body: JSON.stringify({
-                personnage_id: personnageId,
-                type_pdf: options.type || 'fiche_personnage',
-                options_generation: options
-            })
-        });
-        
-        this.store.ajouterMessage('succes', 'Génération PDF démarrée');
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi('/pdfs/generer', {
+                method: 'POST',
+                body: JSON.stringify({
+                    personnage_id: personnageId,
+                    ...options
+                })
+            });
+            store.ajouterMessage('succes', 'Génération PDF démarrée');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur génération PDF:', erreur);
+            throw erreur;
+        }
     }
     
     /**
      * Vérifie le statut de génération d'un PDF
      */
-    async verifierStatut(pdfId) {
-        const data = await this.store.requeteApi(`/pdfs/${pdfId}/statut`);
-        return data.donnees;
+    async verifierStatut(id) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/pdfs/${id}/statut`);
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur vérification statut PDF:', erreur);
+            return null;
+        }
     }
     
     /**
      * Télécharge un PDF
      */
-    telecharger(id, nomFichier) {
-        const lien = document.createElement('a');
-        lien.href = `/api/pdfs/${id}/telecharger`;
-        lien.download = nomFichier || `document_${id}.pdf`;
-        document.body.appendChild(lien);
-        lien.click();
-        document.body.removeChild(lien);
-        
-        this.store.ajouterMessage('succes', 'Téléchargement démarré');
-    }
-    
-    /**
-     * Obtient l'URL de preview d'un PDF
-     */
-    obtenirUrlPreview(id) {
-        return `/api/pdfs/${id}/preview`;
+    async telecharger(id) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const response = await fetch(`${store.config.apiUrl}/pdfs/${id}/telecharger`);
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du téléchargement');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `personnage-${id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            store.ajouterMessage('succes', 'PDF téléchargé avec succès');
+            return true;
+        } catch (erreur) {
+            console.error('Erreur téléchargement PDF:', erreur);
+            const store = this.initStore();
+            if (store) store.ajouterMessage('erreur', 'Erreur lors du téléchargement');
+            throw erreur;
+        }
     }
     
     /**
      * Supprime un PDF
      */
     async supprimer(id) {
-        await this.store.requeteApi(`/pdfs/${id}`, {
-            method: 'DELETE'
-        });
-        
-        this.store.ajouterMessage('succes', 'PDF supprimé');
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            await store.requeteApi(`/pdfs/${id}`, {
+                method: 'DELETE'
+            });
+            store.ajouterMessage('succes', 'PDF supprimé');
+            return true;
+        } catch (erreur) {
+            console.error('Erreur suppression PDF:', erreur);
+            throw erreur;
+        }
     }
     
     /**
-     * Obtient le statut d'un PDF avec style visuel
+     * Bascule la visibilité d'un PDF (public/privé)
      */
-    obtenirStatutTexte(statut) {
+    async basculerVisibilite(id) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/pdfs/${id}/basculer-visibilite`, {
+                method: 'POST'
+            });
+            store.ajouterMessage('succes', 'Visibilité mise à jour');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur changement visibilité:', erreur);
+            throw erreur;
+        }
+    }
+    
+    /**
+     * Partage un PDF
+     */
+    async partager(id, options = {}) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/pdfs/${id}/partager`, {
+                method: 'POST',
+                body: JSON.stringify(options)
+            });
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur partage PDF:', erreur);
+            throw erreur;
+        }
+    }
+    
+    /**
+     * Obtient l'aperçu d'un PDF
+     */
+    async obtenirApercu(id) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/pdfs/${id}/apercu`);
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur aperçu PDF:', erreur);
+            return null;
+        }
+    }
+    
+    /**
+     * Copie le lien de partage
+     */
+    copierLienPartage(id) {
+        const url = `${window.location.origin}/pdfs/${id}`;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                const store = this.initStore();
+                if (store) store.ajouterMessage('succes', 'Lien copié dans le presse-papier');
+            });
+        } else {
+            // Fallback pour les navigateurs plus anciens
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const store = this.initStore();
+            if (store) store.ajouterMessage('succes', 'Lien copié dans le presse-papier');
+        }
+    }
+    
+    /**
+     * Formate la taille d'un fichier
+     */
+    formaterTaille(octets) {
+        if (!octets) return 'N/A';
+        
+        const unites = ['o', 'Ko', 'Mo', 'Go'];
+        let taille = octets;
+        let uniteIndex = 0;
+        
+        while (taille >= 1024 && uniteIndex < unites.length - 1) {
+            taille /= 1024;
+            uniteIndex++;
+        }
+        
+        return `${Math.round(taille * 10) / 10} ${unites[uniteIndex]}`;
+    }
+    
+    /**
+     * Formate le statut d'un PDF
+     */
+    formaterStatut(statut) {
         const statuts = {
-            'EN_ATTENTE': { 
-                texte: 'En attente', 
-                classe: 'bg-yellow-100 text-yellow-800',
-                icone: '⏳'
-            },
-            'EN_TRAITEMENT': { 
-                texte: 'En cours', 
-                classe: 'bg-blue-100 text-blue-800',
-                icone: '⚙️'
-            },
-            'TERMINE': { 
-                texte: 'Terminé', 
-                classe: 'bg-green-100 text-green-800',
-                icone: '✅'
-            },
-            'ECHEC': { 
-                texte: 'Échec', 
-                classe: 'bg-red-100 text-red-800',
-                icone: '❌'
-            },
-            'EXPIRE': { 
-                texte: 'Expiré', 
-                classe: 'bg-gray-100 text-gray-800',
-                icone: '🕒'
-            }
+            'EN_ATTENTE': { texte: 'En attente', classe: 'text-yellow-600 bg-yellow-100' },
+            'EN_TRAITEMENT': { texte: 'En cours', classe: 'text-blue-600 bg-blue-100' },
+            'TERMINE': { texte: 'Terminé', classe: 'text-green-600 bg-green-100' },
+            'ECHEC': { texte: 'Échec', classe: 'text-red-600 bg-red-100' }
         };
         
-        return statuts[statut] || { 
-            texte: statut, 
-            classe: 'bg-gray-100 text-gray-800',
-            icone: '❓'
-        };
+        return statuts[statut] || { texte: statut, classe: 'text-gray-600 bg-gray-100' };
     }
     
     /**
-     * Polling pour suivre le statut de génération
+     * Surveillance du statut de génération
      */
-    async suivreGeneration(pdfId, callback, intervalMs = 2000) {
-        const interval = setInterval(async () => {
+    async surveillerGeneration(id, callback, options = {}) {
+        const maxTentatives = options.maxTentatives || 30;
+        const intervalle = options.intervalle || 2000; // 2 secondes
+        let tentatives = 0;
+        
+        const verifier = async () => {
             try {
-                const statut = await this.verifierStatut(pdfId);
-                callback(statut);
+                const statut = await this.verifierStatut(id);
                 
-                // Arrêter le polling si terminé ou en échec
-                if (['TERMINE', 'ECHEC', 'EXPIRE'].includes(statut.statut)) {
-                    clearInterval(interval);
+                if (callback) {
+                    callback(statut);
+                }
+                
+                if (statut?.statut === 'TERMINE' || statut?.statut === 'ECHEC') {
+                    return statut;
+                }
+                
+                if (tentatives < maxTentatives) {
+                    tentatives++;
+                    setTimeout(verifier, intervalle);
+                } else {
+                    const store = this.initStore();
+                    if (store) store.ajouterMessage('avertissement', 'Délai de génération dépassé');
                 }
             } catch (erreur) {
-                console.error('Erreur vérification statut PDF:', erreur);
-                clearInterval(interval);
+                console.error('Erreur surveillance génération:', erreur);
             }
-        }, intervalMs);
+        };
         
-        return interval;
+        // Démarrer la surveillance
+        setTimeout(verifier, intervalle);
     }
     
     /**
-     * Génère un aperçu HTML (pas PDF) pour preview rapide
-     */
-    async genererPreviewHtml(personnageId, options = {}) {
-        const data = await this.store.requeteApi('/pdfs/preview-html', {
-            method: 'POST',
-            body: JSON.stringify({
-                personnage_id: personnageId,
-                options
-            })
-        });
-        
-        return data.donnees;
-    }
-    
-    /**
-     * Partage un PDF via lien temporaire
-     */
-    async genererLienPartage(pdfId, dureeHeures = 24) {
-        const data = await this.store.requeteApi(`/pdfs/${pdfId}/partager`, {
-            method: 'POST',
-            body: JSON.stringify({
-                duree_heures: dureeHeures
-            })
-        });
-        
-        return data.donnees;
-    }
-    
-    /**
-     * Obtient les statistiques de PDFs générés
+     * Statistiques des PDFs
      */
     async obtenirStatistiques() {
         try {
-            const data = await this.store.requeteApi('/pdfs/statistiques');
-            return data.donnees;
+            const store = this.initStore();
+            if (!store) return {};
+            
+            const data = await store.requeteApi('/pdfs/statistiques');
+            return data.donnees || {};
         } catch (erreur) {
-            console.error('Erreur chargement statistiques PDF:', erreur);
-            return {
-                total: 0,
-                parStatut: {},
-                parType: {}
-            };
+            console.error('Erreur statistiques PDFs:', erreur);
+            return {};
         }
     }
     
     /**
-     * Obtient les types de PDF disponibles pour un système
+     * Nettoie les PDFs expirés (côté client)
      */
-    obtenirTypesPdf(systeme) {
-        const types = {
-            'fiche_personnage': {
-                nom: 'Fiche de personnage',
-                description: 'Fiche complète du personnage',
-                icone: '👤'
-            },
-            'fiche_pnj': {
-                nom: 'Fiche PNJ',
-                description: 'Fiche simplifiée pour PNJ',
-                icone: '🎭'
-            },
-            'carte_reference': {
-                nom: 'Carte de référence',
-                description: 'Aide-mémoire des règles',
-                icone: '📇'
-            },
-            'guide_moves': {
-                nom: 'Guide des actions',
-                description: 'Liste des actions disponibles',
-                icone: '📖'
-            },
-            'suivi_conditions': {
-                nom: 'Suivi des conditions',
-                description: 'États et conditions du personnage',
-                icone: '📊'
-            },
-            'notes_session': {
-                nom: 'Notes de session',
-                description: 'Notes pour la partie',
-                icone: '📝'
-            }
-        };
-        
-        // Filtrer selon le système si nécessaire
-        if (systeme === 'monsterhearts') {
-            return {
-                'fiche_personnage': types.fiche_personnage,
-                'guide_moves': types.guide_moves,
-                'suivi_conditions': types.suivi_conditions
-            };
+    async nettoyerExpires() {
+        try {
+            const store = this.initStore();
+            if (!store) return false;
+            
+            const data = await store.requeteApi('/pdfs/nettoyer-expires', {
+                method: 'POST'
+            });
+            return data.succes;
+        } catch (erreur) {
+            console.error('Erreur nettoyage PDFs expirés:', erreur);
+            return false;
         }
-        
-        return types;
-    }
-    
-    /**
-     * Formate la taille de fichier
-     */
-    formaterTailleFichier(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 }
 

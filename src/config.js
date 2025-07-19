@@ -13,7 +13,7 @@ const config = {
   database: {
     host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT) || 5432,
-    database: process.env.POSTGRES_DB || 'generateur_pdf_jdr',
+    database: process.env.POSTGRES_DB || 'brumisa3',
     user: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'password',
     ssl: process.env.NODE_ENV === 'production' ? true : false,
@@ -23,7 +23,7 @@ const config = {
   // Sessions
   session: {
     secret: process.env.SESSION_SECRET || 'your-super-secret-session-key-change-in-production',
-    name: 'generateur-pdf-jdr',
+    name: 'brumisa3',
     maxAge: parseInt(process.env.SESSION_MAX_AGE) || 24 * 60 * 60 * 1000, // 24h
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -77,9 +77,9 @@ const config = {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-          styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
-          fontSrc: ["'self'", 'fonts.gstatic.com'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://unpkg.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'"]
         }

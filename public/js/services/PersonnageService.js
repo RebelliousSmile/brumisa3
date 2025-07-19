@@ -4,7 +4,15 @@
 
 class PersonnageService {
     constructor() {
-        this.store = Alpine.store('app');
+        this.store = null;
+    }
+    
+    // Initialise le store Alpine si pas encore fait
+    initStore() {
+        if (!this.store && typeof Alpine !== 'undefined') {
+            this.store = Alpine.store('app');
+        }
+        return this.store;
     }
     
     /**
@@ -12,8 +20,11 @@ class PersonnageService {
      */
     async lister(filtres = {}) {
         try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
             const params = new URLSearchParams(filtres);
-            const data = await this.store.requeteApi(`/personnages?${params}`);
+            const data = await store.requeteApi(`/personnages?${params}`);
             return data.donnees || [];
         } catch (erreur) {
             console.error('Erreur listage personnages:', erreur);
@@ -25,202 +36,268 @@ class PersonnageService {
      * Récupère un personnage par ID
      */
     async obtenirParId(id) {
-        const data = await this.store.requeteApi(`/personnages/${id}`);
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/personnages/${id}`);
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur récupération personnage:', erreur);
+            return null;
+        }
     }
     
     /**
      * Crée un nouveau personnage
      */
     async creer(donnees) {
-        const data = await this.store.requeteApi('/personnages', {
-            method: 'POST',
-            body: JSON.stringify(donnees)
-        });
-        
-        this.store.ajouterMessage('succes', 'Personnage créé avec succès');
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi('/personnages', {
+                method: 'POST',
+                body: JSON.stringify(donnees)
+            });
+            store.ajouterMessage('succes', 'Personnage créé avec succès');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur création personnage:', erreur);
+            throw erreur;
+        }
     }
     
     /**
      * Met à jour un personnage
      */
     async mettreAJour(id, donnees) {
-        const data = await this.store.requeteApi(`/personnages/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(donnees)
-        });
-        
-        this.store.ajouterMessage('succes', 'Personnage mis à jour');
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/personnages/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(donnees)
+            });
+            store.ajouterMessage('succes', 'Personnage mis à jour');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur mise à jour personnage:', erreur);
+            throw erreur;
+        }
     }
     
     /**
      * Duplique un personnage
      */
-    async dupliquer(id, nouveauNom) {
-        const data = await this.store.requeteApi(`/personnages/${id}/dupliquer`, {
-            method: 'POST',
-            body: JSON.stringify({ nouveau_nom: nouveauNom })
-        });
-        
-        this.store.ajouterMessage('succes', 'Personnage dupliqué avec succès');
-        return data.donnees;
+    async dupliquer(id) {
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/personnages/${id}/dupliquer`, {
+                method: 'POST'
+            });
+            store.ajouterMessage('succes', 'Personnage dupliqué avec succès');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur duplication personnage:', erreur);
+            throw erreur;
+        }
     }
     
     /**
      * Supprime un personnage
      */
     async supprimer(id) {
-        await this.store.requeteApi(`/personnages/${id}`, {
-            method: 'DELETE'
-        });
-        
-        this.store.ajouterMessage('succes', 'Personnage supprimé');
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            await store.requeteApi(`/personnages/${id}`, {
+                method: 'DELETE'
+            });
+            store.ajouterMessage('succes', 'Personnage supprimé');
+            return true;
+        } catch (erreur) {
+            console.error('Erreur suppression personnage:', erreur);
+            throw erreur;
+        }
     }
     
     /**
-     * Génère un PDF pour un personnage
+     * Génère un PDF pour le personnage
      */
     async genererPdf(id, options = {}) {
-        const data = await this.store.requeteApi(`/personnages/${id}/pdf`, {
-            method: 'POST',
-            body: JSON.stringify(options)
-        });
-        
-        this.store.ajouterMessage('succes', 'Génération PDF démarrée');
-        return data.donnees;
+        try {
+            const store = this.initStore();
+            if (!store) throw new Error('Alpine store not available');
+            
+            const data = await store.requeteApi(`/personnages/${id}/pdf`, {
+                method: 'POST',
+                body: JSON.stringify(options)
+            });
+            store.ajouterMessage('succes', 'Génération PDF démarrée');
+            return data.donnees;
+        } catch (erreur) {
+            console.error('Erreur génération PDF:', erreur);
+            throw erreur;
+        }
     }
     
     /**
-     * Sauvegarde automatique (draft)
+     * Sauvegarde automatique (brouillon)
      */
-    async sauvegarderBrouillon(donnees) {
+    async sauvegardeAuto(donnees) {
         try {
-            const data = await this.store.requeteApi('/personnages/brouillon', {
+            const store = this.initStore();
+            if (!store) return false;
+            
+            const data = await store.requeteApi('/personnages/brouillon', {
                 method: 'POST',
                 body: JSON.stringify(donnees)
             });
-            
-            // Sauvegarde locale aussi
-            Alpine.store('creation').sauvegarderLocalement(donnees);
-            Alpine.store('navigation').markClean();
-            
-            return data.donnees;
+            return data.succes;
         } catch (erreur) {
-            // En cas d'erreur API, sauvegarde uniquement en local
-            Alpine.store('creation').sauvegarderLocalement(donnees);
-            console.warn('Sauvegarde locale uniquement:', erreur);
+            console.error('Erreur sauvegarde auto:', erreur);
+            return false;
         }
     }
     
     /**
-     * Valide les données d'un personnage
+     * Récupère les brouillons sauvegardés
+     */
+    async obtenirBrouillons() {
+        try {
+            const store = this.initStore();
+            if (!store) return [];
+            
+            const data = await store.requeteApi('/personnages/brouillons');
+            return data.donnees || [];
+        } catch (erreur) {
+            console.error('Erreur récupération brouillons:', erreur);
+            return [];
+        }
+    }
+    
+    /**
+     * Valide les données d'un personnage selon son système
      */
     validerDonnees(donnees, systeme) {
+        const store = this.initStore();
+        if (!systeme || !store?.systemes?.[systeme]) {
+            return { valide: false, erreurs: ['Système de jeu non spécifié ou invalide'] };
+        }
+        
         const erreurs = [];
         
-        // Validation nom
-        if (!donnees.nom || donnees.nom.trim().length === 0) {
-            erreurs.push('Le nom est requis');
-        }
-        
-        // Validation système
-        if (!systeme || !this.store.systemes[systeme]) {
-            erreurs.push('Système de jeu invalide');
-        }
-        
-        // Validations spécifiques au système
-        if (systeme && this.store.systemes[systeme]) {
-            const template = this.store.systemes[systeme];
+        if (systeme && store.systemes[systeme]) {
+            const template = store.systemes[systeme];
             
-            // Vérifier les champs requis
-            if (template.infos_base?.requis) {
-                template.infos_base.requis.forEach(champ => {
-                    if (!donnees.infos_base?.[champ]) {
-                        erreurs.push(`${champ} est requis pour ${template.nom}`);
+            // Validation des champs obligatoires
+            if (template.champsObligatoires) {
+                template.champsObligatoires.forEach(champ => {
+                    if (!donnees[champ] || donnees[champ].toString().trim() === '') {
+                        erreurs.push(`Le champ "${champ}" est obligatoire`);
                     }
                 });
             }
             
-            // Vérifier les attributs
-            if (template.attributs) {
-                Object.entries(template.attributs).forEach(([nom, config]) => {
-                    const valeur = donnees.attributs?.[nom];
-                    if (valeur !== undefined) {
-                        if (valeur < config.min || valeur > config.max) {
-                            erreurs.push(`${nom} doit être entre ${config.min} et ${config.max}`);
-                        }
-                    }
-                });
+            // Validation des formats
+            if (donnees.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donnees.email)) {
+                erreurs.push('Format d\'email invalide');
             }
         }
-        
-        return erreurs;
-    }
-    
-    /**
-     * Obtient un template de personnage pour un système
-     */
-    obtenirTemplate(systeme, templateNom = 'defaut') {
-        const systemConfig = this.store.systemes[systeme];
-        if (!systemConfig) return null;
         
         return {
-            nom: '',
-            systeme,
-            infos_base: this._creerInfosBaseDefaut(systemConfig),
-            attributs: this._creerAttributsDefaut(systemConfig),
-            competences: {},
-            mouvements: {},
-            equipement: {},
-            conditions: {},
-            ressources: {},
-            histoire: {},
-            notes: ''
+            valide: erreurs.length === 0,
+            erreurs
         };
     }
     
     /**
-     * Crée les infos de base par défaut
+     * Formatage des données selon le système
      */
-    _creerInfosBaseDefaut(systemConfig) {
-        const infos = {};
-        if (systemConfig.infos_base?.champs) {
-            systemConfig.infos_base.champs.forEach(champ => {
-                infos[champ] = '';
+    formaterDonnees(donnees, systeme) {
+        const store = this.initStore();
+        if (!store?.systemes?.[systeme]) return donnees;
+        
+        const systemConfig = store.systemes[systeme];
+        const donneesFormatees = { ...donnees };
+        
+        // Formatage des nombres
+        if (systemConfig.champsNumeriques) {
+            systemConfig.champsNumeriques.forEach(champ => {
+                if (donneesFormatees[champ] !== undefined) {
+                    donneesFormatees[champ] = parseInt(donneesFormatees[champ]) || 0;
+                }
             });
         }
-        return infos;
+        
+        // Formatage des booléens
+        if (systemConfig.champsBooleans) {
+            systemConfig.champsBooleans.forEach(champ => {
+                if (donneesFormatees[champ] !== undefined) {
+                    donneesFormatees[champ] = Boolean(donneesFormatees[champ]);
+                }
+            });
+        }
+        
+        // Ajout des métadonnées
+        donneesFormatees.systeme_jeu = systeme;
+        donneesFormatees.version_template = systemConfig.version || '1.0.0';
+        donneesFormatees.date_modification = new Date().toISOString();
+        
+        return donneesFormatees;
     }
     
     /**
-     * Crée les attributs par défaut
+     * Export des données personnage
      */
-    _creerAttributsDefaut(systemConfig) {
-        const attributs = {};
-        if (systemConfig.attributs) {
-            Object.entries(systemConfig.attributs).forEach(([nom, config]) => {
-                attributs[nom] = config.defaut || config.min || 0;
-            });
+    exporterDonnees(personnage, format = 'json') {
+        const donneesExport = {
+            ...personnage,
+            date_export: new Date().toISOString(),
+            version_export: '1.0.0'
+        };
+        
+        switch (format) {
+            case 'json':
+                return JSON.stringify(donneesExport, null, 2);
+            case 'csv':
+                return this.convertirEnCSV(donneesExport);
+            default:
+                return donneesExport;
         }
-        return attributs;
     }
     
     /**
-     * Obtient les statistiques de personnages
+     * Statistiques des personnages
      */
     async obtenirStatistiques() {
         try {
-            const data = await this.store.requeteApi('/personnages/statistiques');
-            return data.donnees;
+            const store = this.initStore();
+            if (!store) return {};
+            
+            const data = await store.requeteApi('/personnages/statistiques');
+            return data.donnees || {};
         } catch (erreur) {
-            console.error('Erreur chargement statistiques:', erreur);
-            return {
-                total: 0,
-                parSysteme: {}
-            };
+            console.error('Erreur statistiques personnages:', erreur);
+            return {};
         }
+    }
+    
+    /**
+     * Conversion en CSV (utilitaire)
+     */
+    convertirEnCSV(donnees) {
+        const entetes = Object.keys(donnees);
+        const valeurs = Object.values(donnees).map(v => 
+            typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : v
+        );
+        
+        return entetes.join(',') + '\n' + valeurs.join(',');
     }
 }
 

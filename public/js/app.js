@@ -211,6 +211,142 @@ document.addEventListener('alpine:init', () => {
 });
 
 // ========================================
+// Composants Alpine.js pour le layout
+// ========================================
+window.AlpineComponents = window.AlpineComponents || {};
+
+// Navigation mobile
+window.AlpineComponents.navigationMobile = () => ({
+    menuOuvert: false,
+    
+    basculerMenu() {
+        this.menuOuvert = !this.menuOuvert;
+    },
+    
+    fermerMenu() {
+        this.menuOuvert = false;
+    },
+    
+    naviguer(url) {
+        this.fermerMenu();
+        window.location.href = url;
+    }
+});
+
+// Menu utilisateur
+window.AlpineComponents.menuUtilisateur = () => ({
+    ouvert: false,
+    
+    basculer() {
+        this.ouvert = !this.ouvert;
+    },
+    
+    fermer() {
+        this.ouvert = false;
+    },
+    
+    async deconnecter() {
+        try {
+            await Alpine.store('app').requeteApi('/api/auth/deconnexion', {
+                method: 'POST'
+            });
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Erreur déconnexion:', error);
+        }
+    }
+});
+
+// Messages flash
+window.AlpineComponents.messagesFlash = () => ({
+    get messages() {
+        return Alpine.store('app').messages;
+    },
+    
+    supprimerMessage(id) {
+        Alpine.store('app').supprimerMessage(id);
+    },
+    
+    obtenirIcone(type) {
+        const icones = {
+            succes: '✓',
+            erreur: '✗',
+            avertissement: '⚠',
+            info: 'ℹ'
+        };
+        return icones[type] || 'ℹ';
+    }
+});
+
+// Indicateur hors ligne
+window.AlpineComponents.indicateurHorsLigne = () => ({
+    isOffline: false,
+    hasUnsavedChanges: false,
+    
+    init() {
+        window.addEventListener('online', () => this.isOffline = false);
+        window.addEventListener('offline', () => this.isOffline = true);
+        
+        // Vérifier état initial
+        this.isOffline = !navigator.onLine;
+    }
+});
+
+// Élévation de rôle
+window.AlpineComponents.elevationRole = () => ({
+    ouvert: false,
+    codeAcces: '',
+    enTraitement: false,
+    
+    ouvrir() {
+        this.ouvert = true;
+        this.$nextTick(() => {
+            this.$refs.inputCode?.focus();
+        });
+    },
+    
+    fermer() {
+        this.ouvert = false;
+        this.codeAcces = '';
+        this.enTraitement = false;
+    },
+    
+    gererTouche(event) {
+        if (event.key === 'Enter' && this.codeAcces.length === 6) {
+            this.verifier();
+        } else if (event.key === 'Escape') {
+            this.fermer();
+        }
+    },
+    
+    async verifier() {
+        if (this.enTraitement || this.codeAcces.length !== 6) return;
+        
+        this.enTraitement = true;
+        
+        try {
+            const response = await Alpine.store('app').requeteApi('/auth/elevation-role', {
+                method: 'POST',
+                body: JSON.stringify({ code: this.codeAcces })
+            });
+            
+            if (response.succes) {
+                Alpine.store('app').ajouterMessage('succes', 'Rôle mis à niveau avec succès !');
+                this.fermer();
+                // Recharger la page pour mettre à jour l'interface
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                Alpine.store('app').ajouterMessage('erreur', response.message || 'Code incorrect');
+            }
+        } catch (error) {
+            Alpine.store('app').ajouterMessage('erreur', 'Erreur lors de la vérification du code');
+        } finally {
+            this.enTraitement = false;
+        }
+    }
+});
+
+// ========================================
 // Détection mode hors ligne
 // ========================================
 window.addEventListener('online', () => {

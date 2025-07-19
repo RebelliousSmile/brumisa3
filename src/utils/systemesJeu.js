@@ -35,10 +35,12 @@ const systemesJeu = {
     },
 
     themes: {
-      couleurPrimaire: '#ec4899', // rose intense
-      couleurSecondaire: '#be185d', // rose foncé
-      couleurAccent: '#831843', // bordeaux
+      couleurPrimaire: '#8b5cf6', // violet (purple-500)
+      couleurSecondaire: '#7c3aed', // violet foncé (violet-600)
+      couleurAccent: '#6d28d9', // violet très foncé (violet-700)
+      couleurTailwind: 'purple',
       police: 'gothic',
+      icone: 'ra-bleeding-heart', // cœur saignant pour l'horreur romantique
       iconographie: ['cœurs', 'roses', 'lune', 'sang', 'miroirs']
     }
   },
@@ -80,11 +82,13 @@ const systemesJeu = {
     },
 
     themes: {
-      couleurPrimaire: '#eab308', // or cuivré
-      couleurSecondaire: '#a16207', // bronze
-      couleurAccent: '#713f12', // cuivre foncé
-      police: 'steampunk',
-      iconographie: ['engrenages', 'vapeur', 'lunettes', 'pistons', 'rouages']
+      couleurPrimaire: '#10b981', // vert emerald-500 (pour la Roue du Temps)
+      couleurSecondaire: '#059669', // vert emerald-600
+      couleurAccent: '#047857', // vert emerald-700
+      couleurTailwind: 'emerald',
+      police: 'fantasy',
+      icone: 'ra-gear', // engrenage pour mécanisme
+      iconographie: ['engrenages', 'roue', 'magie', 'épées', 'runes']
     }
   },
 

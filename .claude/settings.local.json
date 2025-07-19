@@ -36,7 +36,11 @@
       "Bash(timeout 10 pnpm run dev)",
       "Bash(timeout:*)",
       "Bash(del datadb.json)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebFetch(domain:cdnjs.com)",
+      "Bash(ls:*)",
+      "Bash(pnpm test:*)",
+      "Bash(npx jest:*)"
     ],
     "deny": []
   }

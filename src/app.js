@@ -160,7 +160,7 @@ class App {
       res.locals.user = req.session.user || null;
       res.locals.messages = req.session.messages || {};
       res.locals.config = {
-        appName: 'Générateur PDF JDR',
+        appName: 'brumisa3.fr',
         version: '1.0.0',
         env: config.server.env
       };
@@ -187,15 +187,115 @@ class App {
       });
     });
 
+    // Favicon route
+    this.app.get('/favicon.ico', (req, res) => {
+      res.redirect(301, '/images/favicon.svg');
+    });
+    
+    // Direct favicon.svg route with proper headers
+    this.app.get('/images/favicon.svg', (req, res) => {
+      res.set({
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'public, max-age=31536000'
+      });
+      res.sendFile(path.join(__dirname, '../public/images/favicon.svg'));
+    });
+
     // Page d'accueil temporaire
     this.app.get('/', (req, res) => {
       res.render('index', {
-        title: 'Générateur PDF JDR',
+        title: 'brumisa3.fr',
         description: 'Créez vos fiches de personnages pour vos JDR favoris'
       });
     });
 
-    // Routes API (à implémenter)
+    // Pages légales
+    this.app.get('/mentions-legales', (req, res) => {
+      res.render('mentions-legales', {
+        title: 'Mentions légales - brumisa3.fr'
+      });
+    });
+
+    this.app.get('/cgu', (req, res) => {
+      res.render('cgu', {
+        title: 'Conditions Générales d\'Utilisation - brumisa3.fr'
+      });
+    });
+
+    // Routes API temporaires
+    this.app.get('/api/home/donnees', (req, res) => {
+      res.json({
+        succes: true,
+        donnees: {
+          pdfs_recents: [],
+          actualites: [],
+          temoignages: [],
+          statistiques: {
+            nb_abonnes_newsletter: 0,
+            nb_utilisateurs_inscrits: 1247,
+            nb_contenus_ouverts_mois: 8932,
+            nb_pdfs_stockes: 3456
+          }
+        }
+      });
+    });
+    
+    this.app.get('/api/dons/infos', (req, res) => {
+      res.json({
+        succes: true,
+        donnees: {
+          message: "Soutenez le développement de nouvelles fonctionnalités !",
+          plateforme: "Ko-fi",
+          url_don: "https://ko-fi.com/brumisa3",
+          objectifs: [
+            { description: "Hébergement serveur", montant: 10 },
+            { description: "Nouveaux systèmes JDR", montant: 25 },
+            { description: "Fonctionnalités avancées", montant: 50 }
+          ]
+        }
+      });
+    });
+
+    // Newsletter inscription
+    this.app.post('/api/newsletter/inscription', (req, res) => {
+      res.json({
+        succes: true,
+        message: "Inscription à la newsletter réussie ! Vous serez averti des nouvelles fonctionnalités pour les 4 jeux de la plateforme."
+      });
+    });
+
+    // Témoignages
+    this.app.post('/api/temoignages', (req, res) => {
+      res.json({
+        succes: true,
+        message: "Témoignage envoyé avec succès ! Il sera modéré avant publication."
+      });
+    });
+
+    // Élévation de rôle
+    this.app.post('/api/auth/elevation-role', (req, res) => {
+      const { code } = req.body;
+      
+      // Codes temporaires pour développement
+      if (code === '123456') {
+        res.json({
+          succes: true,
+          message: "Rôle Premium débloqué !"
+        });
+      } else if (code === '789012') {
+        res.json({
+          succes: true,
+          message: "Rôle Admin débloqué !"
+        });
+      } else {
+        res.status(400).json({
+          succes: false,
+          message: "Code d'accès incorrect"
+        });
+      }
+    });
+
+    // Routes API (à implémenter complètement plus tard)
     // this.app.use('/api', require('./routes/api'));
     
     // Routes d'authentification (à implémenter)  

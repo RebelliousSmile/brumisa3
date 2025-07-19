@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%- typeof titre !== 'undefined' ? titre : 'Générateur PDF JDR' %></title>
+    <title><%- typeof titre !== 'undefined' ? titre : 'brumisa3.fr' %></title>
     
     <!-- Meta tags -->
-    <meta name="description" content="Générateur de PDFs pour fiches de personnages JDR">
+    <meta name="description" content="Créateur de fiches de personnages JDR immersives">
     <meta name="author" content="RebelliousSmile">
     
     <!-- Favicon -->
@@ -20,6 +20,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     
+    <!-- Gaming Icon Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rpg-awesome/0.2.0/css/rpg-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Données serveur pour Alpine.js -->
     <script>
         window.APP_DATA = {
@@ -29,63 +33,87 @@
         };
     </script>
     
-    <!-- Alpine.js et composants -->
-    <script defer src="/js/app.js"></script>
-    <script defer src="/js/services/PersonnageService.js"></script>
-    <script defer src="/js/services/PdfService.js"></script>
-    <script defer src="/js/components/PersonnageComponent.js"></script>
-    <script defer src="/js/components/AuthComponent.js"></script>
-    <script defer src="/js/components/TableauBordComponent.js"></script>
-    <script defer src="/js/components/PageAccueilComponent.js"></script>
+    <!-- Alpine.js defer pour permettre le chargement des composants d'abord -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Stores et composants avant Alpine.js -->
+    <script src="/js/app.js"></script>
+    <script src="/js/services/PersonnageService.js"></script>
+    <script src="/js/services/PdfService.js"></script>
+    <script src="/js/components/PersonnageComponent.js"></script>
+    <script src="/js/components/AuthComponent.js"></script>
+    <script src="/js/components/TableauBordComponent.js"></script>
+    <script src="/js/components/PageAccueilComponent.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Navigation Mobile -->
-    <nav class="bg-white shadow-lg border-b sticky top-0 z-40" x-data="window.AlpineComponents.navigationMobile()">
+<body class="bg-gray-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40" x-data="window.AlpineComponents.navigationMobile()">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-gray-800 flex items-center">
-                        🎲 <span class="hidden sm:inline ml-2">Générateur PDF JDR</span>
+                    <a href="/" class="text-xl font-bold text-white flex items-center">
+                        <i class="ra ra-dice-six text-purple-400 text-2xl mr-2"></i>
+                        <span class="hidden sm:inline">brumisa3.fr</span>
                     </a>
                 </div>
                 
-                <!-- Menu desktop -->
-                <div class="hidden md:flex items-center space-x-6">
+                <!-- Game Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/personnages?systeme=monsterhearts" class="flex items-center text-gray-300 hover:text-red-400 transition-colors">
+                        <i class="ra ra-bleeding-heart text-red-400 mr-2"></i>
+                        <span class="text-sm">Monsterhearts</span>
+                    </a>
+                    <a href="/personnages?systeme=engrenages" class="flex items-center text-gray-300 hover:text-yellow-400 transition-colors">
+                        <i class="ra ra-gear text-yellow-400 mr-2"></i>
+                        <span class="text-sm">Engrenages</span>
+                    </a>
+                    <a href="/personnages?systeme=metro2033" class="flex items-center text-gray-300 hover:text-green-400 transition-colors">
+                        <i class="ra ra-bomb text-green-400 mr-2"></i>
+                        <span class="text-sm">Metro 2033</span>
+                    </a>
+                    <a href="/personnages?systeme=mistengine" class="flex items-center text-gray-300 hover:text-purple-400 transition-colors">
+                        <i class="ra ra-crystal-ball text-purple-400 mr-2"></i>
+                        <span class="text-sm">Mist Engine</span>
+                    </a>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center">
                     <% if (locals.utilisateur) { %>
-                        <a href="/" class="text-gray-600 hover:text-gray-900">Accueil</a>
-                        <a href="/personnages" class="text-gray-600 hover:text-gray-900">Personnages</a>
-                        <a href="/pdfs" class="text-gray-600 hover:text-gray-900">Mes PDFs</a>
                         
-                        <!-- Menu utilisateur -->
+                        <!-- User Icon -->
                         <div class="relative" x-data="window.AlpineComponents.menuUtilisateur()">
-                            <button @click="basculer()" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
-                                <span><%= locals.utilisateur.nom %></span>
-                                <span class="text-xs px-2 py-1 rounded bg-gray-200"><%= locals.utilisateur.role %></span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                            <button @click="basculer()" class="w-10 h-10 bg-purple-600/20 rounded-full flex items-center justify-center border border-purple-500/30 hover:border-purple-400 transition-colors">
+                                <i class="ra ra-player text-purple-400 text-lg"></i>
                             </button>
                             
                             <div x-show="ouvert" @click.away="fermer()" x-transition 
-                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                 class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-2 z-50">
+                                <div class="px-4 py-2 border-b border-gray-700">
+                                    <p class="text-sm font-medium text-white"><%= locals.utilisateur.nom %></p>
+                                    <p class="text-xs text-gray-400"><%= locals.utilisateur.role %></p>
+                                </div>
                                 <% if (locals.utilisateur.role === 'UTILISATEUR') { %>
-                                <button @click="$dispatch('open-role-elevation')" class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">
+                                <button @click="$dispatch('open-role-elevation')" class="block w-full text-left px-4 py-2 text-sm text-purple-400 hover:bg-gray-700">
                                     Débloquer Premium/Admin
                                 </button>
-                                <hr class="my-1">
                                 <% } %>
+                                <a href="/personnages" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Mes personnages</a>
+                                <a href="/pdfs" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Mes PDFs</a>
                                 <% if (locals.utilisateur.role !== 'UTILISATEUR') { %>
-                                <a href="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Administration</a>
+                                <a href="/admin" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Administration</a>
                                 <% } %>
-                                <button @click="deconnecter()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Se déconnecter</button>
+                                <hr class="my-1 border-gray-700">
+                                <button @click="deconnecter()" class="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700">Se déconnecter</button>
                             </div>
                         </div>
                     <% } else { %>
-                        <a href="/connexion" class="text-gray-600 hover:text-gray-900">Connexion</a>
-                        <a href="/inscription" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Créer un compte</a>
+                        <a href="/connexion" class="text-purple-400 hover:text-purple-300 transition-colors">
+                            <i class="fas fa-sign-in-alt text-lg"></i>
+                        </a>
                     <% } %>
+                </div>
                 </div>
                 
                 <!-- Menu mobile button -->
@@ -220,11 +248,26 @@
     
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p>&copy; 2024 Générateur PDF JDR. Créé avec ❤️ pour la communauté JDR.</p>
-            <p class="text-sm text-gray-400 mt-2">
-                Systèmes supportés : Monsterhearts, Engrenages, Metro 2033, Mist Engine
-            </p>
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <!-- Copyright et crédits -->
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <p>&copy; 2024 brumisa3.fr. Créé avec ❤️ pour la communauté JDR.</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                        Développé par <a href="https://scriptami.com" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 transition-colors">scriptami.com</a>
+                    </p>
+                </div>
+                
+                <!-- Liens légaux -->
+                <div class="flex space-x-6 text-sm">
+                    <a href="/mentions-legales" class="text-gray-400 hover:text-white transition-colors">
+                        Mentions légales
+                    </a>
+                    <a href="/cgu" class="text-gray-400 hover:text-white transition-colors">
+                        CGU
+                    </a>
+                </div>
+            </div>
         </div>
     </footer>
 </body>

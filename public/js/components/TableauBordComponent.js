@@ -2,11 +2,13 @@
 // Composant tableau de bord et navigation
 // ========================================
 
+// Initialisation du namespace
+window.AlpineComponents = window.AlpineComponents || {};
+
 /**
  * Composant pour le tableau de bord
  */
-function tableauBord() {
-    return {
+window.AlpineComponents.tableauBord = () => ({
         // État
         stats: {
             totalPersonnages: 0,
@@ -45,8 +47,10 @@ function tableauBord() {
         
         async chargerActiviteRecente() {
             try {
-                const data = await Alpine.store('app').requeteApi('/activite-recente');
-                this.activiteRecente = data.donnees || [];
+                if (Alpine.store && Alpine.store('app')) {
+                    const data = await Alpine.store('app').requeteApi('/activite-recente');
+                    this.activiteRecente = data.donnees || [];
+                }
             } catch (erreur) {
                 console.error('Erreur chargement activité:', erreur);
             }
@@ -54,6 +58,7 @@ function tableauBord() {
         
         // Getters
         get systemesAvecStats() {
+            if (!Alpine.store || !Alpine.store('app')) return [];
             return Object.entries(this.stats.parSysteme).map(([systeme, nombre]) => ({
                 systeme,
                 nom: Alpine.store('app').obtenirNomSysteme(systeme),
@@ -63,107 +68,53 @@ function tableauBord() {
         },
         
         get utilisateurActuel() {
-            return Alpine.store('app').utilisateur;
+            return Alpine.store && Alpine.store('app') ? Alpine.store('app').utilisateur : null;
         }
-    };
-}
+});
 
 /**
- * Composant pour la navigation mobile
+ * Composant pour la navigation mobile (déjà défini dans app.js)
  */
-function navigationMobile() {
-    return {
-        menuOuvert: false,
-        
-        init() {
-            // Écouter les changements du store
-            this.$watch(() => Alpine.store('navigation').menuMobileOuvert, 
-                       (value) => this.menuOuvert = value);
-        },
-        
-        basculerMenu() {
-            Alpine.store('navigation').basculerMenuMobile();
-        },
-        
-        fermerMenu() {
-            Alpine.store('navigation').fermerMenuMobile();
-        },
-        
-        naviguer(url) {
-            this.fermerMenu();
-            window.location.href = url;
-        }
-    };
-}
+// window.AlpineComponents.navigationMobile est déjà défini dans app.js
 
 /**
  * Composant pour l'indicateur de progression
  */
-function indicateurProgression() {
-    return {
-        get progression() {
-            return Alpine.store('navigation').progressPercent;
-        },
-        
-        get sectionActuelle() {
-            return Alpine.store('navigation').currentSection;
-        },
-        
-        get sectionsLabels() {
-            return {
-                'infos-base': 'Informations',
-                'attributs': 'Attributs',
-                'competences': 'Compétences',
-                'equipement': 'Équipement',
-                'notes': 'Notes'
-            };
-        },
-        
-        allerASection(sectionId) {
+window.AlpineComponents.indicateurProgression = () => ({
+    get progression() {
+        return Alpine.store && Alpine.store('navigation') ? Alpine.store('navigation').progressPercent : 0;
+    },
+    
+    get sectionActuelle() {
+        return Alpine.store && Alpine.store('navigation') ? Alpine.store('navigation').currentSection : '';
+    },
+    
+    get sectionsLabels() {
+        return {
+            'infos-base': 'Informations',
+            'attributs': 'Attributs',
+            'competences': 'Compétences',
+            'equipement': 'Équipement',
+            'notes': 'Notes'
+        };
+    },
+    
+    allerASection(sectionId) {
+        if (Alpine.store && Alpine.store('navigation')) {
             Alpine.store('navigation').goToSection(sectionId);
         }
-    };
-}
+    }
+});
 
 /**
- * Composant pour les messages flash
+ * Composant pour les messages flash (déjà défini dans app.js)
  */
-function messagesFlash() {
-    return {
-        get messages() {
-            return Alpine.store('app').messages;
-        },
-        
-        supprimerMessage(id) {
-            Alpine.store('app').supprimerMessage(id);
-        },
-        
-        obtenirIcone(type) {
-            const icones = {
-                'succes': '✅',
-                'erreur': '❌',
-                'avertissement': '⚠️',
-                'info': 'ℹ️'
-            };
-            return icones[type] || 'ℹ️';
-        }
-    };
-}
+// window.AlpineComponents.messagesFlash est déjà défini dans app.js
 
 /**
- * Composant pour l'indicateur hors ligne
+ * Composant pour l'indicateur hors ligne (déjà défini dans app.js)
  */
-function indicateurHorsLigne() {
-    return {
-        get isOffline() {
-            return Alpine.store('navigation').isOffline;
-        },
-        
-        get hasUnsavedChanges() {
-            return Alpine.store('navigation').hasUnsavedChanges;
-        }
-    };
-}
+// window.AlpineComponents.indicateurHorsLigne est déjà défini dans app.js
 
 /**
  * Composant pour la preview HTML
@@ -320,18 +271,4 @@ function actionFlottante(type = 'apercu') {
     };
 }
 
-// ========================================
-// Enregistrement global des composants
-// ========================================
-window.AlpineComponents = window.AlpineComponents || {};
-Object.assign(window.AlpineComponents, {
-    tableauBord,
-    navigationMobile,
-    indicateurProgression,
-    messagesFlash,
-    indicateurHorsLigne,
-    previewHtml,
-    partageDocument,
-    navigationFormulaire,
-    actionFlottante
-});
+// Composants déjà définis dans le namespace window.AlpineComponents ci-dessus

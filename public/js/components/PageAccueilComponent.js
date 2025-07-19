@@ -38,6 +38,20 @@ window.AlpineComponents.pageAccueil = () => ({
     
     // Initialisation
     async init() {
+        // Attendre que Alpine soit prêt
+        if (!this.$store || !this.$store.app) {
+            await new Promise(resolve => {
+                const checkStore = () => {
+                    if (this.$store && this.$store.app) {
+                        resolve();
+                    } else {
+                        setTimeout(checkStore, 50);
+                    }
+                };
+                checkStore();
+            });
+        }
+        
         await this.chargerDonneesAccueil();
         await this.chargerInfosDons();
     },
@@ -47,7 +61,7 @@ window.AlpineComponents.pageAccueil = () => ({
      */
     async chargerDonneesAccueil() {
         try {
-            const response = await this.$store.app.requeteApi('/api/home/donnees');
+            const response = await this.$store.app.requeteApi('/home/donnees');
             
             if (response.succes) {
                 this.pdfsRecents = response.donnees.pdfs_recents || [];
@@ -66,7 +80,7 @@ window.AlpineComponents.pageAccueil = () => ({
      */
     async chargerInfosDons() {
         try {
-            const response = await this.$store.app.requeteApi('/api/dons/infos');
+            const response = await this.$store.app.requeteApi('/dons/infos');
             
             if (response.succes) {
                 this.infoDons = response.donnees;
@@ -98,7 +112,7 @@ window.AlpineComponents.pageAccueil = () => ({
         this.chargementNewsletter = true;
         
         try {
-            const response = await this.$store.app.requeteApi('/api/newsletter/inscription', {
+            const response = await this.$store.app.requeteApi('/newsletter/inscription', {
                 method: 'POST',
                 body: JSON.stringify({
                     email: this.emailNewsletter,
@@ -136,7 +150,7 @@ window.AlpineComponents.pageAccueil = () => ({
         this.chargementTemoignage = true;
         
         try {
-            const response = await this.$store.app.requeteApi('/api/temoignages', {
+            const response = await this.$store.app.requeteApi('/temoignages', {
                 method: 'POST',
                 body: JSON.stringify(this.nouveauTemoignage)
             });
@@ -210,7 +224,7 @@ window.AlpineComponents.pageAccueil = () => ({
         if (navigator.share) {
             navigator.share({
                 title: `Fiche ${pdf.personnage_nom} - ${pdf.systeme_jeu}`,
-                text: `Découvrez cette fiche de personnage créée avec le Générateur PDF JDR`,
+                text: `Découvrez cette fiche de personnage créée avec brumisa3.fr`,
                 url: `${window.location.origin}/pdfs/${pdf.id}`
             });
         } else {
@@ -239,6 +253,21 @@ window.AlpineComponents.pageAccueil = () => ({
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
+    },
+    
+    /**
+     * Formate un nombre avec des suffixes (K, M)
+     */
+    formaterNombre(nombre) {
+        if (!nombre) return '0';
+        
+        if (nombre >= 1000000) {
+            return (nombre / 1000000).toFixed(1) + 'M';
+        } else if (nombre >= 1000) {
+            return (nombre / 1000).toFixed(0) + 'K';
+        }
+        
+        return nombre.toString();
     }
 });
 
