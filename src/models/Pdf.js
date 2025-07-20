@@ -1,5 +1,6 @@
 const BaseModel = require('./BaseModel');
 const path = require('path');
+const SystemRightsService = require('../services/SystemRightsService');
 
 /**
  * Modèle PDF
@@ -8,12 +9,15 @@ class Pdf extends BaseModel {
     constructor() {
         super('pdfs', 'id');
         
+        // Service pour la gestion des droits
+        this.systemRightsService = new SystemRightsService();
+        
         // Champs autorisés pour mass assignment
         this.fillable = [
             'nom_fichier', 'titre', 'utilisateur_id', 'personnage_id',
             'systeme_jeu', 'chemin_fichier', 'taille_fichier', 'statut',
             'type_export', 'options_export', 'hash_fichier', 'url_partage',
-            'template_utilise', 'statut_visibilite'
+            'template_utilise', 'system_rights'
         ];
         
         // Champs protégés
@@ -88,22 +92,20 @@ class Pdf extends BaseModel {
             data.options_export = this.obtenirOptionsParDefaut(data.systeme_jeu, data.type_export);
         }
 
-        // Génération du nom de fichier si non fourni
-        if (!data.nom_fichier) {
+        // Génération du chemin et nom de fichier si non fourni
+        if (!data.nom_fichier || !data.chemin_fichier) {
             const template = data.template_utilise || 'default';
-            const statut = this.determinerStatutDroits(data);
-            data.nom_fichier = this.genererNomFichier(
+            const systemRights = this.determinerSystemRights(data);
+            const pdfPath = this.systemRightsService.generatePdfPath(
                 data.titre, 
                 data.systeme_jeu, 
                 data.utilisateur_id, 
                 template, 
-                statut
+                systemRights
             );
-        }
-
-        // Génération du chemin de fichier
-        if (!data.chemin_fichier) {
-            data.chemin_fichier = this.genererCheminFichier(data.nom_fichier, data.systeme_jeu);
+            
+            data.nom_fichier = pdfPath.fileName;
+            data.chemin_fichier = pdfPath.fullPath;
         }
 
         return data;
@@ -148,31 +150,17 @@ class Pdf extends BaseModel {
     }
 
     /**
-     * Génère un nom de fichier unique avec user, droits, template et ID
-     * Format: user-{userId}_rights-{statut}_template-{template}_id-{uniqueId}.pdf
+     * Génère un nom de fichier unique (LEGACY - utiliser SystemRightsService.generatePdfPath)
+     * @deprecated Utiliser this.systemRightsService.generatePdfPath() à la place
      */
-    genererNomFichier(titre, systeme, userId = null, template = 'default', statut = 'private') {
-        const crypto = require('crypto');
-        const uniqueId = crypto.randomBytes(8).toString('hex');
-        const timestamp = Date.now();
-        
-        const titreClean = titre
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
-        
-        const userPart = userId ? `user-${userId}` : 'user-anonymous';
-        const rightsPart = `rights-${statut}`;
-        const templatePart = `template-${template}`;
-        const idPart = `id-${uniqueId}`;
-        
-        return `${userPart}_${rightsPart}_${templatePart}_${idPart}.pdf`;
+    genererNomFichier(titre, systeme, userId = null, template = 'default', systemRights = 'private') {
+        const result = this.systemRightsService.generatePdfPath(titre, systeme, userId, template, systemRights);
+        return result.fileName;
     }
 
     /**
-     * Génère le chemin complet du fichier PDF
+     * Génère le chemin complet du fichier PDF (LEGACY - utiliser SystemRightsService.generatePdfPath)
+     * @deprecated Utiliser this.systemRightsService.generatePdfPath() à la place
      */
     genererCheminFichier(nomFichier, systeme) {
         return path.join('output', 'pdfs', systeme, nomFichier);
@@ -181,34 +169,8 @@ class Pdf extends BaseModel {
     /**
      * Détermine le statut des droits pour le nommage du fichier
      */
-    determinerStatutDroits(data) {
-        // Vérifier si le PDF a des paramètres de partage
-        if (data.url_partage) {
-            try {
-                const urlData = JSON.parse(data.url_partage);
-                if (urlData.active) {
-                    return 'public';
-                }
-            } catch (error) {
-                // Ignore
-            }
-        }
-
-        // Vérifier le statut de visibilité si défini
-        if (data.statut_visibilite) {
-            switch (data.statut_visibilite) {
-                case 'PUBLIC':
-                    return 'public';
-                case 'COMMUNAUTAIRE':
-                    return 'community';
-                case 'PRIVATE':
-                default:
-                    return 'private';
-            }
-        }
-
-        // Par défaut, privé
-        return 'private';
+    determinerSystemRights(data) {
+        return this.systemRightsService.determineSystemRights(data.utilisateur_id, data);
     }
 
     /**
@@ -525,6 +487,21 @@ class Pdf extends BaseModel {
             return null;
         }
 
+        // Utiliser le service s'il est disponible, sinon parsing direct
+        if (this.systemRightsService) {
+            const parsed = this.systemRightsService.parseFilename(this.nom_fichier);
+            if (parsed) {
+                return {
+                    userId: parsed.userId,
+                    droits: parsed.systemRights,
+                    template: parsed.template,
+                    uniqueId: parsed.uniqueId,
+                    format: 'structured'
+                };
+            }
+        }
+
+        // Fallback: parsing direct
         const regex = /user-([^_]+)_rights-([^_]+)_template-([^_]+)_id-([^.]+)\.pdf$/;
         const match = this.nom_fichier.match(regex);
 
@@ -538,8 +515,9 @@ class Pdf extends BaseModel {
             };
         }
 
+        const userId = match[1] === '0' ? 0 : parseInt(match[1], 10);
         return {
-            userId: match[1] === 'anonymous' ? null : match[1],
+            userId: isNaN(userId) ? 0 : userId,
             droits: match[2],
             template: match[3],
             uniqueId: match[4],

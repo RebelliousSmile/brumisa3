@@ -60,13 +60,12 @@
                     <!-- Type de document (bande latérale) -->
                     <div>
                         <label for="typeDocument" class="block text-sm font-medium text-purple-300 mb-2">
-                            Type de document *
+                            Type de document
                         </label>
                         <input 
                             type="text" 
                             id="typeDocument"
                             x-model="formData.typeDocument"
-                            required
                             placeholder="Ex: PLAN DE CLASSE"
                             class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/20">
                         <p class="mt-1 text-xs text-gray-400">Apparaît dans la bande latérale noire (en majuscules)</p>
@@ -126,13 +125,13 @@
                             <!-- Contenu Markdown -->
                             <div>
                                 <label class="block text-sm font-medium text-purple-300 mb-1">
-                                    Contenu (Markdown supporté) *
+                                    Contenu (Markdown supporté)
+                                    <span class="text-xs text-gray-400 font-normal">- Optionnel pour les titres de chapitre</span>
                                 </label>
                                 <textarea 
                                     x-model="section.contenu"
-                                    required
                                     rows="6"
-                                    placeholder="Écrivez votre contenu ici. Vous pouvez utiliser:&#10;- **gras** et *italique*&#10;- Listes avec - ou *&#10;- Listes numérotées avec 1. 2. 3.&#10;- > pour les citations"
+                                    placeholder="Écrivez votre contenu ici (optionnel pour les titres de chapitre).&#10;&#10;Markdown supporté :&#10;- **gras** et *italique*&#10;- Listes avec - ou *&#10;- Listes numérotées avec 1. 2. 3.&#10;- > pour les citations"
                                     class="w-full px-3 py-2 bg-gray-700 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none resize-none font-mono text-sm"></textarea>
                             </div>
 
@@ -180,9 +179,13 @@
                     </div>
 
                     <!-- Pied de page -->
+                    <% if (utilisateur && (utilisateur.type_compte === 'PREMIUM' || utilisateur.role === 'ADMIN' || utilisateur.role === 'MODERATEUR')) { %>
                     <div>
                         <label for="piedDePage" class="block text-sm font-medium text-purple-300 mb-2">
                             Pied de page personnalisé
+                            <span class="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 rounded-full">
+                                PREMIUM
+                            </span>
                         </label>
                         <input 
                             type="text" 
@@ -190,6 +193,59 @@
                             x-model="formData.piedDePage"
                             placeholder="Monsterhearts • Document • brumisa3.fr"
                             class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none">
+                    </div>
+                    <% } else { %>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-2">
+                            Pied de page personnalisé
+                            <span class="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 rounded-full">
+                                PREMIUM
+                            </span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                disabled
+                                placeholder="Monsterhearts • Document • brumisa3.fr"
+                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-500 placeholder-gray-500 cursor-not-allowed">
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-700/80 rounded-lg">
+                                <div class="text-center">
+                                    <i class="ra ra-lock text-yellow-400 text-xl mb-1"></i>
+                                    <div class="text-xs text-gray-400">
+                                        <a href="/profil" class="text-yellow-400 hover:text-yellow-300 underline">
+                                            Passez Premium
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Message de validation -->
+            <div x-show="!peutGenerer && !enTraitement" class="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-4">
+                <div class="flex items-start">
+                    <i class="ra ra-warning text-red-400 text-xl mr-3 mt-0.5"></i>
+                    <div>
+                        <h3 class="text-red-400 font-semibold mb-2">Formulaire incomplet</h3>
+                        <ul class="text-red-300 text-sm space-y-1">
+                            <li x-show="formData.titre.trim() === ''" class="flex items-center">
+                                <i class="ra ra-cancel text-red-400 mr-2"></i>
+                                Le titre du document est requis
+                            </li>
+                            <li x-show="formData.sections.length === 0" class="flex items-center">
+                                <i class="ra ra-cancel text-red-400 mr-2"></i>
+                                Au moins une section est requise
+                            </li>
+                            <template x-for="(section, index) in formData.sections" :key="section.id">
+                                <li x-show="section.titre.trim() === ''" class="flex items-center">
+                                    <i class="ra ra-cancel text-red-400 mr-2"></i>
+                                    <span x-text="`Section ${index + 1} : titre requis`"></span>
+                                </li>
+                            </template>
+                        </ul>
                     </div>
                 </div>
             </div>

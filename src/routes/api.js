@@ -61,6 +61,7 @@ router.delete('/pdfs/:id', authController.middlewareAuth, pdfController.supprime
 
 // Génération et gestion PDFs
 router.post('/pdfs/generer', authController.middlewareAuth, pdfController.generer);
+router.post('/pdfs/document-generique/:systeme', pdfController.genererDocumentGenerique);
 router.get('/pdfs/:id/statut', authController.middlewareAuth, pdfController.verifierStatut);
 router.post('/pdfs/:id/relancer', authController.middlewareAuth, pdfController.relancerGeneration);
 

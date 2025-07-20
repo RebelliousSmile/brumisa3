@@ -327,6 +327,75 @@ class PdfController extends BaseController {
         
         return this.repondreSucces(res, types, 'Types de templates disponibles');
     });
+
+    /**
+     * Génère un PDF de document générique
+     * POST /api/pdfs/document-generique/:systeme
+     */
+    genererDocumentGenerique = this.wrapAsync(async (req, res) => {
+        const utilisateur = this.verifierPermissions(req);
+        this.validerParametres(req, ['systeme']);
+        
+        // Validation des données requises
+        const donneesRequises = ['titre', 'sections'];
+        this.validerCorps(req, donneesRequises);
+        
+        const { SystemeUtils } = require('../utils/systemesJeu');
+        const systeme = req.params.systeme;
+        
+        // Vérifier que le système existe
+        if (!SystemeUtils.getSysteme(systeme)) {
+            return this.repondreErreur(res, 400, `Système de jeu non supporté: ${systeme}`);
+        }
+        
+        // Utiliser le DocumentGeneriqueService pour valider et générer
+        const DocumentGeneriqueService = require('../services/DocumentGeneriqueService');
+        const documentService = new DocumentGeneriqueService();
+        
+        try {
+            // Valider les données
+            documentService.validerDonnees(req.body);
+            
+            // Gérer le pied de page personnalisé (réservé aux premium/admin)
+            const donnees = { ...req.body };
+            if (donnees.piedDePage && !this.peutUtiliserPiedDePagePersonnalise(utilisateur)) {
+                // Supprimer le pied de page personnalisé pour les utilisateurs basiques
+                delete donnees.piedDePage;
+            }
+            
+            // Préparer les options de génération
+            const optionsGeneration = {
+                template: 'document-generique-v2',
+                type_pdf: 'document-generique',
+                systeme: systeme,
+                donnees: donnees,
+                titre_personnalise: donnees.titre
+            };
+            
+            // Démarrer la génération PDF via PdfService
+            const pdf = await this.pdfService.genererDocumentGenerique(
+                utilisateur.id,
+                optionsGeneration
+            );
+            
+            return this.repondreSucces(res, pdf, 'Génération PDF document générique démarrée', 202);
+            
+        } catch (error) {
+            if (error.message.includes('Données invalides')) {
+                return this.repondreErreur(res, 400, error.message);
+            }
+            throw error;
+        }
+    });
+
+    /**
+     * Vérifie si l'utilisateur peut utiliser un pied de page personnalisé
+     */
+    peutUtiliserPiedDePagePersonnalise(utilisateur) {
+        return utilisateur.type_compte === 'PREMIUM' || 
+               utilisateur.role === 'ADMIN' || 
+               utilisateur.role === 'MODERATEUR';
+    }
 }
 
 module.exports = PdfController;

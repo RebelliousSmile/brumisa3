@@ -396,24 +396,23 @@ describe('DocumentGeneriqueService', () => {
             expect(resultat).toBe('<p></p>');
         });
 
-        test('devrait valider les contenus des sections', () => {
+        test('devrait accepter les sections sans contenu (titres de chapitre)', () => {
             const donnees = {
                 titre: 'Test',
                 chapitre: 'TEST',
                 sections: [
                     {
-                        titre: 'Section valide',
+                        titre: 'Section avec contenu',
                         contenus: [{ type: 'paragraphe', texte: 'Test' }]
                     },
                     {
-                        titre: 'Section sans contenu',
+                        titre: 'Titre de chapitre sans contenu',
                         contenus: []
                     }
                 ]
             };
 
-            expect(() => service.validerDonnees(donnees))
-                .toThrow('La section 2 doit avoir du contenu');
+            expect(() => service.validerDonnees(donnees)).not.toThrow();
         });
 
         test('devrait gérer les titres avec caractères spéciaux', () => {

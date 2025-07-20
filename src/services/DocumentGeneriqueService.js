@@ -149,9 +149,8 @@ class DocumentGeneriqueService extends BaseService {
                     erreurs.push(`Le titre de la section ${index + 1} est requis`);
                 }
                 
-                if (!section.contenus || !Array.isArray(section.contenus) || section.contenus.length === 0) {
-                    erreurs.push(`La section ${index + 1} doit avoir du contenu`);
-                }
+                // Le contenu n'est plus obligatoire pour les sections
+                // (peut être vide pour les titres de chapitre)
             });
         }
         

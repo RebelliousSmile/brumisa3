@@ -9,7 +9,7 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         formData: {
             titre: '',
             introduction: '',
-            typeDocument: 'DOCUMENT',
+            typeDocument: 'AIDE DE JEU',
             numeroPage: 1,
             piedDePage: 'Monsterhearts • Document • brumisa3.fr',
             sections: []
@@ -17,6 +17,16 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         
         // État UI
         enTraitement: false,
+        
+        // Droits utilisateur (sera initialisé via Alpine.store)
+        get estPremium() {
+            const utilisateur = Alpine.store('app')?.utilisateur;
+            return utilisateur && (
+                utilisateur.type_compte === 'PREMIUM' || 
+                utilisateur.role === 'ADMIN' || 
+                utilisateur.role === 'MODERATEUR'
+            );
+        },
         
         // ID unique pour les sections
         sectionIdCounter: 0,
@@ -30,9 +40,8 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         // Vérifie si le formulaire peut être soumis
         get peutGenerer() {
             return this.formData.titre.trim() !== '' && 
-                   this.formData.typeDocument.trim() !== '' &&
                    this.formData.sections.length > 0 &&
-                   this.formData.sections.every(s => s.titre.trim() !== '' && s.contenu.trim() !== '');
+                   this.formData.sections.every(s => s.titre.trim() !== '');
         },
         
         // Ajouter une nouvelle section
@@ -90,7 +99,16 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
             const sections = this.formData.sections.map(section => {
                 const contenus = [];
                 
-                // Parser le contenu markdown
+                // Parser le contenu markdown (si il y en a)
+                if (!section.contenu || section.contenu.trim() === '') {
+                    // Section sans contenu (titre seul)
+                    return {
+                        niveau: parseInt(section.niveau),
+                        titre: section.titre,
+                        contenus: []
+                    };
+                }
+                
                 const lignes = section.contenu.split('\n');
                 let contenuActuel = [];
                 let typeCourant = 'paragraphe';
@@ -187,14 +205,20 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                 };
             });
             
-            return {
+            const donnees = {
                 titre: this.formData.titre,
                 introduction: this.formData.introduction,
                 chapitre: this.formData.typeDocument.toUpperCase(),
                 pageNumber: this.formData.numeroPage,
-                piedDePage: this.formData.piedDePage,
                 sections: sections
             };
+            
+            // Ajouter le pied de page seulement si l'utilisateur est premium
+            if (this.estPremium && this.formData.piedDePage) {
+                donnees.piedDePage = this.formData.piedDePage;
+            }
+            
+            return donnees;
         },
         
         // Générer le PDF
@@ -206,29 +230,19 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
             try {
                 const donnees = this.prepareDataForApi();
                 
-                const response = await Alpine.store('app').requeteApi('/api/pdfs/generer', {
+                const response = await Alpine.store('app').requeteApi('/pdfs/document-generique/monsterhearts', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        systeme_jeu: 'monsterhearts',
-                        template: 'document-generique-v2',
-                        donnees: donnees,
-                        options: {
-                            titre: this.formData.titre,
-                            type_export: 'DOCUMENT_GENERIQUE'
-                        }
-                    })
+                    body: JSON.stringify(donnees)
                 });
                 
-                if (response.succes && response.donnees.url_telechargement) {
-                    // Télécharger le PDF
-                    window.open(response.donnees.url_telechargement, '_blank');
+                if (response.succes && response.donnees) {
+                    const pdfId = response.donnees.id;
                     
-                    Alpine.store('app').ajouterMessage('PDF généré avec succès !', 'succes');
+                    Alpine.store('app').ajouterMessage('Génération PDF démarrée...', 'info');
                     
-                    // Optionnel : réinitialiser le formulaire
-                    if (confirm('PDF généré ! Voulez-vous créer un nouveau document ?')) {
-                        this.reinitialiser();
-                    }
+                    // Attendre la fin de génération et télécharger
+                    this.attendreGenerationEtTelecharger(pdfId);
+                    
                 } else {
                     throw new Error(response.message || 'Erreur lors de la génération');
                 }
@@ -238,9 +252,73 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                     'Erreur lors de la génération du PDF : ' + error.message,
                     'erreur'
                 );
-            } finally {
                 this.enTraitement = false;
             }
+        },
+
+        // Attendre la génération et télécharger le PDF
+        async attendreGenerationEtTelecharger(pdfId) {
+            const checkInterval = 2000; // 2 secondes
+            const maxAttempts = 30; // 1 minute max
+            let attempts = 0;
+            
+            const checkStatus = async () => {
+                try {
+                    const response = await Alpine.store('app').requeteApi(`/pdfs/${pdfId}/statut`);
+                    
+                    if (response.succes && response.donnees) {
+                        const statut = response.donnees.statut;
+                        const progression = response.donnees.progression || 0;
+                        
+                        if (statut === 'TERMINE') {
+                            // Télécharger le PDF
+                            window.open(`/api/pdfs/${pdfId}/telecharger`, '_blank');
+                            
+                            Alpine.store('app').ajouterMessage('PDF généré avec succès !', 'succes');
+                            
+                            // Optionnel : réinitialiser le formulaire
+                            if (confirm('PDF généré ! Voulez-vous créer un nouveau document ?')) {
+                                this.reinitialiser();
+                            }
+                            
+                            this.enTraitement = false;
+                            return;
+                            
+                        } else if (statut === 'ERREUR') {
+                            throw new Error(response.donnees.erreur_message || 'Erreur lors de la génération');
+                            
+                        } else if (statut === 'EN_TRAITEMENT') {
+                            Alpine.store('app').ajouterMessage(`Génération en cours (${progression}%)...`, 'info');
+                            
+                            // Continuer à vérifier
+                            attempts++;
+                            if (attempts < maxAttempts) {
+                                setTimeout(checkStatus, checkInterval);
+                            } else {
+                                throw new Error('Timeout lors de la génération');
+                            }
+                        } else {
+                            // EN_ATTENTE, continuer à vérifier
+                            attempts++;
+                            if (attempts < maxAttempts) {
+                                setTimeout(checkStatus, checkInterval);
+                            } else {
+                                throw new Error('Timeout lors de la génération');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erreur vérification statut PDF:', error);
+                    Alpine.store('app').ajouterMessage(
+                        'Erreur lors de la génération : ' + error.message,
+                        'erreur'
+                    );
+                    this.enTraitement = false;
+                }
+            };
+            
+            // Démarrer la vérification
+            setTimeout(checkStatus, checkInterval);
         },
         
         // Réinitialiser le formulaire
@@ -249,7 +327,7 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                 this.formData = {
                     titre: '',
                     introduction: '',
-                    typeDocument: 'DOCUMENT',
+                    typeDocument: 'AIDE DE JEU',
                     numeroPage: 1,
                     piedDePage: 'Monsterhearts • Document • brumisa3.fr',
                     sections: []

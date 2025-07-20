@@ -11,39 +11,50 @@ async function testPdfModel() {
     try {
         const pdf = new Pdf();
         
-        // Test de génération de nom de fichier
-        console.log('\n📁 Test génération nom de fichier:');
-        const fileName = pdf.genererNomFichier(
+        // Test de génération de chemin PDF (nouvelle méthode)
+        console.log('\n📁 Test génération chemin PDF (nouveau format):');
+        const pdfPath = pdf.systemRightsService.generatePdfPath(
             'Mon Personnage Test',
             'monsterhearts',
             123,
             'fiche-personnage',
             'private'
         );
-        console.log('Nom généré:', fileName);
+        console.log('Nom généré:', pdfPath.fileName);
+        console.log('Chemin complet:', pdfPath.fullPath);
         
-        // Test de génération de chemin
-        console.log('\n📂 Test génération chemin:');
-        const filePath = pdf.genererCheminFichier(fileName, 'monsterhearts');
-        console.log('Chemin généré:', filePath);
+        // Test de la méthode legacy pour compatibilité
+        console.log('\n📂 Test méthode legacy:');
+        const legacyFileName = pdf.genererNomFichier(
+            'Mon Personnage Test',
+            'monsterhearts', 
+            123,
+            'fiche-personnage',
+            'private'
+        );
+        console.log('Legacy nom:', legacyFileName);
         
-        // Test des métadonnées
-        console.log('\n🔍 Test extraction métadonnées:');
-        const mockPdf = {
-            nom_fichier: fileName
+        // Test des métadonnées (nouveau format)
+        console.log('\n🔍 Test extraction métadonnées (nouveau format):');
+        const mockPdfNew = {
+            nom_fichier: pdfPath.fileName,
+            systemRightsService: pdf.systemRightsService
         };
         
-        // Assign getters to mock object
-        Object.setPrototypeOf(mockPdf, Pdf.prototype);
+        Object.setPrototypeOf(mockPdfNew, Pdf.prototype);
+        const metadataNew = mockPdfNew.metadonneesFichier;
+        console.log('Nouveau format - Métadonnées:', metadataNew);
         
-        const metadata = mockPdf.metadonneesFichier;
-        console.log('Métadonnées extraites:', metadata);
+        // Test parsing direct
+        console.log('\n🔎 Test parsing direct:');
+        const parsed = pdf.systemRightsService.parseFilename(pdfPath.fileName);
+        console.log('Parsing direct:', parsed);
         
         // Test des URLs (simulation)
         console.log('\n🔗 Test génération URLs:');
         const mockPdfWithData = {
             id: 123,
-            chemin_fichier: filePath,
+            chemin_fichier: pdfPath.fullPath,
             statut: 'TERMINE',
             url_partage: JSON.stringify({
                 token: 'abc123',
@@ -63,9 +74,11 @@ async function testPdfModel() {
         
         // Test de détermination des droits
         console.log('\n🔐 Test détermination des droits:');
-        console.log('Privé:', pdf.determinerStatutDroits({}));
-        console.log('Public:', pdf.determinerStatutDroits({ statut_visibilite: 'PUBLIC' }));
-        console.log('Communautaire:', pdf.determinerStatutDroits({ statut_visibilite: 'COMMUNAUTAIRE' }));
+        console.log('Privé:', pdf.determinerSystemRights({}));
+        console.log('Public:', pdf.determinerSystemRights({ system_rights: 'public' }));
+        console.log('Communautaire:', pdf.determinerSystemRights({ system_rights: 'common' }));
+        console.log('Avec user anonyme:', pdf.determinerSystemRights({ utilisateur_id: 0 }));
+        console.log('Avec user connecté:', pdf.determinerSystemRights({ utilisateur_id: 123 }));
         
         console.log('\n✅ Tous les tests sont passés !');
         

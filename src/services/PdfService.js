@@ -780,6 +780,108 @@ class PdfService extends BaseService {
     genererUrlTemporaire() {
         return crypto.randomBytes(32).toString('hex');
     }
+
+    /**
+     * Génère un PDF de document générique
+     */
+    async genererDocumentGenerique(utilisateurId, options = {}) {
+        try {
+            // Créer l'entrée PDF en base
+            const nomFichier = this.genererNomFichierDocumentGenerique(options.donnees.titre, options.systeme);
+            const cheminFichier = path.join(this.outputDir, nomFichier);
+            
+            const pdf = await this.pdfModel.creer({
+                personnage_id: null, // Pas de personnage pour un document générique
+                utilisateur_id: utilisateurId,
+                type_pdf: options.type_pdf || 'document-generique',
+                nom_fichier: nomFichier,
+                chemin_fichier: cheminFichier,
+                options_generation: JSON.stringify(options),
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                est_public: options.est_public || false,
+                titre: options.titre_personnalise || options.donnees.titre
+            });
+            
+            // Lancer la génération asynchrone
+            this.genererDocumentGeneriqueAsync(pdf.id, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la génération asynchrone du document générique ${pdf.id}:`, erreur);
+            });
+            
+            return pdf;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du démarrage de génération document générique:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génération asynchrone du document générique
+     */
+    async genererDocumentGeneriqueAsync(pdfId, options = {}) {
+        const debutGeneration = Date.now();
+        
+        try {
+            // Mettre à jour le statut
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'EN_TRAITEMENT',
+                progression: 10
+            });
+            
+            // Générer le HTML avec DocumentGeneriqueService
+            const DocumentGeneriqueService = require('./DocumentGeneriqueService');
+            const documentService = new DocumentGeneriqueService();
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 30 });
+            
+            const html = await documentService.genererHtml(
+                options.template,
+                options.donnees,
+                options.systeme
+            );
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 50 });
+            
+            // Générer le PDF avec Puppeteer
+            const pdf = await this.pdfModel.obtenirParId(pdfId);
+            await this.genererPdfDepuisHtml(html, pdf.chemin_fichier);
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 90 });
+            
+            // Finaliser
+            const tempsGeneration = Date.now() - debutGeneration;
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'TERMINE',
+                progression: 100,
+                temps_generation: tempsGeneration,
+                date_fin_generation: new Date()
+            });
+            
+            this.logger.info(`Document générique ${pdfId} généré avec succès en ${tempsGeneration}ms`);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur génération document générique ${pdfId}:`, erreur);
+            
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'ERREUR',
+                erreur_message: erreur.message,
+                date_fin_generation: new Date()
+            });
+            
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génère un nom de fichier pour un document générique
+     */
+    genererNomFichierDocumentGenerique(titre, systeme) {
+        const timestamp = Date.now();
+        const titreNettoye = titre.replace(/[^a-zA-Z0-9]/g, '_');
+        const id = crypto.randomBytes(4).toString('hex');
+        return `user-system_rights-public_template-document-generique_${systeme}_${titreNettoye}_id-${id}.pdf`;
+    }
 }
 
 module.exports = PdfService;
