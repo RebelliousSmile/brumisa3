@@ -13,8 +13,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 
-// Import du modèle Pdf pour utiliser ses méthodes
+// Import des services
 const Pdf = require('../../src/models/Pdf');
+const PdfKitService = require('../../src/services/PdfKitService');
 
 class PdfExampleGenerator {
     constructor() {
@@ -25,12 +26,59 @@ class PdfExampleGenerator {
         };
         
         this.pdfModel = new Pdf();
+        this.pdfKitService = new PdfKitService();
     }
 
     /**
-     * Génère un PDF d'exemple
+     * Génère un PDF d'exemple avec choix automatique PDFKit vs Puppeteer
      */
     async generateExample(options = {}) {
+        const {
+            system = 'monsterhearts',
+            template = 'plan-classe-instructions',
+            userId = 'system',
+            rights = 'public',
+            titre = 'Exemple',
+            engine = 'auto' // 'auto', 'pdfkit', 'puppeteer'
+        } = options;
+
+        console.log(`🎲 Génération PDF: ${system}/${template}`);
+        
+        // Déterminer le moteur à utiliser
+        const useEngine = this.determineEngine(system, template, engine);
+        console.log(`🔧 Moteur: ${useEngine}`);
+
+        if (useEngine === 'pdfkit') {
+            return await this.generateWithPDFKit(options);
+        } else {
+            return await this.generateWithPuppeteer(options);
+        }
+    }
+
+    /**
+     * Détermine le moteur à utiliser selon le système et template
+     */
+    determineEngine(system, template, enginePreference) {
+        if (enginePreference === 'pdfkit' || enginePreference === 'puppeteer') {
+            return enginePreference;
+        }
+
+        // Templates supportés par PDFKit
+        const pdfkitTemplates = {
+            'monsterhearts': ['plan-classe-instructions', 'plan-classe-instructions-test']
+        };
+
+        if (pdfkitTemplates[system] && pdfkitTemplates[system].includes(template)) {
+            return 'pdfkit';
+        }
+
+        return 'puppeteer';
+    }
+
+    /**
+     * Génère avec PDFKit
+     */
+    async generateWithPDFKit(options) {
         const {
             system = 'monsterhearts',
             template = 'plan-classe-instructions',
@@ -39,7 +87,48 @@ class PdfExampleGenerator {
             titre = 'Exemple'
         } = options;
 
-        console.log(`🎲 Génération PDF: ${system}/${template}`);
+        try {
+            // Convertir userId en format attendu
+            const userIdNum = userId === 'system' ? 0 : parseInt(userId, 10);
+
+            const result = await this.pdfKitService.generatePDF({
+                system,
+                template,
+                titre,
+                userId: userIdNum,
+                systemRights: rights,
+                data: {}
+            });
+
+            if (result.success) {
+                console.log(`✅ PDF généré: ${result.fileName}`);
+                console.log(`📁 Taille: ${(result.size / 1024).toFixed(2)} KB`);
+            }
+
+            return result;
+
+        } catch (error) {
+            console.error(`❌ Erreur génération PDFKit ${system}/${template}:`, error.message);
+            return {
+                success: false,
+                error: error.message,
+                system,
+                template
+            };
+        }
+    }
+
+    /**
+     * Génère avec Puppeteer (méthode existante)
+     */
+    async generateWithPuppeteer(options) {
+        const {
+            system = 'monsterhearts',
+            template = 'plan-classe-instructions',
+            userId = 'system',
+            rights = 'public',
+            titre = 'Exemple'
+        } = options;
         
         try {
             // Chemins des templates
@@ -77,11 +166,12 @@ class PdfExampleGenerator {
                 format: 'A4',
                 printBackground: true,
                 margin: {
-                    top: '20mm',
-                    right: '15mm',
-                    bottom: '20mm',
-                    left: '15mm'
-                }
+                    top: '0mm',
+                    right: '0mm',
+                    bottom: '0mm',
+                    left: '0mm'
+                },
+                preferCSSPageSize: true
             });
             
             await browser.close();
@@ -102,7 +192,7 @@ class PdfExampleGenerator {
             };
             
         } catch (error) {
-            console.error(`❌ Erreur génération ${system}/${template}:`, error.message);
+            console.error(`❌ Erreur génération Puppeteer ${system}/${template}:`, error.message);
             return {
                 success: false,
                 error: error.message,

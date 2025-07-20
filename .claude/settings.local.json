@@ -51,7 +51,8 @@
       "Bash(npx puppeteer browsers:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebFetch(domain:fonts.google.com)"
     ],
     "deny": []
   }

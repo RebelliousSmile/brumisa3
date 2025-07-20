@@ -80,6 +80,32 @@ async function testPdfModel() {
         console.log('Avec user anonyme:', pdf.determinerSystemRights({ utilisateur_id: 0 }));
         console.log('Avec user connecté:', pdf.determinerSystemRights({ utilisateur_id: 123 }));
         
+        // Test d'intégration PDFKit
+        console.log('\n🔧 Test intégration PDFKit:');
+        const PdfKitService = require('../src/services/PdfKitService');
+        const pdfKitService = new PdfKitService();
+        
+        // Test de génération PDFKit
+        const testResult = await pdfKitService.generatePDF({
+            system: 'monsterhearts',
+            template: 'plan-classe-instructions',
+            titre: 'Test PDFKit Model',
+            userId: 999,
+            systemRights: 'private',
+            data: {}
+        });
+        
+        if (testResult.success) {
+            console.log('✅ PDFKit génération:', testResult.fileName);
+            console.log('📁 Taille:', (testResult.size / 1024).toFixed(2), 'KB');
+            
+            // Test parsing du nom généré
+            const parsedNew = pdf.systemRightsService.parseFilename(testResult.fileName);
+            console.log('🔍 Parsing nouveau format:', parsedNew);
+        } else {
+            console.log('❌ Erreur PDFKit:', testResult.error);
+        }
+
         console.log('\n✅ Tous les tests sont passés !');
         
     } catch (error) {

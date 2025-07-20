@@ -1,12 +1,35 @@
 const DocumentGeneriqueService = require('../../src/services/DocumentGeneriqueService');
+const PdfKitService = require('../../src/services/PdfKitService');
 const fs = require('fs').promises;
 const path = require('path');
 
 // Mock du système de fichiers
 jest.mock('fs', () => ({
     promises: {
-        readFile: jest.fn()
-    }
+        readFile: jest.fn(),
+        mkdir: jest.fn().mockResolvedValue(),
+        stat: jest.fn().mockResolvedValue({ size: 6000 })
+    },
+    existsSync: jest.fn().mockReturnValue(true),
+    mkdirSync: jest.fn(),
+    stat: jest.fn((path, callback) => callback(null, { size: 6000 })),
+    createWriteStream: jest.fn(() => ({
+        on: jest.fn((event, callback) => {
+            if (event === 'finish') {
+                setTimeout(callback, 10);
+            }
+        })
+    }))
+}));
+
+// Mock winston et du logManager pour éviter les problèmes de fichiers
+jest.mock('../../src/utils/logManager', () => ({
+    getLogger: jest.fn(() => ({
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn()
+    }))
 }));
 
 describe('DocumentGeneriqueService', () => {
@@ -454,6 +477,125 @@ describe('DocumentGeneriqueService', () => {
 
         test('devrait gérer un système inconnu', () => {
             expect(service.getPiedDePageDefaut('systeme-inconnu')).toBe('systeme-inconnu • Document • brumisa3.fr');
+        });
+    });
+
+    describe('Intégration PDFKit', () => {
+        let pdfKitService;
+
+        beforeEach(() => {
+            pdfKitService = new PdfKitService();
+        });
+
+        test('devrait pouvoir utiliser PDFKit pour générer un PDF', async () => {
+            const options = {
+                system: 'monsterhearts',
+                template: 'plan-classe-instructions',
+                titre: 'Test PDFKit Integration',
+                userId: 123,
+                systemRights: 'private',
+                data: {
+                    sections: [
+                        {
+                            titre: 'Section Test',
+                            contenus: [
+                                { type: 'paragraphe', texte: 'Contenu de test pour PDFKit' }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            const result = await pdfKitService.generatePDF(options);
+            
+            expect(result.success).toBe(true);
+            expect(result.fileName).toMatch(/123_private_plan-classe-instructions_[a-f0-9]{16}\.pdf/);
+            expect(result.system).toBe('monsterhearts');
+            expect(result.template).toBe('plan-classe-instructions');
+            expect(result.size).toBeGreaterThan(0);
+        });
+
+        test('devrait gérer les erreurs de génération PDFKit', async () => {
+            const options = {
+                system: 'systeme-inexistant',
+                template: 'template-inexistant',
+                titre: 'Test Erreur',
+                userId: 123
+            };
+
+            const result = await pdfKitService.generatePDF(options);
+            
+            expect(result.success).toBe(false);
+            expect(result.error).toBeDefined();
+            expect(result.error).toContain('non supporté');
+        });
+
+        test('devrait générer des noms de fichiers uniques', async () => {
+            const options1 = {
+                system: 'monsterhearts',
+                template: 'plan-classe-instructions',
+                titre: 'Test 1',
+                userId: 100
+            };
+
+            const options2 = {
+                system: 'monsterhearts',
+                template: 'plan-classe-instructions',
+                titre: 'Test 2',
+                userId: 200
+            };
+
+            const result1 = await pdfKitService.generatePDF(options1);
+            const result2 = await pdfKitService.generatePDF(options2);
+            
+            expect(result1.success).toBe(true);
+            expect(result2.success).toBe(true);
+            expect(result1.fileName).not.toBe(result2.fileName);
+            expect(result1.fileName).toMatch(/100_private_plan-classe-instructions_/);
+            expect(result2.fileName).toMatch(/200_private_plan-classe-instructions_/);
+        });
+
+        test('devrait respecter les différents system rights', async () => {
+            const baseOptions = {
+                system: 'monsterhearts',
+                template: 'plan-classe-instructions',
+                titre: 'Test Rights',
+                userId: 999
+            };
+
+            const privateResult = await pdfKitService.generatePDF({
+                ...baseOptions,
+                systemRights: 'private'
+            });
+
+            const publicResult = await pdfKitService.generatePDF({
+                ...baseOptions,
+                systemRights: 'public'
+            });
+
+            const commonResult = await pdfKitService.generatePDF({
+                ...baseOptions,
+                systemRights: 'common'
+            });
+            
+            expect(privateResult.fileName).toMatch(/999_private_plan-classe-instructions_/);
+            expect(publicResult.fileName).toMatch(/999_public_plan-classe-instructions_/);
+            expect(commonResult.fileName).toMatch(/999_common_plan-classe-instructions_/);
+        });
+
+        test('devrait gérer les utilisateurs anonymes', async () => {
+            const options = {
+                system: 'monsterhearts',
+                template: 'plan-classe-instructions',
+                titre: 'Test Anonyme',
+                userId: null,
+                systemRights: 'public'
+            };
+
+            const result = await pdfKitService.generatePDF(options);
+            
+            expect(result.success).toBe(true);
+            expect(result.fileName).toMatch(/0_public_plan-classe-instructions_/);
         });
     });
 });

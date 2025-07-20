@@ -19,6 +19,13 @@
             margin: 0;
         }
         
+        @media print {
+            .page {
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+        }
+        
         body {
             font-family: 'Crimson Text', 'Georgia', serif;
             font-size: 11pt;
@@ -38,8 +45,13 @@
             background: #FAFAF8;
             overflow: hidden;
             page-break-after: always;
+            page-break-inside: avoid;
             display: flex;
             flex-direction: column;
+        }
+        
+        .page:last-child {
+            page-break-after: auto;
         }
         
         /* Bande latérale noire */
@@ -96,15 +108,15 @@
             margin-left: 25mm;
             margin-right: 20mm;
             padding-top: 20mm;
-            height: calc(297mm - 60mm); /* Hauteur totale moins espace pour footer */
-            overflow: hidden;
+            min-height: calc(297mm - 80mm); /* Hauteur minimale moins espaces header/footer */
             position: relative;
+            flex-grow: 1;
         }
         
         /* Contenu principal */
         .content {
             padding: 0;
-            padding-bottom: 20mm; /* Espace avant le footer */
+            padding-bottom: 30mm; /* Espace pour le footer */
         }
         
         /* Titres */
@@ -234,6 +246,7 @@
             padding-top: 10px;
             background: #FAFAF8;
             z-index: 10;
+            height: 20mm; /* Hauteur fixe pour le footer */
         }
         
         /* Media queries pour l'impression */
@@ -248,6 +261,12 @@
             .page {
                 margin: 0;
                 box-shadow: none;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            
+            .page:last-child {
+                page-break-after: auto;
             }
             
             .sidebar {
@@ -440,12 +459,143 @@
                 <div class="attention">
                     <p><strong>N'hésitez pas à créer plusieurs plans</strong> pour différents espaces si votre jeu se déroule dans plusieurs lieux récurrents.</p>
                 </div>
+                
+                <h3>GESTION DES CONFLITS LONG TERME</h3>
+                <p>Le plan de classe évolue au fil des sessions. Pensez à :</p>
+                <ul>
+                    <li>Documenter les changements majeurs avec des dates</li>
+                    <li>Conserver une trace des configurations précédentes</li>
+                    <li>Noter les événements qui ont provoqué des réarrangements</li>
+                    <li>Prévoir l'évolution des relations à long terme</li>
+                </ul>
+                
+                <h3>INTERACTIONS AVEC LES MOUVEMENTS</h3>
+                <p>Le plan aide à contextualiser les mouvements :</p>
+                <ul>
+                    <li><strong>Shut Someone Down :</strong> Plus efficace si fait publiquement</li>
+                    <li><strong>Manipulate an NPC :</strong> Position facilitant les approches discrètes</li>
+                    <li><strong>Turn Someone On :</strong> Proximité et témoins créent du drame</li>
+                    <li><strong>Gaze into the Abyss :</strong> Isolement peut être volontaire ou forcé</li>
+                </ul>
             </div>
         </div>
         
         <!-- Footer en dehors du content-wrapper -->
         <div class="footer">
             Monsterhearts • Plan de Classe • brumisa3.fr
+        </div>
+    </div>
+    
+    <!-- Page 2 -->
+    <div class="page">
+        <!-- Bande latérale -->
+        <div class="sidebar">
+            <div class="page-number">2</div>
+            <div class="sidebar-text">EXEMPLES</div>
+        </div>
+        
+        <!-- Contenu principal page 2 -->
+        <div class="content-wrapper">
+            <div class="content">
+                <h1>EXEMPLES DE PLANS DE CLASSE</h1>
+                
+                <div class="section">
+                    <h2>SITUATION INITIALE - DÉBUT DE CAMPAGNE</h2>
+                    
+                    <h3>CLASSE DE LITTÉRATURE - MRS. HENDERSON</h3>
+                    <p>Voici un exemple de plan initial pour une nouvelle campagne avec 4 PJ :</p>
+                    
+                    <div class="exemple">
+                        <h4>CONFIGURATION INITIALE</h4>
+                        <ul>
+                            <li><strong>Alexis (The Chosen)</strong> - Premier rang, centre : excellent élève, discret sur sa nature</li>
+                            <li><strong>Morgan (The Witch)</strong> - Deuxième rang, gauche : légèrement en retrait, observateur</li>
+                            <li><strong>Jordan (The Mortal)</strong> - Troisième rang, centre : populaire, entouré d'amis</li>
+                            <li><strong>Casey (The Vampire)</strong> - Dernier rang, coin : mystérieux, arrivé récemment</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>PNJ IMPORTANTS PLACÉS</h3>
+                    <ul>
+                        <li><strong>Emma</strong> (populaire) - À côté de Jordan, meilleure amie</li>
+                        <li><strong>Tyler</strong> (sportif) - Derrière Jordan, intérêt romantique pour Emma</li>
+                        <li><strong>Sage</strong> (gothique) - Près de Morgan, partage des intérêts occultes</li>
+                        <li><strong>Blake</strong> (intello) - Près d'Alexis, potentiel rival académique</li>
+                    </ul>
+                    
+                    <h3>TENSIONS INITIALES</h3>
+                    <p>Même au début, des tensions peuvent être établies :</p>
+                    <ul>
+                        <li>Emma remarque que Casey la regarde intensement (pressentiment vampire)</li>
+                        <li>Blake est jaloux de la facilité d'Alexis en cours</li>
+                        <li>Tyler trouve Morgan "bizarre" et fait des commentaires</li>
+                        <li>Jordan se demande pourquoi Casey reste toujours seul</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>SITUATION ÉVOLUÉE - APRÈS 3-4 SESSIONS</h2>
+                    
+                    <h3>CHANGEMENTS MAJEURS</h3>
+                    <p>Après quelques sessions, le plan a évolué :</p>
+                    
+                    <div class="conseil">
+                        <h4>NOUVEAUX PLACEMENTS</h4>
+                        <ul>
+                            <li><strong>Casey et Alexis</strong> se sont rapprochés (secret partagé)</li>
+                            <li><strong>Morgan</strong> s'est isolé après un incident magique</li>
+                            <li><strong>Emma</strong> évite Jordan depuis qu'elle sait pour sa relation avec Casey</li>
+                            <li><strong>Tyler</strong> courtise maintenant activement Emma</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>NOUVELLES TENSIONS</h3>
+                    <ul>
+                        <li>Triangle amoureux : Jordan → Casey ← Alexis</li>
+                        <li>Emma découvre progressivement la nature surnaturelle du groupe</li>
+                        <li>Blake soupçonne quelque chose d'étrange chez Alexis</li>
+                        <li>Sage veut se rapprocher de Morgan mais celui-ci la rejette</li>
+                    </ul>
+                    
+                    <h3>UTILISATION DES CHANGEMENTS</h3>
+                    <p>Ces évolutions créent de nouvelles opportunités :</p>
+                    <ul>
+                        <li>Projets de groupe forcés entre anciens amis maintenant tendus</li>
+                        <li>Observations croisées (qui remarque quoi)</li>
+                        <li>Interventions du professeur sur l'atmosphère de classe</li>
+                        <li>Nouvelles alliances contre des menaces externes</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>SITUATIONS SPÉCIALES</h2>
+                    
+                    <h3>COURS PRATIQUES</h3>
+                    <p>Adaptez selon le type de cours :</p>
+                    <ul>
+                        <li><strong>Labo de sciences :</strong> Binômes forcés, matériel dangereux</li>
+                        <li><strong>EPS :</strong> Équipes, vestiaires, compétition</li>
+                        <li><strong>Arts plastiques :</strong> Expression personnelle, partage d'outils</li>
+                        <li><strong>Théâtre :</strong> Rôles, intimité, performance publique</li>
+                    </ul>
+                    
+                    <h3>ESPACES ALTERNATIFS</h3>
+                    <div class="attention">
+                        <h4>AUTRES LIEUX D'INTERACTIONS</h4>
+                        <ul>
+                            <li><strong>Cafétéria :</strong> Tables, cliques, hiérarchies alimentaires</li>
+                            <li><strong>Parking :</strong> Territoire, voitures comme extensions du statut</li>
+                            <li><strong>Vestiaires :</strong> Intimité, vulnérabilité, secrets corporels</li>
+                            <li><strong>Couloirs :</strong> Flux, casiers personnels, rencontres "accidentelles"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer page 2 -->
+        <div class="footer">
+            Monsterhearts • Plan de Classe • brumisa3.fr • Page 2
         </div>
     </div>
 </body>
