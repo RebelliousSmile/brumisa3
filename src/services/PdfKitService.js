@@ -21,13 +21,47 @@ class PdfKitService {
      */
     registerCrimsonTextFonts(doc) {
         try {
-            doc.registerFont('CrimsonText-Regular', path.join(this.fontsDir, 'CrimsonText-Regular.ttf'));
-            doc.registerFont('CrimsonText-Bold', path.join(this.fontsDir, 'CrimsonText-Bold.ttf'));
-            doc.registerFont('CrimsonText-Italic', path.join(this.fontsDir, 'CrimsonText-Italic.ttf'));
-            doc.registerFont('CrimsonText-BoldItalic', path.join(this.fontsDir, 'CrimsonText-BoldItalic.ttf'));
+            // Vérifier d'abord que les fichiers existent
+            const regularPath = path.join(this.fontsDir, 'CrimsonText-Regular.ttf');
+            const boldPath = path.join(this.fontsDir, 'CrimsonText-Bold.ttf');
+            const italicPath = path.join(this.fontsDir, 'CrimsonText-Italic.ttf');
+            const boldItalicPath = path.join(this.fontsDir, 'CrimsonText-BoldItalic.ttf');
+            
+            if (!fs.existsSync(regularPath) || !fs.existsSync(boldPath) || 
+                !fs.existsSync(italicPath) || !fs.existsSync(boldItalicPath)) {
+                console.warn('⚠️  Crimson Text font files not found, using system fonts');
+                return false;
+            }
+            
+            // Essayer d'enregistrer chaque police individuellement pour identifier laquelle pose problème
+            try {
+                doc.registerFont('CrimsonText-Regular', regularPath);
+                doc.registerFont('CrimsonText-Bold', boldPath);
+                doc.registerFont('CrimsonText-Italic', italicPath);
+                doc.registerFont('CrimsonText-BoldItalic', boldItalicPath);
+                
+                // Tester l'utilisation des polices pour s'assurer qu'elles fonctionnent vraiment
+                const currentFont = doc._font;
+                const currentFontSize = doc._fontSize;
+                
+                doc.font('CrimsonText-Regular').fontSize(12);
+                doc.font('CrimsonText-Bold').fontSize(12);
+                doc.font('CrimsonText-Italic').fontSize(12);
+                doc.font('CrimsonText-BoldItalic').fontSize(12);
+                
+                // Restaurer la police et taille précédentes
+                if (currentFont) doc.font(currentFont);
+                if (currentFontSize) doc.fontSize(currentFontSize);
+                
+            } catch (err) {
+                console.warn('⚠️  Crimson Text fonts not compatible with PDFKit:', err.message);
+                return false;
+            }
+            
+            console.log('✅ Crimson Text fonts loaded and tested successfully');
             return true;
         } catch (error) {
-            console.warn('⚠️  Crimson Text fonts not found, falling back to system fonts:', error.message);
+            console.warn('⚠️  Error loading Crimson Text fonts, falling back to system fonts:', error.message);
             return false;
         }
     }
@@ -187,26 +221,204 @@ class PdfKitService {
         const pageWidth = doc.page.width;
         const pageHeight = doc.page.height;
         const sidebarWidth = 15 * 2.83; // 15mm en points
-        const contentLeft = sidebarWidth + 10;
-        const contentWidth = pageWidth - contentLeft - 20;
 
-        // Page 1
-        this.addMonsterheartsPage(doc, 1, 'PLAN DE CLASSE');
-        this.addPageContent1(doc, contentLeft, contentWidth, data, hasCrimsonText);
+        // Polices selon disponibilité Crimson Text (définir au début pour les deux pages)
+        const titleFont = hasCrimsonText ? 'CrimsonText-Bold' : 'Helvetica-Bold';
+        const textFont = hasCrimsonText ? 'CrimsonText-Regular' : 'Helvetica';
+        const italicFont = hasCrimsonText ? 'CrimsonText-Italic' : 'Helvetica-Oblique';
+        
+        // Page 1 (impaire - barre à gauche)
+        const isOddPage = true;
+        const sidebarX = isOddPage ? 0 : pageWidth - sidebarWidth;
+        
+        // Barre latérale noire
+        doc.fillColor('#000000')
+           .rect(sidebarX, 0, sidebarWidth, pageHeight)
+           .fill();
+        
+        // Numéro de page dans un carré noir - SANS width/align
+        const pageNumX = 7;
+        const pageNumY = 28;
 
-        // Page 2
+        doc.fillColor('#000000')
+           .rect(pageNumX, pageNumY, 28, 28)
+           .fill();
+
+        doc.fontSize(18)
+           .fillColor('white')
+           .text('1', pageNumX + 10, pageNumY + 5);
+
+        // Contenu principal page 1 avec polices appropriées
+        const contentX = sidebarWidth + 15;
+        
+        doc.fontSize(18)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('OBJECTIFS', contentX, 80);
+           
+        doc.fontSize(12)
+           .font(textFont)
+           .fillColor('#000000')
+           .text('S\'asseoir à une table de ', contentX, 120);
+           
+        // Mot "Monsterhearts" en italique
+        doc.font(italicFont)
+           .text('Monsterhearts', contentX + 130, 120);
+           
+        doc.font(textFont)
+           .text(' signifie partager les quatre objectifs suivants :', contentX, 140);
+
+        // Liste des objectifs avec étoiles
+        let y = 170;
+        const objectifs = [
+            'rendre intéressante la vie de chaque personnage principal ;',
+            'ne pas mettre l\'histoire en cage ;',
+            'dire ce que les règles exigent ;',
+            'dire ce que l\'honnêteté exige.'
+        ];
+
+        objectifs.forEach(objectif => {
+            doc.fontSize(12)
+               .font(textFont)
+               .fillColor('#000000')
+               .text('★ ' + objectif, contentX + 10, y);
+            y += 18;
+        });
+
+        y += 20;
+        // Paragraphe explicatif complet
+        doc.fontSize(12)
+           .font(textFont)
+           .fillColor('#000000')
+           .text('Cette liste n\'est ni à mémoriser, ni constituée', contentX, y);
+        y += 15;
+        doc.text('d\'éléments qu\'il faudrait cocher au cours de la', contentX, y);
+        y += 15;
+        doc.text('partie pour la considérer comme « réussie ».', contentX, y);
+        y += 15;
+        doc.text('Il s\'agit plutôt de quatre lignes directrices qui', contentX, y);
+        y += 15;
+        doc.text('vous aident à aller dans la même direction et', contentX, y);
+        y += 15;
+        doc.text('à partager l\'esprit du jeu.', contentX, y);
+
+        y += 30;
+        // Section suivante
+        doc.fontSize(16)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('Rendez intéressante la vie', contentX, y);
+        y += 20;
+        doc.text('de chaque personnage principal', contentX, y);
+
+        y += 25;
+        doc.fontSize(12)
+           .font(textFont)
+           .fillColor('#000000')
+           .text('Si vous n\'êtes pas MC, votre tâche est notamment', contentX, y);
+        y += 15;
+        doc.text('de défendre les intérêts de votre personnage.', contentX, y);
+
+        // Texte vertical APRÈS le contenu pour éviter les interférences
+        doc.save()
+           .translate(sidebarWidth/2, pageHeight - 100)
+           .rotate(-90)
+           .fontSize(14)
+           .font('Helvetica-Bold')
+           .fillColor('white')
+           .text('COMMENT MARCHE-T-ELLE', 0, 0)
+           .restore();
+
+        // Footer watermark discret mais visible - coin bas droite
+        doc.fontSize(8)
+           .fillColor('#999999')
+           .text('brumisa3.fr', pageWidth - 65, pageHeight - 40);
+
+        // Page 2 (paire - barre à droite)
         doc.addPage();
-        this.addMonsterheartsPage(doc, 2, 'EXEMPLES');
-        this.addPageContent2(doc, contentLeft, contentWidth, data, hasCrimsonText);
+        
+        // Barre latérale noire à droite
+        const sidebarX2 = pageWidth - sidebarWidth;
+        doc.fillColor('#000000')
+           .rect(sidebarX2, 0, sidebarWidth, pageHeight)
+           .fill();
+        
+        // Numéro de page 2 - SANS width/align
+        const pageNumX2 = pageWidth - sidebarWidth + 7;
+        doc.fillColor('#000000')
+           .rect(pageNumX2, pageNumY, 28, 28)
+           .fill();
 
-        // Ajouter plus de pages si nécessaire
-        doc.addPage();
-        this.addMonsterheartsPage(doc, 3, 'CONSEILS');
-        this.addPageContent3(doc, contentLeft, contentWidth, data, hasCrimsonText);
+        doc.fontSize(18)
+           .fillColor('white')
+           .text('2', pageNumX2 + 10, pageNumY + 5);
 
-        doc.addPage();
-        this.addMonsterheartsPage(doc, 4, 'RÉFÉRENCES');
-        this.addPageContent4(doc, contentLeft, contentWidth, data, hasCrimsonText);
+        // Contenu principal page 2 avec polices appropriées
+        const contentX2 = 20;
+        
+        // Utiliser les mêmes polices que page 1
+        doc.fontSize(18)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('EXEMPLES DE PLANS DE CLASSE', contentX2, 80);
+           
+        doc.fontSize(14)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('SITUATION INITIALE - DÉBUT DE CAMPAGNE', contentX2, 120);
+
+        doc.fontSize(12)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('CLASSE DE LITTÉRATURE - MRS. HENDERSON', contentX2, 150);
+
+        doc.fontSize(12)
+           .font(textFont)
+           .fillColor('#000000')
+           .text('Voici un exemple de plan initial pour une nouvelle', contentX2, 180);
+        doc.text('campagne avec 4 PJ :', contentX2, 195);
+
+        // Encadré exemple détaillé
+        let y2 = 220;
+        doc.fontSize(11)
+           .font(titleFont)
+           .fillColor('#000000')
+           .text('CONFIGURATION INITIALE', contentX2, y2);
+        y2 += 20;
+
+        const exemples = [
+            '• Alexis (The Chosen) - Premier rang, centre :',
+            '  excellent élève, discret sur sa nature',
+            '• Morgan (The Witch) - Deuxième rang, gauche :',
+            '  légèrement en retrait, observateur',
+            '• Jordan (The Mortal) - Troisième rang, centre :',
+            '  populaire, entouré d\'amis',
+            '• Casey (The Vampire) - Dernier rang, coin :',
+            '  mystérieux, arrivé récemment'
+        ];
+
+        exemples.forEach(exemple => {
+            doc.fontSize(11)
+               .font(textFont)
+               .fillColor('#000000')
+               .text(exemple, contentX2, y2);
+            y2 += 13;
+        });
+
+        // Texte vertical page 2 APRÈS le contenu
+        doc.save()
+           .translate(pageWidth - sidebarWidth/2, pageHeight - 100)
+           .rotate(-90)
+           .fontSize(14)
+           .font('Helvetica-Bold')
+           .fillColor('white')
+           .text('EXEMPLES', 0, 0)
+           .restore();
+
+        // Footer watermark discret mais visible - coin bas gauche (éviter la barre droite)
+        doc.fontSize(8)
+           .fillColor('#999999')
+           .text('brumisa3.fr', 15, pageHeight - 40);
     }
 
     /**
@@ -214,23 +426,31 @@ class PdfKitService {
      * @param {PDFDocument} doc - Document
      * @param {number} pageNum - Numéro de page
      * @param {string} sectionTitle - Titre de section pour la barre latérale
+     * @param {boolean} isOddPage - true pour page impaire (bande à gauche), false pour page paire (bande à droite)
      */
-    addMonsterheartsPage(doc, pageNum, sectionTitle) {
+    addMonsterheartsPage(doc, pageNum, sectionTitle, isOddPage = true) {
         const pageWidth = doc.page.width;
         const pageHeight = doc.page.height;
         const sidebarWidth = 15 * 2.83; // 15mm en points
 
-        // Bande latérale noire
-        doc.rect(0, 0, sidebarWidth, pageHeight)
-           .fill('#000000');
+        // Position de la bande latérale selon page paire/impaire
+        const sidebarX = isOddPage ? 0 : pageWidth - sidebarWidth;
+
+        // Bande latérale noire - forcer le rendu
+        doc.fillColor('#000000')
+           .rect(sidebarX, 0, sidebarWidth, pageHeight)
+           .fill();
 
         // Numéro de page dans un carré noir
         const pageNumSize = 10 * 2.83; // 10mm
-        const pageNumX = 2.5 * 2.83; // 2.5mm du bord
+        const pageNumX = isOddPage ? 
+            2.5 * 2.83 : // 2.5mm du bord gauche pour pages impaires
+            pageWidth - sidebarWidth + 2.5 * 2.83; // 2.5mm du début de la bande pour pages paires
         const pageNumY = 10 * 2.83; // 10mm du haut
 
-        doc.rect(pageNumX, pageNumY, pageNumSize, pageNumSize)
-           .fill('#000000');
+        doc.fillColor('#000000')
+           .rect(pageNumX, pageNumY, pageNumSize, pageNumSize)
+           .fill();
 
         doc.fontSize(18)
            .fillColor('white')
@@ -239,9 +459,10 @@ class PdfKitService {
                align: 'center'
            });
 
-        // Texte vertical dans la bande latérale (plus gras et plus bas comme exemple-page.png)
+        // Texte vertical dans la bande latérale
+        const textX = isOddPage ? sidebarWidth/2 : pageWidth - sidebarWidth/2;
         doc.save()
-           .translate(sidebarWidth/2, pageHeight - 40 * 2.83)
+           .translate(textX, pageHeight - 40 * 2.83)
            .rotate(-90)
            .fontSize(14)
            .font('Helvetica-Bold')
@@ -252,13 +473,18 @@ class PdfKitService {
            })
            .restore();
 
-        // Footer plus bas sans trait (comme exemple-page.png)
+        // Footer adapté selon la position de la bande
         const footerY = pageHeight - 10 * 2.83;
+        const footerX = isOddPage ? sidebarWidth + 10 : 10;
+        const footerWidth = isOddPage ? 
+            pageWidth - sidebarWidth - 30 : 
+            pageWidth - sidebarWidth - 30;
+
         doc.fontSize(9)
            .fillColor('#666666')
            .text(`Monsterhearts • Plan de Classe • brumisa3.fr`, 
-                 sidebarWidth + 10, footerY, {
-                   width: pageWidth - sidebarWidth - 30,
+                 footerX, footerY, {
+                   width: footerWidth,
                    align: 'center'
                  });
 
@@ -267,120 +493,65 @@ class PdfKitService {
     }
 
     /**
-     * Contenu de la page 1 - Instructions principales
+     * Contenu de la page 1 - Instructions principales (style exemple-page.png)
      */
     addPageContent1(doc, x, width, data, hasCrimsonText = false) {
-        let y = 50;
+        let y = 80; // Plus d'espace en haut comme dans l'exemple
 
-        // Titre principal avec Crimson Text si disponible
+        // Polices comme dans l'exemple Monsterhearts
         const titleFont = hasCrimsonText ? 'CrimsonText-Bold' : 'Helvetica-Bold';
         const textFont = hasCrimsonText ? 'CrimsonText-Regular' : 'Helvetica';
         const italicFont = hasCrimsonText ? 'CrimsonText-Italic' : 'Helvetica-Oblique';
-        
-        doc.fontSize(16)
+
+        // Test simple pour vérifier que le contenu reste sur la même page
+        doc.fontSize(18)
            .font(titleFont)
            .fillColor('#000000')
-           .text('INSTRUCTIONS POUR LE PLAN DE CLASSE', x, y, {
+           .text('OBJECTIFS - PAGE 1', x, y, {
                width: width,
-               align: 'center'
+               align: 'left',
+               lineBreak: false
            });
-        y += 35;
+        y += 40;
 
-        // Introduction en italique avec Crimson Text
-        doc.fontSize(11)
-           .font(italicFont)
+        doc.fontSize(12)
+           .font(textFont)
            .fillColor('#000000')
-           .text('Le plan de classe est un outil visuel pour la MC permettant de suivre les relations sociales et la dynamique de groupe dans le lycée. Il sert à la fois d\'aide-mémoire et de représentation spatiale des tensions sociales.', x, y, {
+           .text('Contenu de test pour la page 1. Ce texte devrait apparaître sur la même page que la barre latérale noire de gauche.', x, y, {
                width: width,
-               align: 'justify'
+               align: 'left',
+               lineBreak: false
            });
-        y += 35;
-
-        // Section COMMENT REMPLIR LE PLAN avec Crimson Text
-        doc.fontSize(14)
-           .font(titleFont)
-           .fillColor('#000000')
-           .text('COMMENT REMPLIR LE PLAN', x, y, {
-               width: width,
-               align: 'center'
-           });
-        y += 28;
-
-        // Sous-sections
-        y = this.addSubSection(doc, x, width, y, 'PLACER LES PERSONNAGES JOUEURS (PJ)', [
-            'Commencez toujours par placer les PJ en premier',
-            'Notez leur nom, leur mue, et une note courte (trait distinctif, secret connu, etc.)',
-            'Leur placement initial peut refléter leurs relations établies lors de la création'
-        ]);
-
-        y = this.addSubSection(doc, x, width, y, 'AJOUTER LES PERSONNAGES NON-JOUEURS (PNJ)', [
-            'Placez les PNJ importants autour des PJ',
-            'Priorisez ceux qui ont des liens directs avec les PJ',
-            'Chaque PNJ devrait avoir au moins un élément dramatique notable'
-        ]);
-
-        y = this.addSubSection(doc, x, width, y, 'ORGANISATION SPATIALE SIGNIFICATIVE', []);
-        
-        y = this.addSubSubSection(doc, x, width, y, 'PROXIMITÉ = AFFINITÉ', [
-            'Les amis proches sont assis côte à côte',
-            'Les couples sont adjacents',
-            'Les membres d\'une même clique forment des groupes'
-        ]);
     }
 
     /**
      * Contenu de la page 2 - Exemples
      */
-    addPageContent2(doc, x, width, data) {
-        let y = 50;
+    addPageContent2(doc, x, width, data, hasCrimsonText = false) {
+        let y = 80;
+        
+        const titleFont = hasCrimsonText ? 'CrimsonText-Bold' : 'Helvetica-Bold';
+        const textFont = hasCrimsonText ? 'CrimsonText-Regular' : 'Helvetica';
 
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
+        // Test simple pour vérifier que le contenu reste sur la même page
+        doc.fontSize(18)
+           .font(titleFont)
            .fillColor('#000000')
-           .text('EXEMPLES DE PLANS DE CLASSE', x, y, {
+           .text('EXEMPLES - PAGE 2', x, y, {
                width: width,
-               align: 'center'
+               align: 'left',
+               lineBreak: false
            });
         y += 40;
 
-        doc.fontSize(14)
-           .font('Helvetica-Bold')
+        doc.fontSize(12)
+           .font(textFont)
            .fillColor('#000000')
-           .text('SITUATION INITIALE - DÉBUT DE CAMPAGNE', x, y, {
+           .text('Contenu de test pour la page 2. Ce texte devrait apparaître sur la même page que la barre latérale noire de droite.', x, y, {
                width: width,
-               align: 'center'
+               align: 'left',
+               lineBreak: false
            });
-        y += 30;
-
-        y = this.addSubSection(doc, x, width, y, 'CLASSE DE LITTÉRATURE - MRS. HENDERSON', [
-            'Voici un exemple de plan initial pour une nouvelle campagne avec 4 PJ :'
-        ]);
-
-        // Encadré exemple
-        y += 10;
-        const boxY = y;
-        const boxHeight = 120;
-        doc.rect(x, boxY, width, boxHeight)
-           .stroke('#000000');
-
-        y += 15;
-        doc.fontSize(11)
-           .font('Helvetica-Bold')
-           .fillColor('#000000')
-           .text('CONFIGURATION INITIALE', x + 10, y);
-        y += 20;
-
-        doc.font('Helvetica')
-           .fillColor('#000000')
-           .text('• Alexis (The Chosen) - Premier rang, centre : excellent élève, discret sur sa nature', x + 10, y, { width: width - 20 });
-        y += 20;
-        doc.text('• Morgan (The Witch) - Deuxième rang, gauche : légèrement en retrait, observateur', x + 10, y, { width: width - 20 });
-        y += 20;
-        doc.text('• Jordan (The Mortal) - Troisième rang, centre : populaire, entouré d\'amis', x + 10, y, { width: width - 20 });
-        y += 20;
-        doc.text('• Casey (The Vampire) - Dernier rang, coin : mystérieux, arrivé récemment', x + 10, y, { width: width - 20 });
-
-        y = boxY + boxHeight + 20;
     }
 
     /**
@@ -453,14 +624,14 @@ class PdfKitService {
     /**
      * Ajoute une sous-section avec titre et liste (style original)
      */
-    addSubSection(doc, x, width, y, title, items) {
+    addSubSection(doc, x, width, y, title, items, titleFont = 'Helvetica-Bold', textFont = 'Helvetica') {
         doc.fontSize(12)
-           .font('Helvetica-Bold')
+           .font(titleFont)
            .fillColor('#000000')
            .text(title, x, y);
         y += 20;
 
-        doc.font('Helvetica')
+        doc.font(textFont)
            .fontSize(11)
            .fillColor('#000000');
 
@@ -475,14 +646,14 @@ class PdfKitService {
     /**
      * Ajoute une sous-sous-section (style original)
      */
-    addSubSubSection(doc, x, width, y, title, items) {
+    addSubSubSection(doc, x, width, y, title, items, titleFont = 'Helvetica-Bold', textFont = 'Helvetica') {
         doc.fontSize(11)
-           .font('Helvetica-Bold')
+           .font(titleFont)
            .fillColor('#000000')
            .text(title, x + 10, y);
         y += 15;
 
-        doc.font('Helvetica')
+        doc.font(textFont)
            .fontSize(10)
            .fillColor('#000000');
 
