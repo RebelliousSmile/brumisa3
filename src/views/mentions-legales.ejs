@@ -1,119 +1,191 @@
-<!-- Mentions Légales -->
-<div class="min-h-screen bg-gray-900 text-white py-12">
-    <div class="max-w-4xl mx-auto px-4">
-        <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
-            <i class="ra ra-scroll-unfurled text-blue-400 mr-3"></i>
-            Mentions Légales
-        </h1>
-        
-        <div class="bg-gray-800/50 rounded-lg p-8 space-y-8">
-            <!-- Éditeur du site -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-tower text-xl mr-2"></i>
-                    Éditeur du site
-                </h2>
-                <div class="text-gray-300 space-y-2">
-                    <p><strong>Nom du site :</strong> brumisa3.fr</p>
-                    <p><strong>Adresse :</strong> [À compléter]</p>
-                    <p><strong>Téléphone :</strong> [À compléter]</p>
-                    <p><strong>Email :</strong> [À compléter]</p>
-                </div>
-            </section>
+<%- include('layouts/principal', { 
+    body: `
+    <!-- Mentions Légales -->
+    <div class="min-h-screen bg-gray-900 text-white py-12">
+        <div class="max-w-4xl mx-auto px-4">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
+                <i class="ra ra-scroll-unfurled text-blue-400 mr-3"></i>
+                Mentions Légales
+            </h1>
+            
+            <div class="bg-gray-800/50 rounded-lg p-8 space-y-8">
+                <!-- Éditeur du site -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-crown text-xl mr-2"></i>
+                        Éditeur du site
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p><strong>Nom du site :</strong> brumisa3.fr</p>
+                        <p><strong>Propriétaire :</strong> [Nom à compléter]</p>
+                        <p><strong>Statut :</strong> [Statut juridique à compléter]</p>
+                        <p><strong>Adresse :</strong> [Adresse à compléter]</p>
+                        <p><strong>Email :</strong> <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a></p>
+                        <p><strong>Téléphone :</strong> [Numéro à compléter]</p>
+                    </div>
+                </section>
 
-            <!-- Hébergement -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-burning-embers text-xl mr-2"></i>
-                    Hébergement
-                </h2>
-                <div class="text-gray-300 space-y-2">
-                    <p><strong>Hébergeur :</strong> [À compléter - ex: OVH, Vercel, etc.]</p>
-                    <p><strong>Adresse :</strong> [À compléter]</p>
-                </div>
-            </section>
+                <!-- Hébergement -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-tower text-xl mr-2"></i>
+                        Hébergement
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p><strong>Hébergeur :</strong> [Nom hébergeur à compléter]</p>
+                        <p><strong>Adresse :</strong> [Adresse hébergeur à compléter]</p>
+                        <p><strong>Site web :</strong> <a href="#" class="text-blue-400 hover:text-purple-300">[Site hébergeur à compléter]</a></p>
+                    </div>
+                </section>
 
-            <!-- Propriété intellectuelle -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-crystal-ball text-xl mr-2"></i>
-                    Propriété intellectuelle
-                </h2>
-                <div class="text-gray-300 space-y-4">
-                    <p>
-                        Le contenu de ce site (textes, images, graphismes, logo, icônes, etc.) 
-                        est la propriété exclusive de brumisa3.fr, à l'exception des marques, 
-                        logos ou contenus appartenant à d'autres sociétés partenaires ou auteurs.
-                    </p>
-                    <p>
-                        Les systèmes de jeu de rôle mentionnés sur ce site appartiennent à leurs 
-                        créateurs respectifs. Ce site n'est pas affilié officiellement à ces systèmes.
-                    </p>
-                </div>
-            </section>
+                <!-- Directeur de publication -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-quill-ink text-xl mr-2"></i>
+                        Directeur de publication
+                    </h2>
+                    <div class="text-gray-300">
+                        <p><strong>Directeur de publication :</strong> [Nom du directeur à compléter]</p>
+                        <p><strong>Contact :</strong> <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a></p>
+                    </div>
+                </section>
 
-            <!-- Responsabilité -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-shield text-xl mr-2"></i>
-                    Responsabilité
-                </h2>
-                <div class="text-gray-300 space-y-4">
-                    <p>
-                        Les informations contenues sur ce site sont données à titre indicatif 
-                        et sont susceptibles d'évoluer. Par ailleurs, les renseignements figurant 
-                        sur le site ne sont pas exhaustifs.
-                    </p>
-                    <p>
-                        brumisa3.fr ne pourra être tenu responsable de dommages matériels liés 
-                        à l'utilisation du site. De plus, l'utilisateur du site s'engage à 
-                        accéder au site en utilisant un matériel récent, ne contenant pas de virus.
-                    </p>
-                </div>
-            </section>
+                <!-- Propriété intellectuelle -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-scroll text-xl mr-2"></i>
+                        Propriété intellectuelle
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p>
+                            L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur 
+                            et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les 
+                            documents téléchargeables et les représentations iconographiques et photographiques.
+                        </p>
+                        <p>
+                            Les systèmes de jeu de rôle (Monsterhearts, Engrenages & Sortilèges, Metro 2033, Mist Engine) 
+                            sont la propriété de leurs auteurs et éditeurs respectifs. Ce site propose uniquement des outils 
+                            de création de fiches de personnages compatibles avec ces systèmes.
+                        </p>
+                        <p>
+                            La reproduction de tout ou partie de ce site sur un support électronique quelconque est 
+                            formellement interdite sauf autorisation expresse du directeur de la publication.
+                        </p>
+                    </div>
+                </section>
 
-            <!-- Données personnelles -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-player text-xl mr-2"></i>
-                    Données personnelles
-                </h2>
-                <div class="text-gray-300 space-y-4">
-                    <p>
-                        Conformément à la loi "Informatique et libertés" du 6 janvier 1978 modifiée 
-                        et au Règlement européen sur la protection des données (RGPD), vous disposez 
-                        d'un droit d'accès, de rectification et de suppression des données vous concernant.
-                    </p>
-                    <p>
-                        Les données collectées sur ce site sont uniquement destinées au bon 
-                        fonctionnement des services proposés et ne sont jamais cédées à des tiers.
-                    </p>
-                </div>
-            </section>
+                <!-- Données personnelles -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-crystal-ball text-xl mr-2"></i>
+                        Protection des données personnelles
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p>
+                            Conformément à la loi "Informatique et Libertés" du 6 janvier 1978 modifiée et au 
+                            Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, 
+                            de rectification, d'effacement et de portabilité de vos données personnelles.
+                        </p>
+                        <p>
+                            Les données collectées sur ce site sont uniquement destinées au fonctionnement du service 
+                            et ne sont jamais transmises à des tiers à des fins commerciales.
+                        </p>
+                        <p>
+                            Pour exercer vos droits, contactez-nous à : 
+                            <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a>
+                        </p>
+                    </div>
+                </section>
 
-            <!-- Contact -->
-            <section>
-                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <i class="ra ra-horn-call text-xl mr-2"></i>
-                    Contact
-                </h2>
-                <div class="text-gray-300">
-                    <p>
-                        Pour toute question concernant ces mentions légales, vous pouvez nous contacter à : 
-                        <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a>
-                    </p>
-                </div>
-            </section>
-        </div>
+                <!-- Cookies -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-pie-slice text-xl mr-2"></i>
+                        Gestion des cookies
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p>
+                            Ce site utilise des cookies techniques nécessaires au fonctionnement du service 
+                            (sessions utilisateur, préférences d'affichage).
+                        </p>
+                        <p>
+                            Aucun cookie de traçage ou publicitaire n'est utilisé sans votre consentement explicite.
+                        </p>
+                        <p>
+                            Vous pouvez configurer votre navigateur pour refuser les cookies, mais certaines 
+                            fonctionnalités du site pourraient ne plus être disponibles.
+                        </p>
+                    </div>
+                </section>
 
-        <!-- Retour -->
-        <div class="text-center mt-8">
-            <%- include('partials/button', { 
-                text: "Retour à l'accueil",
-                type: 'tertiary',
-                icon: 'uncertainty',
-                href: '/'
-            }) %>
+                <!-- Responsabilité -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-shield text-xl mr-2"></i>
+                        Limitation de responsabilité
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p>
+                            Les informations contenues sur ce site sont aussi précises que possible et le site est 
+                            périodiquement remis à jour, mais peut toutefois contenir des inexactitudes, des omissions 
+                            ou des lacunes.
+                        </p>
+                        <p>
+                            L'éditeur ne pourra en aucun cas être tenu responsable de tout dommage de quelque nature 
+                            que ce soit résultant de l'interprétation ou de l'utilisation des informations et/ou 
+                            indications contenues sur ce site.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Liens externes -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-chain-link text-xl mr-2"></i>
+                        Liens externes
+                    </h2>
+                    <div class="text-gray-300 space-y-4">
+                        <p>
+                            Ce site peut contenir des liens vers d'autres sites. L'éditeur ne saurait être tenu 
+                            responsable du contenu de ces sites externes.
+                        </p>
+                        <p>
+                            La présence de liens vers d'autres sites ne constitue pas une validation de ces sites 
+                            ou de leur contenu.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Litiges -->
+                <section>
+                    <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="ra ra-scales text-xl mr-2"></i>
+                        Litiges
+                    </h2>
+                    <div class="text-gray-300">
+                        <p>
+                            Les présentes mentions légales sont régies par la loi française. En cas de litige, 
+                            les tribunaux français seront les seuls compétents.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Date de mise à jour -->
+                <section class="border-t border-gray-700 pt-6">
+                    <p class="text-sm text-gray-400 text-center">
+                        Dernière mise à jour : <span class="text-blue-400">[Date à compléter]</span>
+                    </p>
+                </section>
+            </div>
+
+            <!-- Retour et actions -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+                <a href="/" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    <i class="ra ra-uncertainty mr-2"></i>
+                    Retour à l'accueil
+                </a>
+            </div>
         </div>
     </div>
-</div>
+    `
+}) %>

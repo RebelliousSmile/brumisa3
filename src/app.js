@@ -201,13 +201,7 @@ class App {
       res.sendFile(path.join(__dirname, '../public/images/favicon.svg'));
     });
 
-    // Page d'accueil temporaire
-    this.app.get('/', (req, res) => {
-      res.render('index', {
-        title: 'brumisa3.fr',
-        description: 'Créez vos fiches de personnages pour vos JDR favoris'
-      });
-    });
+    // Page d'accueil gérée par les routes web
 
     // Pages légales
     this.app.get('/mentions-legales', (req, res) => {

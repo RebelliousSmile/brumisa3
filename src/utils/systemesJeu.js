@@ -47,10 +47,10 @@ const systemesJeu = {
 
   // Engrenages - Steampunk
   engrenages: {
-    nom: 'Engrenages',
+    nom: 'Roue du Temps',
     code: 'engrenages',
-    description: 'JdR steampunk mêlant magie et technologie',
-    version: 'Ecryme',
+    description: 'Adaptation de l\'univers avec le système Engrenages',
+    version: '3ème édition',
 
     attributs: {
       corps: { nom: 'Corps', min: 1, max: 5, description: 'Puissance physique et santé' },
@@ -93,9 +93,9 @@ const systemesJeu = {
   },
 
   // Metro 2033 - Post-Apocalyptic
-  metro_2033: {
+  metro2033: {
     nom: 'Metro 2033',
-    code: 'metro_2033',
+    code: 'metro2033',
     description: 'JdR post-apocalyptique dans le métro de Moscou',
     version: 'Official RPG',
 
@@ -137,9 +137,9 @@ const systemesJeu = {
   },
 
   // Mist Engine - Mystical/Narrative
-  mist_engine: {
+  mistengine: {
     nom: 'Mist Engine',
-    code: 'mist_engine',
+    code: 'mistengine',
     description: 'Moteur de jeu narratif et mystique (Legend in the Mist / Tokyo:Otherscape)',
     version: 'Core System',
 

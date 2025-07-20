@@ -211,8 +211,8 @@ function menuUtilisateur() {
                 // Nettoyer le stockage local
                 localStorage.clear();
                 
-                // Redirection
-                window.location.href = '/connexion';
+                // Redirection vers l'accueil après déconnexion
+                window.location.href = '/';
                 
             } catch (erreur) {
                 console.error('Erreur déconnexion:', erreur);

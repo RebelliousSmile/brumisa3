@@ -99,69 +99,47 @@ par la communauté ce mois-ci.</div>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <!-- Monsterhearts -->
+                        <% 
+                        const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+                        const icones = {
+                            'monsterhearts': 'ra-heartburn',
+                            'engrenages': 'ra-candle', 
+                            'metro2033': 'ra-pills',
+                            'mistengine': 'ra-ocarina'
+                        };
+                        
+                        // Temporary mock data until systemesJeu is properly passed
+                        const mockSystemes = [
+                            { code: 'monsterhearts', nom: 'Monsterhearts', themes: { couleurTailwind: 'purple' } },
+                            { code: 'engrenages', nom: 'Roue du Temps', themes: { couleurTailwind: 'emerald' } },
+                            { code: 'metro2033', nom: 'Metro 2033', themes: { couleurTailwind: 'red' } },
+                            { code: 'mistengine', nom: 'Mist Engine', themes: { couleurTailwind: 'pink' } }
+                        ];
+                        
+                        const systemesData = (typeof systemesJeu !== 'undefined' && systemesJeu) ? systemesJeu : mockSystemes;
+                        
+                        systemesOrdered.forEach(codeSysteme => {
+                            const systeme = systemesData.find(s => s.code === codeSysteme);
+                            if (!systeme) return;
+                            
+                            const couleur = systeme.themes.couleurTailwind;
+                            const icone = icones[codeSysteme];
+                        %>
                         <div data-carte-systeme 
-                             @click="naviguerVersSysteme('monsterhearts')" 
+                             @click="naviguerVersSysteme('<%= systeme.code %>')" 
                              class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
                             <div class="text-center">
-                                <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/30">
-                                    <i class="ra ra-heartburn text-purple-400 text-2xl"></i>
+                                <div class="w-16 h-16 bg-<%= couleur %>-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-<%= couleur %>-500/30">
+                                    <i class="ra <%= icone %> text-<%= couleur %>-400 text-2xl"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-white mb-2 font-gothic">Monsterhearts</h3>
-                                <p class="text-sm text-gray-400 mb-4 font-gothic">
-                                    Romance gothique et monstres adolescents
+                                <h3 class="text-lg font-bold text-white mb-2"><%= systeme.nom %></h3>
+                                <p class="text-sm text-gray-400 mb-4">
+                                    <%= systeme.description %>
                                 </p>
-                                <span class="inline-block text-xs bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full border border-purple-500/30 font-display">PbtA</span>
+                                <span class="inline-block text-xs bg-<%= couleur %>-500/20 text-<%= couleur %>-400 px-3 py-1 rounded-full border border-<%= couleur %>-500/30 font-display"><%= systeme.version %></span>
                             </div>
                         </div>
-
-                        <!-- Engrenages -->
-                        <div data-carte-systeme 
-                             @click="naviguerVersSysteme('engrenages')" 
-                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
-                            <div class="text-center">
-                                <div class="w-16 h-16 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
-                                    <i class="ra ra-candle text-emerald-400 text-2xl"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-2 font-steampunk">Engrenages</h3>
-                                <p class="text-sm text-gray-400 mb-4 font-steampunk">
-                                    Steampunk magique et technologie
-                                </p>
-                                <span class="inline-block text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30 font-display">Steampunk</span>
-                            </div>
-                        </div>
-
-                        <!-- Metro 2033 -->
-                        <div data-carte-systeme 
-                             @click="naviguerVersSysteme('metro2033')" 
-                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
-                            <div class="text-center">
-                                <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
-                                    <i class="ra ra-pills text-red-400 text-2xl"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-2 font-dystopian">Metro 2033</h3>
-                                <p class="text-sm text-gray-400 mb-4 font-dystopian">
-                                    Post-apocalyptique souterrain
-                                </p>
-                                <span class="inline-block text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 font-display">Post-Apo</span>
-                            </div>
-                        </div>
-
-                        <!-- Mist Engine -->
-                        <div data-carte-systeme 
-                             @click="naviguerVersSysteme('mistengine')" 
-                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
-                            <div class="text-center">
-                                <div class="w-16 h-16 bg-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-pink-500/30">
-                                    <i class="ra ra-ocarina text-pink-400 text-2xl"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-2 font-mystical">Mist Engine</h3>
-                                <p class="text-sm text-gray-400 mb-4 font-mystical">
-                                    Moteur narratif mystique
-                                </p>
-                                <span class="inline-block text-xs bg-pink-500/20 text-pink-400 px-3 py-1 rounded-full border border-pink-500/30 font-display">Narratif</span>
-                            </div>
-                        </div>
+                        <% }); %>
                     </div>
                 </div>
             </div>

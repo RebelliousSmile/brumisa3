@@ -1,0 +1,472 @@
+<%- include('../layouts/principal', { 
+    body: `
+    <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 text-white">
+        <!-- Hero Section -->
+        <div class="relative py-24 px-4">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="mb-8">
+                    <i class="ra ra-heartburn text-8xl text-purple-300 mb-6 block"></i>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 font-display">
+                    Monsterhearts
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-purple-200 max-w-3xl mx-auto">
+                    Créez des fiches de personnages immersives pour Monsterhearts, 
+                    le jeu de rôle des adolescents monstres modernes.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                        Créer un personnage
+                    </button>
+                    <button class="border-2 border-purple-300 text-purple-300 hover:bg-purple-300 hover:text-purple-900 px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                        Voir les exemples
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Create Section -->
+    <div class="bg-gray-900 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">
+                Comment créer son aide de jeu Monsterhearts
+            </h2>
+            <div class="max-w-4xl mx-auto">
+                <!-- Stepper -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
+                    <div class="flex flex-col md:flex-row w-full">
+                        <!-- Étape 1 -->
+                        <div class="flex-1 flex items-center mb-6 md:mb-0">
+                            <div class="flex items-center w-full">
+                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">1</div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-white mb-1">Choisir un modèle</h3>
+                                    <p class="text-gray-400 text-sm">Sélectionnez le type d'aide de jeu</p>
+                                </div>
+                            </div>
+                            <div class="hidden md:block w-8 h-1 bg-purple-500 ml-4"></div>
+                        </div>
+                        
+                        <!-- Étape 2 -->
+                        <div class="flex-1 flex items-center mb-6 md:mb-0">
+                            <div class="flex items-center w-full">
+                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">2</div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-white mb-1">Personnaliser</h3>
+                                    <p class="text-gray-400 text-sm">Remplissez les informations</p>
+                                </div>
+                            </div>
+                            <div class="hidden md:block w-8 h-1 bg-purple-500 ml-4"></div>
+                        </div>
+                        
+                        <!-- Étape 3 -->
+                        <div class="flex-1 flex items-center">
+                            <div class="flex items-center w-full">
+                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">3</div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-white mb-1">Générer le PDF</h3>
+                                    <p class="text-gray-400 text-sm">Téléchargez votre aide de jeu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description détaillée -->
+                <div class="bg-gray-800 p-8 rounded-lg border border-purple-500/20">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="text-center">
+                            <i class="ra ra-scroll-unfurled text-4xl text-purple-400 mb-4 block"></i>
+                            <h4 class="text-lg font-semibold text-white mb-2">1. Choisir un modèle</h4>
+                            <p class="text-gray-300 text-sm">Parcourez notre collection de modèles pré-conçus pour Monsterhearts et sélectionnez celui qui correspond à vos besoins.</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="ra ra-quill-ink text-4xl text-purple-400 mb-4 block"></i>
+                            <h4 class="text-lg font-semibold text-white mb-2">2. Personnaliser</h4>
+                            <p class="text-gray-300 text-sm">Utilisez notre éditeur intuitif pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="ra ra-muscle-up text-4xl text-purple-400 mb-4 block"></i>
+                            <h4 class="text-lg font-semibold text-white mb-2">3. Générer le PDF</h4>
+                            <p class="text-gray-300 text-sm">Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager avec votre table.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Section -->
+    <div class="bg-gray-800 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">
+                Modèles Disponibles
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Fiche de Personnage -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors group">
+                    <div class="text-center mb-4">
+                        <i class="ra ra-player text-5xl text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-purple-400 text-center">Fiche de Personnage</h3>
+                    <p class="text-gray-300 mb-4 text-center">Template complet pour créer des fiches de personnages avec tous les éléments du système Monsterhearts.</p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-white mb-2">Inclus :</h4>
+                        <ul class="text-sm text-gray-400 space-y-1">
+                            <li>• Caractéristiques (Hot, Cold, Volatile, Dark)</li>
+                            <li>• Archétypes de monstres complets</li>
+                            <li>• Actions spécifiques et sexuelles</li>
+                            <li>• Gestion des Cordes sur les autres PJ</li>
+                            <li>• Conditions et leur gestion</li>
+                            <li>• Expérience et évolution</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Créer une fiche
+                        </button>
+                        <button class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Voir un exemple
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cadre de Ville -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors group">
+                    <div class="text-center mb-4">
+                        <i class="ra ra-tower text-5xl text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-purple-400 text-center">Cadre de Ville</h3>
+                    <p class="text-gray-300 mb-4 text-center">Template pour créer le contexte de votre histoire avec lieux, PNJ et tensions sociales.</p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-white mb-2">Inclus :</h4>
+                        <ul class="text-sm text-gray-400 space-y-1">
+                            <li>• Lieux importants de la ville</li>
+                            <li>• Personnages non-joueurs influents</li>
+                            <li>• Tensions et secrets cachés</li>
+                            <li>• Événements récurrents</li>
+                            <li>• Hiérarchies sociales du lycée</li>
+                            <li>• Zones surnaturelles</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Créer un cadre
+                        </button>
+                        <button class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Voir un exemple
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Plan de Classe -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors group">
+                    <div class="text-center mb-4">
+                        <i class="ra ra-book text-5xl text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-purple-400 text-center">Plan de Classe</h3>
+                    <p class="text-gray-300 mb-4 text-center">Template pour organiser la classe de lycée avec les places, groupes et dynamiques sociales.</p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-white mb-2">Inclus :</h4>
+                        <ul class="text-sm text-gray-400 space-y-1">
+                            <li>• Disposition physique de la classe</li>
+                            <li>• Placement des personnages</li>
+                            <li>• Groupes sociaux et cliques</li>
+                            <li>• Professeurs et surveillants</li>
+                            <li>• Zones de tension et d'intimité</li>
+                            <li>• Notes sur les dynamiques</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Créer un plan
+                        </button>
+                        <button class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                            Voir un exemple
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Oracles -->
+            <div class="mt-16">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-white mb-4">Oracles pour Monsterhearts</h3>
+                    <p class="text-gray-300 max-w-3xl mx-auto">
+                        Les oracles sont des outils essentiels pour le jeu en mode "solo" ou pour enrichir vos parties en tant que MJ. 
+                        Ces tables aléatoires vous aident à générer des événements, des complications, des révélations ou des réactions 
+                        de PNJ de manière improvisée, ajoutant de la surprise et de la spontanéité à vos histoires d'adolescents monstres.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
+                        <i class="ra ra-crystal-ball text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <h4 class="text-white font-semibold text-center mb-2">Révélations</h4>
+                        <p class="text-gray-300 text-sm text-center">Secrets qui éclatent au grand jour</p>
+                    </div>
+                    
+                    <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
+                        <i class="ra ra-heart text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <h4 class="text-white font-semibold text-center mb-2">Relations</h4>
+                        <p class="text-gray-300 text-sm text-center">Complications romantiques et sociales</p>
+                    </div>
+                    
+                    <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
+                        <i class="ra ra-demon-skull text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <h4 class="text-white font-semibold text-center mb-2">Monstruosités</h4>
+                        <p class="text-gray-300 text-sm text-center">Manifestations de votre nature</p>
+                    </div>
+                    
+                    <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
+                        <i class="ra ra-lightning text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <h4 class="text-white font-semibold text-center mb-2">Événements</h4>
+                        <p class="text-gray-300 text-sm text-center">Incidents au lycée et en ville</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        Accéder aux Oracles
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Downloads Section -->
+    <div class="bg-gray-700 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Téléchargements</h2>
+                <p class="text-gray-300 max-w-3xl mx-auto">
+                    Découvrez notre collection de ressources gratuites pour Monsterhearts. Ces PDFs ont été créés par la communauté 
+                    et partagés comme ressources globales pour enrichir vos parties.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Aide-mémoire MJ -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Aide-mémoire MJ</h3>
+                            <p class="text-gray-400 text-sm mb-3">Référence rapide des règles et actions</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par RebelliousSmile</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>1.2k téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded">PDF</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Feuille de Relations -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Feuille de Relations</h3>
+                            <p class="text-gray-400 text-sm mb-3">Tracker visuel pour les Cordes et liens</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par la Communauté</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>890 téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded">PDF</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tables d'Événements -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Tables d'Événements</h3>
+                            <p class="text-gray-400 text-sm mb-3">100 événements pour enrichir vos parties</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par MJ_Anonyme</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>2.1k téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded">PDF</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pack Archétypes Étendus -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Pack Archétypes Étendus</h3>
+                            <p class="text-gray-400 text-sm mb-3">5 nouveaux archétypes de monstres</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par HomeBrew_Master</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>756 téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-amber-600 text-white text-xs px-2 py-1 rounded">HOMEBREW</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Générateur de Lycée -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Générateur de Lycée</h3>
+                            <p class="text-gray-400 text-sm mb-3">Tables pour créer votre établissement</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par TableMaster</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>1.5k téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded">PDF</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Guide de Jeu Solo -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-2">Guide de Jeu Solo</h3>
+                            <p class="text-gray-400 text-sm mb-3">Comment jouer seul à Monsterhearts</p>
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <i class="ra ra-player mr-1"></i>
+                                <span>Par SoloGamer</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="ra ra-download mr-1"></i>
+                                <span>934 téléchargements</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-emerald-600 text-white text-xs px-2 py-1 rounded">GUIDE</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors">
+                            <i class="ra ra-download mr-1"></i>Télécharger
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-3 rounded text-sm transition-colors">
+                            <i class="ra ra-eye mr-1"></i>Aperçu
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call to submit resources -->
+            <div class="mt-12 text-center">
+                <div class="bg-gray-800 p-8 rounded-lg border border-purple-500/20">
+                    <h3 class="text-xl font-bold text-white mb-4">Partagez vos créations</h3>
+                    <p class="text-gray-300 mb-6">
+                        Vous avez créé une ressource intéressante ? Partagez-la avec la communauté ! 
+                        Les meilleures créations peuvent être promues en ressources globales.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                            <i class="ra ra-upload mr-2"></i>Soumettre une ressource
+                        </button>
+                        <button class="border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                            <i class="ra ra-help mr-2"></i>Guide de soumission
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 py-16 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-6 text-white">
+                Prêt à créer votre monstre adolescent ?
+            </h2>
+            <p class="text-xl mb-8 text-purple-100">
+                Rejoignez notre communauté et commencez à créer des histoires inoubliables.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/inscription" class="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                    Créer un compte gratuit
+                </a>
+                <a href="/connexion" class="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                    Se connecter
+                </a>
+            </div>
+        </div>
+    </div>
+    `
+}) %>

@@ -11,9 +11,10 @@ const authController = new AuthentificationController();
 
 // Middleware pour injecter les données utilisateur dans les templates
 router.use((req, res, next) => {
+    const { SystemeUtils } = require('../utils/systemesJeu');
     res.locals.utilisateur = req.session?.utilisateur || null;
     res.locals.systemes = systemesJeu;
-    res.locals.systemesJeu = systemesJeu;
+    res.locals.systemesJeu = SystemeUtils.getAllSystemes();
     res.locals.config = {
         appName: 'Générateur PDF JDR',
         version: process.env.npm_package_version || '1.0.0'
@@ -24,12 +25,52 @@ router.use((req, res, next) => {
 // ===== PAGE D'ACCUEIL =====
 
 router.get('/', (req, res) => {
+    const { SystemeUtils } = require('../utils/systemesJeu');
     res.render('index', {
         title: 'Générateur PDF JDR - Créez vos fiches de personnages',
         meta: {
             description: 'Créez et partagez des fiches de personnages pour Monsterhearts, Engrenages & Sortilèges, Metro 2033 et Mist Engine',
             keywords: 'jdr, jeu de rôle, pdf, fiche personnage, monsterhearts, engrenages, metro 2033'
-        }
+        },
+        systemesJeu: SystemeUtils.getAllSystemes()
+    });
+});
+
+// ===== PAGES SYSTEMES DE JEU =====
+
+// Page Monsterhearts
+router.get('/monsterhearts', (req, res) => {
+    res.render('systemes/monsterhearts', {
+        title: 'Monsterhearts - Générateur PDF JDR',
+        description: 'Créez des fiches de personnages pour Monsterhearts',
+        systeme: 'monsterhearts'
+    });
+});
+
+// Page Engrenages
+router.get('/engrenages', (req, res) => {
+    res.render('systemes/engrenages', {
+        title: 'Engrenages & Sortilèges - Générateur PDF JDR',
+        description: 'Créez des fiches de personnages pour Engrenages & Sortilèges',
+        systeme: 'engrenages'
+    });
+});
+
+// Page Metro 2033
+router.get('/metro2033', (req, res) => {
+    res.render('systemes/metro2033', {
+        title: 'Metro 2033 - Générateur PDF JDR',
+        description: 'Créez des fiches de personnages pour Metro 2033',
+        systeme: 'metro2033'
+    });
+});
+
+// Page Mist Engine
+router.get('/mistengine', (req, res) => {
+    res.render('systemes/mistengine', {
+        title: 'Mist Engine - Générateur PDF JDR',
+        description: 'Créez des fiches de personnages pour Mist Engine',
+        systeme: 'mistengine'
     });
 });
 
@@ -105,8 +146,7 @@ router.get('/parametres', authController.middlewareAuth, (req, res) => {
 // Page "Mes documents" - Liste personnages et PDFs
 router.get('/mes-documents', authController.middlewareAuth, (req, res) => {
     res.render('mes-documents', {
-        title: 'Mes Documents - Générateur PDF JDR',
-        systemeFiltre: req.query.systeme || null
+        title: 'Mes Documents - Générateur PDF JDR'
     });
 });
 

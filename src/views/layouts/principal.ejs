@@ -70,21 +70,21 @@
                     </a>
                 </div>
                 
-                <!-- Game Links -->
+                <!-- Game Links (public pages) -->
                 <div class="hidden md:flex items-center space-x-8 font-display">
-                    <a href="/personnages?systeme=monsterhearts" class="flex items-center text-gray-300 hover:text-purple-400 transition-colors">
+                    <a href="/monsterhearts" class="flex items-center text-gray-300 hover:text-purple-400 transition-colors">
                         <i class="ra ra-heartburn text-purple-400 mr-2"></i>
                         <span class="text-sm">Monsterhearts</span>
                     </a>
-                    <a href="/personnages?systeme=engrenages" class="flex items-center text-gray-300 hover:text-emerald-400 transition-colors">
+                    <a href="/engrenages" class="flex items-center text-gray-300 hover:text-emerald-400 transition-colors">
                         <i class="ra ra-candle text-emerald-400 mr-2"></i>
                         <span class="text-sm">Engrenages</span>
                     </a>
-                    <a href="/personnages?systeme=metro2033" class="flex items-center text-gray-300 hover:text-red-400 transition-colors">
+                    <a href="/metro2033" class="flex items-center text-gray-300 hover:text-red-400 transition-colors">
                         <i class="ra ra-pills text-red-400 mr-2"></i>
                         <span class="text-sm">Metro 2033</span>
                     </a>
-                    <a href="/personnages?systeme=mistengine" class="flex items-center text-gray-300 hover:text-pink-400 transition-colors">
+                    <a href="/mistengine" class="flex items-center text-gray-300 hover:text-pink-400 transition-colors">
                         <i class="ra ra-ocarina text-pink-400 mr-2"></i>
                         <span class="text-sm">Mist Engine</span>
                     </a>
@@ -164,7 +164,7 @@
                     <% if (locals.utilisateur.role !== 'UTILISATEUR') { %>
                     <a @click="naviguer('/admin')" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Administration</a>
                     <% } %>
-                    <button @click="$store.app.requeteApi('/auth/deconnexion', {method: 'POST'}).then(() => location.href = '/connexion')" 
+                    <button @click="$store.app.requeteApi('/auth/deconnexion', {method: 'POST'}).then(() => location.href = '/')" 
                             class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">
                         Se déconnecter
                     </button>
