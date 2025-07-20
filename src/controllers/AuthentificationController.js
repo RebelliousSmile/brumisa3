@@ -12,38 +12,33 @@ class AuthentificationController extends BaseController {
     }
 
     /**
-     * Connexion utilisateur (création si n'existe pas)
+     * Connexion utilisateur
      * POST /api/auth/connexion
      */
     connexion = this.wrapAsync(async (req, res) => {
-        this.validerParametres(req, ['nom', 'email']);
+        this.validerParametres(req, ['email', 'motDePasse']);
         
-        const { nom, email } = this.sanitizeInput(req.body);
+        const { email, motDePasse } = this.sanitizeInput(req.body);
         
         // Valider le format email
         if (!this.validerEmail(email)) {
             return this.repondreErreur(res, 400, 'Format email invalide');
         }
         
-        // Trouver ou créer l'utilisateur
-        let utilisateur = await this.utilisateurService.obtenirParEmail(email);
+        // Authentifier l'utilisateur
+        const utilisateur = await this.utilisateurService.authentifier(email, motDePasse);
         
         if (!utilisateur) {
-            // Créer un nouveau utilisateur
-            utilisateur = await this.utilisateurService.creer({
-                nom: nom.trim(),
-                email: email.toLowerCase().trim(),
-                role: 'UTILISATEUR'
-            });
-            
-            this.logger.info('Nouvel utilisateur créé', { 
-                id: utilisateur.id, 
-                email: utilisateur.email 
-            });
-        } else {
-            // Mettre à jour la dernière connexion
-            await this.utilisateurService.mettreAJourDerniereConnexion(utilisateur.id);
+            return this.repondreErreur(res, 401, 'Email ou mot de passe incorrect');
         }
+        
+        // Vérifier que le compte est actif
+        if (!utilisateur.actif) {
+            return this.repondreErreur(res, 403, 'Compte désactivé');
+        }
+        
+        // Mettre à jour la dernière connexion
+        await this.utilisateurService.mettreAJourDerniereConnexion(utilisateur.id);
         
         // Créer la session
         req.session.utilisateur = {
@@ -81,13 +76,30 @@ class AuthentificationController extends BaseController {
      * POST /api/auth/inscription
      */
     inscription = this.wrapAsync(async (req, res) => {
-        this.validerParametres(req, ['nom', 'email']);
+        // Debug temporaire
+        console.log('=== DEBUG INSCRIPTION ===');
+        console.log('req.body brut:', req.body);
+        console.log('typeof req.body:', typeof req.body);
+        console.log('req.headers:', req.headers);
         
-        const { nom, email } = this.sanitizeInput(req.body);
+        this.validerParametres(req, ['nom', 'email', 'motDePasse']);
+        
+        const { nom, email, motDePasse, confirmationMotDePasse } = this.sanitizeInput(req.body);
+        console.log('Après sanitizeInput:', { nom, email, motDePasse: motDePasse ? '***' : undefined });
         
         // Valider le format email
         if (!this.validerEmail(email)) {
             return this.repondreErreur(res, 400, 'Format email invalide');
+        }
+        
+        // Valider le mot de passe
+        if (!motDePasse || motDePasse.length < 8) {
+            return this.repondreErreur(res, 400, 'Le mot de passe doit contenir au moins 8 caractères');
+        }
+        
+        // Vérifier la confirmation du mot de passe
+        if (confirmationMotDePasse && motDePasse !== confirmationMotDePasse) {
+            return this.repondreErreur(res, 400, 'Les mots de passe ne correspondent pas');
         }
         
         // Vérifier que l'utilisateur n'existe pas déjà
@@ -100,6 +112,7 @@ class AuthentificationController extends BaseController {
         const utilisateur = await this.utilisateurService.creer({
             nom: nom.trim(),
             email: email.toLowerCase().trim(),
+            mot_de_passe: motDePasse,
             role: 'UTILISATEUR'
         });
         
@@ -349,6 +362,79 @@ class AuthentificationController extends BaseController {
             }
         };
     };
+
+    /**
+     * Demande de récupération de mot de passe
+     * POST /api/auth/mot-de-passe-oublie
+     */
+    motDePasseOublie = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['email']);
+        
+        const { email } = this.sanitizeInput(req.body);
+        
+        // Valider le format email
+        if (!this.validerEmail(email)) {
+            return this.repondreErreur(res, 400, 'Format email invalide');
+        }
+        
+        // Générer le token de récupération
+        const resultat = await this.utilisateurService.genererTokenRecuperation(email);
+        
+        if (resultat) {
+            this.logger.info('Token de récupération demandé', { 
+                email: email,
+                ip: req.ip
+            });
+            
+            // TODO: Envoyer l'email avec le lien de récupération
+            // En attendant l'intégration d'un service d'emailing, on log le token
+            this.logger.info('Lien de récupération (DEV SEULEMENT)', {
+                email: email,
+                token: resultat.token,
+                lien: `${req.protocol}://${req.get('host')}/reinitialiser-mot-de-passe/${resultat.token}`
+            });
+        }
+        
+        // Toujours répondre succès pour ne pas révéler si l'email existe
+        return this.repondreSucces(res, null, 'Si cet email existe, vous recevrez un lien de récupération');
+    });
+
+    /**
+     * Réinitialisation du mot de passe avec token
+     * POST /api/auth/reinitialiser-mot-de-passe
+     */
+    reinitialiserMotDePasse = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['token', 'motDePasse']);
+        
+        const { token, motDePasse, confirmationMotDePasse } = this.sanitizeInput(req.body);
+        
+        // Valider le mot de passe
+        if (!motDePasse || motDePasse.length < 8) {
+            return this.repondreErreur(res, 400, 'Le mot de passe doit contenir au moins 8 caractères');
+        }
+        
+        // Vérifier la confirmation du mot de passe
+        if (confirmationMotDePasse && motDePasse !== confirmationMotDePasse) {
+            return this.repondreErreur(res, 400, 'Les mots de passe ne correspondent pas');
+        }
+        
+        // Valider le token
+        const utilisateur = await this.utilisateurService.validerTokenRecuperation(token);
+        
+        if (!utilisateur) {
+            return this.repondreErreur(res, 400, 'Token invalide ou expiré');
+        }
+        
+        // Mettre à jour le mot de passe
+        await this.utilisateurService.mettreAJourMotDePasse(utilisateur.id, motDePasse);
+        
+        this.logger.info('Mot de passe réinitialisé', { 
+            utilisateur_id: utilisateur.id,
+            ip: req.ip
+        });
+        
+        return this.repondreSucces(res, null, 'Mot de passe mis à jour avec succès');
+    });
 }
 
 module.exports = AuthentificationController;

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{personnage.nom}} - Monsterhearts</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', 'Times New Roman', serif;
+            font-size: 11pt;
+            line-height: 1.3;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .page {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            min-height: 297mm;
+        }
+        
+        h1 {
+            font-size: 24pt;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: normal;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #8b5cf6;
+        }
+        
+        h2 {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 15px 0 10px;
+            border-bottom: 1px solid #8b5cf6;
+            padding-bottom: 3px;
+            color: #8b5cf6;
+        }
+        
+        .columns {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .column {
+            flex: 1;
+        }
+        
+        .field {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10pt;
+            margin-bottom: 3px;
+        }
+        
+        .value {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #666;
+            padding: 2px 0;
+            font-family: inherit;
+            font-size: 11pt;
+            background: transparent;
+            min-height: 20px;
+        }
+        
+        .value.filled {
+            border-bottom: 1px solid #8b5cf6;
+            font-weight: 500;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat label {
+            font-size: 10pt;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            width: 40px;
+            height: 30px;
+            text-align: center;
+            border: 2px solid #8b5cf6;
+            font-size: 14pt;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b5cf6;
+        }
+        
+        .checkbox-list {
+            margin: 10px 0;
+        }
+        
+        .checkbox-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #666;
+            margin-top: 2px;
+            background: {{#if checked}}#8b5cf6{{else}}white{{/if}};
+        }
+        
+        .checkbox.checked {
+            background: #8b5cf6;
+            position: relative;
+        }
+        
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            font-size: 12px;
+        }
+        
+        .checkbox-item-label {
+            font-weight: normal;
+            text-transform: none;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+        
+        .checkbox-item strong {
+            font-weight: bold;
+        }
+        
+        .harm-track {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .harm-boxes {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .harm-box {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #8b5cf6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .harm-box.filled {
+            background: #8b5cf6;
+        }
+        
+        .harm-box.filled::after {
+            content: '✗';
+            color: white;
+            font-weight: bold;
+        }
+        
+        .conditions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .experience-track {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .experience-track label {
+            margin-right: 10px;
+        }
+        
+        .experience-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #8b5cf6;
+        }
+        
+        .experience-box.filled {
+            background: #8b5cf6;
+        }
+        
+        .strings-section {
+            margin-top: 15px;
+        }
+        
+        .string-entry {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+        
+        .string-name {
+            flex: 1;
+            border-bottom: 1px solid #666;
+            padding: 2px 0;
+        }
+        
+        .string-value {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #8b5cf6;
+            padding: 2px;
+            font-weight: bold;
+            color: #8b5cf6;
+        }
+        
+        .notes-section {
+            margin-top: 20px;
+        }
+        
+        .notes-content {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #666;
+            padding: 5px;
+            font-family: inherit;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+        
+        .skin-specific {
+            background: #f3f4f6;
+            border-left: 4px solid #8b5cf6;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .page {
+                padding: 10mm;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>Monsterhearts</h1>
+        
+        <div class="columns">
+            <div class="column">
+                <h2>Identité</h2>
+                <div class="field">
+                    <label>Nom</label>
+                    <div class="value {{#if personnage.nom}}filled{{/if}}">{{personnage.nom}}</div>
+                </div>
+                <div class="field">
+                    <label>Apparence</label>
+                    <div class="value {{#if personnage.donnees_personnage.apparence}}filled{{/if}}">{{personnage.donnees_personnage.apparence}}</div>
+                </div>
+                <div class="field">
+                    <label>Regard</label>
+                    <div class="value {{#if personnage.donnees_personnage.regard}}filled{{/if}}">{{personnage.donnees_personnage.regard}}</div>
+                </div>
+                <div class="field">
+                    <label>Origine</label>
+                    <div class="value {{#if personnage.donnees_personnage.origine}}filled{{/if}}">{{personnage.donnees_personnage.origine}}</div>
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2>Mue</h2>
+                <div class="field">
+                    <label>Skin sélectionnée</label>
+                    <div class="value {{#if personnage.donnees_personnage.skin}}filled{{/if}}">
+                        {{#switch personnage.donnees_personnage.skin}}
+                            {{#case "vampire"}}Le Vampire{{/case}}
+                            {{#case "loup-garou"}}Le Loup-Garou{{/case}}
+                            {{#case "fee"}}La Fée{{/case}}
+                            {{#case "fantome"}}Le Fantôme{{/case}}
+                            {{#case "goule"}}La Goule{{/case}}
+                            {{#case "hollow"}}Le Hollow{{/case}}
+                            {{#case "infernal"}}L'Infernal{{/case}}
+                            {{#case "mortel"}}Le Mortel{{/case}}
+                            {{#case "reine"}}La Reine{{/case}}
+                            {{#case "sorciere"}}La Sorcière{{/case}}
+                            {{#default}}{{personnage.donnees_personnage.skin}}{{/default}}
+                        {{/switch}}
+                    </div>
+                </div>
+                
+                <h2>Caractéristiques</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <label>Sexy</label>
+                        <div class="stat-value">{{personnage.donnees_personnage.stats.hot}}</div>
+                    </div>
+                    <div class="stat">
+                        <label>Glacial</label>
+                        <div class="stat-value">{{personnage.donnees_personnage.stats.cold}}</div>
+                    </div>
+                    <div class="stat">
+                        <label>Instable</label>
+                        <div class="stat-value">{{personnage.donnees_personnage.stats.volatile}}</div>
+                    </div>
+                    <div class="stat">
+                        <label>Ténébreux</label>
+                        <div class="stat-value">{{personnage.donnees_personnage.stats.dark}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="columns">
+            <div class="column">
+                <h2>Actions de Base</h2>
+                <div class="checkbox-list">
+                    {{#each personnage.donnees_personnage.moves.basic}}
+                    <div class="checkbox-item">
+                        <div class="checkbox {{#if this.checked}}checked{{/if}}"></div>
+                        <div class="checkbox-item-label">{{{this.description}}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2>Actions de Mue</h2>
+                <div class="skin-specific">
+                    <div class="checkbox-list">
+                        {{#each personnage.donnees_personnage.moves.skin}}
+                        <div class="checkbox-item">
+                            <div class="checkbox {{#if this.checked}}checked{{/if}}"></div>
+                            <div class="checkbox-item-label">{{{this.description}}}</div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="columns">
+            <div class="column">
+                <h2>Dégâts</h2>
+                <div class="harm-track">
+                    <div class="harm-boxes">
+                        {{#each personnage.donnees_personnage.harm}}
+                        <div class="harm-box {{#if this}}filled{{/if}}"></div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <h2>Conditions</h2>
+                <div class="conditions">
+                    {{#each personnage.donnees_personnage.conditions}}
+                    <div class="checkbox-item">
+                        <div class="checkbox {{#if this.active}}checked{{/if}}"></div>
+                        <div class="checkbox-item-label">{{this.name}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            
+            <div class="column">
+                <h2>Expérience</h2>
+                <div class="experience-track">
+                    <label>XP:</label>
+                    {{#repeat personnage.donnees_personnage.experience.current}}
+                    <div class="experience-box filled"></div>
+                    {{/repeat}}
+                    {{#repeat (subtract 5 personnage.donnees_personnage.experience.current)}}
+                    <div class="experience-box"></div>
+                    {{/repeat}}
+                </div>
+                
+                <h2>Ascendants</h2>
+                <div class="strings-section">
+                    {{#each personnage.donnees_personnage.strings}}
+                    <div class="string-entry">
+                        <div class="string-name">{{this.character}}</div>
+                        <div class="string-value">{{this.value}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+        
+        <div class="notes-section">
+            <h2>Histoire Personnelle</h2>
+            <div class="notes-content">{{personnage.donnees_personnage.backstory}}</div>
+        </div>
+        
+        <div class="notes-section">
+            <h2>Démon Intérieur</h2>
+            <div class="notes-content">{{personnage.donnees_personnage.darkestSelf}}</div>
+        </div>
+        
+        {{#if personnage.notes_privees}}
+        <div class="notes-section">
+            <h2>Notes du Joueur</h2>
+            <div class="notes-content">{{personnage.notes_privees}}</div>
+        </div>
+        {{/if}}
+    </div>
+</body>
+</html>

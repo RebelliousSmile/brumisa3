@@ -1,5 +1,5 @@
 const BaseService = require('./BaseService');
-const UtilisateurModel = require('../models/Utilisateur');
+const Utilisateur = require('../models/Utilisateur');
 const crypto = require('crypto');
 
 /**
@@ -8,7 +8,7 @@ const crypto = require('crypto');
 class UtilisateurService extends BaseService {
     constructor() {
         super('UtilisateurService');
-        this.utilisateurModel = new UtilisateurModel();
+        this.utilisateurModel = new Utilisateur();
     }
 
     /**
@@ -25,11 +25,11 @@ class UtilisateurService extends BaseService {
                 throw new Error('Un utilisateur avec cet email existe déjà');
             }
             
-            // Préparer les données
+            // Préparer les données (conversion camelCase vers snake_case pour la DB)
             const donneesCompletes = {
-                ...donnees,
-                email: donnees.email.toLowerCase().trim(),
                 nom: donnees.nom.trim(),
+                email: donnees.email.toLowerCase().trim(),
+                mot_de_passe: donnees.motDePasse || donnees.mot_de_passe, // Support des deux formats
                 role: donnees.role || 'UTILISATEUR',
                 actif: true,
                 date_creation: new Date(),
@@ -37,7 +37,7 @@ class UtilisateurService extends BaseService {
             };
             
             // Créer l'utilisateur
-            const utilisateur = await this.utilisateurModel.creer(donneesCompletes);
+            const utilisateur = await this.utilisateurModel.create(donneesCompletes);
             
             this.logger.info('Utilisateur créé:', { 
                 id: utilisateur.id, 
@@ -102,7 +102,7 @@ class UtilisateurService extends BaseService {
             donneesAutorisees.date_modification = new Date();
             
             // Mettre à jour
-            const utilisateurMisAJour = await this.utilisateurModel.mettreAJour(id, donneesAutorisees);
+            const utilisateurMisAJour = await this.utilisateurModel.update(id, donneesAutorisees);
             
             this.logger.info('Utilisateur mis à jour:', { 
                 id: utilisateurMisAJour.id, 
@@ -257,19 +257,18 @@ class UtilisateurService extends BaseService {
             const whereClause = conditions.length > 0 ? conditions.join(' AND ') : null;
             
             // Compter le total
-            const total = await this.utilisateurModel.compter(whereClause, valeurs);
+            const total = await this.utilisateurModel.count(whereClause, valeurs);
             
             // Récupérer les utilisateurs avec pagination
             const offset = pagination.offset || 0;
             const limite = pagination.limite || 20;
             
-            const utilisateurs = await this.utilisateurModel.lister({
-                where: whereClause,
-                valeurs,
-                order: 'date_creation DESC',
-                limit: limite,
-                offset
-            });
+            const utilisateurs = await this.utilisateurModel.findAll(
+                whereClause, 
+                valeurs, 
+                'date_creation DESC', 
+                limite
+            );
             
             return { utilisateurs, total };
             
@@ -298,12 +297,12 @@ class UtilisateurService extends BaseService {
             
             const limite = Math.min(options.limite || 10, 50);
             
-            const utilisateurs = await this.utilisateurModel.lister({
-                where: conditions.join(' AND '),
+            const utilisateurs = await this.utilisateurModel.findAll(
+                conditions.join(' AND '),
                 valeurs,
-                order: 'nom ASC',
-                limit: limite
-            });
+                'nom ASC',
+                limite
+            );
             
             // Ne retourner que les infos publiques
             return utilisateurs.map(user => ({
@@ -324,9 +323,85 @@ class UtilisateurService extends BaseService {
      */
     async obtenirStatistiques() {
         try {
-            return await this.utilisateurModel.obtenirStatistiques();
+            return await this.utilisateurModel.compterParRole();
         } catch (erreur) {
             this.logger.error('Erreur lors du calcul des statistiques:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Authentifie un utilisateur avec email et mot de passe
+     */
+    async authentifier(email, motDePasse) {
+        try {
+            const utilisateur = await this.obtenirParEmail(email);
+            console.log('=== DEBUG AUTHENTIFICATION ===');
+            console.log('Utilisateur trouvé:', utilisateur ? 'OUI' : 'NON');
+            if (utilisateur) {
+                console.log('ID:', utilisateur.id);
+                console.log('Email:', utilisateur.email);
+                console.log('Mot de passe hashé présent:', !!utilisateur.mot_de_passe);
+                console.log('Hash:', utilisateur.mot_de_passe ? utilisateur.mot_de_passe.substring(0, 50) + '...' : 'ABSENT');
+            }
+            
+            if (!utilisateur) {
+                console.log('ECHEC: Utilisateur non trouvé');
+                return null;
+            }
+            
+            if (!utilisateur.mot_de_passe) {
+                console.log('ECHEC: Mot de passe hashé absent de la BDD');
+                return null;
+            }
+            
+            // Vérifier le mot de passe avec le modèle
+            console.log('Vérification du mot de passe...');
+            const motDePasseValide = await this.utilisateurModel.verifierMotDePasse(motDePasse, utilisateur.mot_de_passe);
+            console.log('Mot de passe valide:', motDePasseValide);
+            
+            if (!motDePasseValide) {
+                this.logger.warn('Tentative de connexion avec mot de passe incorrect:', { 
+                    email,
+                    utilisateur_id: utilisateur.id 
+                });
+                return null;
+            }
+            
+            console.log('SUCCES: Authentification réussie');
+            return utilisateur;
+            
+        } catch (erreur) {
+            console.log('ERREUR:', erreur.message);
+            this.logger.error('Erreur lors de l\'authentification:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Met à jour le mot de passe d'un utilisateur
+     */
+    async mettreAJourMotDePasse(id, nouveauMotDePasse) {
+        try {
+            // Vérifier que l'utilisateur existe
+            const utilisateur = await this.obtenirParId(id);
+            if (!utilisateur) {
+                throw new Error('Utilisateur non trouvé');
+            }
+            
+            // Le modèle se charge du hachage automatiquement
+            await this.mettreAJour(id, {
+                mot_de_passe: nouveauMotDePasse,
+                token_recuperation: null,
+                token_expiration: null
+            });
+            
+            this.logger.info('Mot de passe mis à jour:', { utilisateur_id: id });
+            
+            return true;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la mise à jour du mot de passe ${id}:`, erreur);
             throw erreur;
         }
     }
@@ -399,7 +474,14 @@ class UtilisateurService extends BaseService {
     async nettoyerTokensExpires() {
         try {
             const maintenant = new Date();
-            const nbNettoyes = await this.utilisateurModel.nettoyerTokensExpires(maintenant);
+            // Pour l'instant, on fait une mise à jour manuelle des tokens expirés
+            const { sql, params } = this.utilisateurModel.convertPlaceholders(
+                `UPDATE utilisateurs SET token_recuperation = NULL, token_expiration = NULL WHERE token_expiration < ?`,
+                [maintenant.toISOString()]
+            );
+            const db = require('../database/db');
+            const result = await db.run(sql, params);
+            const nbNettoyes = result.rowCount || 0;
             
             this.logger.info(`${nbNettoyes} tokens expirés nettoyés`);
             return nbNettoyes;
@@ -463,7 +545,7 @@ class UtilisateurService extends BaseService {
      * Filtre les données autorisées pour une mise à jour
      */
     filtrerDonneesMAJ(donnees) {
-        const champsAutorises = ['nom', 'email', 'role', 'actif', 'derniere_connexion'];
+        const champsAutorises = ['nom', 'email', 'role', 'actif', 'derniere_connexion', 'mot_de_passe', 'token_recuperation', 'token_expiration'];
         const donneesFiltr = {};
         
         champsAutorises.forEach(champ => {
@@ -488,12 +570,12 @@ class UtilisateurService extends BaseService {
      */
     async obtenirUtilisateursRecents(limite = 10) {
         try {
-            return await this.utilisateurModel.lister({
-                where: 'actif = ? AND derniere_connexion IS NOT NULL',
-                valeurs: [true],
-                order: 'derniere_connexion DESC',
-                limit: limite
-            });
+            return await this.utilisateurModel.findAll(
+                'actif = ? AND derniere_connexion IS NOT NULL',
+                [true],
+                'derniere_connexion DESC',
+                limite
+            );
         } catch (erreur) {
             this.logger.error('Erreur lors de la récupération des utilisateurs récents:', erreur);
             throw erreur;

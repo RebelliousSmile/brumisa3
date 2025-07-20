@@ -131,27 +131,241 @@
 ## 🎨 Applications par composant
 
 ### Boutons
+
+#### Types de boutons
+
+1. **Primaire** : Actions principales (CTA)
+2. **Secondaire** : Actions secondaires 
+3. **Tertiaire** : Actions minimales (liens stylisés)
+4. **Danger** : Actions destructives
+5. **Système** : Boutons thématisés par JDR
+
+#### Définition des boutons
+
+##### Structure de base
+```html
+<button class="btn btn-[type] btn-[size]">
+  <i class="ra ra-icon mr-2"></i>
+  <span>Texte du bouton</span>
+</button>
+```
+
+##### Classes Tailwind
 ```css
-/* Bouton primaire */
+/* Base - commune à tous les boutons */
+.btn {
+  @apply inline-flex items-center justify-center px-6 py-3 
+         font-display font-medium text-base
+         border-2 rounded-lg
+         transition-all duration-200 ease-in-out
+         cursor-pointer
+         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900;
+}
+
+/* Tailles */
+.btn-sm { @apply px-4 py-2 text-sm; }
+.btn-md { @apply px-6 py-3 text-base; } /* default */
+.btn-lg { @apply px-8 py-4 text-lg; }
+.btn-xl { @apply px-10 py-5 text-xl; }
+
+/* Types */
 .btn-primary {
-  background: var(--brand-violet);
-  color: var(--blanc);
-  font-family: 'Shackleton', sans-serif;
-  border: 2px solid var(--brand-violet);
+  @apply bg-blue-600 text-white border-blue-600
+         hover:bg-blue-700 hover:border-blue-700
+         focus:ring-blue-500;
 }
 
-.btn-primary:hover {
-  background: var(--brand-violet-dark);
-  border-color: var(--brand-violet-dark);
-}
-
-/* Bouton secondaire */
 .btn-secondary {
-  background: var(--gris-fonce);
-  color: var(--blanc);
-  border: 2px solid var(--gris-fonce);
+  @apply bg-gray-800 text-gray-300 border-gray-700
+         hover:bg-gray-700 hover:text-white hover:border-gray-600
+         focus:ring-gray-500;
+}
+
+.btn-tertiary {
+  @apply bg-transparent text-gray-400 border-transparent
+         hover:text-white hover:bg-gray-800/50
+         focus:ring-gray-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white border-red-600
+         hover:bg-red-700 hover:border-red-700
+         focus:ring-red-500;
+}
+
+/* États */
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed
+         hover:bg-current hover:border-current;
+}
+
+/* Variantes */
+.btn-outline {
+  @apply bg-transparent;
+}
+
+.btn-outline.btn-primary {
+  @apply text-blue-400 border-blue-400
+         hover:bg-blue-600 hover:text-white hover:border-blue-600;
+}
+
+.btn-outline.btn-secondary {
+  @apply text-gray-400 border-gray-600
+         hover:bg-gray-800 hover:text-white hover:border-gray-700;
+}
+
+/* Boutons icon-only */
+.btn-icon {
+  @apply p-3;
+}
+
+.btn-icon.btn-sm { @apply p-2; }
+.btn-icon.btn-lg { @apply p-4; }
+```
+
+#### Boutons par système JDR
+
+Chaque système a sa propre couleur d'accent pour les boutons contextuels :
+
+```css
+/* Monsterhearts - Violet gothique */
+.btn-monsterhearts {
+  @apply bg-purple-600 text-white border-purple-600
+         hover:bg-purple-700 hover:border-purple-700
+         focus:ring-purple-500;
+}
+
+.btn-outline.btn-monsterhearts {
+  @apply text-purple-400 border-purple-500
+         hover:bg-purple-600 hover:text-white hover:border-purple-600;
+}
+
+/* Engrenages - Vert émeraude */
+.btn-engrenages {
+  @apply bg-emerald-600 text-white border-emerald-600
+         hover:bg-emerald-700 hover:border-emerald-700
+         focus:ring-emerald-500;
+}
+
+.btn-outline.btn-engrenages {
+  @apply text-emerald-400 border-emerald-500
+         hover:bg-emerald-600 hover:text-white hover:border-emerald-600;
+}
+
+/* Metro 2033 - Rouge post-apo */
+.btn-metro2033 {
+  @apply bg-red-700 text-white border-red-700
+         hover:bg-red-800 hover:border-red-800
+         focus:ring-red-600;
+}
+
+.btn-outline.btn-metro2033 {
+  @apply text-red-400 border-red-600
+         hover:bg-red-700 hover:text-white hover:border-red-700;
+}
+
+/* Mist Engine - Rose mystique */
+.btn-mistengine {
+  @apply bg-pink-600 text-white border-pink-600
+         hover:bg-pink-700 hover:border-pink-700
+         focus:ring-pink-500;
+}
+
+.btn-outline.btn-mistengine {
+  @apply text-pink-400 border-pink-500
+         hover:bg-pink-600 hover:text-white hover:border-pink-600;
 }
 ```
+
+#### Exemples d'utilisation
+
+```html
+<!-- Bouton primaire -->
+<button class="btn btn-primary">
+  <i class="ra ra-scroll mr-2"></i>
+  <span>Créer un personnage</span>
+</button>
+
+<!-- Bouton secondaire outline -->
+<button class="btn btn-secondary btn-outline">
+  <span>Annuler</span>
+</button>
+
+<!-- Bouton système Monsterhearts -->
+<button class="btn btn-monsterhearts btn-lg">
+  <i class="ra ra-hearts mr-2"></i>
+  <span>Jouer Monsterhearts</span>
+</button>
+
+<!-- Bouton icon-only -->
+<button class="btn btn-primary btn-icon" aria-label="Paramètres">
+  <i class="ra ra-gear"></i>
+</button>
+
+<!-- Bouton danger petit -->
+<button class="btn btn-danger btn-sm">
+  <i class="ra ra-trash mr-2"></i>
+  <span>Supprimer</span>
+</button>
+
+<!-- Groupe de boutons -->
+<div class="flex gap-3">
+  <button class="btn btn-primary">Sauvegarder</button>
+  <button class="btn btn-secondary btn-outline">Annuler</button>
+</div>
+```
+
+#### Animations et effets
+
+```css
+/* Effet de pulsation pour CTA importants */
+.btn-pulse {
+  @apply relative overflow-hidden;
+}
+
+.btn-pulse::before {
+  content: '';
+  @apply absolute inset-0 bg-white/20;
+  animation: pulse-wave 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes pulse-wave {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Effet de glitch pour Metro 2033 */
+.btn-glitch {
+  position: relative;
+}
+
+.btn-glitch:hover {
+  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+```
+
+#### Accessibilité
+
+- Toujours inclure un `aria-label` pour les boutons icon-only
+- Respecter les ratios de contraste WCAG AA (4.5:1)
+- États focus visibles avec `focus:ring`
+- Support clavier complet (Enter/Espace)
+
+#### Guidelines d'usage
+
+1. **Un seul CTA primaire** par section/écran
+2. **Hiérarchie claire** : primaire > secondaire > tertiaire
+3. **Icônes cohérentes** : utiliser RPG Awesome pour l'ambiance JDR
+4. **Espacement** : minimum 8px entre boutons groupés
+5. **Mobile** : taille minimum 44x44px pour les zones tactiles
 
 ### Cartes et conteneurs
 ```css

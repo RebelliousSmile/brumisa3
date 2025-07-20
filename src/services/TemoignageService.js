@@ -1,4 +1,5 @@
 const BaseService = require('./BaseService');
+const Temoignage = require('../models/Temoignage');
 
 /**
  * Service pour la gestion des témoignages
@@ -6,12 +7,7 @@ const BaseService = require('./BaseService');
 class TemoignageService extends BaseService {
     constructor() {
         super('TemoignageService');
-        // En production, on utiliserait une vraie base de données
-        // Pour l'instant, stockage en mémoire (sera perdu au redémarrage)
-        this.temoignages = [];
-        
-        // Initialiser avec quelques témoignages de test
-        this.initialiserTemoignagesTest();
+        this.temoignageModel = new Temoignage();
     }
 
     /**

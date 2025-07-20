@@ -305,6 +305,28 @@ class PdfController extends BaseController {
         
         return this.repondreSucces(res, types, 'Types de PDF disponibles');
     });
+
+    /**
+     * Liste les templates disponibles pour un système
+     * GET /api/pdfs/templates/:systeme
+     */
+    listerTemplates = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['systeme']);
+        
+        const templates = await this.pdfService.listerTemplates(req.params.systeme);
+        
+        return this.repondreSucces(res, templates, `Templates disponibles pour ${req.params.systeme}`);
+    });
+
+    /**
+     * Obtient les types de templates disponibles
+     * GET /api/pdfs/types-templates
+     */
+    obtenirTypesTemplates = this.wrapAsync(async (req, res) => {
+        const types = await this.pdfService.obtenirTypesTemplates();
+        
+        return this.repondreSucces(res, types, 'Types de templates disponibles');
+    });
 }
 
 module.exports = PdfController;

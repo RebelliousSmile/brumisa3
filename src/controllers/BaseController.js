@@ -179,7 +179,7 @@ class BaseController {
      */
     wrapAsync(fn) {
         return (req, res, next) => {
-            Promise.resolve(fn(req, res, next)).catch(erreur => {
+            Promise.resolve(fn.call(this, req, res, next)).catch(erreur => {
                 this.gererErreur(res, erreur);
             });
         };

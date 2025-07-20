@@ -1,0 +1,88 @@
+<%
+// Composant Bouton EJS
+// Usage: <%- include('partials/button', { 
+//   text: 'Texte du bouton',
+//   type: 'primary|secondary|tertiary|danger|monsterhearts|engrenages|metro2033|mistengine',
+//   size: 'sm|md|lg|xl',
+//   icon: 'ra-icon-name',
+//   href: '/url' (optionnel, crée un lien au lieu d'un bouton),
+//   outline: true|false,
+//   disabled: true|false,
+//   ariaLabel: 'Description pour accessibilité',
+//   iconOnly: true|false,
+//   class: 'classes-additionnelles'
+// }) %>
+
+<%
+// Valeurs par défaut
+const buttonType = locals.type || 'primary';
+const buttonSize = locals.size || 'md';
+const isOutline = locals.outline || false;
+const isDisabled = locals.disabled || false;
+const isIconOnly = locals.iconOnly || false;
+const additionalClasses = locals.class || '';
+
+// Construction des classes
+let classes = ['btn'];
+
+// Type de bouton
+classes.push(`btn-${buttonType}`);
+
+// Taille
+if (buttonSize !== 'md') {
+  classes.push(`btn-${buttonSize}`);
+}
+
+// Variantes
+if (isOutline) {
+  classes.push('btn-outline');
+}
+
+if (isIconOnly) {
+  classes.push('btn-icon');
+}
+
+// Classes additionnelles
+if (additionalClasses) {
+  classes.push(additionalClasses);
+}
+
+// Conversion en string
+const classString = classes.join(' ');
+
+// Attributs
+const attributes = [];
+if (isDisabled) {
+  attributes.push('disabled');
+}
+if (locals.ariaLabel) {
+  attributes.push(`aria-label="${locals.ariaLabel}"`);
+}
+
+// Type d'élément (button ou a)
+const isLink = !!locals.href;
+%>
+
+<% if (isLink) { %>
+  <a href="<%= locals.href %>" class="<%= classString %>" <%= attributes.join(' ') %>>
+    <% if (locals.icon && !isIconOnly) { %>
+      <i class="ra ra-<%= locals.icon %> mr-2"></i>
+    <% } %>
+    <% if (locals.icon && isIconOnly) { %>
+      <i class="ra ra-<%= locals.icon %>"></i>
+    <% } else if (locals.text) { %>
+      <span><%= locals.text %></span>
+    <% } %>
+  </a>
+<% } else { %>
+  <button class="<%= classString %>" <%= attributes.join(' ') %>>
+    <% if (locals.icon && !isIconOnly) { %>
+      <i class="ra ra-<%= locals.icon %> mr-2"></i>
+    <% } %>
+    <% if (locals.icon && isIconOnly) { %>
+      <i class="ra ra-<%= locals.icon %>"></i>
+    <% } else if (locals.text) { %>
+      <span><%= locals.text %></span>
+    <% } %>
+  </button>
+<% } %>

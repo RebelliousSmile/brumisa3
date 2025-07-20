@@ -2,14 +2,14 @@
 <div class="min-h-screen bg-gray-900 text-white py-12">
     <div class="max-w-4xl mx-auto px-4">
         <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
-            <i class="ra ra-scroll-unfurled text-purple-400 mr-3"></i>
+            <i class="ra ra-scroll-unfurled text-blue-400 mr-3"></i>
             Mentions Légales
         </h1>
         
         <div class="bg-gray-800/50 rounded-lg p-8 space-y-8">
             <!-- Éditeur du site -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-tower text-xl mr-2"></i>
                     Éditeur du site
                 </h2>
@@ -23,7 +23,7 @@
 
             <!-- Hébergement -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-burning-embers text-xl mr-2"></i>
                     Hébergement
                 </h2>
@@ -35,7 +35,7 @@
 
             <!-- Propriété intellectuelle -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-crystal-ball text-xl mr-2"></i>
                     Propriété intellectuelle
                 </h2>
@@ -54,7 +54,7 @@
 
             <!-- Responsabilité -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-shield text-xl mr-2"></i>
                     Responsabilité
                 </h2>
@@ -74,7 +74,7 @@
 
             <!-- Données personnelles -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-player text-xl mr-2"></i>
                     Données personnelles
                 </h2>
@@ -93,14 +93,14 @@
 
             <!-- Contact -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-horn-call text-xl mr-2"></i>
                     Contact
                 </h2>
                 <div class="text-gray-300">
                     <p>
                         Pour toute question concernant ces mentions légales, vous pouvez nous contacter à : 
-                        <a href="mailto:[email-a-completer]" class="text-purple-400 hover:text-purple-300">[email-a-completer]</a>
+                        <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a>
                     </p>
                 </div>
             </section>
@@ -108,10 +108,12 @@
 
         <!-- Retour -->
         <div class="text-center mt-8">
-            <a href="/" class="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors">
-                <i class="ra ra-uncertainty text-xl mr-2"></i>
-                Retour à l'accueil
-            </a>
+            <%- include('partials/button', { 
+                text: "Retour à l'accueil",
+                type: 'tertiary',
+                icon: 'uncertainty',
+                href: '/'
+            }) %>
         </div>
     </div>
 </div>

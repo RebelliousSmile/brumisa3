@@ -17,12 +17,24 @@ class BaseModel {
   }
 
   /**
+   * Convertit les placeholders SQLite (?) vers PostgreSQL ($1, $2, etc.)
+   */
+  convertPlaceholders(sql, params) {
+    let index = 1;
+    const convertedSql = sql.replace(/\?/g, () => `$${index++}`);
+    return { sql: convertedSql, params };
+  }
+
+  /**
    * Trouve un enregistrement par ID
    */
   async findById(id) {
     try {
-      const sql = `SELECT * FROM ${this.tableName} WHERE ${this.primaryKey} = ?`;
-      const row = await db.get(sql, [id]);
+      const { sql, params } = this.convertPlaceholders(
+        `SELECT * FROM ${this.tableName} WHERE ${this.primaryKey} = ?`, 
+        [id]
+      );
+      const row = await db.get(sql, params);
       return row ? this.castAttributes(row) : null;
     } catch (error) {
       logManager.logDatabaseOperation('read', this.tableName, id, false, error);
@@ -35,8 +47,11 @@ class BaseModel {
    */
   async findOne(where, params = []) {
     try {
-      const sql = `SELECT * FROM ${this.tableName} WHERE ${where} LIMIT 1`;
-      const row = await db.get(sql, params);
+      const { sql, params: convertedParams } = this.convertPlaceholders(
+        `SELECT * FROM ${this.tableName} WHERE ${where} LIMIT 1`, 
+        params
+      );
+      const row = await db.get(sql, convertedParams);
       return row ? this.castAttributes(row) : null;
     } catch (error) {
       logManager.logDatabaseOperation('read', this.tableName, null, false, error);
@@ -63,7 +78,8 @@ class BaseModel {
         sql += ` LIMIT ${limit}`;
       }
 
-      const rows = await db.all(sql, params);
+      const { sql: convertedSql, params: convertedParams } = this.convertPlaceholders(sql, params);
+      const rows = await db.all(convertedSql, convertedParams);
       return rows.map(row => this.castAttributes(row));
     } catch (error) {
       logManager.logDatabaseOperation('read', this.tableName, null, false, error);
@@ -72,12 +88,22 @@ class BaseModel {
   }
 
   /**
+   * Crée un nouvel enregistrement (alias français)
+   */
+  async creer(data) {
+    return await this.create(data);
+  }
+
+  /**
    * Crée un nouvel enregistrement
    */
   async create(data) {
     try {
       // Validation et nettoyage des données
-      const cleanData = this.fillableData(data);
+      let cleanData = this.fillableData(data);
+      
+      // Hook beforeCreate
+      cleanData = await this.beforeCreate(cleanData);
       
       if (this.timestamps) {
         cleanData.date_creation = new Date().toISOString();
@@ -92,17 +118,18 @@ class BaseModel {
       const placeholders = fields.map(() => '?').join(', ');
       const values = Object.values(cleanData);
 
-      const sql = `
-        INSERT INTO ${this.tableName} (${fields.join(', ')}) 
-        VALUES (${placeholders})
-      `;
+      const { sql, params } = this.convertPlaceholders(
+        `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES (${placeholders}) RETURNING ${this.primaryKey}`,
+        values
+      );
 
-      const result = await db.run(sql, values);
+      const result = await db.get(sql, params);
+      const insertedId = result[this.primaryKey];
       
-      logManager.logDatabaseOperation('create', this.tableName, result.lastID, true);
+      logManager.logDatabaseOperation('create', this.tableName, insertedId, true);
       
       // Retourne l'enregistrement créé
-      return await this.findById(result.lastID);
+      return await this.findById(insertedId);
     } catch (error) {
       logManager.logDatabaseOperation('create', this.tableName, null, false, error);
       throw error;
@@ -114,7 +141,10 @@ class BaseModel {
    */
   async update(id, data) {
     try {
-      const cleanData = this.fillableData(data);
+      let cleanData = this.fillableData(data);
+      
+      // Hook beforeUpdate
+      cleanData = await this.beforeUpdate(cleanData);
       
       if (this.timestamps) {
         cleanData.date_modification = new Date().toISOString();
@@ -127,15 +157,14 @@ class BaseModel {
       const setClause = fields.map(field => `${field} = ?`).join(', ');
       const values = [...Object.values(cleanData), id];
 
-      const sql = `
-        UPDATE ${this.tableName} 
-        SET ${setClause} 
-        WHERE ${this.primaryKey} = ?
-      `;
+      const { sql, params } = this.convertPlaceholders(
+        `UPDATE ${this.tableName} SET ${setClause} WHERE ${this.primaryKey} = ?`,
+        values
+      );
 
-      const result = await db.run(sql, values);
+      const result = await db.run(sql, params);
       
-      if (result.changes === 0) {
+      if (result.rowCount === 0) {
         throw new Error(`Aucun enregistrement trouvé avec l'ID ${id}`);
       }
 
@@ -153,10 +182,13 @@ class BaseModel {
    */
   async delete(id) {
     try {
-      const sql = `DELETE FROM ${this.tableName} WHERE ${this.primaryKey} = ?`;
-      const result = await db.run(sql, [id]);
+      const { sql, params } = this.convertPlaceholders(
+        `DELETE FROM ${this.tableName} WHERE ${this.primaryKey} = ?`,
+        [id]
+      );
+      const result = await db.run(sql, params);
       
-      if (result.changes === 0) {
+      if (result.rowCount === 0) {
         throw new Error(`Aucun enregistrement trouvé avec l'ID ${id}`);
       }
 
@@ -173,9 +205,12 @@ class BaseModel {
    */
   async count(where = '', params = []) {
     try {
-      const sql = `SELECT COUNT(*) as count FROM ${this.tableName} ${where ? 'WHERE ' + where : ''}`;
-      const result = await db.get(sql, params);
-      return result.count;
+      const { sql, params: convertedParams } = this.convertPlaceholders(
+        `SELECT COUNT(*) as count FROM ${this.tableName} ${where ? 'WHERE ' + where : ''}`,
+        params
+      );
+      const result = await db.get(sql, convertedParams);
+      return parseInt(result.count);
     } catch (error) {
       logManager.logDatabaseOperation('read', this.tableName, null, false, error);
       throw error;
@@ -201,13 +236,11 @@ class BaseModel {
       const total = await this.count(where, params);
       
       // Données paginées
-      const sql = `
-        SELECT * FROM ${this.tableName} 
-        ${where ? 'WHERE ' + where : ''} 
-        ORDER BY ${orderBy} 
-        LIMIT ? OFFSET ?
-      `;
-      const rows = await db.all(sql, [...params, limit, offset]);
+      const { sql, params: convertedParams } = this.convertPlaceholders(
+        `SELECT * FROM ${this.tableName} ${where ? 'WHERE ' + where : ''} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
+        [...params, limit, offset]
+      );
+      const rows = await db.all(sql, convertedParams);
 
       return {
         data: rows.map(row => this.castAttributes(row)),

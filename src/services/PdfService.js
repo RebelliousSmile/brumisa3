@@ -1,6 +1,7 @@
 const BaseService = require('./BaseService');
-const PdfModel = require('../models/Pdf');
-const PersonnageModel = require('../models/Personnage');
+const Pdf = require('../models/Pdf');
+const Personnage = require('../models/Personnage');
+const TemplateService = require('./TemplateService');
 const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
@@ -13,8 +14,9 @@ const systemesJeu = require('../utils/systemesJeu');
 class PdfService extends BaseService {
     constructor() {
         super('PdfService');
-        this.pdfModel = new PdfModel();
-        this.personnageModel = new PersonnageModel();
+        this.pdfModel = new Pdf();
+        this.personnageModel = new Personnage();
+        this.templateService = new TemplateService();
         this.outputDir = path.join(process.cwd(), 'output');
         this.templatesDir = path.join(process.cwd(), 'src', 'templates', 'pdf');
         
@@ -61,7 +63,7 @@ class PdfService extends BaseService {
             const whereClause = conditions.join(' AND ');
             
             // Compter le total
-            const total = await this.pdfModel.compter(whereClause, valeurs);
+            const total = await this.pdfModel.count(whereClause, valeurs);
             
             // Récupérer les PDFs avec pagination
             const offset = pagination.offset || 0;
@@ -218,39 +220,78 @@ class PdfService extends BaseService {
                 throw new Error(`Système ${personnage.systeme_jeu} non supporté`);
             }
             
-            // Charger le template approprié
-            const typePdf = options.type_pdf || 'fiche_personnage';
-            const templatePath = path.join(this.templatesDir, personnage.systeme_jeu, `${typePdf}.html`);
+            // Déterminer le template à utiliser
+            let templateId = options.template_id || 'fiche-personnage';
             
-            let template;
-            try {
-                template = await fs.readFile(templatePath, 'utf8');
-            } catch {
-                // Fallback vers template générique
-                const templateGenerique = path.join(this.templatesDir, 'generique', 'fiche_personnage.html');
-                template = await fs.readFile(templateGenerique, 'utf8');
+            // Vérifier si le template existe pour ce système
+            const templateExiste = await this.templateService.templateExiste(personnage.systeme_jeu, templateId);
+            if (!templateExiste) {
+                this.logger.warn(`Template ${templateId} non trouvé pour ${personnage.systeme_jeu}, utilisation du template par défaut`);
+                templateId = 'fiche-personnage';
             }
             
             // Préparer les données pour le template
-            const donneesTemplate = this.preparerDonneesTemplate(personnage, systeme, options);
+            const donneesTemplate = {
+                personnage,
+                systeme,
+                options,
+                dateGeneration: new Date().toLocaleDateString('fr-FR'),
+                ...options.donnees_additionnelles
+            };
             
-            // Remplacer les variables dans le template
-            let html = template;
-            Object.entries(donneesTemplate).forEach(([cle, valeur]) => {
-                const regex = new RegExp(`{{\\s*${cle}\\s*}}`, 'g');
-                html = html.replace(regex, String(valeur || ''));
-            });
-            
-            // Ajouter les styles CSS
-            const css = await this.obtenirStylesSysteme(personnage.systeme_jeu);
-            html = html.replace('{{styles}}', css);
+            // Rendre le template avec Handlebars
+            const html = await this.templateService.rendreTemplate(
+                personnage.systeme_jeu, 
+                templateId, 
+                donneesTemplate
+            );
             
             return html;
             
         } catch (erreur) {
             this.logger.error('Erreur lors de la génération HTML:', erreur);
+            
+            // Fallback vers un template minimal en cas d'erreur
+            if (erreur.message.includes('Template') && erreur.message.includes('non trouvé')) {
+                return this.genererTemplateMinimal(personnage);
+            }
+            
             throw erreur;
         }
+    }
+
+    /**
+     * Génère un template minimal en cas d'erreur
+     */
+    genererTemplateMinimal(personnage) {
+        return `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>${personnage.nom} - ${personnage.systeme_jeu}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #333; }
+                .field { margin: 10px 0; }
+                .label { font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>${personnage.nom}</h1>
+            <div class="field">
+                <span class="label">Système:</span> ${personnage.systeme_jeu}
+            </div>
+            <div class="field">
+                <span class="label">Créé le:</span> ${new Date(personnage.date_creation).toLocaleDateString('fr-FR')}
+            </div>
+            <div class="field">
+                <span class="label">Données:</span>
+                <pre>${JSON.stringify(personnage.donnees_personnage, null, 2)}</pre>
+            </div>
+        </body>
+        </html>
+        `;
     }
 
     /**
@@ -258,6 +299,20 @@ class PdfService extends BaseService {
      */
     async genererPreviewHtml(personnage, options = {}) {
         return await this.genererHtml(personnage, { ...options, preview: true });
+    }
+
+    /**
+     * Liste les templates disponibles pour un système
+     */
+    async listerTemplates(systemeJeu) {
+        return await this.templateService.listerTemplates(systemeJeu);
+    }
+
+    /**
+     * Obtient les types de templates disponibles
+     */
+    async obtenirTypesTemplates() {
+        return await this.templateService.obtenirTypesTemplates();
     }
 
     /**

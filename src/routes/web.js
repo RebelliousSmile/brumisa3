@@ -12,6 +12,7 @@ const authController = new AuthentificationController();
 // Middleware pour injecter les données utilisateur dans les templates
 router.use((req, res, next) => {
     res.locals.utilisateur = req.session?.utilisateur || null;
+    res.locals.systemes = systemesJeu;
     res.locals.systemesJeu = systemesJeu;
     res.locals.config = {
         appName: 'Générateur PDF JDR',
@@ -38,7 +39,7 @@ router.get('/', (req, res) => {
 router.get('/connexion', (req, res) => {
     // Rediriger si déjà connecté
     if (req.session?.utilisateur) {
-        return res.redirect('/personnages');
+        return res.redirect('/mes-documents');
     }
     
     res.render('auth/connexion', {
@@ -49,11 +50,36 @@ router.get('/connexion', (req, res) => {
 router.get('/inscription', (req, res) => {
     // Rediriger si déjà connecté
     if (req.session?.utilisateur) {
-        return res.redirect('/personnages');
+        return res.redirect('/mes-documents');
     }
     
     res.render('auth/inscription', {
         title: 'Inscription - Générateur PDF JDR'
+    });
+});
+
+// Page de mot de passe oublié
+router.get('/mot-de-passe-oublie', (req, res) => {
+    // Rediriger si déjà connecté
+    if (req.session?.utilisateur) {
+        return res.redirect('/mes-documents');
+    }
+    
+    res.render('auth/mot-de-passe-oublie', {
+        title: 'Mot de passe oublié - Générateur PDF JDR'
+    });
+});
+
+// Page de réinitialisation de mot de passe
+router.get('/reinitialiser-mot-de-passe/:token', (req, res) => {
+    // Rediriger si déjà connecté
+    if (req.session?.utilisateur) {
+        return res.redirect('/mes-documents');
+    }
+    
+    res.render('auth/reinitialiser-mot-de-passe', {
+        title: 'Réinitialiser le mot de passe - Générateur PDF JDR',
+        token: req.params.token
     });
 });
 
@@ -67,14 +93,28 @@ router.get('/profil', authController.middlewareAuth, (req, res) => {
     });
 });
 
-// ===== GESTION PERSONNAGES =====
+// Page de paramètres
+router.get('/parametres', authController.middlewareAuth, (req, res) => {
+    res.render('parametres', {
+        title: 'Paramètres - Générateur PDF JDR'
+    });
+});
 
-// Liste des personnages
-router.get('/personnages', authController.middlewareAuth, (req, res) => {
-    res.render('personnages/liste', {
-        title: 'Mes Personnages - Générateur PDF JDR',
+// ===== MES DOCUMENTS =====
+
+// Page "Mes documents" - Liste personnages et PDFs
+router.get('/mes-documents', authController.middlewareAuth, (req, res) => {
+    res.render('mes-documents', {
+        title: 'Mes Documents - Générateur PDF JDR',
         systemeFiltre: req.query.systeme || null
     });
+});
+
+// ===== GESTION PERSONNAGES =====
+
+// Liste des personnages (pour compatibilité)
+router.get('/personnages', authController.middlewareAuth, (req, res) => {
+    res.redirect('/mes-documents');
 });
 
 // Création de personnage
@@ -142,7 +182,7 @@ router.get('/systemes/:systeme', (req, res) => {
     const systeme = systemesJeu[req.params.systeme];
     
     if (!systeme) {
-        return res.status(404).render('erreurs/404', {
+        return res.status(404).render('errors/404', {
             title: 'Système non trouvé',
             message: 'Ce système de jeu n\'est pas supporté.'
         });
@@ -212,11 +252,11 @@ router.get('/confidentialite', (req, res) => {
 
 // Redirections pour compatibilité
 router.get('/dashboard', authController.middlewareAuth, (req, res) => {
-    res.redirect('/personnages');
+    res.redirect('/mes-documents');
 });
 
 router.get('/characters', authController.middlewareAuth, (req, res) => {
-    res.redirect('/personnages');
+    res.redirect('/mes-documents');
 });
 
 router.get('/login', (req, res) => {
@@ -231,7 +271,7 @@ router.get('/register', (req, res) => {
 
 // Middleware pour les pages non trouvées
 router.use((req, res) => {
-    res.status(404).render('erreurs/404', {
+    res.status(404).render('errors/404', {
         title: 'Page non trouvée',
         url: req.originalUrl
     });
@@ -250,20 +290,20 @@ router.use((erreur, req, res, next) => {
     
     // Page d'erreur selon le type
     let statut = 500;
-    let vue = 'erreurs/500';
+    let vue = 'errors/500';
     let titre = 'Erreur interne';
     
     if (erreur.code === 'UNAUTHORIZED') {
         statut = 401;
-        vue = 'erreurs/401';
+        vue = 'errors/401';
         titre = 'Accès non autorisé';
     } else if (erreur.code === 'FORBIDDEN') {
         statut = 403;
-        vue = 'erreurs/403';
+        vue = 'errors/403';
         titre = 'Accès interdit';
     } else if (erreur.message.includes('not found') || erreur.message.includes('non trouvé')) {
         statut = 404;
-        vue = 'erreurs/404';
+        vue = 'errors/404';
         titre = 'Page non trouvée';
     }
     

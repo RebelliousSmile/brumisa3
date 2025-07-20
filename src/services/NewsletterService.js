@@ -1,5 +1,5 @@
 const BaseService = require('./BaseService');
-const crypto = require('crypto');
+const { Newsletter, Actualite } = require('../models/Newsletter');
 
 /**
  * Service pour la gestion de la newsletter
@@ -7,13 +7,8 @@ const crypto = require('crypto');
 class NewsletterService extends BaseService {
     constructor() {
         super('NewsletterService');
-        // En production, on utiliserait une vraie base de données
-        // Pour l'instant, stockage en mémoire (sera perdu au redémarrage)
-        this.abonnes = new Map();
-        this.actualites = [];
-        
-        // Initialiser avec quelques actualités de test
-        this.initialiserActualitesTest();
+        this.newsletterModel = new Newsletter();
+        this.actualiteModel = new Actualite();
     }
 
     /**

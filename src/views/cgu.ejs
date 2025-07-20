@@ -2,14 +2,14 @@
 <div class="min-h-screen bg-gray-900 text-white py-12">
     <div class="max-w-4xl mx-auto px-4">
         <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
-            <i class="ra ra-scroll text-purple-400 mr-3"></i>
+            <i class="ra ra-scroll text-blue-400 mr-3"></i>
             Conditions Générales d'Utilisation
         </h1>
         
         <div class="bg-gray-800/50 rounded-lg p-8 space-y-8">
             <!-- Préambule -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-quill-ink text-xl mr-2"></i>
                     Préambule
                 </h2>
@@ -27,7 +27,7 @@
 
             <!-- Description du service -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-player text-xl mr-2"></i>
                     Description du service
                 </h2>
@@ -46,7 +46,7 @@
 
             <!-- Inscription et compte -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-crown text-xl mr-2"></i>
                     Inscription et compte utilisateur
                 </h2>
@@ -66,7 +66,7 @@
 
             <!-- Utilisation du service -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-dice-six text-xl mr-2"></i>
                     Utilisation du service
                 </h2>
@@ -84,7 +84,7 @@
 
             <!-- Contenu utilisateur -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-scroll-unfurled text-xl mr-2"></i>
                     Contenu créé par les utilisateurs
                 </h2>
@@ -102,7 +102,7 @@
 
             <!-- Responsabilités -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-shield text-xl mr-2"></i>
                     Responsabilités et garanties
                 </h2>
@@ -121,7 +121,7 @@
 
             <!-- Données personnelles -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-crystal-ball text-xl mr-2"></i>
                     Protection des données
                 </h2>
@@ -140,7 +140,7 @@
 
             <!-- Modifications -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-uncertainty text-xl mr-2"></i>
                     Modifications des CGU
                 </h2>
@@ -155,7 +155,7 @@
 
             <!-- Contact -->
             <section>
-                <h2 class="text-2xl font-semibold text-purple-400 mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4 flex items-center">
                     <i class="ra ra-horn-call text-xl mr-2"></i>
                     Contact et réclamations
                 </h2>
@@ -163,7 +163,7 @@
                     <p>
                         Pour toute question concernant ces CGU ou pour signaler un problème, 
                         contactez-nous à : 
-                        <a href="mailto:[email-a-completer]" class="text-purple-400 hover:text-purple-300">[email-a-completer]</a>
+                        <a href="mailto:[email-a-completer]" class="text-blue-400 hover:text-purple-300">[email-a-completer]</a>
                     </p>
                 </div>
             </section>
@@ -171,17 +171,26 @@
             <!-- Date de mise à jour -->
             <section class="border-t border-gray-700 pt-6">
                 <p class="text-sm text-gray-400 text-center">
-                    Dernière mise à jour : <span class="text-purple-400">[Date à compléter]</span>
+                    Dernière mise à jour : <span class="text-blue-400">[Date à compléter]</span>
                 </p>
             </section>
         </div>
 
-        <!-- Retour -->
-        <div class="text-center mt-8">
-            <a href="/" class="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors">
-                <i class="ra ra-uncertainty text-xl mr-2"></i>
-                Retour à l'accueil
-            </a>
+        <!-- Retour et actions -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+            <%- include('partials/button', { 
+                text: "J'accepte les CGU",
+                type: 'primary',
+                icon: 'scroll',
+                class: 'btn-pulse'
+            }) %>
+            <%- include('partials/button', { 
+                text: "Retour à l'accueil",
+                type: 'secondary',
+                outline: true,
+                icon: 'uncertainty',
+                href: '/'
+            }) %>
         </div>
     </div>
 </div>

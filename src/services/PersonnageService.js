@@ -1,6 +1,5 @@
 const BaseService = require('./BaseService');
-const PersonnageModel = require('../models/Personnage');
-const PdfService = require('./PdfService');
+const Personnage = require('../models/Personnage');
 const systemesJeu = require('../utils/systemesJeu');
 
 /**
@@ -9,8 +8,7 @@ const systemesJeu = require('../utils/systemesJeu');
 class PersonnageService extends BaseService {
     constructor() {
         super('PersonnageService');
-        this.personnageModel = new PersonnageModel();
-        this.pdfService = new PdfService();
+        this.personnageModel = new Personnage();
     }
 
     /**
@@ -35,19 +33,16 @@ class PersonnageService extends BaseService {
             const whereClause = conditions.join(' AND ');
             
             // Compter le total
-            const total = await this.personnageModel.compter(whereClause, valeurs);
+            const total = await this.personnageModel.count(whereClause, valeurs);
             
             // Récupérer les personnages avec pagination
             const offset = pagination.offset || 0;
             const limite = pagination.limite || 20;
             
-            const personnages = await this.personnageModel.lister({
-                where: whereClause,
-                valeurs,
-                order: 'date_modification DESC',
-                limit: limite,
-                offset
-            });
+            const personnages = await this.personnageModel.findAll(
+                whereClause + ` ORDER BY date_modification DESC LIMIT ${limite} OFFSET ${offset}`,
+                valeurs
+            );
             
             return { personnages, total };
             

@@ -19,6 +19,10 @@ router.post('/auth/connexion', authController.connexion);
 router.post('/auth/inscription', authController.inscription);
 router.post('/auth/deconnexion', authController.deconnexion);
 
+// Récupération de mot de passe
+router.post('/auth/mot-de-passe-oublie', authController.motDePasseOublie);
+router.post('/auth/reinitialiser-mot-de-passe', authController.reinitialiserMotDePasse);
+
 // Gestion du profil
 router.get('/auth/statut', authController.verifierStatut);
 router.get('/auth/profil', authController.middlewareAuth, authController.obtenirProfil);
@@ -70,6 +74,8 @@ router.post('/pdfs/preview-html', authController.middlewareAuth, pdfController.g
 
 // Utilitaires PDFs
 router.get('/pdfs/types', pdfController.obtenirTypesPdf); // Accès public
+router.get('/pdfs/templates/:systeme', authController.middlewareAuth, pdfController.listerTemplates);
+router.get('/pdfs/types-templates', authController.middlewareAuth, pdfController.obtenirTypesTemplates);
 router.get('/pdfs/statistiques', authController.middlewareAuth, pdfController.obtenirStatistiques);
 
 // Routes admin

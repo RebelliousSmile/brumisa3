@@ -409,7 +409,7 @@ function fichePersonnage(personnage) {
             
             try {
                 await window.personnageService.supprimer(this.personnage.id);
-                window.location.href = '/personnages';
+                window.location.href = '/mes-documents';
             } catch (erreur) {
                 console.error('Erreur suppression:', erreur);
             }

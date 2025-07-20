@@ -295,8 +295,11 @@ class App {
       }
     });
 
-    // Routes API (à implémenter complètement plus tard)
-    // this.app.use('/api', require('./routes/api'));
+    // Routes API (à monter AVANT les routes web)
+    this.app.use('/api', require('./routes/api'));
+    
+    // Routes web principales
+    this.app.use('/', require('./routes/web'));
     
     // Routes d'authentification (à implémenter)  
     // this.app.use('/auth', require('./routes/auth'));

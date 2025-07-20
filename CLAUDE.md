@@ -23,4 +23,7 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 
 ## Structure du projet
 
-[... reste du contenu précédent ...]
+## Notes techniques
+
+### Base de données
+- PostgreSQL n'accepte pas les placeholders ?. Il faut utiliser $1, $2, $3 à la place.

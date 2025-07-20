@@ -5,14 +5,13 @@
 /**
  * Composant pour la connexion
  */
-function connexion() {
+function AuthComponent() {
     return {
         // État
         formulaire: {
-            nom: '',
-            email: ''
+            email: '',
+            motDePasse: ''
         },
-        codeAcces: '',
         enTraitement: false,
         erreurs: [],
         
@@ -20,89 +19,78 @@ function connexion() {
         validerFormulaire() {
             this.erreurs = [];
             
-            if (!this.formulaire.nom.trim()) {
-                this.erreurs.push('Nom requis');
-            }
-            
             if (!this.formulaire.email.trim()) {
                 this.erreurs.push('Email requis');
             } else if (!/\S+@\S+\.\S+/.test(this.formulaire.email)) {
                 this.erreurs.push('Email invalide');
             }
             
+            if (!this.formulaire.motDePasse.trim()) {
+                this.erreurs.push('Mot de passe requis');
+            }
+            
             return this.erreurs.length === 0;
         },
         
-        async soumettre() {
+        async connexion() {
             if (this.enTraitement) return;
             
             if (!this.validerFormulaire()) {
-                this.erreurs.forEach(erreur => {
-                    Alpine.store('app').ajouterMessage('erreur', erreur);
-                });
                 return;
             }
             
             this.enTraitement = true;
+            this.erreurs = [];
             
             try {
-                const data = await Alpine.store('app').requeteApi('/auth/connexion', {
+                const response = await fetch('/api/auth/connexion', {
                     method: 'POST',
-                    body: JSON.stringify(this.formulaire)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: this.formulaire.email,
+                        motDePasse: this.formulaire.motDePasse
+                    })
                 });
                 
-                // Mettre à jour l'utilisateur dans le store
-                Alpine.store('app').utilisateur = data.utilisateur;
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    this.erreurs.push(data.message || 'Erreur de connexion');
+                    return;
+                }
                 
                 // Redirection après connexion réussie
-                window.location.href = '/';
+                window.location.href = '/mes-documents';
                 
             } catch (erreur) {
                 console.error('Erreur connexion:', erreur);
+                this.erreurs.push('Erreur de connexion');
             } finally {
                 this.enTraitement = false;
-            }
-        },
-        
-        async verifierCodeAcces() {
-            if (!this.codeAcces || this.codeAcces.length !== 6) {
-                Alpine.store('app').ajouterMessage('erreur', 'Code à 6 chiffres requis');
-                return;
-            }
-            
-            try {
-                const data = await Alpine.store('app').requeteApi('/auth/elevation-role', {
-                    method: 'POST',
-                    body: JSON.stringify({ code_acces: this.codeAcces })
-                });
-                
-                Alpine.store('app').ajouterMessage('succes', `Rôle élevé vers ${data.donnees.role}`);
-                
-                // Mettre à jour l'utilisateur
-                Alpine.store('app').utilisateur = data.donnees.utilisateur;
-                
-                // Recharger la page pour mettre à jour l'interface
-                setTimeout(() => window.location.reload(), 1000);
-                
-            } catch (erreur) {
-                console.error('Erreur élévation rôle:', erreur);
             }
         }
     };
 }
 
 /**
- * Composant pour l'inscription (création utilisateur simple)
+ * Composant pour l'inscription
  */
-function inscription() {
+function InscriptionComponent() {
     return {
         // État
         formulaire: {
             nom: '',
-            email: ''
+            email: '',
+            motDePasse: '',
+            confirmationMotDePasse: '',
+            accepteCGU: false
         },
         enTraitement: false,
         erreurs: [],
+        succes: false,
+        messageSucces: '',
         
         // Méthodes
         validerFormulaire() {
@@ -122,37 +110,69 @@ function inscription() {
                 this.erreurs.push('Email invalide');
             }
             
+            // Validation mot de passe
+            if (!this.formulaire.motDePasse) {
+                this.erreurs.push('Mot de passe requis');
+            } else if (this.formulaire.motDePasse.length < 8) {
+                this.erreurs.push('Mot de passe trop court (min 8 caractères)');
+            }
+            
+            // Validation confirmation
+            if (this.formulaire.motDePasse !== this.formulaire.confirmationMotDePasse) {
+                this.erreurs.push('Les mots de passe ne correspondent pas');
+            }
+            
+            // Validation CGU
+            if (!this.formulaire.accepteCGU) {
+                this.erreurs.push('Vous devez accepter les conditions d\'utilisation');
+            }
+            
             return this.erreurs.length === 0;
         },
         
-        async soumettre() {
+        async inscription() {
             if (this.enTraitement) return;
             
             if (!this.validerFormulaire()) {
-                this.erreurs.forEach(erreur => {
-                    Alpine.store('app').ajouterMessage('erreur', erreur);
-                });
                 return;
             }
             
             this.enTraitement = true;
+            this.erreurs = [];
+            this.succes = false;
             
             try {
-                const data = await Alpine.store('app').requeteApi('/auth/inscription', {
+                const response = await fetch('/api/auth/inscription', {
                     method: 'POST',
-                    body: JSON.stringify(this.formulaire)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nom: this.formulaire.nom,
+                        email: this.formulaire.email,
+                        motDePasse: this.formulaire.motDePasse,
+                        confirmationMotDePasse: this.formulaire.confirmationMotDePasse
+                    })
                 });
                 
-                Alpine.store('app').ajouterMessage('succes', 'Compte créé avec succès');
+                const data = await response.json();
                 
-                // Mettre à jour l'utilisateur dans le store
-                Alpine.store('app').utilisateur = data.utilisateur;
+                if (!response.ok) {
+                    this.erreurs.push(data.message || 'Erreur d\'inscription');
+                    return;
+                }
+                
+                this.succes = true;
+                this.messageSucces = 'Compte créé avec succès ! Redirection...';
                 
                 // Redirection après inscription réussie
-                window.location.href = '/';
+                setTimeout(() => {
+                    window.location.href = '/mes-documents';
+                }, 2000);
                 
             } catch (erreur) {
                 console.error('Erreur inscription:', erreur);
+                this.erreurs.push('Erreur d\'inscription');
             } finally {
                 this.enTraitement = false;
             }
@@ -305,13 +325,169 @@ function verifierAuth(roleRequis = null) {
     };
 }
 
+/**
+ * Composant pour la récupération de mot de passe
+ */
+function MotDePasseOublieComponent() {
+    return {
+        // État
+        formulaire: {
+            email: ''
+        },
+        enTraitement: false,
+        erreur: '',
+        succes: false,
+        
+        // Méthodes
+        validerFormulaire() {
+            this.erreur = '';
+            
+            if (!this.formulaire.email.trim()) {
+                this.erreur = 'Email requis';
+                return false;
+            }
+            
+            if (!/\S+@\S+\.\S+/.test(this.formulaire.email)) {
+                this.erreur = 'Email invalide';
+                return false;
+            }
+            
+            return true;
+        },
+        
+        async envoyerLien() {
+            if (this.enTraitement) return;
+            
+            if (!this.validerFormulaire()) {
+                return;
+            }
+            
+            this.enTraitement = true;
+            this.erreur = '';
+            this.succes = false;
+            
+            try {
+                const response = await fetch('/api/auth/mot-de-passe-oublie', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: this.formulaire.email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    this.erreur = data.message || 'Erreur lors de l\'envoi';
+                    return;
+                }
+                
+                this.succes = true;
+                
+            } catch (erreur) {
+                console.error('Erreur récupération:', erreur);
+                this.erreur = 'Erreur lors de l\'envoi';
+            } finally {
+                this.enTraitement = false;
+            }
+        }
+    };
+}
+
+/**
+ * Composant pour la réinitialisation de mot de passe
+ */
+function ReinitialiserMotDePasseComponent(token) {
+    return {
+        // État
+        formulaire: {
+            motDePasse: '',
+            confirmationMotDePasse: ''
+        },
+        token: token,
+        enTraitement: false,
+        erreurs: [],
+        succes: false,
+        
+        // Méthodes
+        validerFormulaire() {
+            this.erreurs = [];
+            
+            if (!this.formulaire.motDePasse) {
+                this.erreurs.push('Mot de passe requis');
+            } else if (this.formulaire.motDePasse.length < 8) {
+                this.erreurs.push('Mot de passe trop court (min 8 caractères)');
+            }
+            
+            if (this.formulaire.motDePasse !== this.formulaire.confirmationMotDePasse) {
+                this.erreurs.push('Les mots de passe ne correspondent pas');
+            }
+            
+            return this.erreurs.length === 0;
+        },
+        
+        async reinitialiser() {
+            if (this.enTraitement) return;
+            
+            if (!this.validerFormulaire()) {
+                return;
+            }
+            
+            this.enTraitement = true;
+            this.erreurs = [];
+            this.succes = false;
+            
+            try {
+                const response = await fetch('/api/auth/reinitialiser-mot-de-passe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: this.token,
+                        motDePasse: this.formulaire.motDePasse,
+                        confirmationMotDePasse: this.formulaire.confirmationMotDePasse
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    this.erreurs.push(data.message || 'Erreur lors de la réinitialisation');
+                    return;
+                }
+                
+                this.succes = true;
+                
+                // Redirection vers la connexion après 3 secondes
+                setTimeout(() => {
+                    window.location.href = '/connexion';
+                }, 3000);
+                
+            } catch (erreur) {
+                console.error('Erreur réinitialisation:', erreur);
+                this.erreurs.push('Erreur lors de la réinitialisation');
+            } finally {
+                this.enTraitement = false;
+            }
+        }
+    };
+}
+
 // ========================================
 // Enregistrement global des composants
 // ========================================
 window.AlpineComponents = window.AlpineComponents || {};
 Object.assign(window.AlpineComponents, {
-    connexion,
-    inscription,
+    AuthComponent,
+    InscriptionComponent,
+    MotDePasseOublieComponent,
+    ReinitialiserMotDePasseComponent,
+    // Anciens composants conservés pour compatibilité
+    connexion: AuthComponent,
+    inscription: InscriptionComponent,
     menuUtilisateur,
     elevationRole,
     verifierAuth
