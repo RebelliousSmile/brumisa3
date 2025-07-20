@@ -1,0 +1,244 @@
+<div class="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 text-white min-h-screen"
+     x-data="window.AlpineComponents.documentGeneriqueMonsterhearts()">
+    
+    <!-- Header -->
+    <div class="relative py-12 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <i class="ra ra-scroll-unfurled text-6xl text-purple-300 mb-4 block"></i>
+                <h1 class="text-4xl font-bold mb-2 font-display">
+                    Créer un Document Monsterhearts
+                </h1>
+                <p class="text-xl text-purple-200">
+                    Générez un document PDF personnalisé avec le style authentique Monsterhearts
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="max-w-4xl mx-auto px-4 pb-16">
+        <form @submit.prevent="genererPdf()" class="space-y-8">
+            
+            <!-- Section Informations de base -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-quill-ink mr-3 text-purple-400"></i>
+                    Informations du document
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Titre du document -->
+                    <div>
+                        <label for="titre" class="block text-sm font-medium text-purple-300 mb-2">
+                            Titre du document *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="titre"
+                            x-model="formData.titre"
+                            required
+                            placeholder="Ex: Instructions pour le Plan de Classe"
+                            class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/20">
+                        <p class="mt-1 text-xs text-gray-400">Ce titre apparaîtra en majuscules en haut du document</p>
+                    </div>
+
+                    <!-- Citation introductive -->
+                    <div>
+                        <label for="introduction" class="block text-sm font-medium text-purple-300 mb-2">
+                            Citation introductive (optionnel)
+                        </label>
+                        <textarea 
+                            id="introduction"
+                            x-model="formData.introduction"
+                            rows="3"
+                            placeholder="Ex: Le plan de classe est un outil visuel pour la MC permettant de suivre les relations sociales..."
+                            class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/20 resize-none"></textarea>
+                        <p class="mt-1 text-xs text-gray-400">Cette citation apparaîtra en italique sous le titre</p>
+                    </div>
+
+                    <!-- Type de document (bande latérale) -->
+                    <div>
+                        <label for="typeDocument" class="block text-sm font-medium text-purple-300 mb-2">
+                            Type de document *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="typeDocument"
+                            x-model="formData.typeDocument"
+                            required
+                            placeholder="Ex: PLAN DE CLASSE"
+                            class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/20">
+                        <p class="mt-1 text-xs text-gray-400">Apparaît dans la bande latérale noire (en majuscules)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Contenu -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-manuscript mr-3 text-purple-400"></i>
+                    Contenu du document
+                </h2>
+
+                <!-- Liste des sections -->
+                <div class="space-y-4">
+                    <template x-for="(section, index) in formData.sections" :key="section.id">
+                        <div class="bg-gray-800/50 rounded-lg p-4 border border-purple-500/20">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="text-lg font-semibold" x-text="`Section ${index + 1}`"></h3>
+                                <button 
+                                    @click="supprimerSection(index)"
+                                    type="button"
+                                    class="text-red-400 hover:text-red-300 transition-colors">
+                                    <i class="ra ra-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Niveau de la section -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-purple-300 mb-1">
+                                        Niveau
+                                    </label>
+                                    <select 
+                                        x-model="section.niveau"
+                                        class="w-full px-3 py-2 bg-gray-700 border border-purple-500/30 rounded-lg text-white focus:border-purple-400 focus:outline-none">
+                                        <option value="1">Niveau 1 (Principal)</option>
+                                        <option value="2">Niveau 2 (Sous-section)</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Titre de la section -->
+                                <div>
+                                    <label class="block text-sm font-medium text-purple-300 mb-1">
+                                        Titre de la section *
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        x-model="section.titre"
+                                        required
+                                        placeholder="Ex: Comment remplir le plan"
+                                        class="w-full px-3 py-2 bg-gray-700 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Contenu Markdown -->
+                            <div>
+                                <label class="block text-sm font-medium text-purple-300 mb-1">
+                                    Contenu (Markdown supporté) *
+                                </label>
+                                <textarea 
+                                    x-model="section.contenu"
+                                    required
+                                    rows="6"
+                                    placeholder="Écrivez votre contenu ici. Vous pouvez utiliser:&#10;- **gras** et *italique*&#10;- Listes avec - ou *&#10;- Listes numérotées avec 1. 2. 3.&#10;- > pour les citations"
+                                    class="w-full px-3 py-2 bg-gray-700 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none resize-none font-mono text-sm"></textarea>
+                            </div>
+
+                            <!-- Aperçu du rendu -->
+                            <div x-show="section.contenu" class="mt-4">
+                                <div class="text-sm text-purple-300 mb-1">Aperçu :</div>
+                                <div class="bg-gray-900/50 rounded p-3 text-gray-300 prose prose-sm prose-invert max-w-none"
+                                     x-html="renderMarkdown(section.contenu)">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Bouton ajouter section -->
+                <button 
+                    @click="ajouterSection()"
+                    type="button"
+                    class="mt-6 w-full py-3 border-2 border-dashed border-purple-500/30 rounded-lg text-purple-400 hover:border-purple-400 hover:bg-purple-900/20 transition-all flex items-center justify-center">
+                    <i class="ra ra-plus mr-2"></i>
+                    Ajouter une section
+                </button>
+            </div>
+
+            <!-- Options d'export -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-purple-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-cog mr-3 text-purple-400"></i>
+                    Options d'export
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Numéro de page -->
+                    <div>
+                        <label for="numeroPage" class="block text-sm font-medium text-purple-300 mb-2">
+                            Numéro de page initial
+                        </label>
+                        <input 
+                            type="number" 
+                            id="numeroPage"
+                            x-model="formData.numeroPage"
+                            min="1"
+                            placeholder="1"
+                            class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none">
+                    </div>
+
+                    <!-- Pied de page -->
+                    <div>
+                        <label for="piedDePage" class="block text-sm font-medium text-purple-300 mb-2">
+                            Pied de page personnalisé
+                        </label>
+                        <input 
+                            type="text" 
+                            id="piedDePage"
+                            x-model="formData.piedDePage"
+                            placeholder="Monsterhearts • Document • brumisa3.fr"
+                            class="w-full px-4 py-3 bg-gray-800 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button 
+                    type="submit"
+                    :disabled="!peutGenerer || enTraitement"
+                    class="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-4 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <i class="ra ra-scroll mr-2" x-show="!enTraitement"></i>
+                    <i class="ra ra-spinning-swords animate-spin mr-2" x-show="enTraitement"></i>
+                    <span x-text="enTraitement ? 'Génération en cours...' : 'Générer le PDF'"></span>
+                </button>
+                
+                <button 
+                    @click="reinitialiser()"
+                    type="button"
+                    class="flex-1 sm:flex-initial border-2 border-purple-500 text-purple-400 hover:bg-purple-900/20 py-4 px-6 rounded-lg font-semibold transition-colors">
+                    Réinitialiser
+                </button>
+            </div>
+
+            <!-- Exemples prédéfinis -->
+            <div class="mt-8 text-center">
+                <p class="text-gray-400 mb-2">Besoin d'inspiration ?</p>
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <button 
+                        @click="chargerExemple('plan-classe')"
+                        type="button"
+                        class="text-purple-400 hover:text-purple-300 underline text-sm">
+                        Plan de classe
+                    </button>
+                    <span class="text-gray-600">•</span>
+                    <button 
+                        @click="chargerExemple('aide-mc')"
+                        type="button"
+                        class="text-purple-400 hover:text-purple-300 underline text-sm">
+                        Aide MC
+                    </button>
+                    <span class="text-gray-600">•</span>
+                    <button 
+                        @click="chargerExemple('regles-maison')"
+                        type="button"
+                        class="text-purple-400 hover:text-purple-300 underline text-sm">
+                        Règles maison
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

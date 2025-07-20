@@ -1,13 +1,11 @@
-<%- include('../layouts/principal', { 
-    body: `
-    <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 text-white">
-        <!-- Hero Section -->
-        <div class="relative py-24 px-4">
-            <div class="max-w-7xl mx-auto text-center">
-                <div class="mb-8">
-                    <i class="ra ra-heartburn text-8xl text-purple-300 mb-6 block"></i>
-                </div>
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 font-display">
+<div class="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 text-white">
+    <!-- Hero Section -->
+    <div class="relative py-24 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="mb-8">
+                <i class="ra ra-heartburn text-8xl text-purple-300 mb-6 block"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 font-display">
                     Monsterhearts
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 text-purple-200 max-w-3xl mx-auto">
@@ -33,62 +31,25 @@
                 Comment créer son aide de jeu Monsterhearts
             </h2>
             <div class="max-w-4xl mx-auto">
-                <!-- Stepper -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
-                    <div class="flex flex-col md:flex-row w-full">
-                        <!-- Étape 1 -->
-                        <div class="flex-1 flex items-center mb-6 md:mb-0">
-                            <div class="flex items-center w-full">
-                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">1</div>
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold text-white mb-1">Choisir un modèle</h3>
-                                    <p class="text-gray-400 text-sm">Sélectionnez le type d'aide de jeu</p>
-                                </div>
-                            </div>
-                            <div class="hidden md:block w-8 h-1 bg-purple-500 ml-4"></div>
-                        </div>
-                        
-                        <!-- Étape 2 -->
-                        <div class="flex-1 flex items-center mb-6 md:mb-0">
-                            <div class="flex items-center w-full">
-                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">2</div>
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold text-white mb-1">Personnaliser</h3>
-                                    <p class="text-gray-400 text-sm">Remplissez les informations</p>
-                                </div>
-                            </div>
-                            <div class="hidden md:block w-8 h-1 bg-purple-500 ml-4"></div>
-                        </div>
-                        
-                        <!-- Étape 3 -->
-                        <div class="flex-1 flex items-center">
-                            <div class="flex items-center w-full">
-                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">3</div>
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold text-white mb-1">Générer le PDF</h3>
-                                    <p class="text-gray-400 text-sm">Téléchargez votre aide de jeu</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Description détaillée -->
+                <!-- Étapes détaillées avec icônes et numéros -->
                 <div class="bg-gray-800 p-8 rounded-lg border border-purple-500/20">
                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="text-center">
+                        <div class="text-center relative">
+                            <div class="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-3">1</div>
                             <i class="ra ra-scroll-unfurled text-4xl text-purple-400 mb-4 block"></i>
-                            <h4 class="text-lg font-semibold text-white mb-2">1. Choisir un modèle</h4>
-                            <p class="text-gray-300 text-sm">Parcourez notre collection de modèles pré-conçus pour Monsterhearts et sélectionnez celui qui correspond à vos besoins.</p>
+                            <h4 class="text-lg font-semibold text-white mb-2">Choisir un modèle</h4>
+                            <p class="text-gray-300 text-sm">Parcourez notre collection de templates pré-conçus pour Monsterhearts et sélectionnez celui qui correspond à vos besoins.</p>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center relative">
+                            <div class="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-3">2</div>
                             <i class="ra ra-quill-ink text-4xl text-purple-400 mb-4 block"></i>
-                            <h4 class="text-lg font-semibold text-white mb-2">2. Personnaliser</h4>
+                            <h4 class="text-lg font-semibold text-white mb-2">Personnaliser</h4>
                             <p class="text-gray-300 text-sm">Utilisez notre éditeur intuitif pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.</p>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center relative">
+                            <div class="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-3">3</div>
                             <i class="ra ra-muscle-up text-4xl text-purple-400 mb-4 block"></i>
-                            <h4 class="text-lg font-semibold text-white mb-2">3. Générer le PDF</h4>
+                            <h4 class="text-lg font-semibold text-white mb-2">Générer le PDF</h4>
                             <p class="text-gray-300 text-sm">Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager avec votre table.</p>
                         </div>
                     </div>
@@ -103,7 +64,7 @@
             <h2 class="text-3xl font-bold text-center mb-12 text-white">
                 Modèles Disponibles
             </h2>
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Fiche de Personnage -->
                 <div class="bg-gray-900 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors group">
                     <div class="text-center mb-4">
@@ -188,9 +149,39 @@
                         <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
                             Créer un plan
                         </button>
-                        <button class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                        <a href="/output/pdfs/monsterhearts/user-system_rights-public_template-plan-classe-instructions_id-f167b26ca491c9f8.pdf" target="_blank" class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors inline-block text-center">
                             Voir un exemple
-                        </button>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Document Générique -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-purple-500/20 hover:border-purple-400 transition-colors group">
+                    <div class="text-center mb-4">
+                        <i class="ra ra-scroll-unfurled text-5xl text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-purple-400 text-center">Document Générique</h3>
+                    <p class="text-gray-300 mb-4 text-center">Template flexible pour créer tout type de document avec une structure en paragraphes et sous-sections.</p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-white mb-2">Inclus :</h4>
+                        <ul class="text-sm text-gray-400 space-y-1">
+                            <li>• Structure hiérarchique (sections/sous-sections)</li>
+                            <li>• Paragraphes et listes formatés</li>
+                            <li>• Encadrés spéciaux (conseils, exemples)</li>
+                            <li>• Mise en page professionnelle</li>
+                            <li>• Styles thématiques Monsterhearts</li>
+                            <li>• Export PDF haute qualité</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <a href="/monsterhearts/document-generique" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors inline-block text-center">
+                            Créer un document
+                        </a>
+                        <a href="/output/pdfs/monsterhearts/user-system_rights-public_template-document-generique_id-c1b1d3b5c1ded845.pdf" target="_blank" class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors inline-block text-center">
+                            Voir un exemple
+                        </a>
                     </div>
                 </div>
             </div>
@@ -214,19 +205,19 @@
                     </div>
                     
                     <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
-                        <i class="ra ra-heart text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <i class="ra ra-broken-heart text-3xl text-purple-400 mb-3 block text-center"></i>
                         <h4 class="text-white font-semibold text-center mb-2">Relations</h4>
                         <p class="text-gray-300 text-sm text-center">Complications romantiques et sociales</p>
                     </div>
                     
                     <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
-                        <i class="ra ra-demon-skull text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <i class="ra ra-skull text-3xl text-purple-400 mb-3 block text-center"></i>
                         <h4 class="text-white font-semibold text-center mb-2">Monstruosités</h4>
                         <p class="text-gray-300 text-sm text-center">Manifestations de votre nature</p>
                     </div>
                     
                     <div class="bg-gray-700 p-4 rounded-lg border border-purple-500/30">
-                        <i class="ra ra-lightning text-3xl text-purple-400 mb-3 block text-center"></i>
+                        <i class="ra ra-lightning-bolt text-3xl text-purple-400 mb-3 block text-center"></i>
                         <h4 class="text-white font-semibold text-center mb-2">Événements</h4>
                         <p class="text-gray-300 text-sm text-center">Incidents au lycée et en ville</p>
                     </div>
@@ -466,7 +457,5 @@
                     Se connecter
                 </a>
             </div>
-        </div>
     </div>
-    `
-}) %>
+</div>

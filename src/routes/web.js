@@ -47,6 +47,15 @@ router.get('/monsterhearts', (req, res) => {
     });
 });
 
+// Formulaire document générique Monsterhearts
+router.get('/monsterhearts/document-generique', (req, res) => {
+    res.render('systemes/monsterhearts/creer-document-generique', {
+        title: 'Créer un Document Monsterhearts',
+        description: 'Créez un document PDF personnalisé avec le style Monsterhearts',
+        systeme: 'monsterhearts'
+    });
+});
+
 // Page Engrenages
 router.get('/engrenages', (req, res) => {
     res.render('systemes/engrenages', {

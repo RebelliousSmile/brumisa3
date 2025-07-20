@@ -549,6 +549,88 @@ npm run test:visual
 npm run test:performance
 ```
 
+## Scripts Utilitaires
+
+### Organisation des Scripts
+
+Tous les scripts créés durant le développement et les tests doivent être placés dans le répertoire `scripts/` à la racine du projet. Ces scripts sont considérés comme des outils de développement réutilisables et peuvent être améliorés au même titre que les tests.
+
+**Structure recommandée :**
+```
+scripts/
+├── generate/
+│   ├── pdf-examples.js          # Génération d'exemples PDF
+│   ├── sample-data.js           # Création de données de test
+│   └── documentation.js         # Génération auto de docs
+├── database/
+│   ├── migrate.js               # Scripts de migration
+│   ├── seed.js                  # Peuplement base de données
+│   └── backup.js                # Sauvegardes automatisées
+├── testing/
+│   ├── setup-test-env.js        # Configuration environnement test
+│   ├── performance-test.js      # Tests de performance
+│   └── visual-regression.js     # Tests de régression visuelle
+└── maintenance/
+    ├── cleanup.js               # Nettoyage fichiers temporaires
+    ├── health-check.js          # Vérifications système
+    └── update-dependencies.js   # Mise à jour dépendances
+```
+
+**Conventions pour les scripts :**
+- Noms explicites en kebab-case
+- Documentation en en-tête avec usage et paramètres
+- Gestion d'erreurs robuste
+- Logs informatifs
+- Configuration via variables d'environnement quand possible
+
+**Exemple de script bien structuré :**
+```javascript
+// scripts/generate/pdf-examples.js
+/**
+ * Génère des PDFs d'exemple pour tous les systèmes de jeu
+ * Usage: node scripts/generate/pdf-examples.js [--system=nom] [--output=dossier]
+ */
+
+const puppeteer = require('puppeteer');
+const fs = require('fs').promises;
+const path = require('path');
+
+async function generateExamples(options = {}) {
+  const { system = 'all', output = 'public/exemples' } = options;
+  
+  console.log(`🎲 Génération des exemples PDF pour: ${system}`);
+  
+  try {
+    // Logique de génération...
+    console.log('✅ Génération terminée avec succès');
+  } catch (error) {
+    console.error('❌ Erreur lors de la génération:', error.message);
+    process.exit(1);
+  }
+}
+
+// Exécution si appelé directement
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const options = {};
+  
+  args.forEach(arg => {
+    if (arg.startsWith('--system=')) options.system = arg.split('=')[1];
+    if (arg.startsWith('--output=')) options.output = arg.split('=')[1];
+  });
+  
+  generateExamples(options);
+}
+
+module.exports = { generateExamples };
+```
+
+Ces scripts peuvent être :
+- Réutilisés par l'équipe de développement
+- Intégrés dans les workflows CI/CD
+- Améliorés et optimisés au fil du temps
+- Documentés et versionnés comme le reste du code
+
 ## Ressources
 
 - [Jest Documentation](https://jestjs.io/docs/getting-started)

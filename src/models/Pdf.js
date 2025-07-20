@@ -12,7 +12,8 @@ class Pdf extends BaseModel {
         this.fillable = [
             'nom_fichier', 'titre', 'utilisateur_id', 'personnage_id',
             'systeme_jeu', 'chemin_fichier', 'taille_fichier', 'statut',
-            'type_export', 'options_export', 'hash_fichier', 'url_partage'
+            'type_export', 'options_export', 'hash_fichier', 'url_partage',
+            'template_utilise', 'statut_visibilite'
         ];
         
         // Champs protégés
@@ -89,7 +90,20 @@ class Pdf extends BaseModel {
 
         // Génération du nom de fichier si non fourni
         if (!data.nom_fichier) {
-            data.nom_fichier = this.genererNomFichier(data.titre, data.systeme_jeu);
+            const template = data.template_utilise || 'default';
+            const statut = this.determinerStatutDroits(data);
+            data.nom_fichier = this.genererNomFichier(
+                data.titre, 
+                data.systeme_jeu, 
+                data.utilisateur_id, 
+                template, 
+                statut
+            );
+        }
+
+        // Génération du chemin de fichier
+        if (!data.chemin_fichier) {
+            data.chemin_fichier = this.genererCheminFichier(data.nom_fichier, data.systeme_jeu);
         }
 
         return data;
@@ -134,10 +148,14 @@ class Pdf extends BaseModel {
     }
 
     /**
-     * Génère un nom de fichier unique
+     * Génère un nom de fichier unique avec user, droits, template et ID
+     * Format: user-{userId}_rights-{statut}_template-{template}_id-{uniqueId}.pdf
      */
-    genererNomFichier(titre, systeme) {
+    genererNomFichier(titre, systeme, userId = null, template = 'default', statut = 'private') {
+        const crypto = require('crypto');
+        const uniqueId = crypto.randomBytes(8).toString('hex');
         const timestamp = Date.now();
+        
         const titreClean = titre
             .toLowerCase()
             .normalize('NFD')
@@ -145,7 +163,52 @@ class Pdf extends BaseModel {
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
         
-        return `${systeme}-${titreClean}-${timestamp}.pdf`;
+        const userPart = userId ? `user-${userId}` : 'user-anonymous';
+        const rightsPart = `rights-${statut}`;
+        const templatePart = `template-${template}`;
+        const idPart = `id-${uniqueId}`;
+        
+        return `${userPart}_${rightsPart}_${templatePart}_${idPart}.pdf`;
+    }
+
+    /**
+     * Génère le chemin complet du fichier PDF
+     */
+    genererCheminFichier(nomFichier, systeme) {
+        return path.join('output', 'pdfs', systeme, nomFichier);
+    }
+
+    /**
+     * Détermine le statut des droits pour le nommage du fichier
+     */
+    determinerStatutDroits(data) {
+        // Vérifier si le PDF a des paramètres de partage
+        if (data.url_partage) {
+            try {
+                const urlData = JSON.parse(data.url_partage);
+                if (urlData.active) {
+                    return 'public';
+                }
+            } catch (error) {
+                // Ignore
+            }
+        }
+
+        // Vérifier le statut de visibilité si défini
+        if (data.statut_visibilite) {
+            switch (data.statut_visibilite) {
+                case 'PUBLIC':
+                    return 'public';
+                case 'COMMUNAUTAIRE':
+                    return 'community';
+                case 'PRIVATE':
+                default:
+                    return 'private';
+            }
+        }
+
+        // Par défaut, privé
+        return 'private';
     }
 
     /**
@@ -378,6 +441,110 @@ class Pdf extends BaseModel {
         }
 
         return await this.update(id, { url_partage: null });
+    }
+
+    /**
+     * Getter pour l'URL de téléchargement du PDF
+     */
+    get urlTelecharger() {
+        if (!this.chemin_fichier || this.statut !== 'TERMINE') {
+            return null;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const cheminRelatif = this.chemin_fichier.replace(/\\/g, '/');
+        return `${baseUrl}/${cheminRelatif}`;
+    }
+
+    /**
+     * Getter pour l'URL d'aperçu du PDF (iframe)
+     */
+    get urlApercu() {
+        if (!this.urlTelecharger) {
+            return null;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        return `${baseUrl}/api/pdfs/${this.id}/apercu`;
+    }
+
+    /**
+     * Getter pour l'URL de partage public (si configuré)
+     */
+    get urlPartagePublic() {
+        if (!this.url_partage) {
+            return null;
+        }
+
+        try {
+            const urlData = JSON.parse(this.url_partage);
+            
+            if (!urlData.active || new Date(urlData.expiration) < new Date()) {
+                return null;
+            }
+
+            const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+            return `${baseUrl}/partage/pdf/${urlData.token}`;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Getter pour l'URL de l'API du PDF
+     */
+    get urlApi() {
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        return `${baseUrl}/api/pdfs/${this.id}`;
+    }
+
+    /**
+     * Détermine si le PDF est accessible publiquement
+     */
+    get estPublic() {
+        return this.urlPartagePublic !== null;
+    }
+
+    /**
+     * Getter pour les informations complètes d'URL
+     */
+    get urls() {
+        return {
+            telecharger: this.urlTelecharger,
+            apercu: this.urlApercu,
+            partage: this.urlPartagePublic,
+            api: this.urlApi
+        };
+    }
+
+    /**
+     * Parse le nom de fichier pour extraire les métadonnées
+     */
+    get metadonneesFichier() {
+        if (!this.nom_fichier) {
+            return null;
+        }
+
+        const regex = /user-([^_]+)_rights-([^_]+)_template-([^_]+)_id-([^.]+)\.pdf$/;
+        const match = this.nom_fichier.match(regex);
+
+        if (!match) {
+            return {
+                userId: null,
+                droits: 'unknown',
+                template: 'default',
+                uniqueId: null,
+                format: 'legacy'
+            };
+        }
+
+        return {
+            userId: match[1] === 'anonymous' ? null : match[1],
+            droits: match[2],
+            template: match[3],
+            uniqueId: match[4],
+            format: 'structured'
+        };
     }
 }
 

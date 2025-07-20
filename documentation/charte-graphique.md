@@ -438,28 +438,239 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 
 ## 🎮 Thématiques par système JDR
 
-Chaque système conserve le fond noir principal avec une couleur d'accent spécifique :
+### 🌐 Style des Pages Web vs 📄 Style des PDFs
 
-| Système | Couleur accent | Hex | Tailwind | Usage |
-|---------|---------------|-----|----------|-------|
-| **Monsterhearts** | Violet (horreur gothique) | `#8b5cf6` | `purple-500` | Romance gothique, monstres adolescents |
-| **Engrenages** | Vert émeraude (fantasy médiéval) | `#10b981` | `emerald-500` | Roue du Temps, médiéval fantastique |
-| **Metro 2033** | Rouge (post-apocalyptique) | `#dc2626` | `red-600` | Post-apocalypse, danger, radiations |
-| **Mist Engine** | Rose (épique/poétique) | `#ec4899` | `pink-500` | Narratif mystique, épique poétique |
+#### Distinction importante
+
+Il existe une différence fondamentale entre le style des **pages web** et le style des **PDFs** pour chaque système :
+
+##### 🌐 Style des Pages Web
+- **Homogène** : Tous les systèmes partagent la même structure et éléments UI
+- **Fond noir** : Toujours noir (#000) ou noir charbon (#1e1e1e) 
+- **Différenciation par couleurs uniquement** : Seules les couleurs d'accent changent
+- **Polices cohérentes** : Source Serif 4 + Shackleton sur tout le site
+- **Navigation identique** : Menu, boutons, cartes gardent la même forme
+- **Objectif** : Cohérence de navigation et d'expérience utilisateur
+
+##### 📄 Style des PDFs
+- **Thématique complète** : Chaque système a son propre univers visuel
+- **Immersion totale** : Design adapté à l'ambiance spécifique du jeu
+- **Liberté créative** : Polices, couleurs, layouts, effets spécialisés
+- **Identité forte** : Chaque PDF doit "respirer" l'univers du jeu
+- **Objectif** : Immersion dans l'univers du jeu de rôle
+
+#### Couleurs d'accent pour les pages web
+
+| Système | Couleur accent | Hex | Tailwind | Usage Web |
+|---------|---------------|-----|----------|-----------|
+| **Monsterhearts** | Violet (horreur gothique) | `#8b5cf6` | `purple-500` | Bordures, boutons, badges |
+| **Engrenages** | Vert émeraude (fantasy médiéval) | `#10b981` | `emerald-500` | Bordures, boutons, badges |
+| **Metro 2033** | Rouge (post-apocalyptique) | `#dc2626` | `red-600` | Bordures, boutons, badges |
+| **Mist Engine** | Rose (épique/poétique) | `#ec4899` | `pink-500` | Bordures, boutons, badges |
 | **Contenu générique** | Bleu (neutre) | `#3b82f6` | `blue-500` | Features, contenus non-spécifiques |
 
+#### Thématiques PDF par système
+
+##### 🧛 Monsterhearts - Romance Gothique
+```css
+/* Style PDF Monsterhearts */
+:root {
+  --mh-primary: #8b5cf6;      /* Violet gothique */
+  --mh-secondary: #a855f7;    /* Violet plus clair */
+  --mh-accent: #ec4899;       /* Rose passion */
+  --mh-dark: #2d1b3d;         /* Violet très sombre */
+  --mh-bg: linear-gradient(135deg, #1e1232 0%, #3a1a5c 50%, #2d1b3d 100%);
+}
+
+/* Polices thématiques */
+font-family: 'Crimson Text', 'Source Serif 4', serif; /* Élégance gothique */
+/* Décorations : cœurs brisés, roses, épines */
+/* Ambiance : Romantique sombre, mystérieuse, passionnelle */
+```
+
+##### ⚙️ Engrenages (Roue du Temps) - Fantasy Épique
+```css
+/* Style PDF Engrenages */
+:root {
+  --eng-primary: #10b981;     /* Vert émeraude */
+  --eng-secondary: #059669;   /* Vert plus foncé */
+  --eng-accent: #fbbf24;      /* Or antique */
+  --eng-dark: #064e3b;        /* Vert très sombre */
+  --eng-bg: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+}
+
+/* Polices thématiques */
+font-family: 'Cinzel', 'Times New Roman', serif; /* Médiéval élégant */
+/* Décorations : entrelacs celtiques, roues, serpents */
+/* Ambiance : Épique médiéval, noble, mystique */
+```
+
+##### ☢️ Metro 2033 - Post-Apocalyptique
+```css
+/* Style PDF Metro 2033 */
+:root {
+  --metro-primary: #dc2626;   /* Rouge danger */
+  --metro-secondary: #991b1b; /* Rouge plus sombre */
+  --metro-accent: #fbbf24;    /* Jaune radioactif */
+  --metro-dark: #7f1d1d;      /* Rouge très sombre */
+  --metro-bg: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+}
+
+/* Polices thématiques */
+font-family: 'Courier New', 'Share Tech Mono', monospace; /* Industriel/tech */
+/* Décorations : fissures, radiation, métal rouillé */
+/* Ambiance : Brutale, industrielle, dystopique */
+/* Effets : glitch, distorsion, usure */
+```
+
+##### 🌸 Mist Engine - Narratif Poétique
+```css
+/* Style PDF Mist Engine */
+:root {
+  --mist-primary: #ec4899;    /* Rose mystique */
+  --mist-secondary: #be185d;  /* Rose plus sombre */
+  --mist-accent: #a78bfa;     /* Violet doux */
+  --mist-dark: #831843;       /* Rose très sombre */
+  --mist-bg: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f9a8d4 100%);
+}
+
+/* Polices thématiques */
+font-family: 'Dancing Script', 'Kalam', cursive; /* Poétique, manuscrit */
+/* Décorations : nuages, brumes, calligraphies */
+/* Ambiance : Douce, onirique, poétique */
+/* Effets : flou artistique, aquarelle */
+```
+
 ### Principe d'application
+
+#### Pages Web (Cohérence)
 - **Fond** : Toujours noir (#000) ou noir charbon (#1e1e1e)
 - **Accent système** : Couleur spécifique au système pour bordures, hovers, badges
 - **Contenu générique** : Bleu pour features, sections d'aide, contenus transversaux
 - **Texte** : Blanc pour le contraste maximal
 - **Cohérence** : Le violet reste la couleur principale du site, les accents sont contextuels
 
+#### PDFs (Immersion thématique)
+- **Liberté totale** : Chaque système peut avoir son propre fond, polices, décorations
+- **Immersion** : Le design doit faire "sentir" l'univers du jeu
+- **Narration visuelle** : Les éléments graphiques racontent l'histoire du monde
+- **Fonctionnalité** : Reste lisible et utilisable en jeu
+
 ### Utilisation des couleurs
-- **Violet brand** : Navigation, CTAs principaux, branding
-- **Couleurs système** : Uniquement pour différencier les systèmes de jeu
+- **Violet brand** : Navigation, CTAs principaux, branding (pages web uniquement)
+- **Couleurs système (web)** : Uniquement pour différencier les systèmes de jeu sur les pages
+- **Couleurs système (PDF)** : Palette complète thématique pour l'immersion
 - **Bleu générique** : Pour tous les contenus non liés à un système spécifique
-- **Exemples** : Page d'accueil avec features → bleu, carte Monsterhearts → violet système
+- **Exemples** : 
+  - Page d'accueil avec features → bleu
+  - Carte Monsterhearts sur le site → bordure violette
+  - PDF Monsterhearts → design gothique complet avec dégradés violets/roses
+
+### 📝 Guidelines pour Templates PDF
+
+#### Structure type d'un template PDF
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>[Système] - [Type de document]</title>
+    <style>
+        /* 1. Variables CSS thématiques */
+        :root {
+            --primary: #system-color;
+            --secondary: #system-secondary;
+            --accent: #system-accent;
+            --dark: #system-dark;
+            --bg: linear-gradient(...);
+        }
+        
+        /* 2. Polices thématiques */
+        @import url('https://fonts.googleapis.com/css2?family=...');
+        
+        /* 3. Reset et base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--system-font);
+            background: var(--bg);
+            color: var(--text-color);
+        }
+        
+        /* 4. Styles thématiques spécifiques */
+        .header { /* Style header thématique */ }
+        .content { /* Style contenu */ }
+        .footer { /* Style footer */ }
+        
+        /* 5. Print-specific styles */
+        @media print {
+            body { background: white !important; }
+            .header { -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-container">
+        <header class="header"><!-- Header thématique --></header>
+        <main class="content"><!-- Contenu --></main>
+        <footer class="footer"><!-- Footer --></footer>
+    </div>
+</body>
+</html>
+```
+
+#### Bonnes pratiques PDF par système
+
+##### 🧛 Monsterhearts - Romance Gothique
+- **Polices** : Crimson Text, Source Serif Pro (élégantes, lisibles)
+- **Couleurs** : Dégradés violet/rose, contrastes forts
+- **Décorations** : Cœurs, roses, épines stylisées
+- **Ambiance** : Dramatique mais lisible, mystérieuse
+- **Éviter** : Comic Sans, couleurs criardes, décorations enfantines
+
+##### ⚙️ Engrenages - Fantasy Épique  
+- **Polices** : Cinzel, Times New Roman (médiévales, nobles)
+- **Couleurs** : Verts émeraude, ors, bruns terre
+- **Décorations** : Entrelacs, roues, motifs celtiques
+- **Ambiance** : Noble, épique, traditionnel
+- **Éviter** : Polices modernes, néons, styles futuristes
+
+##### ☢️ Metro 2033 - Post-Apocalyptique
+- **Polices** : Courier New, Share Tech Mono (industrielles)
+- **Couleurs** : Rouges danger, jaunes radioactifs, gris métal
+- **Décorations** : Fissures, effets glitch, usure
+- **Ambiance** : Brutale, pragmatique, dystopique
+- **Éviter** : Polices cursives, couleurs pastel, décorations florales
+
+##### 🌸 Mist Engine - Narratif Poétique
+- **Polices** : Dancing Script, Kalam (manuscrites, douces)
+- **Couleurs** : Roses, violets doux, bleus pastel
+- **Décorations** : Nuages, brumes, calligraphies
+- **Ambiance** : Douce, onirique, artistique  
+- **Éviter** : Polices rigides, couleurs agressives, angles durs
+
+#### Checklist qualité PDF
+
+✅ **Lisibilité**
+- [ ] Contraste suffisant (4.5:1 minimum)
+- [ ] Taille de police ≥ 11pt pour le corps de texte
+- [ ] Espacement lignes ≥ 1.4
+
+✅ **Impression**
+- [ ] Marges suffisantes (15mm minimum)
+- [ ] Couleurs compatibles impression N&B
+- [ ] Styles `@media print` définis
+
+✅ **Thématique**
+- [ ] Palette couleurs respectée
+- [ ] Police thématique appropriée
+- [ ] Décorations cohérentes avec l'univers
+- [ ] Ambiance immersive
+
+✅ **Technique**
+- [ ] Format A4 standard
+- [ ] Pas de débordements
+- [ ] Images optimisées
+- [ ] Footer avec attribution
 
 ## 📦 Blocs et composants
 

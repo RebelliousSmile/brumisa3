@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{titre}}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Bebas+Neue&display=swap');
+        
+        /* Reset et base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Crimson Text', 'Georgia', serif;
+            font-size: 11pt;
+            line-height: 1.45;
+            color: #000000;
+            background: #FAFAF8;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Page A4 */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            position: relative;
+            background: #FAFAF8;
+            overflow: hidden;
+            page-break-after: always;
+        }
+        
+        /* Bande latérale noire */
+        .sidebar {
+            position: absolute;
+            top: 0;
+            right: 0; /* À droite pour les pages paires */
+            width: 15mm;
+            height: 100%;
+            background: #000000;
+            color: white;
+        }
+        
+        /* Effet grunge sur la bande */
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            left: -2px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(90deg, transparent 0%, transparent 30%, #000 60%, #000 100%);
+            filter: blur(1px);
+        }
+        
+        /* Texte vertical dans la bande */
+        .sidebar-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            position: absolute;
+            bottom: 20mm;
+            left: 50%;
+            transform: translateX(-50%) rotate(180deg);
+            font-family: 'Bebas Neue', 'Impact', sans-serif;
+            font-size: 14pt;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+        
+        /* Numéro de page */
+        .page-number {
+            position: absolute;
+            top: 10mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24pt;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* Zone de contenu principal */
+        .content-wrapper {
+            margin-right: 25mm; /* Marge plus grande côté bande */
+            margin-left: 20mm;
+            padding-top: 20mm;
+            padding-bottom: 25mm;
+            min-height: 297mm;
+        }
+        
+        /* Contenu principal */
+        .content {
+            padding: 0;
+        }
+        
+        /* Titres */
+        h1 {
+            font-family: 'Crimson Text', serif;
+            font-size: 16pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin: 2em 0 1.5em;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            font-family: 'Crimson Text', serif;
+            font-size: 14pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin: 1.5em 0 1em;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            font-family: 'Crimson Text', serif;
+            font-size: 12pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1.2em;
+            margin-bottom: 0.8em;
+            page-break-after: avoid;
+        }
+        
+        /* Paragraphes */
+        p {
+            text-align: justify;
+            text-indent: 1.5em;
+            margin: 0.8em 0;
+            hyphens: auto;
+        }
+        
+        p:first-of-type,
+        h1 + p,
+        h2 + p,
+        h3 + p {
+            text-indent: 0;
+        }
+        
+        /* Introduction */
+        .intro {
+            font-style: italic;
+            text-align: justify;
+            margin: 1em 0 1.5em;
+            text-indent: 0;
+        }
+        
+        /* Listes */
+        ul {
+            list-style: none;
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        
+        ul li {
+            position: relative;
+            margin: 0.5em 0;
+            text-align: justify;
+        }
+        
+        ul li:before {
+            content: "✱";
+            position: absolute;
+            left: -1.5em;
+            font-size: 1.2em;
+        }
+        
+        ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        
+        ol li {
+            margin: 0.5em 0;
+            text-align: justify;
+        }
+        
+        /* Sections spéciales */
+        .section-speciale {
+            margin: 1.5em 0;
+            padding: 1em;
+            border-left: 3px solid #000;
+            padding-left: 1.5em;
+        }
+        
+        .section-speciale h4 {
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5em;
+            font-size: 11pt;
+        }
+        
+        /* Citations */
+        blockquote {
+            margin: 1.5em 2em;
+            font-style: italic;
+            text-align: justify;
+            position: relative;
+        }
+        
+        blockquote:before {
+            content: """;
+            position: absolute;
+            left: -0.5em;
+            top: -0.2em;
+            font-size: 3em;
+            font-family: 'Crimson Text', serif;
+            color: #666;
+        }
+        
+        /* Tableaux */
+        table {
+            width: 100%;
+            margin: 1.5em 0;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 0.5em;
+            border-bottom: 1px solid #000;
+        }
+        
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 15mm;
+            left: 20mm;
+            right: 25mm;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+        }
+        
+        /* Media queries pour l'impression */
+        @media print {
+            body {
+                background: white;
+                color: black;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .page {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .sidebar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* Classes utilitaires */
+        .centre {
+            text-align: center;
+        }
+        
+        .droite {
+            text-align: right;
+        }
+        
+        .gauche {
+            text-align: left;
+        }
+        
+        .saut-page {
+            page-break-before: always;
+        }
+        
+        .ensemble {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Bande latérale -->
+        <div class="sidebar">
+            <div class="page-number"><!-- PAGE_NUMBER --></div>
+            <div class="sidebar-text"><!-- CHAPITRE --></div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="content-wrapper">
+            <div class="content">
+                <h1><!-- TITRE --></h1>
+                
+                <!-- INTRODUCTION -->
+                
+                <!-- SECTIONS -->
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <!-- PIED_DE_PAGE -->
+        </div>
+    </div>
+</body>
+</html>

@@ -134,6 +134,45 @@ La classe `BaseModel` fournit :
 - `statistiquesGeneration(utilisateurId)`
 - `utilisationEspace(utilisateurId)`
 
+#### Statuts de visibilité des PDFs
+
+Chaque PDF peut avoir un **statut de visibilité** qui détermine qui peut y accéder :
+
+**Statuts disponibles** :
+
+- **`PRIVE`** (par défaut) :
+  - Le PDF n'est visible que par son créateur
+  - Apparaît uniquement dans "Mes documents" de l'utilisateur
+  - Aucun partage public possible
+
+- **`PUBLIC`** :
+  - Le PDF apparaît dans la liste publique des documents créés
+  - Visible par tous les utilisateurs du site
+  - Peut être consulté et téléchargé par la communauté
+  - Le créateur reste identifié
+
+- **`COMMUNAUTAIRE`** :
+  - Le PDF devient une ressource globale de la plateforme
+  - Apparaît dans la section "Téléchargements" des pages systèmes
+  - Considéré comme une contribution communautaire
+  - Peut être mis en avant par les modérateurs
+  - Le créateur est crédité comme contributeur
+
+**Gestion des statuts** :
+```javascript
+// Promotion d'un PDF en ressource communautaire
+await pdf.changerStatutVisibilite(pdfId, 'COMMUNAUTAIRE', moderateurId);
+
+// Recherche des PDFs par statut
+const pdfsPublics = await pdf.findByStatutVisibilite('PUBLIC');
+const ressourcesCommunautaires = await pdf.findByStatutVisibilite('COMMUNAUTAIRE');
+```
+
+**Permissions** :
+- Utilisateurs : peuvent passer de PRIVE → PUBLIC
+- Modérateurs/Admins : peuvent promouvoir PUBLIC → COMMUNAUTAIRE
+- Système de validation pour les ressources communautaires
+
 ### Temoignage.js
 
 **Table** : `temoignages`
