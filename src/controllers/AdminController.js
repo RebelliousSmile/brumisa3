@@ -1,0 +1,357 @@
+const BaseController = require('./BaseController');
+const UtilisateurService = require('../services/UtilisateurService');
+const PdfService = require('../services/PdfService');
+const AnonymousTokenService = require('../services/AnonymousTokenService');
+const os = require('os');
+
+/**
+ * Contrôleur pour les fonctionnalités d'administration
+ */
+class AdminController extends BaseController {
+    constructor() {
+        super('AdminController');
+        this.utilisateurService = new UtilisateurService();
+        this.pdfService = new PdfService();
+        this.anonymousTokenService = new AnonymousTokenService();
+        this.startTime = Date.now();
+    }
+
+    /**
+     * Obtient les statistiques globales du site
+     * GET /api/admin/statistiques
+     */
+    obtenirStatistiques = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        try {
+            // Statistiques utilisateurs
+            const statsUtilisateurs = await this.utilisateurService.compterParRole();
+            const utilisateursRecents = await this.utilisateurService.obtenirUtilisateursRecents(10);
+            
+            // Statistiques PDFs
+            const statsPdfs = await this.pdfService.obtenirStatistiquesGlobales();
+            
+            // Statistiques dons
+            const statsDons = await this.obtenirStatistiquesDons();
+            
+            // Statistiques système
+            const statsSysteme = this.obtenirStatistiquesSysteme();
+            
+            // Statistiques tokens anonymes
+            const statsTokens = this.anonymousTokenService.getGlobalStats();
+            
+            // Systèmes populaires (simulation)
+            const systemesPopulaires = [
+                { nom: 'Monsterhearts', count: statsPdfs.total_monsterhearts || 0 },
+                { nom: 'Engrenages & Sortilèges', count: statsPdfs.total_engrenages || 0 },
+                { nom: 'Metro 2033', count: statsPdfs.total_metro || 0 },
+                { nom: 'Mist Engine', count: statsPdfs.total_mist || 0 }
+            ].sort((a, b) => b.count - a.count);
+            
+            const statistiques = {
+                utilisateurs: {
+                    total: statsUtilisateurs.total || 0,
+                    nouveaux_mois: this.compterNouveauxCeMois(utilisateursRecents),
+                    par_role: statsUtilisateurs.par_role || {},
+                    actifs: statsUtilisateurs.actifs || 0
+                },
+                pdfs: {
+                    total: statsPdfs.total || 0,
+                    ce_mois: statsPdfs.ce_mois || 0,
+                    en_cours: statsPdfs.en_cours || 0,
+                    echecs: statsPdfs.echecs || 0
+                },
+                dons: statsDons,
+                systeme: statsSysteme,
+                tokens: statsTokens,
+                systemes_populaires: systemesPopulaires
+            };
+            
+            return this.repondreSucces(res, statistiques, 'Statistiques récupérées');
+            
+        } catch (error) {
+            console.error('Erreur récupération statistiques admin:', error);
+            return this.repondreErreur(res, 500, 'Erreur lors de la récupération des statistiques');
+        }
+    });
+
+    /**
+     * Obtient l'activité récente du site
+     * GET /api/admin/activite-recente
+     */
+    obtenirActiviteRecente = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        try {
+            // Pour l'instant, on simule l'activité récente
+            // TODO: Implémenter un système de logs d'activité
+            
+            const activites = [];
+            
+            // Derniers utilisateurs
+            const utilisateursRecents = await this.utilisateurService.obtenirUtilisateursRecents(5);
+            utilisateursRecents.forEach(user => {
+                activites.push({
+                    id: `user_${user.id}`,
+                    type: 'user',
+                    description: 'Nouvel utilisateur inscrit',
+                    details: user.email,
+                    timestamp: this.formatTempsRelatif(user.date_creation),
+                    date: new Date(user.date_creation)
+                });
+            });
+            
+            // Derniers PDFs (simulation)
+            const pdfsRecents = await this.pdfService.obtenirRecents(5);
+            pdfsRecents.forEach(pdf => {
+                activites.push({
+                    id: `pdf_${pdf.id}`,
+                    type: 'pdf',
+                    description: pdf.statut === 'TERMINE' ? 'PDF généré avec succès' : 'Génération PDF en cours',
+                    details: pdf.type_pdf || 'Document',
+                    timestamp: this.formatTempsRelatif(pdf.date_creation),
+                    date: new Date(pdf.date_creation)
+                });
+            });
+            
+            // Trier par date décroissante
+            activites.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            return this.repondreSucces(res, activites.slice(0, 20), 'Activité récente récupérée');
+            
+        } catch (error) {
+            console.error('Erreur récupération activité récente:', error);
+            return this.repondreErreur(res, 500, 'Erreur lors de la récupération de l\'activité');
+        }
+    });
+
+    /**
+     * Liste les utilisateurs avec filtres (admin)
+     * GET /api/admin/utilisateurs
+     */
+    listerUtilisateurs = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const pagination = this.extrairePagination(req);
+        const filtres = {
+            role: req.query.role,
+            actif: req.query.actif !== undefined ? req.query.actif === 'true' : undefined,
+            recherche: req.query.recherche
+        };
+        
+        const resultats = await this.utilisateurService.lister(filtres, pagination);
+        
+        // Nettoyer les données sensibles
+        const utilisateursNettoyes = resultats.utilisateurs.map(user => ({
+            id: user.id,
+            nom: user.nom,
+            email: user.email,
+            role: user.role,
+            type_compte: user.type_compte,
+            actif: user.actif,
+            date_creation: user.date_creation,
+            derniere_connexion: user.derniere_connexion
+        }));
+        
+        return this.repondrePagine(res, { 
+            utilisateurs: utilisateursNettoyes 
+        }, { ...pagination, total: resultats.total });
+    });
+
+    /**
+     * Supprime un utilisateur (admin)
+     * DELETE /api/admin/utilisateurs/:id
+     */
+    supprimerUtilisateur = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['id']);
+        
+        const utilisateurId = req.params.id;
+        const admin = this.verifierPermissions(req);
+        
+        // Empêcher la suppression de son propre compte
+        if (utilisateurId === admin.id) {
+            return this.repondreErreur(res, 400, 'Impossible de supprimer votre propre compte');
+        }
+        
+        await this.utilisateurService.supprimer(utilisateurId);
+        
+        return this.repondreSucces(res, null, 'Utilisateur supprimé');
+    });
+
+    /**
+     * Modifie le rôle d'un utilisateur (admin)
+     * PUT /api/admin/utilisateurs/:id/role
+     */
+    modifierRoleUtilisateur = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['id']);
+        this.validerCorps(req, ['role']);
+        
+        const utilisateurId = req.params.id;
+        const nouveauRole = req.body.role;
+        
+        await this.utilisateurService.mettreAJourRole(utilisateurId, nouveauRole);
+        
+        return this.repondreSucces(res, null, `Rôle mis à jour vers ${nouveauRole}`);
+    });
+
+    /**
+     * Nettoie les tokens anonymes expirés
+     * POST /api/admin/cleanup-tokens
+     */
+    nettoyerTokens = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const nbNettoyes = this.anonymousTokenService.cleanupExpiredTokens();
+        
+        return this.repondreSucces(res, { 
+            tokens_nettoyes: nbNettoyes 
+        }, `${nbNettoyes} tokens expirés nettoyés`);
+    });
+
+    /**
+     * Crée une sauvegarde de la base de données
+     * POST /api/admin/backup
+     */
+    creerSauvegarde = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        try {
+            // TODO: Implémenter la sauvegarde réelle de la DB
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const nomSauvegarde = `backup-${timestamp}.sql`;
+            
+            // Pour l'instant, on simule
+            const sauvegarde = {
+                nom: nomSauvegarde,
+                taille: '2.5 MB',
+                date: new Date().toISOString(),
+                statut: 'created'
+            };
+            
+            return this.repondreSucces(res, sauvegarde, 'Sauvegarde créée');
+            
+        } catch (error) {
+            console.error('Erreur création sauvegarde:', error);
+            return this.repondreErreur(res, 500, 'Erreur lors de la création de la sauvegarde');
+        }
+    });
+
+    /**
+     * Obtient les logs système
+     * GET /api/admin/logs
+     */
+    obtenirLogs = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const niveau = req.query.niveau || 'info';
+        const limite = Math.min(parseInt(req.query.limite) || 100, 1000);
+        
+        try {
+            // TODO: Implémenter la lecture des vrais logs
+            const logs = [
+                {
+                    timestamp: new Date().toISOString(),
+                    niveau: 'info',
+                    message: 'Application démarrée',
+                    service: 'app'
+                },
+                {
+                    timestamp: new Date(Date.now() - 60000).toISOString(),
+                    niveau: 'info', 
+                    message: 'PDF généré avec succès',
+                    service: 'PdfService'
+                }
+            ];
+            
+            return this.repondreSucces(res, logs, 'Logs récupérés');
+            
+        } catch (error) {
+            console.error('Erreur récupération logs:', error);
+            return this.repondreErreur(res, 500, 'Erreur lors de la récupération des logs');
+        }
+    });
+
+    // === MÉTHODES UTILITAIRES ===
+
+    /**
+     * Obtient les statistiques système
+     */
+    obtenirStatistiquesSysteme() {
+        const uptime = Date.now() - this.startTime;
+        const uptimeFormate = this.formaterDuree(uptime);
+        
+        return {
+            uptime: uptimeFormate,
+            status: 'healthy',
+            memoire_utilisee: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`,
+            cpu_load: os.loadavg()[0].toFixed(2),
+            node_version: process.version,
+            plateforme: os.platform()
+        };
+    }
+
+    /**
+     * Obtient les statistiques des dons
+     */
+    async obtenirStatistiquesDons() {
+        // TODO: Implémenter avec une vraie table donations
+        return {
+            montant_total: 0,
+            nb_donateurs: 0,
+            ce_mois: 0,
+            moyenne: 0
+        };
+    }
+
+    /**
+     * Compte les nouveaux utilisateurs ce mois
+     */
+    compterNouveauxCeMois(utilisateurs) {
+        const debutMois = new Date();
+        debutMois.setDate(1);
+        debutMois.setHours(0, 0, 0, 0);
+        
+        return utilisateurs.filter(user => 
+            new Date(user.date_creation) >= debutMois
+        ).length;
+    }
+
+    /**
+     * Formate une durée en millisecondes
+     */
+    formaterDuree(ms) {
+        const secondes = Math.floor(ms / 1000);
+        const minutes = Math.floor(secondes / 60);
+        const heures = Math.floor(minutes / 60);
+        const jours = Math.floor(heures / 24);
+        
+        if (jours > 0) return `${jours}j ${heures % 24}h`;
+        if (heures > 0) return `${heures}h ${minutes % 60}m`;
+        if (minutes > 0) return `${minutes}m ${secondes % 60}s`;
+        return `${secondes}s`;
+    }
+
+    /**
+     * Formate un timestamp en temps relatif
+     */
+    formatTempsRelatif(timestamp) {
+        const maintenant = new Date();
+        const date = new Date(timestamp);
+        const diffMs = maintenant - date;
+        
+        const minutes = Math.floor(diffMs / 60000);
+        const heures = Math.floor(diffMs / 3600000);
+        const jours = Math.floor(diffMs / 86400000);
+        
+        if (minutes < 1) return 'À l\'instant';
+        if (minutes < 60) return `Il y a ${minutes} min`;
+        if (heures < 24) return `Il y a ${heures}h`;
+        if (jours < 7) return `Il y a ${jours} jour${jours > 1 ? 's' : ''}`;
+        
+        return date.toLocaleDateString('fr-FR');
+    }
+}
+
+module.exports = AdminController;

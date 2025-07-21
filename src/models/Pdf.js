@@ -524,6 +524,55 @@ class Pdf extends BaseModel {
             format: 'structured'
         };
     }
+
+    /**
+     * Obtient les statistiques globales des PDFs
+     */
+    async obtenirStatistiques() {
+        try {
+            const db = require('../database/db');
+            const maintenant = new Date();
+            const debutMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+            
+            const sql = `
+                SELECT 
+                    COUNT(*) as total,
+                    COUNT(CASE WHEN date_creation >= ? THEN 1 END) as ce_mois,
+                    COUNT(CASE WHEN statut = 'EN_TRAITEMENT' THEN 1 END) as en_cours,
+                    COUNT(CASE WHEN statut = 'ERREUR' THEN 1 END) as echecs,
+                    COUNT(CASE WHEN type_pdf LIKE '%monsterhearts%' THEN 1 END) as total_monsterhearts,
+                    COUNT(CASE WHEN type_pdf LIKE '%engrenages%' THEN 1 END) as total_engrenages,
+                    COUNT(CASE WHEN type_pdf LIKE '%metro%' THEN 1 END) as total_metro,
+                    COUNT(CASE WHEN type_pdf LIKE '%mist%' THEN 1 END) as total_mist
+                FROM ${this.tableName} 
+                WHERE statut != 'SUPPRIME'
+            `;
+            
+            const stats = await db.get(sql, [debutMois.toISOString()]);
+            return stats;
+            
+        } catch (error) {
+            console.error('Erreur statistiques PDFs:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Obtient les PDFs récents
+     */
+    async obtenirRecents(limite = 10) {
+        try {
+            return await this.findAll(
+                'statut != ?',
+                ['SUPPRIME'],
+                'date_creation DESC',
+                limite
+            );
+        } catch (error) {
+            console.error('Erreur PDFs récents:', error);
+            return [];
+        }
+    }
 }
 
 module.exports = Pdf;

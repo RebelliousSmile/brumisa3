@@ -59,6 +59,7 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 ## Notes techniques
 - lorsque nous terminons la fin d'une feature et que l'utilisateur valide que le résultat est correct, pousse les modifications dans une branche git pour sauvegarde. 
 -  n'utilise pas d'emoji comme caractère. jamais. 
+- un problème de configuration ne doit pas empêcher l'application de fonctionner.
 
 ### Base de données
 - PostgreSQL n'accepte pas les placeholders ?. Il faut utiliser $1, $2, $3 à la place.

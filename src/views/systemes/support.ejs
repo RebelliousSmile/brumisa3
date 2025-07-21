@@ -100,8 +100,10 @@
                     
                     <button 
                         @click="openDonationModal()"
-                        class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-semibold transition-colors">
-                        Faire un don
+                        :disabled="!stripeDisponible"
+                        class="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-semibold transition-colors">
+                        <span x-show="stripeDisponible">Faire un don</span>
+                        <span x-show="!stripeDisponible">Bientôt disponible</span>
                     </button>
                 </div>
 
@@ -138,8 +140,10 @@
                     
                     <button 
                         @click="openDonationModal(10)"
-                        class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors">
-                        Devenir VIP
+                        :disabled="!stripeDisponible"
+                        class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-semibold transition-colors">
+                        <span x-show="stripeDisponible">Devenir VIP</span>
+                        <span x-show="!stripeDisponible">Bientôt disponible</span>
                     </button>
                 </div>
             </div>
@@ -207,28 +211,39 @@
             <div class="flex flex-wrap justify-center gap-4">
                 <button 
                     @click="openDonationModal(1)"
-                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    :disabled="!stripeDisponible"
+                    class="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="ra ra-coin mr-2"></i>
                     1€ - Café
                 </button>
                 <button 
                     @click="openDonationModal(5)"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    :disabled="!stripeDisponible"
+                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="ra ra-pizza mr-2"></i>
                     5€ - Pizza
                 </button>
                 <button 
                     @click="openDonationModal(10)"
-                    class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    :disabled="!stripeDisponible"
+                    class="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="ra ra-crown mr-2"></i>
                     10€ - VIP
                 </button>
                 <button 
                     @click="openDonationModal()"
-                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    :disabled="!stripeDisponible"
+                    class="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="ra ra-heart mr-2"></i>
                     Montant libre
                 </button>
+            </div>
+            
+            <!-- Message si Stripe non disponible -->
+            <div x-show="!stripeDisponible" class="mt-4 text-center">
+                <p class="text-purple-300 text-sm">
+                    💡 Le système de dons est en cours de configuration. Vous pouvez nous contacter directement pour soutenir le projet.
+                </p>
             </div>
         </div>
 
@@ -312,8 +327,35 @@ function supportPage() {
         donationEmail: '',
         donationMessage: '',
         processing: false,
+        stripeDisponible: true, // Sera vérifié à l'init
+        
+        async init() {
+            // Vérifier si Stripe est disponible
+            await this.verifierStripeDisponible();
+        },
+        
+        async verifierStripeDisponible() {
+            try {
+                const response = await fetch('/api/donations/status', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                this.stripeDisponible = response.ok;
+            } catch (error) {
+                this.stripeDisponible = false;
+            }
+        },
         
         openDonationModal(amount = null) {
+            if (!this.stripeDisponible) {
+                Alpine.store('app').ajouterMessage(
+                    'Le système de dons est temporairement indisponible',
+                    'info'
+                );
+                return;
+            }
+            
             if (amount) {
                 this.donationAmount = amount;
             }

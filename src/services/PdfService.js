@@ -1019,6 +1019,49 @@ class PdfService extends BaseService {
         const id = crypto.randomBytes(4).toString('hex');
         return `user-system_rights-public_template-document-generique_${systeme}_${titreNettoye}_id-${id}.pdf`;
     }
+
+    /**
+     * Obtient les statistiques globales des PDFs
+     */
+    async obtenirStatistiquesGlobales() {
+        try {
+            const stats = await this.pdfModel.obtenirStatistiques();
+            return stats || {
+                total: 0,
+                ce_mois: 0,
+                en_cours: 0,
+                echecs: 0,
+                total_monsterhearts: 0,
+                total_engrenages: 0,
+                total_metro: 0,
+                total_mist: 0
+            };
+        } catch (error) {
+            this.logger.error('Erreur récupération statistiques PDFs:', error);
+            return {
+                total: 0,
+                ce_mois: 0,
+                en_cours: 0,
+                echecs: 0,
+                total_monsterhearts: 0,
+                total_engrenages: 0,
+                total_metro: 0,
+                total_mist: 0
+            };
+        }
+    }
+
+    /**
+     * Obtient les PDFs récents
+     */
+    async obtenirRecents(limite = 10) {
+        try {
+            return await this.pdfModel.obtenirRecents(limite);
+        } catch (error) {
+            this.logger.error('Erreur récupération PDFs récents:', error);
+            return [];
+        }
+    }
 }
 
 module.exports = PdfService;

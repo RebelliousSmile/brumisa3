@@ -4,6 +4,7 @@ const PersonnageController = require('../controllers/PersonnageController');
 const PdfController = require('../controllers/PdfController');
 const HomeController = require('../controllers/HomeController');
 const DonationController = require('../controllers/DonationController');
+const AdminController = require('../controllers/AdminController');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ const personnageController = new PersonnageController();
 const pdfController = new PdfController();
 const homeController = new HomeController();
 const donationController = new DonationController();
+const adminController = new AdminController();
 
 // ===== ROUTES AUTHENTIFICATION =====
 
@@ -93,11 +95,28 @@ router.post('/pdfs/:id/basculer-visibilite', authController.middlewareAuth, home
 // ===== ROUTES DONATIONS =====
 
 // Système de dons et Premium
+router.get('/donations/status', donationController.verifierStatut);
 router.post('/donations/create-payment-intent', donationController.creerSessionPaiement);
 router.post('/donations/webhook', express.raw({type: 'application/json'}), donationController.webhookStripe);
 
 // Statistiques dons (admin)
 router.get('/admin/donations/stats', authController.middlewareRole('ADMIN'), donationController.obtenirStatistiquesDons);
+
+// ===== ROUTES ADMIN =====
+
+// Statistiques et dashboard
+router.get('/admin/statistiques', authController.middlewareRole('ADMIN'), adminController.obtenirStatistiques);
+router.get('/admin/activite-recente', authController.middlewareRole('ADMIN'), adminController.obtenirActiviteRecente);
+router.get('/admin/logs', authController.middlewareRole('ADMIN'), adminController.obtenirLogs);
+
+// Gestion utilisateurs
+router.get('/admin/utilisateurs', authController.middlewareRole('ADMIN'), adminController.listerUtilisateurs);
+router.delete('/admin/utilisateurs/:id', authController.middlewareRole('ADMIN'), adminController.supprimerUtilisateur);
+router.put('/admin/utilisateurs/:id/role', authController.middlewareRole('ADMIN'), adminController.modifierRoleUtilisateur);
+
+// Actions de maintenance
+router.post('/admin/cleanup-tokens', authController.middlewareRole('ADMIN'), adminController.nettoyerTokens);
+router.post('/admin/backup', authController.middlewareRole('ADMIN'), adminController.creerSauvegarde);
 
 // ===== ROUTES PAGE D'ACCUEIL =====
 

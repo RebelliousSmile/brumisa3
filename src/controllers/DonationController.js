@@ -1,6 +1,13 @@
 const BaseController = require('./BaseController');
 const UtilisateurService = require('../services/UtilisateurService');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Initialiser Stripe seulement si la clé est configurée
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+} else {
+    console.warn('⚠️  STRIPE_SECRET_KEY non configuré. Le système de dons sera désactivé.');
+}
 
 /**
  * Contrôleur pour la gestion des dons et paiements
@@ -16,6 +23,11 @@ class DonationController extends BaseController {
      * POST /api/donations/create-payment-intent
      */
     creerSessionPaiement = this.wrapAsync(async (req, res) => {
+        // Vérifier si Stripe est configuré
+        if (!stripe) {
+            return this.repondreErreur(res, 503, 'Système de dons temporairement indisponible');
+        }
+        
         this.validerCorps(req, ['amount', 'email']);
         
         const { amount, email, message } = req.body;
@@ -73,8 +85,18 @@ class DonationController extends BaseController {
      * POST /api/donations/webhook
      */
     webhookStripe = this.wrapAsync(async (req, res) => {
+        // Vérifier si Stripe est configuré
+        if (!stripe) {
+            return res.status(503).send('Stripe non configuré');
+        }
+        
         const sig = req.headers['stripe-signature'];
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        
+        if (!endpointSecret) {
+            console.error('STRIPE_WEBHOOK_SECRET non configuré');
+            return res.status(500).send('Configuration webhook manquante');
+        }
         
         let event;
         
@@ -103,6 +125,11 @@ class DonationController extends BaseController {
         
         if (!session_id) {
             return res.redirect('/support');
+        }
+        
+        // Si Stripe n'est pas configuré, rediriger vers support avec message
+        if (!stripe) {
+            return res.redirect('/support?error=config');
         }
         
         try {
@@ -190,6 +217,18 @@ class DonationController extends BaseController {
         };
         
         return this.repondreSucces(res, stats, 'Statistiques récupérées');
+    });
+
+    /**
+     * Vérifie si Stripe est configuré et disponible
+     * GET /api/donations/status
+     */
+    verifierStatut = this.wrapAsync(async (req, res) => {
+        if (!stripe) {
+            return this.repondreErreur(res, 503, 'Stripe non configuré');
+        }
+        
+        return this.repondreSucces(res, { disponible: true }, 'Stripe disponible');
     });
 }
 

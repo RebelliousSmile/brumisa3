@@ -102,6 +102,27 @@ class BaseController {
     }
 
     /**
+     * Valide les champs requis dans le corps de la requête
+     */
+    validerCorps(req, champsRequis) {
+        const erreurs = [];
+        
+        champsRequis.forEach(champ => {
+            const valeur = req.body[champ];
+            if (valeur === undefined || valeur === null || valeur === '') {
+                erreurs.push(`Le champ '${champ}' est requis`);
+            }
+        });
+        
+        if (erreurs.length > 0) {
+            const erreur = new Error(erreurs.join(', '));
+            erreur.name = 'ValidationError';
+            erreur.details = erreurs;
+            throw erreur;
+        }
+    }
+
+    /**
      * Valide les permissions utilisateur
      */
     verifierPermissions(req, roleRequis = 'UTILISATEUR') {
