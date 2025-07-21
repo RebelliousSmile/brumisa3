@@ -325,7 +325,12 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                     headers['Authorization'] = `Bearer ${this.anonymousToken}`;
                 }
                 
-                const response = await Alpine.store('app').requeteApi('/pdfs/document-generique/monsterhearts', {
+                // Choisir la route selon l'état de connexion
+                const endpoint = this.estConnecte 
+                    ? '/pdfs/document-generique/monsterhearts'
+                    : '/pdfs/document-generique-anonyme/monsterhearts';
+                
+                const response = await Alpine.store('app').requeteApi(endpoint, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify(donnees)

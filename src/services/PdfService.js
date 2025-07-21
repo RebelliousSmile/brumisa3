@@ -910,11 +910,12 @@ class PdfService extends BaseService {
             const pdf = await this.pdfModel.creer({
                 personnage_id: null, // Pas de personnage pour un document générique
                 utilisateur_id: utilisateurId,
+                systeme_jeu: options.systeme, // Ajouter le système requis par la validation
                 type_pdf: options.type_pdf || 'document-generique',
                 nom_fichier: nomFichier,
                 chemin_fichier: cheminFichier,
                 options_generation: JSON.stringify(options),
-                statut: 'EN_ATTENTE',
+                statut: 'EN_ATTENTE', // Statut initial pour les PDFs en cours de génération
                 progression: 0,
                 est_public: options.est_public || false,
                 titre: options.titre_personnalise || options.donnees.titre

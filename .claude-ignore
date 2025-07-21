@@ -1,0 +1,19 @@
+# Fichiers de configuration sensibles - NE JAMAIS MODIFIER
+.env
+.env.*
+
+# Fichiers de logs et données temporaires
+logs/
+*.log
+temp/
+tmp/
+
+# Fichiers de sauvegarde et dumps
+*.bak
+*.dump
+*.sql.gz
+
+# Clés et certificats
+*.key
+*.pem
+*.cert

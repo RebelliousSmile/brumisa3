@@ -48,9 +48,13 @@ class Pdf extends BaseModel {
             erreurs.push('Utilisateur requis');
         }
 
+        // DEBUG: Ajouter des logs pour comprendre le problème
+        console.log('DEBUG - Validation Pdf:', JSON.stringify(data, null, 2));
+        
         // Système de jeu requis
         const systemesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
         if (!data.systeme_jeu || !systemesValides.includes(data.systeme_jeu)) {
+            console.log('DEBUG - Système invalide:', data.systeme_jeu, 'dans', systemesValides);
             erreurs.push('Système de jeu requis et valide');
         }
 
@@ -61,8 +65,9 @@ class Pdf extends BaseModel {
         }
 
         // Statut valide
-        const statutsValides = ['EN_COURS', 'TERMINE', 'ERREUR', 'SUPPRIME'];
+        const statutsValides = ['EN_ATTENTE', 'EN_COURS', 'TERMINE', 'ERREUR', 'SUPPRIME'];
         if (data.statut && !statutsValides.includes(data.statut)) {
+            console.log('DEBUG - Statut invalide:', data.statut, 'dans', statutsValides);
             erreurs.push('Statut invalide');
         }
 

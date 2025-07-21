@@ -68,7 +68,8 @@ router.post('/auth/token-anonyme', pdfController.genererTokenAnonyme);
 
 // Génération et gestion PDFs
 router.post('/pdfs/generer', authController.middlewareAuth, pdfController.generer);
-router.post('/pdfs/document-generique/:systeme', pdfController.genererDocumentGeneriqueAnonyme);
+router.post('/pdfs/document-generique/:systeme', authController.middlewareAuth, pdfController.genererDocumentGenerique);
+router.post('/pdfs/document-generique-anonyme/:systeme', pdfController.genererDocumentGeneriqueAnonyme);
 router.get('/pdfs/:id/statut', pdfController.verifierStatutAnonyme);
 router.post('/pdfs/:id/relancer', authController.middlewareAuth, pdfController.relancerGeneration);
 

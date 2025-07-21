@@ -75,7 +75,8 @@ class App {
       }
     } catch (error) {
       logManager.error('Erreur initialisation base de données', { error: error.message });
-      throw error;
+      logManager.warn('L\'application continuera en mode dégradé sans base de données');
+      // Ne pas lever l'erreur - l'application peut fonctionner sans DB
     }
   }
 
