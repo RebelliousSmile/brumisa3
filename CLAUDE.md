@@ -7,7 +7,7 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 ### 🏗️ Stack technique
 - **Backend** : Node.js + Express + PostgreSQL + EJS
 - **Frontend** : Alpine.js + Tailwind CSS 
-- **PDF** : Puppeteer avec templates HTML/CSS
+- **PDF** : PDFKit avec templates programmatiques
 - **Auth** : Sessions Express avec codes d'accès
 
 ### 💻 Environnement de développement
@@ -53,6 +53,8 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 ## Structure du projet
 - le répertoire scripts ne doit pas avoir de sous-répertoire
 - le répertoire documentation doit comporter le moins de code possible. 
+- les fichiers markdown du répertoire documentation ne devraient pas comporter plus de 200 lignes. 
+- le fichier CLAUDE.md ne devrait pas comporter plus de 500 lignes. 
 
 ## Notes techniques
 
