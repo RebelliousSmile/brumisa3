@@ -32,8 +32,13 @@ class BasePdfKitService {
             ...options
         });
 
+        // Initialiser le compteur de pages et le titre
+        this.currentPageNumber = 1;
+        this.chapterTitle = options.chapterTitle || 'DOCUMENT';
+
         // Ajouter les gestionnaires de page
         doc.on('pageAdded', () => {
+            this.currentPageNumber++;
             this.onPageAdded(doc);
         });
 
@@ -47,12 +52,18 @@ class BasePdfKitService {
      * Appelé à chaque nouvelle page
      */
     onPageAdded(doc) {
-        const pageNumber = doc.bufferedPageRange().count;
+        // Utiliser notre compteur au lieu de bufferedPageRange
+        const pageNumber = this.currentPageNumber;
         
         // Dessiner les éléments de page par défaut
         this.drawSidebar(doc, pageNumber);
         this.drawPageNumber(doc, pageNumber);
-        this.drawWatermark(doc);
+        this.drawWatermark(doc, this.chapterTitle);
+        
+        // Repositionner le curseur avec les bonnes marges
+        const margins = this.getContentMargins(pageNumber);
+        doc.x = margins.left;
+        doc.y = margins.top;
     }
 
     /**
@@ -88,8 +99,8 @@ class BasePdfKitService {
         // Numéro de page en blanc dans la barre noire
         doc.fontSize(24)
            .fillColor('#FFFFFF')
-           .text(pageNumber.toString(), x - 10, y, {
-               width: 20,
+           .text(pageNumber.toString(), x - 15, y, {
+               width: 30,
                align: 'center'
            });
 
@@ -101,12 +112,15 @@ class BasePdfKitService {
      * Dessine le watermark/texte vertical dans la barre
      */
     drawWatermark(doc, text = '') {
-        if (!text) return;
+        if (!text && this.chapterTitle) {
+            text = this.chapterTitle;
+        }
+        if (!text) text = 'DOCUMENT';
 
         // Sauvegarder l'état actuel
         doc.save();
 
-        const pageNumber = doc.bufferedPageRange().count;
+        const pageNumber = this.currentPageNumber;
         const isOddPage = pageNumber % 2 === 1;
         const x = isOddPage ? this.sidebarWidth / 2 : this.pageWidth - this.sidebarWidth / 2;
         const y = this.pageHeight - 100;
@@ -209,26 +223,51 @@ class BasePdfKitService {
     addStarList(doc, items, options = {}) {
         const {
             fontSize = 11,
-            bulletChar = '✱',
+            bulletChar = '*',
             indent = 20,
             lineGap = 3
         } = options;
 
-        items.forEach(item => {
-            // Puce
-            doc.fontSize(fontSize * 1.2)
-               .fillColor('#000000')
-               .text(bulletChar, doc.x - indent, doc.y);
+        // Sauvegarder la position X de départ pour toute la liste
+        const listStartX = doc.x;
 
-            // Texte
+        items.forEach(item => {
+            // Utiliser toujours la position X de départ de la liste
+            const currentY = doc.y;
+            
+            // Sauvegarder l'état complet du document
+            doc.save();
+            
+            // Dessiner la puce à la position de base de la liste
             doc.fontSize(fontSize)
-               .text(item, doc.x, doc.y - fontSize * 1.2, {
+               .fillColor('#000000')
+               .text(bulletChar, listStartX, currentY, {
+                   continued: false
+               });
+            
+            // Restaurer l'état du document
+            doc.restore();
+            
+            // Positionner le curseur pour le texte avec indentation
+            doc.x = listStartX + indent;
+            doc.y = currentY;
+            
+            // Dessiner le texte de l'élément
+            doc.fontSize(fontSize)
+               .fillColor('#000000')
+               .text(item, {
                    align: 'justify',
-                   lineGap
+                   lineGap,
+                   continued: false
                });
 
+            // Remettre le curseur X à la position de départ de la liste pour le prochain élément
+            doc.x = listStartX;
             doc.moveDown(0.3);
         });
+        
+        // S'assurer que le curseur X est correctement positionné après la liste
+        doc.x = listStartX;
     }
 
     /**
@@ -261,12 +300,14 @@ class BasePdfKitService {
      */
     getContentMargins(pageNumber) {
         const isOddPage = pageNumber % 2 === 1;
+        const sidebarSpace = this.sidebarWidth + 10; // 15mm + 10pt d'espace
         
         return {
-            left: isOddPage ? this.marginLeft + this.sidebarWidth : this.marginLeft,
-            right: isOddPage ? this.marginRight : this.marginRight + this.sidebarWidth,
+            left: isOddPage ? this.marginLeft + sidebarSpace : this.marginLeft,
+            right: isOddPage ? this.marginRight : this.marginRight + sidebarSpace,
             top: this.marginTop,
-            bottom: this.marginBottom
+            bottom: this.marginBottom,
+            width: this.pageWidth - this.marginLeft - this.marginRight - sidebarSpace
         };
     }
 

@@ -71,7 +71,7 @@ class SystemRightsService {
      * Génère un chemin PDF complet avec nom de fichier unique
      * Format: {userId}_{systemRights}_{template}_{uniqueId}.pdf
      * @param {string} titre - Titre du document
-     * @param {string} systeme - Système de jeu
+     * @param {string|null} systeme - Système de jeu (null pour générique)
      * @param {number|null} userId - ID utilisateur (0 pour anonyme)
      * @param {string} template - Template utilisé
      * @param {string} systemRights - Droits système
@@ -92,8 +92,11 @@ class SystemRightsService {
         // Construire le nom de fichier simplifie
         const fileName = `${userPart}_${rightsPart}_${templatePart}_${uniqueId}.pdf`;
         
+        // Gérer le système null (générique)
+        const systemFolder = systeme || 'generique';
+        
         // Construire le chemin complet
-        const fullPath = path.join('output', 'pdfs', systeme, fileName);
+        const fullPath = path.join('output', 'pdfs', systemFolder, fileName);
         
         return {
             fileName,
