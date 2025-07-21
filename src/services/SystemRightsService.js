@@ -68,8 +68,8 @@ class SystemRightsService {
     }
 
     /**
-     * Génère un chemin PDF complet avec nom de fichier unique
-     * Format: {userId}_{systemRights}_{template}_{uniqueId}.pdf
+     * Génère un chemin PDF complet avec nom de fichier horodaté
+     * Format: {userId}_{systemRights}_{template}_{YYYYMMDD-HHMMSS}.pdf
      * @param {string} titre - Titre du document
      * @param {string|null} systeme - Système de jeu (null pour générique)
      * @param {number|null} userId - ID utilisateur (0 pour anonyme)
@@ -78,19 +78,26 @@ class SystemRightsService {
      * @returns {Object} - {fileName, fullPath}
      */
     generatePdfPath(titre, systeme, userId = null, template = 'default', systemRights = 'private') {
-        const crypto = require('crypto');
         const path = require('path');
         
-        // Générer un ID unique
-        const uniqueId = crypto.randomBytes(8).toString('hex');
+        // Générer un timestamp lisible : YYYYMMDD-HHMMSS
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        const second = String(now.getSeconds()).padStart(2, '0');
+        
+        const timestamp = `${year}${month}${day}-${hour}${minute}${second}`;
         
         // Formater les composants
         const userPart = userId && userId > 0 ? userId : 0;
         const rightsPart = this.isValidSystemRights(systemRights) ? systemRights : 'private';
         const templatePart = template;
         
-        // Construire le nom de fichier simplifie
-        const fileName = `${userPart}_${rightsPart}_${templatePart}_${uniqueId}.pdf`;
+        // Construire le nom de fichier avec timestamp
+        const fileName = `${userPart}_${rightsPart}_${templatePart}_${timestamp}.pdf`;
         
         // Gérer le système null (générique)
         const systemFolder = systeme || 'generique';
@@ -106,25 +113,42 @@ class SystemRightsService {
 
     /**
      * Parse un nom de fichier pour extraire les composants
-     * Supporte les deux formats: ancien (user-X_rights-Y) et nouveau (X_Y_Z_ID)
+     * Supporte les formats: ancien (user-X_rights-Y), avec uniqueId (X_Y_Z_ID) et avec timestamp (X_Y_Z_YYYYMMDD-HHMMSS)
      * @param {string} filename - Nom de fichier
-     * @returns {Object|null} - {userId, systemRights, template, uniqueId} ou null
+     * @returns {Object|null} - {userId, systemRights, template, uniqueId, timestamp} ou null
      */
     parseFilename(filename) {
-        // Nouveau format simplifié: userId_systemRights_template_uniqueId.pdf
-        const newFormatRegex = /^([^_]+)_([^_]+)_([^_]+)_([^.]+)\.pdf$/;
-        const newMatch = filename.match(newFormatRegex);
+        // Format avec timestamp: userId_systemRights_template_YYYYMMDD-HHMMSS.pdf
+        const timestampFormatRegex = /^([^_]+)_([^_]+)_([^_]+)_(\d{8}-\d{6})\.pdf$/;
+        const timestampMatch = filename.match(timestampFormatRegex);
         
-        if (newMatch) {
-            const userId = newMatch[1] === '0' ? 0 : parseInt(newMatch[1], 10);
-            const systemRights = newMatch[2];
+        if (timestampMatch) {
+            const userId = timestampMatch[1] === '0' ? 0 : parseInt(timestampMatch[1], 10);
+            const systemRights = timestampMatch[2];
             
             return {
                 userId: isNaN(userId) ? 0 : userId,
                 systemRights: this.isValidSystemRights(systemRights) ? systemRights : 'private',
-                template: newMatch[3],
-                uniqueId: newMatch[4],
-                format: 'simplified'
+                template: timestampMatch[3],
+                timestamp: timestampMatch[4],
+                format: 'timestamp'
+            };
+        }
+        
+        // Format avec uniqueId: userId_systemRights_template_uniqueId.pdf (rétrocompatibilité)
+        const uniqueIdFormatRegex = /^([^_]+)_([^_]+)_([^_]+)_([^.]+)\.pdf$/;
+        const uniqueIdMatch = filename.match(uniqueIdFormatRegex);
+        
+        if (uniqueIdMatch) {
+            const userId = uniqueIdMatch[1] === '0' ? 0 : parseInt(uniqueIdMatch[1], 10);
+            const systemRights = uniqueIdMatch[2];
+            
+            return {
+                userId: isNaN(userId) ? 0 : userId,
+                systemRights: this.isValidSystemRights(systemRights) ? systemRights : 'private',
+                template: uniqueIdMatch[3],
+                uniqueId: uniqueIdMatch[4],
+                format: 'uniqueId'
             };
         }
         

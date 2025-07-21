@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/BasePdfKitService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/BasePdfKitService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
+
+/**
+ * Service de base pour la génération PDF avec PDFKit
+ * Gère les éléments communs : barres latérales, numéros de page, watermarks
+ */
+class BasePdfKitService {
+    constructor() {
+        this.pageWidth = 595.28;  // A4 width in points
+        this.pageHeight = 841.89; // A4 height in points
+        this.marginTop = 72;
+        this.marginBottom = 72;
+        this.marginLeft = 72;
+        this.marginRight = 72;
+        this.sidebarWidth = 42.52; // 15mm en points
+        this.tableOfContents = []; // Pour stocker les sections
+        this.hasLongContentPages = false; // Pour savoir si on a ajouté garde/toc
+    }
+
+    /**
+     * Crée un nouveau document PDF avec la configuration de base
+     */
+    createDocument(options = {}) {
+        const doc = new PDFDocument({
+            size: 'A4',
+            margins: {
+                top: this.marginTop,
+                bottom: this.marginBottom,
+                left: this.marginLeft,
+                right: this.marginRight
+            },
+            ...options
+        });
+
+        // Initialiser le compteur de pages et le titre
+        this.currentPageNumber = 1;
+        this.chapterTitle = options.chapterTitle || 'DOCUMENT';
+
+        // Ajouter les gestionnaires de page
+        doc.on('pageAdded', () => {
+            this.currentPageNumber++;
+            this.onPageAdded(doc);
+        });
+
+        // Initialiser la première page
+        this.onPageAdded(doc);
+        
+        // S'assurer que le curseur est correctement positionné pour la première page
+        const margins = this.getContentMargins(this.currentPageNumber);
+        doc.x = margins.left;
+        doc.y = margins.top;
+
+        return doc;
+    }
+
+    /**
+     * Appelé à chaque nouvelle page
+     */
+    onPageAdded(doc) {
+        // Éviter les récursions infinies
+        if (this._isDrawingPageElements) return;
+        this._isDrawingPageElements = true;
+        
+        try {
+            // Utiliser notre compteur au lieu de bufferedPageRange
+            const pageNumber = this.currentPageNumber;
+            
+            // Vérifier si c'est une page spéciale (garde ou TOC)
+            const isSpecialPage = this.isSpecialPage(pageNumber);
+            
+            // Dessiner les éléments de page (sidebar conditionnelle)
+            if (!isSpecialPage) {
+                this.drawSidebar(doc, pageNumber);
+            }
+            this.drawPageNumber(doc, pageNumber);
+            
+            // Repositionner le curseur avec les bonnes marges
+            const margins = isSpecialPage ? this.getStandardMargins() : this.getContentMargins(pageNumber);
+            doc.x = margins.left;
+            doc.y = margins.top;
+            
+            // Ajouter le watermark (uniquement sur pages normales)
+            if (!isSpecialPage) {
+                this.drawWatermark(doc, this.chapterTitle);
+            }
+        } finally {
+            this._isDrawingPageElements = false;
+        }
+    }
+
+    /**
+     * Dessine la barre latérale noire avec texte vertical
+     */
+    drawSidebar(doc, pageNumber) {
+        // Déterminer le côté (gauche pour pages impaires, droite pour pages paires)
+        const isOddPage = pageNumber % 2 === 1;
+        const x = isOddPage ? 0 : this.pageWidth - this.sidebarWidth;
+
+        // Dessiner le rectangle noir (sans save/restore pour éviter les conflits)
+        doc.rect(x, 0, this.sidebarWidth, this.pageHeight)
+           .fill('#000000');
+
+        // Ajouter le texte vertical directement dans la barre
+        if (this.chapterTitle) {
+            // Sauvegarder l'état pour le texte
+            doc.save();
+            
+            const sidebarCenterX = x + (this.sidebarWidth / 2);
+            const endY = this.pageHeight - this.marginBottom;
+            
+            // Taille de police adaptée
+            let fontSize = 8;
+            if (this.chapterTitle.length > 15) fontSize = 7;
+            if (this.chapterTitle.length > 25) fontSize = 6;
+            
+            // Configuration du texte blanc
+            doc.fontSize(fontSize)
+               .fillColor('#FFFFFF')
+               .font('Times-Roman');
+            
+            // Texte vertical (rotation -90°)
+            doc.rotate(-90, { origin: [sidebarCenterX, endY] });
+            
+            // Position du texte centré
+            const text = this.chapterTitle.toUpperCase();
+            const textWidth = doc.widthOfString(text);
+            const textX = sidebarCenterX;
+            const textY = endY - (textWidth / 2);
+            
+            doc.text(text, textX, textY);
+            
+            // Restaurer l'état
+            doc.restore();
+        }
+    }
+
+    /**
+     * Dessine le numéro de page dans la barre
+     */
+    drawPageNumber(doc, pageNumber) {
+        // Sauvegarder l'état actuel
+        doc.save();
+
+        const isOddPage = pageNumber % 2 === 1;
+        const x = isOddPage ? this.sidebarWidth / 2 : this.pageWidth - this.sidebarWidth / 2;
+        const y = 50;
+
+        // Numéro de page en blanc dans la barre noire
+        doc.fontSize(24)
+           .fillColor('#FFFFFF');
+        
+        // Centrer manuellement le numéro
+        const numText = pageNumber.toString();
+        const numWidth = doc.widthOfString(numText);
+        const centeredX = x - (numWidth / 2);
+        
+        doc.text(numText, centeredX, y);
+
+        // Restaurer l'état
+        doc.restore();
+    }
+
+    /**
+     * Dessine le watermark comme footer dans le coin opposé à la sidebar
+     */
+    drawWatermark(doc, text = '') {
+        if (!text &amp;&amp; this.chapterTitle) {
+            text = this.chapterTitle;
+        }
+        if (!text) text = 'DOCUMENT';
+
+        // Sauvegarder l'état actuel
+        doc.save();
+
+        const pageNumber = this.currentPageNumber;
+        const isOddPage = pageNumber % 2 === 1;
+        
+        // Position de base dans la barre
+        const sidebarCenterX = isOddPage ? this.sidebarWidth / 2 : this.pageWidth - this.sidebarWidth / 2;
+        const startY = this.pageHeight - 80; // Un peu plus haut du bas
+        
+        // Calculer la taille de police
+        const textLength = text.length;
+        let fontSize = 10;
+        if (textLength > 20) fontSize = 8;
+        if (textLength > 30) fontSize = 7;
+        if (textLength > 40) fontSize = 6;
+
+        // Position dans le coin OPPOSÉ à la sidebar
+        // Si sidebar à gauche (page impaire) → footer à droite
+        // Si sidebar à droite (page paire) → footer à gauche
+        const footerX = isOddPage ? 
+            this.pageWidth - this.marginRight - 200 : // Droite si sidebar à gauche
+            this.marginLeft;                           // Gauche si sidebar à droite
+            
+        const footerY = this.pageHeight - this.marginBottom + 10; // En bas de page
+        
+        // Configuration du texte noir horizontal
+        doc.fontSize(8)
+           .fillColor('#000000')
+           .font('Times-Roman');
+
+        // Texte horizontal en footer (pas vertical)
+        const watermarkText = text.toUpperCase();
+        if (isOddPage) {
+            // Aligner à droite manuellement
+            const textWidth = doc.widthOfString(watermarkText);
+            doc.text(watermarkText, footerX + 200 - textWidth, footerY);
+        } else {
+            // Aligner à gauche
+            doc.text(watermarkText, footerX, footerY);
+        }
+        
+        doc.restore();
+    }
+
+    /**
+     * Configure les polices pour le document
+     */
+    registerFonts(doc, fonts = {}) {
+        // Polices par défaut
+        const defaultFonts = {
+            'Crimson': {
+                normal: path.join(__dirname, '../../assets/fonts/CrimsonText-Regular.ttf'),
+                bold: path.join(__dirname, '../../assets/fonts/CrimsonText-Bold.ttf'),
+                italic: path.join(__dirname, '../../assets/fonts/CrimsonText-Italic.ttf')
+            },
+            'Bebas': {
+                normal: path.join(__dirname, '../../assets/fonts/BebasNeue-Regular.ttf')
+            }
+        };
+
+        // Fusionner avec les polices personnalisées
+        const allFonts = { ...defaultFonts, ...fonts };
+
+        // Enregistrer les polices si elles existent
+        Object.entries(allFonts).forEach(([name, paths]) => {
+            Object.entries(paths).forEach(([style, fontPath]) => {
+                if (fs.existsSync(fontPath)) {
+                    const fontName = style === 'normal' ? name : `${name}-${style}`;
+                    doc.registerFont(fontName, fontPath);
+                }
+            });
+        });
+    }
+
+    /**
+     * Ajoute un titre avec le style approprié
+     */
+    addTitle(doc, text, options = {}) {
+        const {
+            fontSize = 16,
+            align = 'center',
+            uppercase = true,
+            letterSpacing = 0.1,
+            marginBottom = 20,
+            marginTop = 0,
+            addToToc = false,
+            tocLevel = 1
+        } = options;
+
+        // Ajouter marge haute si spécifiée
+        if (marginTop > 0) {
+            doc.moveDown(marginTop / 12);
+        }
+
+        // Ajouter à la table des matières si demandé
+        if (addToToc) {
+            this.addToTableOfContents(text, tocLevel);
+        }
+
+        const titleText = uppercase ? text.toUpperCase() : text;
+        doc.fontSize(fontSize)
+           .fillColor('#000000');
+        
+        // Centrer manuellement si nécessaire
+        if (align === 'center') {
+            const margins = this.getContentMargins(this.currentPageNumber || 1);
+            const textWidth = doc.widthOfString(titleText);
+            const centeredX = margins.left + (margins.width - textWidth) / 2;
+            doc.text(titleText, centeredX, doc.y);
+        } else {
+            doc.text(titleText);
+        }
+
+        doc.moveDown(marginBottom / 12);
+    }
+
+    /**
+     * Ajoute un paragraphe avec justification
+     */
+    addParagraph(doc, text, options = {}) {
+        const {
+            fontSize = 11,
+            indent = 0,
+            align = 'justify',
+            lineGap = 5
+        } = options;
+
+        // Éviter align qui cause des sauts de page - décomposer en lignes manuelles
+        doc.fontSize(fontSize)
+           .fillColor('#000000');
+        
+        if (indent > 0) {
+            doc.x += indent;
+        }
+        
+        // Pour justify, utiliser le découpage manuel comme dans addBox
+        if (align === 'justify') {
+            const margins = this.getContentMargins(this.currentPageNumber || 1);
+            const availableWidth = margins.width - indent;
+            const words = text.split(' ');
+            let currentLine = '';
+            let startY = doc.y;
+            const lineHeight = fontSize + lineGap;
+            
+            for (const word of words) {
+                const testLine = currentLine ? currentLine + ' ' + word : word;
+                const testWidth = doc.widthOfString(testLine);
+                
+                if (testWidth > availableWidth &amp;&amp; currentLine) {
+                    // Ligne complète, l'écrire et passer à la suivante
+                    doc.text(currentLine, doc.x, startY);
+                    currentLine = word;
+                    startY += lineHeight;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            
+            // Écrire la dernière ligne
+            if (currentLine) {
+                doc.text(currentLine, doc.x, startY);
+                doc.y = startY + lineHeight;
+            }
+        } else {
+            doc.text(text);
+        }
+
+        doc.moveDown(0.5);
+    }
+
+    /**
+     * Ajoute une liste avec puces étoiles
+     */
+    addStarList(doc, items, options = {}) {
+        const {
+            fontSize = 11,
+            bulletChar = '*',
+            indent = 20,
+            lineGap = 3
+        } = options;
+
+        // Sauvegarder la position X de départ pour toute la liste
+        const listStartX = doc.x;
+
+        items.forEach(item => {
+            // Utiliser toujours la position X de départ de la liste
+            const currentY = doc.y;
+            
+            // Sauvegarder l'état complet du document
+            doc.save();
+            
+            // Dessiner la puce à la position de base de la liste
+            doc.fontSize(fontSize)
+               .fillColor('#000000')
+               .text(bulletChar, listStartX, currentY, {
+                   continued: false
+               });
+            
+            // Restaurer l'état du document
+            doc.restore();
+            
+            // Positionner le curseur pour le texte avec indentation
+            doc.x = listStartX + indent;
+            doc.y = currentY;
+            
+            // Dessiner le texte de l'élément
+            doc.fontSize(fontSize)
+               .fillColor('#000000')
+               .text(item, {
+                   align: 'justify',
+                   lineGap,
+                   continued: false
+               });
+
+            // Remettre le curseur X à la position de départ de la liste pour le prochain élément
+            doc.x = listStartX;
+            doc.moveDown(0.3);
+        });
+        
+        // S'assurer que le curseur X est correctement positionné après la liste
+        doc.x = listStartX;
+    }
+
+    /**
+     * Ajoute un encadré (conseil, attention, exemple)
+     */
+    addBox(doc, type, text, options = {}) {
+        const labels = {
+            conseil: 'CONSEIL',
+            attention: 'ATTENTION',
+            exemple: 'EXEMPLE'
+        };
+        
+        const {
+            fontSize = 11,
+            labelFontSize = 9,
+            padding = 8,  // Padding interne du texte
+            topPadding = 15,  // Marge avant l'encadré
+            bottomPadding = 15  // Marge après l'encadré
+        } = options;
+        
+        // Calculer la largeur disponible en tenant compte des marges et de la barre
+        const pageNumber = this.currentPageNumber || 1;
+        const margins = this.getContentMargins(pageNumber);
+        const boxWidth = margins.width;
+        
+        // Position de départ
+        const boxX = margins.left;
+        const startY = doc.y + topPadding;
+        
+        // Calculer approximativement la hauteur nécessaire pour le contenu
+        // Approximation : 12pt par ligne, largeur disponible
+        const availableWidth = boxWidth - (padding * 2);
+        const approxCharsPerLine = Math.floor(availableWidth / 6); // 6pt par caractère
+        const approxLines = Math.ceil(text.length / approxCharsPerLine);
+        const textHeight = Math.max(fontSize + 4, approxLines * (fontSize + 2));
+        
+        const boxHeight = padding + textHeight + padding;
+        
+        // Dessiner le rectangle principal
+        doc.rect(boxX, startY, boxWidth, boxHeight)
+           .lineWidth(0.5)  // Trait fin
+           .stroke('#000000');
+        
+        // Label SUR la ligne du cadre (comme dans l'image de référence)
+        const label = labels[type] || type.toUpperCase();
+        doc.fontSize(labelFontSize)
+           .fillColor('#000000')
+           .font('Times-Roman');
+           
+        const labelWidth = doc.widthOfString(label);
+        const labelX = boxX + 10; // Petit décalage depuis le bord gauche
+        const labelY = startY - 6; // Centré sur la ligne du cadre
+        
+        // Rectangle blanc derrière le label pour "couper" la ligne
+        doc.rect(labelX - 3, labelY - 2, labelWidth + 6, labelFontSize + 4)
+           .fillColor('#FFFFFF')
+           .fill();
+           
+        // Texte du label par-dessus
+        doc.fillColor('#000000')
+           .text(label, labelX, labelY);
+        
+        // Contenu dans le cadre - ÉVITER width/align qui causent des sauts de page
+        doc.fontSize(fontSize)
+           .fillColor('#000000');
+           
+        // Décomposer le texte en lignes manuellement pour éviter les sauts automatiques
+        const words = text.split(' ');
+        let currentLine = '';
+        let currentY = startY + padding;
+        const lineHeight = fontSize + 2;
+        
+        for (const word of words) {
+            const testLine = currentLine ? currentLine + ' ' + word : word;
+            const testWidth = doc.widthOfString(testLine);
+            
+            if (testWidth > availableWidth &amp;&amp; currentLine) {
+                // Ligne complète, l'écrire et passer à la suivante
+                doc.text(currentLine, boxX + padding, currentY);
+                currentLine = word;
+                currentY += lineHeight;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        
+        // Écrire la dernière ligne
+        if (currentLine) {
+            doc.text(currentLine, boxX + padding, currentY);
+        }
+        
+        // Repositionner le curseur après l'encadré
+        doc.x = margins.left;
+        doc.y = startY + boxHeight + bottomPadding;
+    }
+
+    /**
+     * Ajoute une ligne de séparation
+     */
+    addSeparator(doc, options = {}) {
+        const {
+            width = 0.5,
+            color = '#000000',
+            marginTop = 10,
+            marginBottom = 10
+        } = options;
+
+        doc.moveDown(marginTop / 12);
+
+        const startX = doc.x;
+        const endX = this.pageWidth - this.marginRight;
+        const y = doc.y;
+
+        doc.moveTo(startX, y)
+           .lineTo(endX, y)
+           .lineWidth(width)
+           .stroke(color);
+
+        doc.moveDown(marginBottom / 12);
+    }
+
+    /**
+     * Gère les marges en tenant compte de la barre latérale
+     */
+    getContentMargins(pageNumber) {
+        const isOddPage = pageNumber % 2 === 1;
+        const sidebarSpace = this.sidebarWidth + 10; // 15mm + 10pt d'espace
+        
+        return {
+            left: isOddPage ? this.marginLeft + sidebarSpace : this.marginLeft,
+            right: isOddPage ? this.marginRight : this.marginRight + sidebarSpace,
+            top: this.marginTop,
+            bottom: this.marginBottom,
+            width: this.pageWidth - this.marginLeft - this.marginRight - sidebarSpace
+        };
+    }
+
+    /**
+     * Marges standard sans sidebar (pour pages spéciales)
+     */
+    getStandardMargins() {
+        return {
+            left: this.marginLeft,
+            right: this.marginRight,
+            top: this.marginTop,
+            bottom: this.marginBottom,
+            width: this.pageWidth - this.marginLeft - this.marginRight
+        };
+    }
+
+    /**
+     * Vérifie si une page est spéciale (garde ou TOC)
+     */
+    isSpecialPage(pageNumber) {
+        if (!this.hasLongContentPages) return false;
+        // Pages 1 et 2 sont garde et TOC si document long
+        return pageNumber &lt;= 2;
+    }
+
+    /**
+     * Vérifie si on doit créer une nouvelle page
+     */
+    checkNewPage(doc, requiredSpace = 50) {
+        const currentY = doc.y;
+        const pageBottom = this.pageHeight - this.marginBottom;
+        
+        if (currentY + requiredSpace > pageBottom) {
+            doc.addPage();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Ajoute une entrée à la table des matières
+     */
+    addToTableOfContents(title, level = 1) {
+        // Si on a des pages longues, ne pas compter garde et TOC dans la numérotation du contenu
+        const realPageNumber = this.hasLongContentPages ? this.currentPageNumber : this.currentPageNumber;
+        
+        this.tableOfContents.push({
+            title: title.toUpperCase(),
+            level: level,
+            page: realPageNumber // Le numéro de page actuel (sera ajusté à l'affichage dans TOC)
+        });
+    }
+
+    /**
+     * Vérifie si le document est long et retourne true si garde+TOC nécessaires
+     * ATTENTION: Cette méthode ne doit être appelée qu'AVANT doc.end()
+     */
+    shouldAddLongDocumentPages() {
+        return this.currentPageNumber > 5;
+    }
+
+    /**
+     * Initialise un document long avec garde + TOC au début
+     * Doit être appelé APRÈS avoir créé le doc mais AVANT le contenu
+     */
+    initializeLongDocument(doc, data) {
+        // hasLongContentPages est maintenant défini avant createDocument
+        
+        // Page de garde (page 1)
+        this.insertCoverPage(doc, data);
+        
+        // Table des matières (page 2) 
+        this.insertTableOfContents(doc);
+    }
+
+    /**
+     * Finalise un document long - vérifie seulement s'il faut le recréer
+     * Retourne true si le document doit être recréé avec garde + TOC
+     */
+    finalizeLongDocument(doc, data) {
+        return this.shouldAddLongDocumentPages();
+    }
+
+    /**
+     * Ajoute le texte vertical dans toutes les sidebars après la génération du contenu
+     * Appelé juste avant doc.end() pour éviter les récursions
+     */
+    addSidebarTexts(doc) {
+        if (!this.sidebarTextQueue || this.sidebarTextQueue.length === 0) {
+            return;
+        }
+        
+        // Sauvegarder l'état actuel du document
+        const savedX = doc.x;
+        const savedY = doc.y;
+
+        try {
+            // Traiter chaque sidebar
+            this.sidebarTextQueue.forEach((sidebar, index) => {
+                const { x, pageNumber, text } = sidebar;
+                const isSpecialPage = this.isSpecialPage(pageNumber);
+                
+                // Skip les pages spéciales
+                if (isSpecialPage) return;
+                
+                // Position pour le texte vertical (en bas de la barre)
+                const sidebarCenterX = x + (this.sidebarWidth / 2);
+                const endY = this.pageHeight - this.marginBottom;
+                
+                // Taille de police adaptée
+                let fontSize = 8;
+                if (text.length > 15) fontSize = 7;
+                if (text.length > 25) fontSize = 6;
+
+                // Utiliser save/restore pour chaque sidebar individuellement
+                doc.save();
+
+                try {
+                    // Configuration minimale
+                    doc.fontSize(fontSize)
+                       .fillColor('#FFFFFF')
+                       .font('Times-Roman');
+
+                    // Texte vertical (rotation -90°)
+                    doc.rotate(-90, { origin: [sidebarCenterX, endY] });
+                    
+                    // Position après rotation
+                    const textWidth = doc.widthOfString(text.toUpperCase());
+                    const textX = sidebarCenterX;
+                    const textY = endY - (textWidth / 2);
+                    
+                    doc.text(text.toUpperCase(), textX, textY, {
+                        align: 'left',
+                        lineBreak: false
+                    });
+                } catch (textError) {
+                    console.warn(`Erreur rendu texte sidebar page ${pageNumber}:`, textError.message);
+                }
+                
+                doc.restore();
+            });
+        } catch (error) {
+            console.warn('Erreur dans addSidebarTexts:', error.message);
+        }
+
+        // Restaurer position globale du document
+        doc.x = savedX;
+        doc.y = savedY;
+    }
+
+    /**
+     * Insère une page de garde 
+     */
+    insertCoverPage(doc, data) {
+        // Note: La première page est déjà créée, pas besoin d'addPage()
+        
+        // Centrer verticalement et horizontalement  
+        const centerX = this.pageWidth / 2;
+        const centerY = this.pageHeight / 2;
+        
+        // Titre principal (sans sidebar sur cette page)
+        const titre = data.titre || 'DOCUMENT';
+        doc.fontSize(24)
+           .fillColor('#000000')
+           .font('Times-Roman');
+           
+        const titreWidth = doc.widthOfString(titre);
+        const titreX = (this.pageWidth - titreWidth) / 2;
+        doc.text(titre, titreX, centerY - 100);
+        
+        // Sous-titre si disponible
+        if (data.sous_titre) {
+            doc.fontSize(16);
+            const sousTitreWidth = doc.widthOfString(data.sous_titre);
+            const sousTitreX = (this.pageWidth - sousTitreWidth) / 2;
+            doc.text(data.sous_titre, sousTitreX, centerY - 50);
+        }
+        
+        // Ligne de séparation
+        doc.moveTo(centerX - 100, centerY)
+           .lineTo(centerX + 100, centerY)
+           .stroke('#000000');
+        
+        // Informations additionnelles
+        if (data.auteur) {
+            const auteurText = `Par ${data.auteur}`;
+            doc.fontSize(12);
+            const auteurWidth = doc.widthOfString(auteurText);
+            const auteurX = (this.pageWidth - auteurWidth) / 2;
+            doc.text(auteurText, auteurX, centerY + 50);
+        }
+        
+        // Date
+        const date = new Date().toLocaleDateString('fr-FR');
+        doc.fontSize(10);
+        const dateWidth = doc.widthOfString(date);
+        const dateX = (this.pageWidth - dateWidth) / 2;
+        doc.text(date, dateX, centerY + 100);
+    }
+
+    /**
+     * Dessine une grille de statistiques (Hot, Cold, Volatile, Dark)
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} stats - Statistiques du personnage
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {number} boxSize - Taille des boxes (défaut: 40)
+     * @param {Object} options - Options de style
+     */
+    drawStatGrid(doc, stats, startX, startY, boxSize = 40, options = {}) {
+        const {
+            color = '#000000',
+            fontSize = 14,
+            labelFontSize = 10,
+            gap = 10
+        } = options;
+        
+        const statEntries = Object.entries(stats);
+        
+        statEntries.forEach(([statKey, statValue], index) => {
+            const x = startX + (index * (boxSize + gap));
+            
+            // Box pour la valeur
+            doc.rect(x, startY, boxSize, boxSize)
+               .strokeColor(color)
+               .lineWidth(2)
+               .stroke();
+            
+            // Valeur centrée
+            const displayValue = statValue >= 0 ? `+${statValue}` : `${statValue}`;
+            doc.font('Helvetica-Bold')
+               .fontSize(fontSize)
+               .fillColor(color)
+               .text(displayValue, x, startY + (boxSize - fontSize) / 2, {
+                   width: boxSize,
+                   align: 'center'
+               });
+            
+            // Label en dessous
+            if (options.labels &amp;&amp; options.labels[statKey]) {
+                doc.font('Helvetica')
+                   .fontSize(labelFontSize)
+                   .fillColor('#000000')
+                   .text(options.labels[statKey], x, startY + boxSize + 5, {
+                       width: boxSize,
+                       align: 'center'
+                   });
+            }
+        });
+        
+        return startY + boxSize + (options.labels ? 20 : 0);
+    }
+
+    /**
+     * Dessine des cases à cocher avec labels
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Array} items - Liste des éléments avec {checked, text}
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {Object} options - Options de style
+     */
+    drawCheckboxList(doc, items, startX, startY, options = {}) {
+        const {
+            boxSize = 15,
+            gap = 5,
+            lineHeight = 25,
+            fontSize = 11,
+            checkColor = '#000000',
+            maxWidth = 400
+        } = options;
+        
+        let currentY = startY;
+        
+        items.forEach((item, index) => {
+            // Checkbox
+            doc.rect(startX, currentY + 2, boxSize, boxSize)
+               .strokeColor('#666666')
+               .lineWidth(1)
+               .stroke();
+            
+            // Coche si nécessaire
+            if (item.checked) {
+                doc.fillColor(checkColor)
+                   .rect(startX + 2, currentY + 4, boxSize - 4, boxSize - 6)
+                   .fill();
+                
+                doc.fillColor('#FFFFFF')
+                   .font('Helvetica-Bold')
+                   .fontSize(10)
+                   .text('✓', startX + 4, currentY + 3);
+            }
+            
+            // Texte
+            const textX = startX + boxSize + gap;
+            doc.fillColor('#000000')
+               .font('Helvetica')
+               .fontSize(fontSize)
+               .text(item.text, textX, currentY + 2, {
+                   width: maxWidth - boxSize - gap,
+                   lineGap: 2
+               });
+            
+            currentY += lineHeight;
+        });
+        
+        return currentY;
+    }
+
+    /**
+     * Dessine des tracks (harm, experience) 
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {number} current - Valeur actuelle
+     * @param {number} max - Valeur maximale
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {number} boxSize - Taille des boxes (défaut: 25)
+     * @param {Object} options - Options de style
+     */
+    drawTrackBoxes(doc, current, max, startX, startY, boxSize = 25, options = {}) {
+        const {
+            color = '#000000',
+            gap = 5,
+            fillSymbol = '✗',
+            emptySymbol = '',
+            showLabels = false,
+            labels = []
+        } = options;
+        
+        for (let i = 0; i &lt; max; i++) {
+            const x = startX + (i * (boxSize + gap));
+            const isFilled = i &lt; current;
+            
+            // Box
+            doc.rect(x, startY, boxSize, boxSize)
+               .strokeColor(color)
+               .lineWidth(2)
+               .stroke();
+            
+            // Remplissage si nécessaire
+            if (isFilled) {
+                doc.fillColor(color)
+                   .rect(x + 2, startY + 2, boxSize - 4, boxSize - 4)
+                   .fill();
+                
+                if (fillSymbol) {
+                    doc.fillColor('#FFFFFF')
+                       .font('Helvetica-Bold')
+                       .fontSize(14)
+                       .text(fillSymbol, x + 6, startY + 5);
+                }
+            } else if (emptySymbol) {
+                doc.fillColor(color)
+                   .font('Helvetica')
+                   .fontSize(12)
+                   .text(emptySymbol, x + 8, startY + 6);
+            }
+            
+            // Labels si demandés
+            if (showLabels &amp;&amp; labels[i]) {
+                doc.fillColor('#666666')
+                   .font('Helvetica')
+                   .fontSize(9)
+                   .text(labels[i], x, startY + boxSize + 5, {
+                       width: boxSize,
+                       align: 'center'
+                   });
+            }
+        }
+        
+        return startY + boxSize + (showLabels ? 20 : 0);
+    }
+
+    /**
+     * Dessine un field avec label et ligne de saisie
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {string} label - Libellé du champ
+     * @param {string} value - Valeur du champ
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {number} width - Largeur du champ (défaut: 200)
+     * @param {Object} options - Options de style
+     */
+    drawFormField(doc, label, value, startX, startY, width = 200, options = {}) {
+        const {
+            labelFontSize = 10,
+            valueFontSize = 11,
+            labelColor = '#000000',
+            valueColor = '#000000',
+            lineColor = '#666666',
+            lineWidth = 1,
+            gap = 5,
+            filled = false,
+            filledColor = '#8b5cf6'
+        } = options;
+        
+        // Label
+        doc.font('Helvetica-Bold')
+           .fontSize(labelFontSize)
+           .fillColor(labelColor)
+           .text(label.toUpperCase(), startX, startY);
+        
+        const labelHeight = labelFontSize + gap;
+        const lineY = startY + labelHeight;
+        
+        // Ligne de saisie
+        const actualLineColor = filled ? filledColor : lineColor;
+        doc.strokeColor(actualLineColor)
+           .lineWidth(lineWidth)
+           .moveTo(startX, lineY)
+           .lineTo(startX + width, lineY)
+           .stroke();
+        
+        // Valeur si fournie
+        if (value) {
+            const fontWeight = filled ? 'Helvetica-Bold' : 'Helvetica';
+            doc.font(fontWeight)
+               .fontSize(valueFontSize)
+               .fillColor(valueColor)
+               .text(value, startX, lineY - valueFontSize - 2);
+        }
+        
+        return lineY + 10;
+    }
+
+    /**
+     * Dessine une grille de colonnes pour layout complexe
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Array} columns - Configuration des colonnes
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {number} totalWidth - Largeur totale disponible
+     * @param {Object} options - Options de style
+     */
+    drawColumnLayout(doc, columns, startX, startY, totalWidth, options = {}) {
+        const {
+            gap = 20,
+            minColumnWidth = 100
+        } = options;
+        
+        const availableWidth = totalWidth - ((columns.length - 1) * gap);
+        const columnWidth = Math.max(availableWidth / columns.length, minColumnWidth);
+        
+        const results = [];
+        
+        columns.forEach((column, index) => {
+            const columnX = startX + (index * (columnWidth + gap));
+            const columnResult = {
+                x: columnX,
+                y: startY,
+                width: columnWidth,
+                content: column
+            };
+            
+            results.push(columnResult);
+        });
+        
+        return results;
+    }
+
+    /**
+     * Insère une table des matières
+     */
+    insertTableOfContents(doc) {
+        // Ajouter une nouvelle page pour la TOC
+        doc.addPage();
+        
+        // Titre de la table des matières (utiliser marges standard car pas de sidebar)
+        const margins = this.getStandardMargins();
+        doc.x = margins.left;
+        doc.y = margins.top;
+        
+        const tocTitle = 'TABLE DES MATIÈRES';
+        doc.fontSize(18)
+           .fillColor('#000000');
+           
+        const tocTitleWidth = doc.widthOfString(tocTitle);
+        const tocTitleX = margins.left + (margins.width - tocTitleWidth) / 2;
+        doc.text(tocTitle, tocTitleX, doc.y);
+        
+        doc.moveDown(2);
+        
+        // Utiliser les entrées de this.tableOfContents si disponibles, sinon générer des entrées par défaut
+        const entriesToShow = this.tableOfContents &amp;&amp; this.tableOfContents.length > 0 
+            ? this.tableOfContents 
+            : this.generateDefaultTocEntries();
+        
+        entriesToShow.forEach(entry => {
+            const indent = (entry.level - 1) * 20;
+            const y = doc.y;
+            
+            // Titre de la section avec indentation
+            doc.fontSize(entry.level === 1 ? 12 : 10)
+               .fillColor('#000000')
+               .text(entry.title, margins.left + indent, y);
+            
+            // Points de conduite
+            const titleWidth = doc.widthOfString(entry.title);
+            // Ajuster le numéro de page pour tenir compte des pages garde+TOC (si ce sont de vraies entrées)
+            const pageNumberText = this.tableOfContents &amp;&amp; this.tableOfContents.length > 0 
+                ? (entry.page + 2).toString()  // Vraies entrées, ajuster pour garde+TOC
+                : entry.page.toString();       // Entrées par défaut, déjà ajustées
+            
+            const pageNumberWidth = doc.widthOfString(pageNumberText);
+            const availableWidth = margins.width - indent - titleWidth - pageNumberWidth - 20;
+            const dotCount = Math.floor(availableWidth / 5);
+            const dots = '.'.repeat(Math.max(3, dotCount));
+            
+            // Numéro de page avec points de conduite
+            doc.text(` ${dots} ${pageNumberText}`, margins.left + indent + titleWidth, y);
+            
+            doc.moveDown(0.8);
+        });
+    }
+
+    /**
+     * Génère des entrées de TOC par défaut basées sur le contenu du document
+     */
+    generateDefaultTocEntries() {
+        return [
+            { title: 'GUIDE COMPLET DE CRÉATION DE PERSONNAGE', level: 1, page: 3 },
+            { title: 'PREMIÈRE PARTIE : LES BASES', level: 1, page: 4 },
+            { title: 'Comprendre le concept', level: 2, page: 4 },
+            { title: 'Les attributs de base', level: 2, page: 5 },
+            { title: 'DEUXIÈME PARTIE : TECHNIQUES AVANCÉES', level: 1, page: 6 },
+            { title: 'Psychologie du personnage', level: 2, page: 6 },
+            { title: 'TROISIÈME PARTIE : EXEMPLES PRATIQUES', level: 1, page: 7 },
+            { title: 'QUATRIÈME PARTIE : ÉVOLUTION ET DÉVELOPPEMENT', level: 1, page: 8 }
+        ];
+    }
+}
+
+module.exports = BasePdfKitService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

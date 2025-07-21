@@ -13,21 +13,39 @@ const systemesJeu = {
       dark: { nom: 'Dark', min: -1, max: 3, description: 'Mystère et manipulation' }
     },
 
-    skins: [
-      'The Chosen', 'The Fae', 'The Ghost', 'The Hollow', 'The Infernal',
-      'The Mortal', 'The Queen', 'The Vampire', 'The Werewolf', 'The Witch'
-    ],
+    skins: {
+      vampire: 'Le Vampire',
+      'loup-garou': 'Le Loup-Garou', 
+      fee: 'La Fée',
+      fantome: 'Le Fantôme',
+      goule: 'La Goule',
+      hollow: 'Le Hollow',
+      infernal: 'L\'Infernal',
+      mortel: 'Le Mortel',
+      reine: 'La Reine',
+      sorciere: 'La Sorcière'
+    },
 
     moves: {
       basic: [
-        'Turn Someone On', 'Shut Someone Down', 'Hold Steady', 'Lash Out Physically',
-        'Run Away', 'Gaze Into The Abyss'
+        { code: 'turn-on', nom: 'Allumer', description: 'Utiliser votre charme pour manipuler quelqu\'un (Hot)' },
+        { code: 'shut-down', nom: 'Rembarrer', description: 'Blesser quelqu\'un pour le faire taire (Cold)' },
+        { code: 'hold-steady', nom: 'Garder son sang-froid', description: 'Rester calme face au danger (Cold)' },
+        { code: 'lash-out', nom: 'Cogner', description: 'Attaquer quelqu\'un physiquement (Volatile)' },
+        { code: 'run-away', nom: 'Fuir', description: 'S\'échapper d\'une situation dangereuse (Volatile)' },
+        { code: 'gaze-abyss', nom: 'Contempler l\'Abysse', description: 'Sonder les mystères surnaturels (Dark)' }
       ],
-      sex: ['Sex Move (varies by Skin)']
+      sex: [{ code: 'sex-move', nom: 'Sex Move', description: 'Varie selon la Skin sélectionnée' }]
     },
 
     mechanics: {
-      conditions: ['Afraid', 'Angry', 'Guilty', 'Hopeless', 'Lost'],
+      conditions: [
+        { code: 'afraid', nom: 'Apeuré', description: 'Vous évitez ce qui vous fait peur' },
+        { code: 'angry', nom: 'Furieux', description: 'Vous réagissez avec violence' }, 
+        { code: 'guilty', nom: 'Honteux', description: 'Vous vous sentez coupable de vos actions' },
+        { code: 'hopeless', nom: 'Brisé', description: 'Vous ne croyez plus en rien' },
+        { code: 'lost', nom: 'Perdu', description: 'Vous ne savez plus qui vous êtes' }
+      ],
       strings: { description: 'Liens émotionnels entre personnages', max: 4 },
       harm: { levels: ['Faint', 'Injured', 'Wounded', 'Dying'], max: 4 },
       experience: { trigger: 'Failing rolls, fulfilling conditions', max: 5 },
@@ -260,7 +278,124 @@ const SystemeUtils = {
     const systeme = this.getSysteme(codeSysteme);
     if (!systeme || !systeme.skins) return true; // Pas de validation si pas de skins définis
     
-    return systeme.skins.includes(skin);
+    // Support des anciens formats (array) et nouveaux formats (object)
+    if (Array.isArray(systeme.skins)) {
+      return systeme.skins.includes(skin);
+    } else {
+      return Object.keys(systeme.skins).includes(skin);
+    }
+  },
+
+  /**
+   * Récupère le nom affiché d'une skin
+   * @param {string} codeSysteme - Code du système
+   * @param {string} skinCode - Code de la skin
+   * @returns {string} Nom affiché de la skin
+   */
+  getSkinDisplayName(codeSysteme, skinCode) {
+    const systeme = this.getSysteme(codeSysteme);
+    if (!systeme || !systeme.skins) return skinCode;
+    
+    if (Array.isArray(systeme.skins)) {
+      return skinCode;
+    } else {
+      return systeme.skins[skinCode] || skinCode;
+    }
+  },
+
+  /**
+   * Convertit les données de personnage vers le format template Monsterhearts
+   * @param {Object} personnageData - Données brutes du personnage
+   * @returns {Object} Données formatées pour le template
+   */
+  formatForMonsterheartsTemplate(personnageData) {
+    const systeme = this.getSysteme('monsterhearts');
+    if (!systeme) return personnageData;
+
+    return {
+      nom: personnageData.nom || personnageData.name || '',
+      donnees_personnage: {
+        apparence: personnageData.appearance || personnageData.apparence || '',
+        regard: personnageData.eyes || personnageData.regard || '',
+        origine: personnageData.origin || personnageData.origine || '',
+        skin: personnageData.skin || '',
+        stats: {
+          hot: personnageData.stats?.hot || 0,
+          cold: personnageData.stats?.cold || 0,
+          volatile: personnageData.stats?.volatile || 0,
+          dark: personnageData.stats?.dark || 0
+        },
+        moves: {
+          basic: this.formatMovesForTemplate(personnageData.moves?.basic, systeme.moves.basic),
+          skin: this.formatMovesForTemplate(personnageData.moves?.skin || [], [])
+        },
+        harm: this.formatTrackForTemplate(personnageData.harm, 4),
+        conditions: this.formatConditionsForTemplate(personnageData.conditions, systeme.mechanics.conditions),
+        experience: {
+          current: personnageData.experience?.current || 0
+        },
+        strings: this.formatStringsForTemplate(personnageData.strings || []),
+        backstory: personnageData.backstory || personnageData.background?.story || '',
+        darkestSelf: personnageData.darkestSelf || personnageData.background?.darkestSelf || ''
+      },
+      notes_privees: personnageData.notes?.player || personnageData.notes_privees || ''
+    };
+  },
+
+  /**
+   * Formate les moves pour le template
+   * @param {Array} playerMoves - Moves du joueur
+   * @param {Array} availableMoves - Moves disponibles du système
+   * @returns {Array} Moves formatées
+   */
+  formatMovesForTemplate(playerMoves = [], availableMoves = []) {
+    return availableMoves.map(move => ({
+      checked: playerMoves.some(pm => pm.code === move.code || pm.nom === move.nom),
+      description: `<strong>${move.nom}</strong>: ${move.description}`
+    }));
+  },
+
+  /**
+   * Formate un track (harm, xp) pour le template
+   * @param {Array|number} trackData - Données du track
+   * @param {number} maxTrack - Maximum du track
+   * @returns {Array} Track formaté
+   */
+  formatTrackForTemplate(trackData, maxTrack) {
+    if (Array.isArray(trackData)) {
+      return trackData.slice(0, maxTrack);
+    }
+    
+    const track = [];
+    for (let i = 0; i < maxTrack; i++) {
+      track.push(i < (trackData || 0));
+    }
+    return track;
+  },
+
+  /**
+   * Formate les conditions pour le template
+   * @param {Array} playerConditions - Conditions du joueur
+   * @param {Array} availableConditions - Conditions disponibles
+   * @returns {Array} Conditions formatées
+   */
+  formatConditionsForTemplate(playerConditions = [], availableConditions = []) {
+    return availableConditions.map(condition => ({
+      name: condition.nom,
+      active: playerConditions.some(pc => pc.code === condition.code || pc.nom === condition.nom)
+    }));
+  },
+
+  /**
+   * Formate les strings pour le template
+   * @param {Array} strings - Strings du joueur
+   * @returns {Array} Strings formatées
+   */
+  formatStringsForTemplate(strings = []) {
+    return strings.map(string => ({
+      character: string.character || string.personnage || '',
+      value: string.value || string.valeur || 0
+    }));
   },
 
   /**

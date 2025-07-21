@@ -1,0 +1,520 @@
+const BasePdfKitService = require('../BasePdfKitService');
+const SystemTheme = require('../themes/SystemTheme');
+const fs = require('fs');
+
+/**
+ * Document Plan de Classe - Layout spécifique pour les classes de personnages
+ * Structure prédéfinie avec sections caractéristiques des plans de classe
+ * 
+ * Usage :
+ * - Plans de classe Monsterhearts (Chosen, Ghost, Mortal, etc.)
+ * - Classes d'autres systèmes avec structure similaire
+ * - Documents avec sections fixes et mise en page spécialisée
+ */
+class ClassPlanDocument extends BasePdfKitService {
+    
+    /**
+     * @param {SystemTheme} theme - Thème du système de jeu (obligatoire)
+     */
+    constructor(theme) {
+        super();
+        
+        if (!theme || !(theme instanceof SystemTheme)) {
+            throw new Error('ClassPlanDocument nécessite un SystemTheme valide');
+        }
+        
+        this.theme = theme;
+        this.documentType = 'class-plan';
+    }
+    
+    /**
+     * Génère un document PDF de plan de classe
+     * @param {Object} data - Données du plan de classe
+     * @param {string} filePath - Chemin de sortie du PDF
+     * @returns {Promise} Promise de génération
+     */
+    async generateDocument(data, filePath) {
+        return new Promise((resolve, reject) => {
+            try {
+                // Valider les données
+                this.validateClassData(data);
+                
+                // Configurer les textes du document
+                this.setupDocumentTexts(data);
+                
+                // Créer le document avec la configuration de base
+                const doc = this.createDocument({
+                    chapterTitle: this.chapterTitle
+                });
+                
+                const stream = doc.pipe(fs.createWriteStream(filePath));
+                
+                // Configurer le thème
+                this.setupTheme(doc);
+                
+                // Générer le contenu du plan de classe
+                this.renderClassPlan(doc, data);
+                
+                // Finaliser le document
+                this.finalizeDocument(doc, data);
+                
+                // Finaliser le PDF
+                doc.end();
+                
+                // Handlers de fin
+                stream.on('finish', resolve);
+                stream.on('error', reject);
+                
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
+    /**
+     * Valide les données du plan de classe
+     * @param {Object} data - Données à valider
+     */
+    validateClassData(data) {
+        if (!data.className) {
+            throw new Error('Le plan de classe doit avoir un nom de classe (className)');
+        }
+        
+        // Sections obligatoires pour un plan de classe
+        const requiredSections = ['description', 'stats', 'moves'];
+        for (const section of requiredSections) {
+            if (!data[section]) {
+                console.warn(`⚠️ Section manquante dans le plan de classe: ${section}`);
+            }
+        }
+    }
+    
+    /**
+     * Configure les textes du document (sidebar, watermark)
+     * @param {Object} data - Données du document
+     */
+    setupDocumentTexts(data) {
+        this.chapterTitle = this.theme.getSidebarText(this.documentType, data);
+    }
+    
+    /**
+     * Configure le thème (polices, couleurs)
+     * @param {PDFDocument} doc - Document PDFKit
+     */
+    setupTheme(doc) {
+        // Enregistrer les polices du thème
+        this.theme.registerFonts(doc);
+        
+        // Appliquer la police de base
+        this.theme.applyFont(doc, 'body');
+    }
+    
+    /**
+     * Génère le contenu du plan de classe
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} data - Données du plan de classe
+     */
+    renderClassPlan(doc, data) {
+        // En-tête du plan de classe
+        this.renderClassHeader(doc, data);
+        
+        // Description de la classe
+        if (data.description) {
+            this.renderClassDescription(doc, data.description);
+        }
+        
+        // Statistiques de base
+        if (data.stats) {
+            this.renderClassStats(doc, data.stats);
+        }
+        
+        // Capacités et mouvements
+        if (data.moves) {
+            this.renderClassMoves(doc, data.moves);
+        }
+        
+        // Équipement de départ
+        if (data.equipment) {
+            this.renderStartingEquipment(doc, data.equipment);
+        }
+        
+        // Options avancées
+        if (data.advancedMoves) {
+            this.renderAdvancedMoves(doc, data.advancedMoves);
+        }
+        
+        // Notes du MJ
+        if (data.gmNotes) {
+            this.renderGMNotes(doc, data.gmNotes);
+        }
+    }
+    
+    /**
+     * Génère l'en-tête du plan de classe
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} data - Données de la classe
+     */
+    renderClassHeader(doc, data) {
+        // Nom de la classe (titre principal)
+        const classTitle = `LA ${data.className.toUpperCase()}`;
+        this.addThemeTitle(doc, classTitle, 1, {
+            addToToc: true,
+            marginBottom: 10
+        });
+        
+        // Sous-titre / tagline
+        if (data.tagline) {
+            this.addThemeTitle(doc, data.tagline, 3, {
+                marginBottom: 20
+            });
+        }
+        
+        // Citation ou phrase d'accroche
+        if (data.quote) {
+            this.addThemeParagraph(doc, `"${data.quote}"`, {
+                isIntro: true,
+                marginBottom: 15
+            });
+        }
+    }
+    
+    /**
+     * Génère la description de la classe
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} description - Données de description
+     */
+    renderClassDescription(doc, description) {
+        this.checkNewPage(doc, 100);
+        
+        this.addThemeTitle(doc, 'DESCRIPTION', 2, {
+            addToToc: true,
+            marginTop: 20,
+            marginBottom: 15
+        });
+        
+        if (description.main) {
+            this.addThemeParagraph(doc, description.main);
+        }
+        
+        if (description.details && Array.isArray(description.details)) {
+            for (const detail of description.details) {
+                this.addThemeParagraph(doc, detail);
+            }
+        }
+        
+        if (description.examples) {
+            this.addThemeBox(doc, 'exemple', description.examples);
+        }
+    }
+    
+    /**
+     * Génère les statistiques de base
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} stats - Statistiques de la classe
+     */
+    renderClassStats(doc, stats) {
+        this.checkNewPage(doc, 120);
+        
+        this.addThemeTitle(doc, 'STATISTIQUES', 2, {
+            addToToc: true,
+            marginTop: 20,
+            marginBottom: 15
+        });
+        
+        // Points de vie
+        if (stats.health) {
+            this.addThemeParagraph(doc, `**Points de vie :** ${stats.health}`);
+        }
+        
+        // Attributs principaux
+        if (stats.primaryStats && Array.isArray(stats.primaryStats)) {
+            this.addThemeParagraph(doc, '**Attributs principaux :**');
+            this.addThemeList(doc, stats.primaryStats);
+        }
+        
+        // Attributs secondaires
+        if (stats.secondaryStats && Array.isArray(stats.secondaryStats)) {
+            this.addThemeParagraph(doc, '**Attributs secondaires :**');
+            this.addThemeList(doc, stats.secondaryStats);
+        }
+        
+        // Faiblesses ou limitations
+        if (stats.weaknesses) {
+            this.addThemeBox(doc, 'attention', `**Faiblesses :** ${stats.weaknesses}`);
+        }
+    }
+    
+    /**
+     * Génère les capacités et mouvements
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} moves - Capacités de la classe
+     */
+    renderClassMoves(doc, moves) {
+        this.checkNewPage(doc, 150);
+        
+        this.addThemeTitle(doc, 'CAPACITÉS', 2, {
+            addToToc: true,
+            marginTop: 25,
+            marginBottom: 15
+        });
+        
+        // Capacités de base
+        if (moves.basic && Array.isArray(moves.basic)) {
+            this.addThemeTitle(doc, 'Capacités de base', 3, {
+                marginTop: 15,
+                marginBottom: 10
+            });
+            
+            for (const move of moves.basic) {
+                this.renderMove(doc, move);
+            }
+        }
+        
+        // Capacités spéciales
+        if (moves.special && Array.isArray(moves.special)) {
+            this.addThemeTitle(doc, 'Capacités spéciales', 3, {
+                marginTop: 20,
+                marginBottom: 10
+            });
+            
+            for (const move of moves.special) {
+                this.renderMove(doc, move);
+            }
+        }
+        
+        // Capacités situationnelles
+        if (moves.situational && Array.isArray(moves.situational)) {
+            this.addThemeTitle(doc, 'Capacités situationnelles', 3, {
+                marginTop: 20,
+                marginBottom: 10
+            });
+            
+            for (const move of moves.situational) {
+                this.renderMove(doc, move);
+            }
+        }
+    }
+    
+    /**
+     * Génère une capacité individuelle
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} move - Données de la capacité
+     */
+    renderMove(doc, move) {
+        this.checkNewPage(doc, 80);
+        
+        // Nom de la capacité
+        if (move.name) {
+            const moveName = move.name.toUpperCase();
+            this.addThemeParagraph(doc, `**${moveName}**`, { marginBottom: 5 });
+        }
+        
+        // Description
+        if (move.description) {
+            this.addThemeParagraph(doc, move.description, { marginBottom: 10 });
+        }
+        
+        // Déclencheur
+        if (move.trigger) {
+            this.addThemeParagraph(doc, `*Quand ${move.trigger.toLowerCase()}...*`, {
+                marginBottom: 5
+            });
+        }
+        
+        // Effets
+        if (move.effects && Array.isArray(move.effects)) {
+            this.addThemeList(doc, move.effects);
+        }
+        
+        // Note de bas de capacité
+        if (move.note) {
+            this.addThemeParagraph(doc, `*${move.note}*`, {
+                fontSize: 10,
+                marginTop: 5,
+                marginBottom: 10
+            });
+        }
+    }
+    
+    /**
+     * Génère l'équipement de départ
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} equipment - Équipement de départ
+     */
+    renderStartingEquipment(doc, equipment) {
+        this.checkNewPage(doc, 100);
+        
+        this.addThemeTitle(doc, 'ÉQUIPEMENT DE DÉPART', 2, {
+            addToToc: true,
+            marginTop: 25,
+            marginBottom: 15
+        });
+        
+        if (equipment.items && Array.isArray(equipment.items)) {
+            this.addThemeList(doc, equipment.items);
+        }
+        
+        if (equipment.choices) {
+            this.addThemeParagraph(doc, '**Choisissez également :**');
+            this.addThemeList(doc, equipment.choices);
+        }
+        
+        if (equipment.notes) {
+            this.addThemeBox(doc, 'conseil', equipment.notes);
+        }
+    }
+    
+    /**
+     * Génère les capacités avancées
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} advancedMoves - Capacités avancées
+     */
+    renderAdvancedMoves(doc, advancedMoves) {
+        this.checkNewPage(doc, 120);
+        
+        this.addThemeTitle(doc, 'CAPACITÉS AVANCÉES', 2, {
+            addToToc: true,
+            marginTop: 25,
+            marginBottom: 15
+        });
+        
+        this.addThemeParagraph(doc, 'Quand vous montez de niveau, vous pouvez choisir parmi ces capacités avancées :');
+        
+        if (advancedMoves.moves && Array.isArray(advancedMoves.moves)) {
+            for (const move of advancedMoves.moves) {
+                this.renderMove(doc, move);
+            }
+        }
+    }
+    
+    /**
+     * Génère les notes du MJ
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} gmNotes - Notes pour le MJ
+     */
+    renderGMNotes(doc, gmNotes) {
+        this.checkNewPage(doc, 100);
+        
+        this.addThemeTitle(doc, 'NOTES POUR LE MJ', 2, {
+            addToToc: true,
+            marginTop: 25,
+            marginBottom: 15
+        });
+        
+        if (gmNotes.advice) {
+            this.addThemeBox(doc, 'conseil', gmNotes.advice);
+        }
+        
+        if (gmNotes.hooks && Array.isArray(gmNotes.hooks)) {
+            this.addThemeParagraph(doc, '**Accroches narratives suggérées :**');
+            this.addThemeList(doc, gmNotes.hooks);
+        }
+        
+        if (gmNotes.warnings) {
+            this.addThemeBox(doc, 'attention', gmNotes.warnings);
+        }
+    }
+    
+    /**
+     * Méthodes utilitaires avec style du thème (réutilisées de GenericDocument)
+     */
+    
+    addThemeTitle(doc, text, level = 1, options = {}) {
+        if (this.theme && typeof this.theme.applyTitleStyle === 'function') {
+            const styledText = this.theme.applyTitleStyle(doc, text, level, options);
+            this.addTitle(doc, styledText, {
+                fontSize: this.getThemeTitleSize(level),
+                ...options
+            });
+        } else {
+            this.addTitle(doc, text, {
+                fontSize: this.getDefaultTitleSize(level),
+                ...options
+            });
+        }
+    }
+    
+    addThemeParagraph(doc, text, options = {}) {
+        const isIntro = options.isIntro || false;
+        
+        if (this.theme && typeof this.theme.applyParagraphStyle === 'function') {
+            this.theme.applyParagraphStyle(doc, isIntro);
+        }
+        
+        this.addParagraph(doc, text, options);
+    }
+    
+    addThemeList(doc, items) {
+        if (this.theme) {
+            const listConfig = this.theme.getListConfig();
+            this.addStarList(doc, items, {
+                bulletChar: listConfig.bulletChar,
+                fontSize: listConfig.fontSize || 11,
+                indent: listConfig.indent || 20
+            });
+        } else {
+            this.addStarList(doc, items);
+        }
+    }
+    
+    addThemeBox(doc, type, text) {
+        if (this.theme) {
+            const boxStyles = this.theme.getBoxStyles();
+            this.addBox(doc, type, text, {
+                padding: boxStyles.padding,
+                topPadding: boxStyles.marginTop || 15,
+                bottomPadding: boxStyles.marginBottom || 15
+            });
+        } else {
+            this.addBox(doc, type, text);
+        }
+    }
+    
+    getThemeTitleSize(level) {
+        if (this.theme) {
+            const fonts = this.theme.getFonts();
+            if (fonts.titles && fonts.titles.sizes) {
+                return fonts.titles.sizes[`h${level}`] || 12;
+            }
+        }
+        return this.getDefaultTitleSize(level);
+    }
+    
+    getDefaultTitleSize(level) {
+        switch (level) {
+            case 1: return 18;
+            case 2: return 14;
+            case 3: return 12;
+            default: return 11;
+        }
+    }
+    
+    /**
+     * Finalise le document
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} data - Données du document
+     */
+    finalizeDocument(doc, data) {
+        // Les plans de classe sont généralement courts, pas de garde/TOC
+        // mais on peut vérifier au cas où
+        if (this.shouldAddLongDocumentPages()) {
+            console.log('📋 Plan de classe long détecté');
+        }
+    }
+    
+    /**
+     * Retourne le type de document
+     */
+    getDocumentType() {
+        return this.documentType;
+    }
+    
+    /**
+     * Retourne le thème utilisé
+     */
+    getTheme() {
+        return this.theme;
+    }
+}
+
+module.exports = ClassPlanDocument;

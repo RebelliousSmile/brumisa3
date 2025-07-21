@@ -52,7 +52,7 @@ describe('PersonnageService', () => {
 **Services à tester :**
 - `UtilisateurService.js` - Authentification, rôles
 - `PersonnageService.js` - CRUD, validation
-- `PdfService.js` - Génération Puppeteer
+- `PdfService.js` - Génération PDF
 - `NewsletterService.js` - Inscription, désinscription
 - `TemoignageService.js` - Modération, affichage
 
@@ -591,7 +591,7 @@ scripts/
  * Usage: node scripts/generate/pdf-examples.js [--system=nom] [--output=dossier]
  */
 
-const puppeteer = require('puppeteer');
+const PDFDocument = require('pdfkit');
 const fs = require('fs').promises;
 const path = require('path');
 

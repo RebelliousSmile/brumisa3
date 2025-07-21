@@ -152,6 +152,12 @@ class App {
       etag: true
     }));
 
+    // Documentation JSDoc
+    this.app.use('/docs', express.static(path.join(__dirname, '../docs'), {
+      maxAge: config.server.env === 'production' ? '1d' : 0,
+      etag: true
+    }));
+
     // Logging des requêtes
     this.app.use(logManager.logRequest.bind(logManager));
 

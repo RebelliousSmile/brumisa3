@@ -1,8 +1,21 @@
-# Charte Graphique - PDFs Monsterhearts
+# Charte Graphique - Monsterhearts Theme
+
+## 🏗️ Architecture et responsabilités
+
+Cette charte définit le **MonsterheartsTheme** qui sera utilisé par différents types de documents :
+
+- **GenericDocument** : Documents génériques (guides, règles) avec personnalisation visuelle Monsterhearts
+- **ClassPlanDocument** : Plans de classes avec layout spécifique + style Monsterhearts  
+- **CharacterSheetDocument** : Feuilles de personnage avec formulaire + style Monsterhearts
+
+### Séparation des responsabilités
+- **BasePdfKitService** : Structure, marges, pagination, sidebar, watermark
+- **MonsterheartsTheme** : Polices, couleurs, textes personnalisés selon les spécifications ci-dessous
+- **DocumentType** : Layout et organisation du contenu spécifique au type
 
 ## 📖 Analyse de la maquette officielle
 
-D'après l'analyse de la page exemple du livre Monsterhearts, voici les éléments graphiques caractéristiques :
+D'après l'analyse de la page exemple du livre Monsterhearts, voici les éléments graphiques caractéristiques à implémenter dans **MonsterheartsTheme** :
 
 ### 🎨 Palette de couleurs
 
@@ -90,169 +103,163 @@ Corps de texte (11-12pt, serif, justifié)
 - **Gras** : Peu utilisé, réservé aux termes clés
 - **MAJUSCULES** : Pour les titres uniquement
 
-### 💻 Implémentation CSS
+### 💻 Implémentation MonsterheartsTheme
 
-```css
-/* Variables Monsterhearts PDF */
-:root {
-  --mh-noir: #000000;
-  --mh-blanc: #FAFAF8;
-  --mh-gris: #333333;
-  --mh-largeur-bande: 15mm;
+```javascript
+// MonsterheartsTheme.js
+class MonsterheartsTheme {
+    
+    /**
+     * Couleurs du thème Monsterhearts
+     */
+    getColors() {
+        return {
+            primary: '#000000',        // Noir profond
+            background: '#FAFAF8',     // Blanc cassé  
+            secondary: '#333333',      // Gris foncé
+            accent: '#FFFFFF',         // Blanc pur pour texte sur noir
+            sidebar: '#000000',        // Noir pour bande latérale
+            text: '#000000'            // Texte principal
+        };
+    }
+    
+    /**
+     * Configuration des polices 
+     */
+    getFonts() {
+        return {
+            body: {
+                family: 'Crimson Text',
+                fallback: ['Georgia', 'Times-Roman', 'serif'],
+                size: 11,
+                lineHeight: 1.45
+            },
+            titles: {
+                family: 'Crimson Text',
+                fallback: ['Georgia', 'Times-Roman', 'serif'], 
+                weight: '600',
+                transform: 'uppercase',
+                letterSpacing: 0.1
+            },
+            sidebar: {
+                family: 'Bebas Neue',
+                fallback: ['Impact', 'Arial Black', 'sans-serif'],
+                size: 14,
+                letterSpacing: 0.2,
+                transform: 'uppercase'
+            }
+        };
+    }
+    
+    /**
+     * Enregistre les polices Monsterhearts dans le document
+     */
+    registerFonts(doc) {
+        const fontsDir = path.join(__dirname, '../../assets/fonts');
+        
+        try {
+            // Crimson Text (corps et titres)
+            doc.registerFont('Crimson-Regular', path.join(fontsDir, 'CrimsonText-Regular.ttf'));
+            doc.registerFont('Crimson-Bold', path.join(fontsDir, 'CrimsonText-Bold.ttf'));
+            doc.registerFont('Crimson-Italic', path.join(fontsDir, 'CrimsonText-Italic.ttf'));
+            
+            // Bebas Neue (sidebar)
+            doc.registerFont('Bebas-Regular', path.join(fontsDir, 'BebasNeue-Regular.ttf'));
+            
+            return true;
+        } catch (error) {
+            console.warn('⚠️ Erreur chargement polices Monsterhearts, utilisation polices système');
+            return false;
+        }
+    }
+    
+    /**
+     * Texte à afficher dans la sidebar selon le type de document
+     */
+    getSidebarText(documentType, data) {
+        switch (documentType) {
+            case 'generic':
+                return data.titre || 'MONSTERHEARTS';
+            case 'class-plan':
+                return `CLASSE ${data.className || ''}`.trim();
+            case 'character-sheet':
+                return data.characterName || 'PERSONNAGE';
+            default:
+                return 'MONSTERHEARTS';
+        }
+    }
+    
+    /**
+     * Texte du watermark selon le type de document
+     */
+    getWatermarkText(documentType, data) {
+        switch (documentType) {
+            case 'generic':
+                return 'MONSTERHEARTS 2E';
+            case 'class-plan':
+                return `PLAN DE CLASSE - ${data.className || 'MONSTERHEARTS'}`;
+            case 'character-sheet':
+                return 'FEUILLE DE PERSONNAGE - MONSTERHEARTS';
+            default:
+                return 'MONSTERHEARTS';
+        }
+    }
+    
+    /**
+     * Configuration de la page de garde
+     */
+    getCoverConfig(documentType, data) {
+        const colors = this.getColors();
+        
+        return {
+            backgroundColor: colors.background,
+            titleColor: colors.primary,
+            subtitleColor: colors.secondary,
+            showLogo: false, // Monsterhearts privilégie la sobriété
+            layout: 'minimal' // Pas d'ornements
+        };
+    }
+    
+    /**
+     * Style des encadrés (citations, conseils, etc.)
+     */
+    getBoxStyles() {
+        return {
+            borderColor: '#000000',
+            borderWidth: 0.5,
+            backgroundColor: 'transparent', // Pas de fond
+            titlePosition: 'on-border',     // Titre sur la bordure
+            padding: 8
+        };
+    }
+    
+    /**
+     * Configuration des listes à puces
+     */
+    getListConfig() {
+        return {
+            bulletChar: '✱',    // Étoile caractéristique
+            bulletSize: 1.2,
+            indent: 20
+        };
+    }
 }
 
-/* Police principale */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+module.exports = MonsterheartsTheme;
+```
 
-/* Corps de document */
-body {
-  font-family: 'Crimson Text', 'Georgia', serif;
-  font-size: 11pt;
-  line-height: 1.45;
-  color: var(--mh-noir);
-  background: var(--mh-blanc);
-  margin: 0;
-  padding: 0;
-}
+### Usage dans les documents
 
-/* Page A4 */
-.page {
-  width: 210mm;
-  height: 297mm;
-  margin: 0 auto;
-  position: relative;
-  background: var(--mh-blanc);
-  overflow: hidden;
-}
+```javascript
+// GenericDocument avec Monsterhearts
+const theme = new MonsterheartsTheme();
+const doc = new GenericDocument(theme);
 
-/* Bande latérale noire */
-.sidebar {
-  position: absolute;
-  top: 0;
-  left: 0; /* ou right: 0 pour pages paires */
-  width: var(--mh-largeur-bande);
-  height: 100%;
-  background: var(--mh-noir);
-  color: white;
-}
+// ClassPlanDocument avec Monsterhearts  
+const classPlan = new ClassPlanDocument(theme);
 
-/* Texte vertical dans la bande */
-.sidebar-text {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  position: absolute;
-  bottom: 20mm;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 14pt;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-/* Numéro de page */
-.page-number {
-  position: absolute;
-  top: 10mm;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 24pt;
-  font-weight: bold;
-}
-
-/* Zone de contenu principal */
-.content {
-  margin-left: 25mm; /* ou margin-right pour pages paires */
-  margin-right: 20mm;
-  margin-top: 20mm;
-  margin-bottom: 25mm;
-  padding-left: 10mm; /* espace après la bande noire */
-}
-
-/* Titres */
-h1, h2, h3 {
-  font-family: 'Crimson Text', serif;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-align: center;
-  font-weight: 600;
-  margin: 1.5em 0 1em;
-}
-
-h1 { font-size: 16pt; }
-h2 { font-size: 14pt; }
-h3 { font-size: 12pt; }
-
-/* Paragraphes */
-p {
-  text-align: justify;
-  text-indent: 1.5em;
-  margin: 0.8em 0;
-  hyphens: auto;
-}
-
-p:first-of-type {
-  text-indent: 0;
-}
-
-/* Introduction en italique */
-.intro {
-  font-style: italic;
-  text-align: justify;
-  margin: 1em 0 1.5em;
-  text-indent: 0;
-}
-
-/* Listes avec étoiles */
-ul {
-  list-style: none;
-  margin: 1em 0;
-  padding-left: 2em;
-}
-
-ul li {
-  position: relative;
-  margin: 0.5em 0;
-  text-align: justify;
-}
-
-ul li:before {
-  content: "✱";
-  position: absolute;
-  left: -1.5em;
-  font-size: 1.2em;
-}
-
-/* Effet grunge sur la bande */
-.sidebar::after {
-  content: '';
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: url('data:image/svg+xml,...'); /* Pattern déchiré */
-  filter: blur(0.5px);
-}
-
-/* Media print */
-@media print {
-  body {
-    background: white;
-    color: black;
-  }
-  
-  .page {
-    page-break-after: always;
-    margin: 0;
-  }
-  
-  .sidebar {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-}
+// CharacterSheet avec Monsterhearts
+const characterSheet = new CharacterSheetDocument(theme);
 ```
 
 ### 🎯 Principes de design Monsterhearts
@@ -263,18 +270,25 @@ ul li:before {
 4. **Sobriété dramatique** : Le drame vient du contenu, pas du design
 5. **Noir et blanc** : Économique à imprimer, fort en caractère
 
-### ✅ Checklist de conformité
+### ✅ Checklist de conformité MonsterheartsTheme
 
-Pour qu'un PDF respecte la charte Monsterhearts :
+Pour qu'un PDF respecte la charte Monsterhearts via MonsterheartsTheme :
 
-- [ ] **Police serif** classique (Crimson Text ou similaire)
+#### Implémentation technique
+- [ ] **MonsterheartsTheme** utilisé dans le document
+- [ ] **registerFonts()** appelé pour charger Crimson Text
+- [ ] **getColors()** respecté pour la palette noir/blanc
+- [ ] **getSidebarText()** personnalisé selon le type de document
+- [ ] **getWatermarkText()** adapté au contenu
+
+#### Rendu visuel
+- [ ] **Police serif** Crimson Text (ou fallback Georgia)
 - [ ] **Titres en MAJUSCULES** avec espacement élargi
-- [ ] **Bande latérale noire** avec texte vertical
+- [ ] **Bande latérale noire** avec texte vertical blanc
 - [ ] **Fond blanc cassé** (#FAFAF8)
-- [ ] **Puces étoiles** (✱) pour les listes
-- [ ] **Pas de couleurs** autres que noir/blanc
-- [ ] **Marges généreuses** pour la lecture
-- [ ] **Aspect légèrement "grunge"** sur les bords
+- [ ] **Puces étoiles** (✱) via getListConfig()
+- [ ] **Encadrés** avec titre sur bordure via getBoxStyles()
+- [ ] **Pas de couleurs** autres que noir/blanc/gris
 
 ### 🚫 À éviter
 

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/BaseService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/BaseService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const logManager = require('../utils/logManager');
+
+/**
+ * Classe de base pour tous les services
+ */
+class BaseService {
+    constructor(serviceName) {
+        this.serviceName = serviceName;
+        this.logger = logManager;
+    }
+
+    /**
+     * Log une information
+     */
+    log(level, message, data = {}) {
+        this.logger[level](`[${this.serviceName}] ${message}`, data);
+    }
+
+    /**
+     * Log une erreur
+     */
+    logError(error, context = {}) {
+        this.log('error', error.message, {
+            error: error.stack,
+            context
+        });
+    }
+
+    /**
+     * Valide que les données requises sont présentes
+     */
+    validerChamps(donnees, champsRequis) {
+        const champsManquants = champsRequis.filter(champ => !donnees[champ]);
+        
+        if (champsManquants.length > 0) {
+            throw new Error(`Champs manquants: ${champsManquants.join(', ')}`);
+        }
+    }
+
+    /**
+     * Nettoie les données en retirant les propriétés indésirables
+     */
+    nettoyerDonnees(donnees, champsAutorises) {
+        const donneesNettoyees = {};
+        
+        champsAutorises.forEach(champ => {
+            if (donnees.hasOwnProperty(champ)) {
+                donneesNettoyees[champ] = donnees[champ];
+            }
+        });
+        
+        return donneesNettoyees;
+    }
+
+    /**
+     * Génère un identifiant unique
+     */
+    genererId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    /**
+     * Formate une date pour l'affichage
+     */
+    formaterDate(date) {
+        return new Date(date).toLocaleDateString('fr-FR');
+    }
+
+    /**
+     * Vérifie si une valeur est vide (null, undefined, chaîne vide, etc.)
+     */
+    estVide(valeur) {
+        return valeur === null || 
+               valeur === undefined || 
+               valeur === '' || 
+               (Array.isArray(valeur) &amp;&amp; valeur.length === 0) ||
+               (typeof valeur === 'object' &amp;&amp; Object.keys(valeur).length === 0);
+    }
+
+    /**
+     * Convertit une chaîne en slug (URL-friendly)
+     */
+    genererSlug(texte) {
+        return texte
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Retire les accents
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+    }
+
+    /**
+     * Gestion d'erreur standardisée
+     */
+    async gererErreur(error, contexte = {}) {
+        this.logError(error, contexte);
+        
+        // Retourner une erreur formatée pour l'API
+        return {
+            succes: false,
+            erreur: error.message,
+            code: error.code || 'ERREUR_INTERNE'
+        };
+    }
+
+    /**
+     * Réponse de succès standardisée
+     */
+    reponseSucces(donnees = null, message = 'Opération réussie') {
+        return {
+            succes: true,
+            message,
+            donnees
+        };
+    }
+}
+
+module.exports = BaseService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

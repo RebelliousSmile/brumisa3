@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/PdfService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/PdfService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseService = require('./BaseService');
+const Pdf = require('../models/Pdf');
+const Personnage = require('../models/Personnage');
+const TemplateService = require('./TemplateService');
+const PdfKitService = require('./PdfKitService');
+const fs = require('fs').promises;
+const path = require('path');
+const crypto = require('crypto');
+const systemesJeu = require('../utils/systemesJeu');
+
+// Import Puppeteer conditionally pour éviter les erreurs si pas installé
+let puppeteer;
+try {
+    puppeteer = require('puppeteer');
+} catch (error) {
+    console.warn('⚠️  Puppeteer n\'est pas installé. Seul PDFKit sera disponible pour la génération PDF.');
+}
+
+/**
+ * Service pour la génération et gestion des PDFs
+ * 
+ * ⚠️  MIGRATION VERS PDFKIT
+ * - Puppeteer est déprécié et sera supprimé dans les futures versions
+ * - PDFKit est maintenant le moteur par défaut (90% plus léger, plus rapide)
+ * - Pour migrer un template Puppeteer vers PDFKit:
+ *   1. Créer une méthode dans PdfKitService pour votre système
+ *   2. Ajouter le template dans determineEngine()
+ *   3. Tester la génération
+ * - Les anciens templates continueront de fonctionner avec Puppeteer en mode compatibilité
+ */
+class PdfService extends BaseService {
+    constructor() {
+        super('PdfService');
+        this.pdfModel = new Pdf();
+        this.personnageModel = new Personnage();
+        this.templateService = new TemplateService();
+        this.pdfKitService = new PdfKitService();
+        this.outputDir = path.join(process.cwd(), 'output');
+        this.templatesDir = path.join(process.cwd(), 'src', 'templates', 'pdf');
+        
+        // Configuration du moteur PDF par défaut
+        this.defaultEngine = 'pdfkit'; // 'pdfkit' préféré, 'puppeteer' déprécié, 'auto' pour compatibilité
+        
+        // Initialiser le dossier de sortie
+        this.initialiserDossierSortie();
+    }
+
+    /**
+     * Initialise le dossier de sortie
+     */
+    async initialiserDossierSortie() {
+        try {
+            await fs.access(this.outputDir);
+        } catch {
+            await fs.mkdir(this.outputDir, { recursive: true });
+            this.logger.info('Dossier output créé:', this.outputDir);
+        }
+    }
+
+    /**
+     * Liste les PDFs d'un utilisateur
+     */
+    async listerParUtilisateur(utilisateurId, filtres = {}, pagination = {}) {
+        try {
+            const conditions = ['utilisateur_id = ?'];
+            const valeurs = [utilisateurId];
+            
+            // Filtres optionnels
+            if (filtres.statut) {
+                conditions.push('statut = ?');
+                valeurs.push(filtres.statut);
+            }
+            
+            if (filtres.type_pdf) {
+                conditions.push('type_pdf = ?');
+                valeurs.push(filtres.type_pdf);
+            }
+            
+            if (filtres.personnage_id) {
+                conditions.push('personnage_id = ?');
+                valeurs.push(filtres.personnage_id);
+            }
+            
+            const whereClause = conditions.join(' AND ');
+            
+            // Compter le total
+            const total = await this.pdfModel.count(whereClause, valeurs);
+            
+            // Récupérer les PDFs avec pagination
+            const offset = pagination.offset || 0;
+            const limite = pagination.limite || 20;
+            
+            const pdfs = await this.pdfModel.lister({
+                where: whereClause,
+                valeurs,
+                order: 'date_creation DESC',
+                limit: limite,
+                offset
+            });
+            
+            return { pdfs, total };
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la liste des PDFs:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient un PDF par ID
+     */
+    async obtenirParId(id) {
+        try {
+            return await this.pdfModel.obtenirParId(id);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la récupération du PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient un PDF par token de partage
+     */
+    async obtenirParToken(token) {
+        try {
+            return await this.pdfModel.obtenirParToken(token);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la récupération du PDF par token ${token}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Démarre la génération d'un PDF (asynchrone)
+     */
+    async demarrerGeneration(personnageId, utilisateurId, options = {}) {
+        try {
+            // Vérifier que le personnage existe
+            const personnage = await this.personnageModel.obtenirParId(personnageId);
+            if (!personnage) {
+                throw new Error('Personnage non trouvé');
+            }
+            
+            // Créer l'entrée PDF en base
+            const nomFichier = this.genererNomFichier(personnage, options.type_pdf);
+            const cheminFichier = path.join(this.outputDir, nomFichier);
+            
+            const pdf = await this.pdfModel.creer({
+                personnage_id: personnageId,
+                utilisateur_id: utilisateurId,
+                type_pdf: options.type_pdf || 'fiche_personnage',
+                nom_fichier: nomFichier,
+                chemin_fichier: cheminFichier,
+                options_generation: JSON.stringify(options),
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                est_public: options.est_public || false
+            });
+            
+            // Lancer la génération asynchrone
+            this.genererPdfAsync(pdf.id, personnage, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la génération asynchrone du PDF ${pdf.id}:`, erreur);
+            });
+            
+            return pdf;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du démarrage de génération:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génération asynchrone du PDF
+     */
+    async genererPdfAsync(pdfId, personnage, options = {}) {
+        const debutGeneration = Date.now();
+        
+        try {
+            // Mettre à jour le statut
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'EN_TRAITEMENT',
+                progression: 10
+            });
+            
+            // Générer le HTML
+            const html = await this.genererHtml(personnage, options);
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 30 });
+            
+            // Générer le PDF avec Puppeteer
+            const pdf = await this.obtenirParId(pdfId);
+            await this.genererPdfAvecPuppeteer(html, pdf.chemin_fichier, options);
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 80 });
+            
+            // Vérifier que le fichier existe
+            const stats = await fs.stat(pdf.chemin_fichier);
+            const tailleFichier = stats.size;
+            
+            // Générer l'URL temporaire
+            const urlTemporaire = this.genererUrlTemporaire();
+            
+            // Finaliser
+            const tempsGeneration = Date.now() - debutGeneration;
+            
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'TERMINE',
+                progression: 100,
+                taille_fichier: tailleFichier,
+                url_temporaire: urlTemporaire,
+                temps_generation: tempsGeneration,
+                date_expiration: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
+            });
+            
+            this.logger.info(`PDF généré avec succès:`, {
+                id: pdfId,
+                taille: tailleFichier,
+                temps: `${tempsGeneration}ms`
+            });
+            
+        } catch (erreur) {
+            // Marquer en échec
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'ECHEC',
+                erreur_message: erreur.message,
+                temps_generation: Date.now() - debutGeneration
+            });
+            
+            this.logger.error(`Échec de génération PDF ${pdfId}:`, erreur);
+        }
+    }
+
+    /**
+     * Génère le HTML pour un personnage
+     */
+    async genererHtml(personnage, options = {}) {
+        try {
+            const systeme = systemesJeu[personnage.systeme_jeu];
+            if (!systeme) {
+                throw new Error(`Système ${personnage.systeme_jeu} non supporté`);
+            }
+            
+            // Déterminer le template à utiliser
+            let templateId = options.template_id || 'fiche-personnage';
+            
+            // Vérifier si le template existe pour ce système
+            const templateExiste = await this.templateService.templateExiste(personnage.systeme_jeu, templateId);
+            if (!templateExiste) {
+                this.logger.warn(`Template ${templateId} non trouvé pour ${personnage.systeme_jeu}, utilisation du template par défaut`);
+                templateId = 'fiche-personnage';
+            }
+            
+            // Préparer les données pour le template
+            const donneesTemplate = {
+                personnage,
+                systeme,
+                options,
+                dateGeneration: new Date().toLocaleDateString('fr-FR'),
+                ...options.donnees_additionnelles
+            };
+            
+            // Rendre le template avec Handlebars
+            const html = await this.templateService.rendreTemplate(
+                personnage.systeme_jeu, 
+                templateId, 
+                donneesTemplate
+            );
+            
+            return html;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la génération HTML:', erreur);
+            
+            // Fallback vers un template minimal en cas d'erreur
+            if (erreur.message.includes('Template') &amp;&amp; erreur.message.includes('non trouvé')) {
+                return this.genererTemplateMinimal(personnage);
+            }
+            
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génère un template minimal en cas d'erreur
+     */
+    genererTemplateMinimal(personnage) {
+        return `
+        &lt;!DOCTYPE html>
+        &lt;html lang="fr">
+        &lt;head>
+            &lt;meta charset="UTF-8">
+            &lt;title>${personnage.nom} - ${personnage.systeme_jeu}&lt;/title>
+            &lt;style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #333; }
+                .field { margin: 10px 0; }
+                .label { font-weight: bold; }
+            &lt;/style>
+        &lt;/head>
+        &lt;body>
+            &lt;h1>${personnage.nom}&lt;/h1>
+            &lt;div class="field">
+                &lt;span class="label">Système:&lt;/span> ${personnage.systeme_jeu}
+            &lt;/div>
+            &lt;div class="field">
+                &lt;span class="label">Créé le:&lt;/span> ${new Date(personnage.date_creation).toLocaleDateString('fr-FR')}
+            &lt;/div>
+            &lt;div class="field">
+                &lt;span class="label">Données:&lt;/span>
+                &lt;pre>${JSON.stringify(personnage.donnees_personnage, null, 2)}&lt;/pre>
+            &lt;/div>
+        &lt;/body>
+        &lt;/html>
+        `;
+    }
+
+    /**
+     * Génère un aperçu HTML (pour preview)
+     */
+    async genererPreviewHtml(personnage, options = {}) {
+        return await this.genererHtml(personnage, { ...options, preview: true });
+    }
+
+    /**
+     * Liste les templates disponibles pour un système
+     */
+    async listerTemplates(systemeJeu) {
+        return await this.templateService.listerTemplates(systemeJeu);
+    }
+
+    /**
+     * Obtient les types de templates disponibles
+     */
+    async obtenirTypesTemplates() {
+        return await this.templateService.obtenirTypesTemplates();
+    }
+
+    /**
+     * Génère le PDF avec Puppeteer (DÉPRÉCIÉ - utiliser PDFKit)
+     * @deprecated Utiliser genererPdfAvecPDFKit() à la place
+     */
+    async genererPdfAvecPuppeteer(html, cheminFichier, options = {}) {
+        if (!puppeteer) {
+            throw new Error('Puppeteer n\'est pas disponible. Utilisez PDFKit à la place.');
+        }
+
+        this.logger.warn('⚠️  genererPdfAvecPuppeteer() est déprécié. Migrez vers PDFKit pour de meilleures performances.');
+        
+        let browser;
+        
+        try {
+            browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+            
+            const page = await browser.newPage();
+            
+            // Définir le contenu HTML
+            await page.setContent(html, {
+                waitUntil: 'networkidle0',
+                timeout: 30000
+            });
+            
+            // Options PDF
+            const pdfOptions = {
+                path: cheminFichier,
+                format: options.format || 'A4',
+                landscape: options.orientation === 'landscape',
+                printBackground: true,
+                margin: {
+                    top: '20px',
+                    right: '20px',
+                    bottom: '20px',
+                    left: '20px'
+                },
+                ...options.pdfOptions
+            };
+            
+            // Générer le PDF
+            await page.pdf(pdfOptions);
+            
+        } finally {
+            if (browser) {
+                await browser.close();
+            }
+        }
+    }
+
+    /**
+     * Supprime un PDF
+     */
+    async supprimer(id) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            // Supprimer le fichier physique
+            if (pdf.chemin_fichier) {
+                try {
+                    await fs.unlink(pdf.chemin_fichier);
+                } catch (erreur) {
+                    this.logger.warn(`Impossible de supprimer le fichier ${pdf.chemin_fichier}:`, erreur);
+                }
+            }
+            
+            // Supprimer de la base
+            await this.pdfModel.supprimer(id);
+            
+            this.logger.info('PDF supprimé:', { id, nom: pdf.nom_fichier });
+            return true;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la suppression du PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Supprime les PDFs d'un personnage
+     */
+    async supprimerParPersonnage(personnageId) {
+        try {
+            const pdfs = await this.pdfModel.lister({
+                where: 'personnage_id = ?',
+                valeurs: [personnageId]
+            });
+            
+            for (const pdf of pdfs) {
+                await this.supprimer(pdf.id);
+            }
+            
+            this.logger.info(`${pdfs.length} PDFs supprimés pour le personnage ${personnageId}`);
+            return pdfs.length;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la suppression des PDFs du personnage ${personnageId}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Marque un téléchargement
+     */
+    async marquerTelechargement(id) {
+        try {
+            await this.pdfModel.incrementerTelechargements(id);
+        } catch (erreur) {
+            this.logger.error(`Erreur lors du marquage téléchargement ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Détermine le moteur PDF à utiliser selon le système et template
+     * @param {string} system - Système de jeu
+     * @param {string} template - Template à utiliser
+     * @param {string} enginePreference - Préférence de moteur ('auto', 'pdfkit', 'puppeteer')
+     * @returns {string} - 'pdfkit' ou 'puppeteer'
+     */
+    determineEngine(system, template, enginePreference = this.defaultEngine) {
+        // Préférence explicite
+        if (enginePreference === 'pdfkit') {
+            return 'pdfkit';
+        }
+        
+        if (enginePreference === 'puppeteer') {
+            if (!puppeteer) {
+                this.logger.warn('⚠️  Puppeteer demandé mais non disponible, utilisation de PDFKit');
+                return 'pdfkit';
+            }
+            this.logger.warn('⚠️  Puppeteer est déprécié, considérez migrer vers PDFKit');
+            return 'puppeteer';
+        }
+
+        // Mode auto : priorité à PDFKit
+        const pdfkitTemplates = {
+            'monsterhearts': ['plan-classe-instructions', 'plan-classe-instructions-test', 'document-generique', 'document-generique-v2']
+        };
+
+        // PDFKit disponible pour ce template
+        if (pdfkitTemplates[system] &amp;&amp; pdfkitTemplates[system].includes(template)) {
+            return 'pdfkit';
+        }
+
+        // Fallback vers Puppeteer si disponible
+        if (puppeteer) {
+            this.logger.warn(`⚠️  Template ${system}/${template} non supporté par PDFKit, utilisation de Puppeteer (déprécié)`);
+            return 'puppeteer';
+        }
+
+        // Aucun moteur disponible pour ce template
+        throw new Error(`Template ${system}/${template} non supporté par PDFKit et Puppeteer non disponible`);
+    }
+
+    /**
+     * Génère un PDF avec PDFKit
+     * @param {Object} options - Options de génération
+     * @returns {Object} - Résultat de génération
+     */
+    async genererPdfAvecPDFKit(options = {}) {
+        try {
+            const {
+                system = 'monsterhearts',
+                template = 'plan-classe-instructions',
+                titre = 'Document',
+                userId = null,
+                systemRights = 'private',
+                data = {},
+                cheminFichier = null
+            } = options;
+
+            // Utiliser le service PDFKit
+            const result = await this.pdfKitService.generatePDF({
+                system,
+                template,
+                titre,
+                userId,
+                systemRights,
+                data
+            });
+
+            // Si un chemin spécifique est demandé, copier le fichier
+            if (cheminFichier &amp;&amp; result.success) {
+                const fs = require('fs').promises;
+                await fs.copyFile(result.fullPath, cheminFichier);
+                
+                // Retourner les infos avec le bon chemin
+                return {
+                    ...result,
+                    fullPath: cheminFichier
+                };
+            }
+
+            return result;
+
+        } catch (error) {
+            this.logger.error('Erreur génération PDFKit:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Génère un lien de partage temporaire
+     */
+    async genererLienPartage(id, dureeHeures = 24) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            const token = this.genererUrlTemporaire();
+            const dateExpiration = new Date(Date.now() + dureeHeures * 60 * 60 * 1000);
+            
+            await this.pdfModel.mettreAJour(id, {
+                url_temporaire: token,
+                date_expiration: dateExpiration
+            });
+            
+            return {
+                token,
+                url: `/api/pdfs/partage/${token}`,
+                date_expiration: dateExpiration
+            };
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la génération du lien de partage ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Relance la génération d'un PDF en échec
+     */
+    async relancerGeneration(id) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            if (pdf.statut !== 'ECHEC') {
+                throw new Error('Seuls les PDFs en échec peuvent être relancés');
+            }
+            
+            // Récupérer le personnage
+            const personnage = await this.personnageModel.obtenirParId(pdf.personnage_id);
+            if (!personnage) {
+                throw new Error('Personnage associé non trouvé');
+            }
+            
+            // Remettre à zéro
+            await this.pdfModel.mettreAJour(id, {
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                erreur_message: null,
+                temps_generation: null
+            });
+            
+            // Relancer la génération
+            const options = JSON.parse(pdf.options_generation || '{}');
+            this.genererPdfAsync(id, personnage, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la relance de génération du PDF ${id}:`, erreur);
+            });
+            
+            return await this.obtenirParId(id);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la relance de génération ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Nettoie les PDFs expirés
+     */
+    async nettoyerPdfsExpires() {
+        try {
+            const maintenant = new Date();
+            const pdfsExpires = await this.pdfModel.lister({
+                where: 'date_expiration &lt; ? AND statut = ?',
+                valeurs: [maintenant, 'TERMINE']
+            });
+            
+            let nbSupprimes = 0;
+            for (const pdf of pdfsExpires) {
+                try {
+                    await this.supprimer(pdf.id);
+                    nbSupprimes++;
+                } catch (erreur) {
+                    this.logger.warn(`Erreur lors de la suppression du PDF expiré ${pdf.id}:`, erreur);
+                }
+            }
+            
+            this.logger.info(`${nbSupprimes} PDFs expirés nettoyés`);
+            return nbSupprimes;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du nettoyage des PDFs expirés:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les statistiques des PDFs
+     */
+    async obtenirStatistiques(utilisateurId) {
+        try {
+            return await this.pdfModel.obtenirStatistiques(utilisateurId);
+        } catch (erreur) {
+            this.logger.error('Erreur lors du calcul des statistiques PDF:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les PDFs publics récents pour la page d'accueil
+     */
+    async obtenirPdfsPublicsRecents(limite = 6, utilisateurRole = 'UTILISATEUR') {
+        try {
+            const conditions = ['statut = ?'];
+            const valeurs = ['TERMINE'];
+            
+            // Seuls les admins et modérateurs voient tous les PDFs
+            if (!['ADMIN', 'MODERATEUR'].includes(utilisateurRole)) {
+                conditions.push('est_public = ?');
+                valeurs.push(true);
+            }
+            
+            const pdfs = await this.pdfModel.lister({
+                where: conditions.join(' AND '),
+                valeurs,
+                order: 'date_creation DESC',
+                limit: limite,
+                // Joindre les informations du personnage et utilisateur
+                joins: [
+                    'LEFT JOIN personnages p ON pdfs.personnage_id = p.id',
+                    'LEFT JOIN utilisateurs u ON pdfs.utilisateur_id = u.id'
+                ],
+                select: [
+                    'pdfs.*',
+                    'p.nom as personnage_nom',
+                    'p.systeme_jeu',
+                    'u.nom as auteur_nom'
+                ]
+            });
+            
+            return pdfs.map(pdf => ({
+                id: pdf.id,
+                nom_fichier: pdf.nom_fichier,
+                type_pdf: pdf.type_pdf,
+                personnage_nom: pdf.personnage_nom,
+                systeme_jeu: pdf.systeme_jeu,
+                auteur_nom: pdf.auteur_nom,
+                date_creation: pdf.date_creation,
+                taille_fichier: pdf.taille_fichier,
+                nb_telechargements: pdf.nb_telechargements || 0,
+                est_public: pdf.est_public
+            }));
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors de la récupération des PDFs publics récents:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Bascule la visibilité publique d'un PDF
+     */
+    async basculerVisibilitePublique(id, utilisateurId) {
+        try {
+            const pdf = await this.obtenirParId(id);
+            if (!pdf) {
+                throw new Error('PDF non trouvé');
+            }
+            
+            // Vérifier que l'utilisateur est le propriétaire
+            if (pdf.utilisateur_id !== utilisateurId) {
+                throw new Error('Seul le propriétaire peut modifier la visibilité');
+            }
+            
+            // Seuls les PDFs terminés peuvent être rendus publics
+            if (pdf.statut !== 'TERMINE') {
+                throw new Error('Seuls les PDFs terminés peuvent être rendus publics');
+            }
+            
+            const nouvelleVisibilite = !pdf.est_public;
+            
+            await this.pdfModel.mettreAJour(id, {
+                est_public: nouvelleVisibilite
+            });
+            
+            this.logger.info(`PDF ${id} ${nouvelleVisibilite ? 'rendu public' : 'rendu privé'}`);
+            
+            return await this.obtenirParId(id);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur lors du basculement de visibilité PDF ${id}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient les types de PDF disponibles
+     */
+    obtenirTypesPdf() {
+        return {
+            fiche_personnage: 'Fiche de personnage',
+            fiche_pnj: 'Fiche PNJ',
+            carte_reference: 'Carte de référence',
+            guide_moves: 'Guide des moves (PbtA)',
+            suivi_conditions: 'Suivi des conditions',
+            notes_session: 'Notes de session'
+        };
+    }
+
+    /**
+     * Prépare les données pour le template
+     */
+    preparerDonneesTemplate(personnage, systeme, options = {}) {
+        const donnees = {
+            // Informations du personnage
+            nom: personnage.nom,
+            systeme_nom: systeme.nom,
+            description: personnage.description || '',
+            notes: personnage.notes || '',
+            
+            // Métadonnées
+            date_creation: new Date(personnage.date_creation).toLocaleDateString('fr-FR'),
+            date_modification: new Date(personnage.date_modification).toLocaleDateString('fr-FR'),
+            
+            // Attributs formatés
+            attributs_html: this.formaterAttributsHtml(personnage.attributs, systeme.attributs),
+            
+            // Compétences formatées
+            competences_html: this.formaterCompetencesHtml(personnage.competences, systeme.competences),
+            
+            // Inventaire formaté
+            inventaire_html: this.formaterInventaireHtml(personnage.inventaire),
+            
+            // Informations de base
+            infos_base_html: this.formaterInfosBaseHtml(personnage.infos_base, systeme.infos_base),
+            
+            // Couleurs du système
+            couleur_primaire: systeme.couleurs?.primaire || '#3B82F6',
+            couleur_secondaire: systeme.couleurs?.secondaire || '#1E40AF',
+            couleur_accent: systeme.couleurs?.accent || '#F59E0B',
+            
+            // Options
+            preview: options.preview || false
+        };
+        
+        return donnees;
+    }
+
+    /**
+     * Obtient les styles CSS pour un système
+     */
+    async obtenirStylesSysteme(systemeJeu) {
+        try {
+            const stylePath = path.join(this.templatesDir, systemeJeu, 'styles.css');
+            try {
+                return await fs.readFile(stylePath, 'utf8');
+            } catch {
+                // Fallback vers styles génériques
+                const styleGenerique = path.join(this.templatesDir, 'generique', 'styles.css');
+                return await fs.readFile(styleGenerique, 'utf8');
+            }
+        } catch (erreur) {
+            this.logger.warn('Impossible de charger les styles:', erreur);
+            return '/* Styles par défaut */';
+        }
+    }
+
+    /**
+     * Formate les attributs en HTML
+     */
+    formaterAttributsHtml(attributs, configAttributs) {
+        if (!attributs || !configAttributs) return '';
+        
+        return Object.entries(attributs)
+            .map(([nom, valeur]) => {
+                const config = configAttributs[nom] || {};
+                return `&lt;div class="attribut">
+                    &lt;span class="nom">${config.nom_complet || nom}&lt;/span>
+                    &lt;span class="valeur">${valeur}&lt;/span>
+                &lt;/div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Formate les compétences en HTML
+     */
+    formaterCompetencesHtml(competences, configCompetences) {
+        if (!competences || !configCompetences) return '';
+        
+        return Object.entries(competences)
+            .map(([nom, valeur]) => {
+                return `&lt;div class="competence">
+                    &lt;span class="nom">${nom}&lt;/span>
+                    &lt;span class="valeur">${valeur}&lt;/span>
+                &lt;/div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Formate l'inventaire en HTML
+     */
+    formaterInventaireHtml(inventaire) {
+        if (!Array.isArray(inventaire) || inventaire.length === 0) {
+            return '&lt;p class="vide">Aucun objet&lt;/p>';
+        }
+        
+        return inventaire
+            .map(objet => `&lt;div class="objet">
+                &lt;span class="nom">${objet.nom || objet}&lt;/span>
+                ${objet.description ? `&lt;span class="description">${objet.description}&lt;/span>` : ''}
+            &lt;/div>`)
+            .join('');
+    }
+
+    /**
+     * Formate les informations de base en HTML
+     */
+    formaterInfosBaseHtml(infosBase, configInfos) {
+        if (!infosBase) return '';
+        
+        return Object.entries(infosBase)
+            .map(([cle, valeur]) => {
+                const label = configInfos?.champs?.[cle]?.label || cle;
+                return `&lt;div class="info-base">
+                    &lt;span class="label">${label}:&lt;/span>
+                    &lt;span class="valeur">${valeur}&lt;/span>
+                &lt;/div>`;
+            })
+            .join('');
+    }
+
+    /**
+     * Génère un nom de fichier unique
+     */
+    genererNomFichier(personnage, typePdf) {
+        const timestamp = Date.now();
+        const nomNettoye = personnage.nom.replace(/[^a-zA-Z0-9]/g, '_');
+        return `${nomNettoye}_${typePdf}_${timestamp}.pdf`;
+    }
+
+    /**
+     * Génère une URL temporaire
+     */
+    genererUrlTemporaire() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    /**
+     * Génère un PDF de document générique
+     */
+    async genererDocumentGenerique(utilisateurId, options = {}) {
+        try {
+            // Créer l'entrée PDF en base
+            const nomFichier = this.genererNomFichierDocumentGenerique(options.donnees.titre, options.systeme);
+            const cheminFichier = path.join(this.outputDir, nomFichier);
+            
+            const pdf = await this.pdfModel.creer({
+                personnage_id: null, // Pas de personnage pour un document générique
+                utilisateur_id: utilisateurId,
+                type_pdf: options.type_pdf || 'document-generique',
+                nom_fichier: nomFichier,
+                chemin_fichier: cheminFichier,
+                options_generation: JSON.stringify(options),
+                statut: 'EN_ATTENTE',
+                progression: 0,
+                est_public: options.est_public || false,
+                titre: options.titre_personnalise || options.donnees.titre
+            });
+            
+            // Lancer la génération asynchrone
+            this.genererDocumentGeneriqueAsync(pdf.id, options).catch(erreur => {
+                this.logger.error(`Erreur lors de la génération asynchrone du document générique ${pdf.id}:`, erreur);
+            });
+            
+            return pdf;
+            
+        } catch (erreur) {
+            this.logger.error('Erreur lors du démarrage de génération document générique:', erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génération asynchrone du document générique
+     */
+    async genererDocumentGeneriqueAsync(pdfId, options = {}) {
+        const debutGeneration = Date.now();
+        
+        try {
+            // Mettre à jour le statut
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'EN_TRAITEMENT',
+                progression: 10
+            });
+            
+            // Générer le HTML avec DocumentGeneriqueService
+            const DocumentGeneriqueService = require('./DocumentGeneriqueService');
+            const documentService = new DocumentGeneriqueService();
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 30 });
+            
+            const html = await documentService.genererHtml(
+                options.template,
+                options.donnees,
+                options.systeme
+            );
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 50 });
+            
+            // Déterminer le moteur à utiliser
+            const pdf = await this.pdfModel.obtenirParId(pdfId);
+            const engine = this.determineEngine(options.systeme, options.template);
+            
+            if (engine === 'pdfkit') {
+                // Utiliser PDFKit pour les templates supportés
+                const result = await this.genererPdfAvecPDFKit({
+                    system: options.systeme,
+                    template: options.template,
+                    titre: options.donnees.titre,
+                    userId: pdf.utilisateur_id,
+                    systemRights: pdf.system_rights || 'private',
+                    data: options.donnees,
+                    cheminFichier: pdf.chemin_fichier
+                });
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Erreur génération PDFKit');
+                }
+            } else {
+                // Utiliser Puppeteer pour les autres templates
+                await this.genererPdfDepuisHtml(html, pdf.chemin_fichier);
+            }
+            
+            await this.pdfModel.mettreAJour(pdfId, { progression: 90 });
+            
+            // Finaliser
+            const tempsGeneration = Date.now() - debutGeneration;
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'TERMINE',
+                progression: 100,
+                temps_generation: tempsGeneration,
+                date_fin_generation: new Date()
+            });
+            
+            this.logger.info(`Document générique ${pdfId} généré avec succès en ${tempsGeneration}ms`);
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur génération document générique ${pdfId}:`, erreur);
+            
+            await this.pdfModel.mettreAJour(pdfId, {
+                statut: 'ERREUR',
+                erreur_message: erreur.message,
+                date_fin_generation: new Date()
+            });
+            
+            throw erreur;
+        }
+    }
+
+    /**
+     * Génère un nom de fichier pour un document générique
+     */
+    genererNomFichierDocumentGenerique(titre, systeme) {
+        const timestamp = Date.now();
+        const titreNettoye = titre.replace(/[^a-zA-Z0-9]/g, '_');
+        const id = crypto.randomBytes(4).toString('hex');
+        return `user-system_rights-public_template-document-generique_${systeme}_${titreNettoye}_id-${id}.pdf`;
+    }
+}
+
+module.exports = PdfService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -22,6 +22,8 @@
     "test:all": "npm run test:unit && npm run test:integration",
     "lint": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{js,ejs}\"",
+    "docs:generate": "jsdoc -c jsdoc.json",
+    "docs:clean": "rimraf docs",
     "logs:set-level": "node scripts/set-log-level.js",
     "logs:purge": "node scripts/purge-logs.js"
   },
@@ -55,10 +57,12 @@
     "eslint": "^9.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.4",
+    "jsdoc": "^4.0.4",
     "nodemon": "^3.0.3",
     "postcss": "^8.4.32",
     "prettier": "^3.1.1",
     "puppeteer": "^23.1.0",
+    "rimraf": "^6.0.1",
     "supertest": "^7.1.3",
     "tailwindcss": "^3.3.6"
   },

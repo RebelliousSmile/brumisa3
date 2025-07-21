@@ -17,8 +17,11 @@ class GenericDocumentGenerator extends BasePdfKitService {
     }
 
     async generateDocument(data, filePath) {
+        // Définir le watermark/chapterTitle AVANT de créer le document
+        this.chapterTitle = data.watermark || data.titre || 'TEST GÉNÉRIQUE';
+        
         const doc = this.createDocument({
-            chapterTitle: data.watermark || data.titre || 'TEST GÉNÉRIQUE'
+            chapterTitle: this.chapterTitle
         });
         const stream = doc.pipe(fs.createWriteStream(filePath));
         
@@ -42,7 +45,7 @@ class GenericDocumentGenerator extends BasePdfKitService {
             this.checkNewPage(doc, 100);
             
             // Titre de section
-            this.addTitle(doc, section.titre, { fontSize: 14 });
+            this.addTitle(doc, section.titre, { fontSize: 14, marginTop: 15, addToToc: true, tocLevel: 1 });
             
             // Description de section
             if (section.description) {
@@ -56,6 +59,9 @@ class GenericDocumentGenerator extends BasePdfKitService {
                 }
             }
         }
+        
+        // Vérifier si on doit ajouter garde + TOC pour documents longs
+        this.finalizeLongDocument(doc, data);
         
         // Finaliser le document
         doc.end();
@@ -80,7 +86,7 @@ class GenericDocumentGenerator extends BasePdfKitService {
                 
             case 'sous_section':
                 this.checkNewPage(doc, 80);
-                this.addTitle(doc, element.titre, { fontSize: 12 });
+                this.addTitle(doc, element.titre, { fontSize: 12, marginTop: 20, addToToc: true, tocLevel: 2 });
                 if (element.description) {
                     this.addParagraph(doc, element.description);
                 }
@@ -89,6 +95,13 @@ class GenericDocumentGenerator extends BasePdfKitService {
                         this.renderElement(doc, subElement);
                     }
                 }
+                break;
+                
+            case 'conseil':
+            case 'attention':
+            case 'exemple':
+                this.checkNewPage(doc, 80);
+                this.addBox(doc, element.type, element.texte);
                 break;
                 
             case 'separateur':
@@ -109,7 +122,9 @@ async function testGenericDocument() {
         // Données de test génériques
         const data = {
             titre: "TEST DOCUMENT GÉNÉRIQUE",
-            watermark: "TEST PDF",
+            sous_titre: "Guide complet du BasePdfKitService",
+            auteur: "Équipe de développement",
+            watermark: "COMMENT REMPLIR LE PLAN CORRECTEMENT",
             introduction: "Ceci est un document de test pour valider le fonctionnement du BasePdfKitService. Il contient différents types de contenu pour tester la pagination, l'alternance des barres latérales et le placement du contenu.",
             sections: [
                 {
@@ -131,6 +146,10 @@ async function testGenericDocument() {
                         {
                             type: "paragraphe",
                             texte: "Un autre paragraphe après la liste pour tester l'espacement entre les éléments."
+                        },
+                        {
+                            type: "conseil",
+                            texte: "Ceci est un encadré de conseil pour tester l'affichage des citations dans le BasePdfKitService générique."
                         }
                     ]
                 },
@@ -178,6 +197,14 @@ async function testGenericDocument() {
                         {
                             type: "paragraphe",
                             texte: "Paragraphe après séparateur pour tester les éléments de mise en page."
+                        },
+                        {
+                            type: "attention",
+                            texte: "Ceci est un encadré d'attention pour signaler des informations importantes."
+                        },
+                        {
+                            type: "exemple",
+                            texte: "Voici un exemple concret d'utilisation qui illustre le concept expliqué précédemment."
                         }
                     ]
                 },
@@ -202,6 +229,53 @@ async function testGenericDocument() {
                             ]
                         }
                     ]
+                },
+                {
+                    titre: "QUATRIÈME SECTION - TESTS SUPPLÉMENTAIRES",
+                    description: "Section ajoutée pour atteindre plus de 5 pages et tester la page de garde et table des matières.",
+                    contenu: [
+                        {
+                            type: "paragraphe",
+                            texte: "Cette section contient du contenu supplémentaire pour tester le document. Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                        },
+                        {
+                            type: "sous_section",
+                            titre: "Sous-section de test A",
+                            description: "Description détaillée de la sous-section A.",
+                            elements: [
+                                {
+                                    type: "paragraphe",
+                                    texte: "Contenu de la sous-section A. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+                                },
+                                {
+                                    type: "liste",
+                                    items: [
+                                        "Premier point de la liste longue",
+                                        "Deuxième point avec du contenu étendu pour tester l'affichage",
+                                        "Troisième point pour compléter la liste"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    titre: "CINQUIÈME SECTION - CONTENU FINAL",
+                    description: "Dernière section pour finaliser le test du document long.",
+                    contenu: [
+                        {
+                            type: "paragraphe",
+                            texte: "Section finale du document. Ut enim ad minim veniam, quis nostrud exercitation ullamco."
+                        },
+                        {
+                            type: "attention",
+                            texte: "Cette attention finale teste l'affichage des encadrés dans un document long avec page de garde et table des matières."
+                        },
+                        {
+                            type: "exemple",
+                            texte: "Exemple final pour montrer que tous les éléments fonctionnent correctement même dans un document avec page de garde."
+                        }
+                    ]
                 }
             ]
         };
@@ -209,7 +283,8 @@ async function testGenericDocument() {
         // Générer le fichier PDF en utilisant le système unifié (null = générique)
         const systemRightsService = new SystemRightsService();
         const pdfPath = systemRightsService.generatePdfPath('test-base', null, 0, 'document-generique-base', 'public');
-        const filePath = path.resolve(pdfPath.fullPath);
+        // Corriger le chemin pour partir de la racine du projet
+        const filePath = path.join(__dirname, '..', pdfPath.fullPath);
         
         console.log(`🔧 Utilisation du SystemRightsService pour générer le chemin :`);
         console.log(`   - Système : null (générique)`);
@@ -228,7 +303,7 @@ async function testGenericDocument() {
         console.log('✅ PDF générique généré avec succès !');
         console.log(`📁 Fichier : ${pdfPath.fileName}`);
         console.log(`📂 Chemin relatif : ${pdfPath.fullPath}`);
-        console.log(`📂 Chemin absolu : ${path.resolve(filePath)}`);
+        console.log(`📂 Chemin absolu : ${filePath}`);
         
         // Vérifier si le fichier existe
         const fileExists = await fsPromises.access(filePath).then(() => true).catch(() => false);

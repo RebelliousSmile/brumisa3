@@ -3,6 +3,7 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 const path = require('path');
 const SystemRightsService = require('./SystemRightsService');
+const DocumentFactory = require('./DocumentFactory');
 
 /**
  * Service de génération PDF avec PDFKit
@@ -138,17 +139,25 @@ class PdfKitService {
      * @param {Object} data - Données pour le template
      */
     async generateTemplate(system, template, outputPath, data) {
-        switch (system) {
-            case 'monsterhearts':
+        try {
+            // Utiliser DocumentFactory pour créer le bon document
+            const document = DocumentFactory.createFromTemplate(system, template);
+            
+            // Générer le PDF avec le document créé
+            await document.generateDocument(data, outputPath);
+            
+            console.log(`✅ PDF généré avec succès: ${template} (${system})`);
+            
+        } catch (error) {
+            console.error(`❌ Erreur génération template ${system}/${template}:`, error.message);
+            
+            // Fallback vers l'ancienne méthode pour Monsterhearts si la nouvelle échoue
+            if (system === 'monsterhearts' && template.includes('plan-classe-instructions')) {
+                console.log('🔄 Fallback vers l\'ancienne méthode...');
                 return await this.generateMonsterheartsTemplate(template, outputPath, data);
+            }
             
-            case 'engrenages':
-            case 'metro2033':
-            case 'mistengine':
-                throw new Error(`Template ${system}/${template} pas encore implémenté avec PDFKit`);
-            
-            default:
-                throw new Error(`Système ${system} non supporté`);
+            throw error;
         }
     }
 

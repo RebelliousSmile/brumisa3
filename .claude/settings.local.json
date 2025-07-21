@@ -53,7 +53,12 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "WebFetch(domain:fonts.google.com)",
-      "WebFetch(domain:fonts.googleapis.com)"
+      "WebFetch(domain:fonts.googleapis.com)",
+      "Bash(pnpm create:*)",
+      "Bash(npx create-docusaurus:*)",
+      "Bash(mv:*)",
+      "Bash(npx jsdoc:*)",
+      "Bash(npx rimraf:*)"
     ],
     "deny": []
   }

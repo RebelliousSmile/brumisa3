@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-PDFKit est la bibliothèque JavaScript utilisée pour la génération PDF dans ce projet, remplaçant Puppeteer pour un meilleur contrôle de la mise en page et des performances optimisées.
+PDFKit est la bibliothèque JavaScript utilisée pour la génération PDF dans ce projet, offrant un contrôle précis de la mise en page et des performances optimisées.
 
 ## Règles Critiques de Conversion
 
@@ -125,24 +125,22 @@ function createPageWithSidebar(doc, pageNum, sectionTitle, isOddPage) {
 }
 ```
 
-## Migration depuis Puppeteer
+## Avantages de PDFKit
 
-### Avantages de PDFKit vs Puppeteer
+### Points forts
 
-| Aspect | Puppeteer | PDFKit |
-|--------|-----------|---------|
-| **Taille fichier** | 100+ KB | ~4-8 KB |
-| **Performance** | Lent (navigateur) | Rapide (natif) |
-| **Contrôle mise en page** | CSS complexe | Précis au pixel |
-| **Headers/Footers** | Problématique | Natif |
-| **Gestion pages** | Auto (imprévisible) | Manuel (contrôlé) |
+- **Taille fichier** : ~4-8 KB (très compact)
+- **Performance** : Génération rapide native JavaScript
+- **Contrôle mise en page** : Positionnement précis au pixel
+- **Headers/Footers** : Support natif des éléments de page
+- **Gestion pages** : Contrôle manuel et prévisible de la pagination
 
-### Éléments à migrer
+### Bonnes pratiques
 
-1. **Remplacer CSS @page** par des méthodes PDFKit
-2. **Convertir les marges CSS** en calculs de position
-3. **Gérer manuellement** les sauts de page
-4. **Remplacer les sélecteurs CSS** par du positionnement direct
+1. **Positionnement direct** via méthodes PDFKit
+2. **Calculs de marges précis** en points
+3. **Gestion manuelle des sauts de page**
+4. **Éviter les options automatiques** (width/align)
 
 ## Polices et typographie
 

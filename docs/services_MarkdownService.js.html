@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/MarkdownService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/MarkdownService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Service pour la conversion du markdown en HTML
+ * Respecte le principe DRY - réutilisable pour tous les PDFs
+ */
+class MarkdownService {
+    constructor() {
+        // Patterns de conversion markdown
+        this.patterns = {
+            // Gras et italique combinés
+            boldItalic: /\*\*\*(.+?)\*\*\*/g,
+            // Gras
+            bold: /\*\*(.+?)\*\*/g,
+            // Italique
+            italic: /\*(.+?)\*/g,
+            // Code inline
+            code: /`(.+?)`/g,
+            // Citations (au début de ligne)
+            blockquote: /^>\s*(.+)$/gm,
+            // Liens
+            link: /\[([^\]]+)\]\(([^)]+)\)/g,
+            // Listes non ordonnées (début de ligne)
+            unorderedList: /^[\*\-]\s+(.+)$/gm,
+            // Listes ordonnées (début de ligne)
+            orderedList: /^\d+\.\s+(.+)$/gm
+        };
+    }
+
+    /**
+     * Convertit du texte markdown en HTML
+     * @param {string} text - Le texte markdown à convertir
+     * @returns {string} - Le HTML généré
+     */
+    toHtml(text) {
+        if (!text) return '';
+        
+        // Échapper les caractères HTML dangereux d'abord
+        let html = this.escapeHtml(text);
+        
+        // Appliquer les conversions markdown
+        html = html
+            // Gras et italique combinés (doit être avant gras et italique séparés)
+            .replace(this.patterns.boldItalic, '&lt;strong>&lt;em>$1&lt;/em>&lt;/strong>')
+            // Gras
+            .replace(this.patterns.bold, '&lt;strong>$1&lt;/strong>')
+            // Italique
+            .replace(this.patterns.italic, '&lt;em>$1&lt;/em>')
+            // Code inline
+            .replace(this.patterns.code, '&lt;code>$1&lt;/code>')
+            // Citations
+            .replace(this.patterns.blockquote, '&lt;blockquote>$1&lt;/blockquote>')
+            // Liens
+            .replace(this.patterns.link, '&lt;a href="$2">$1&lt;/a>');
+        
+        return html;
+    }
+
+    /**
+     * Convertit du markdown en HTML sécurisé pour les PDFs
+     * Version plus stricte sans liens externes
+     * @param {string} text - Le texte markdown à convertir
+     * @returns {string} - Le HTML sécurisé
+     */
+    toPdfHtml(text) {
+        if (!text) return '';
+        
+        let html = this.escapeHtml(text);
+        
+        // Conversions pour PDF (sans liens)
+        html = html
+            .replace(this.patterns.boldItalic, '&lt;strong>&lt;em>$1&lt;/em>&lt;/strong>')
+            .replace(this.patterns.bold, '&lt;strong>$1&lt;/strong>')
+            .replace(this.patterns.italic, '&lt;em>$1&lt;/em>')
+            .replace(this.patterns.code, '&lt;code>$1&lt;/code>')
+            .replace(this.patterns.blockquote, '&lt;blockquote>$1&lt;/blockquote>')
+            // Pour les PDFs, on affiche juste le texte du lien
+            .replace(this.patterns.link, '$1');
+        
+        return html;
+    }
+
+    /**
+     * Échappe les caractères HTML dangereux
+     * @param {string} text - Le texte à échapper
+     * @returns {string} - Le texte échappé
+     */
+    escapeHtml(text) {
+        const map = {
+            '&amp;': '&amp;amp;',
+            '&lt;': '&amp;lt;',
+            '>': '&amp;gt;',
+            '"': '&amp;quot;',
+            "'": '&amp;#039;'
+        };
+        
+        return text.replace(/[&amp;&lt;>"']/g, m => map[m]);
+    }
+
+    /**
+     * Extrait le texte brut du markdown (supprime tout formatage)
+     * @param {string} text - Le texte markdown
+     * @returns {string} - Le texte sans formatage
+     */
+    toPlainText(text) {
+        if (!text) return '';
+        
+        return text
+            // Supprimer les marqueurs markdown
+            .replace(this.patterns.boldItalic, '$1')
+            .replace(this.patterns.bold, '$1')
+            .replace(this.patterns.italic, '$1')
+            .replace(this.patterns.code, '$1')
+            .replace(this.patterns.blockquote, '$1')
+            .replace(this.patterns.link, '$1')
+            // Supprimer les puces de liste
+            .replace(this.patterns.unorderedList, '$1')
+            .replace(this.patterns.orderedList, '$1');
+    }
+
+    /**
+     * Enregistre les helpers Handlebars pour le markdown
+     * @param {Object} handlebars - L'instance Handlebars
+     */
+    registerHandlebarsHelpers(handlebars) {
+        const self = this;
+        
+        // Helper pour convertir le markdown en HTML
+        handlebars.registerHelper('markdown', function(text) {
+            return new handlebars.SafeString(self.toPdfHtml(text));
+        });
+        
+        // Helper pour extraire le texte brut
+        handlebars.registerHelper('plaintext', function(text) {
+            return self.toPlainText(text);
+        });
+        
+        // Helper pour échapper le HTML
+        handlebars.registerHelper('escapeHtml', function(text) {
+            return new handlebars.SafeString(self.escapeHtml(text));
+        });
+    }
+}
+
+module.exports = MarkdownService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

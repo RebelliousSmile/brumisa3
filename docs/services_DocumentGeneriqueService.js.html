@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/DocumentGeneriqueService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/DocumentGeneriqueService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const fs = require('fs').promises;
+const path = require('path');
+const BaseService = require('./BaseService');
+
+class DocumentGeneriqueService extends BaseService {
+    
+    /**
+     * Génère le HTML pour un document générique en remplaçant les placeholders
+     */
+    async genererHtml(template, donnees, systeme = 'monsterhearts') {
+        try {
+            // Lire le template spécifique au système
+            const templatePath = path.join(__dirname, '..', 'templates', 'pdf', systeme, `${template}.html`);
+            let html = await fs.readFile(templatePath, 'utf8');
+            
+            // Remplacer les placeholders de base
+            html = html.replace('&lt;!-- PAGE_NUMBER -->', donnees.pageNumber || '1');
+            html = html.replace('&lt;!-- CHAPITRE -->', donnees.chapitre || systeme.toUpperCase());
+            html = html.replace('&lt;!-- TITRE -->', (donnees.titre || '').toUpperCase());
+            html = html.replace('&lt;!-- PIED_DE_PAGE -->', donnees.piedDePage || this.getPiedDePageDefaut(systeme));
+            
+            // Générer l'introduction
+            let introductionHtml = '';
+            if (donnees.introduction) {
+                introductionHtml = `&lt;p class="intro">${this.echapperHtml(donnees.introduction)}&lt;/p>`;
+            }
+            html = html.replace('&lt;!-- INTRODUCTION -->', introductionHtml);
+            
+            // Générer les sections
+            let sectionsHtml = '';
+            if (donnees.sections &amp;&amp; Array.isArray(donnees.sections)) {
+                sectionsHtml = donnees.sections.map(section => this.genererSection(section)).join('\n');
+            }
+            html = html.replace('&lt;!-- SECTIONS -->', sectionsHtml);
+            
+            return html;
+            
+        } catch (error) {
+            throw new Error(`Erreur génération HTML: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Génère le HTML d'une section
+     */
+    genererSection(section) {
+        const niveauTag = section.niveau === 1 ? 'h2' : 'h3';
+        let html = `&lt;div class="section">`;
+        html += `&lt;${niveauTag}>${this.echapperHtml(section.titre).toUpperCase()}&lt;/${niveauTag}>`;
+        
+        if (section.contenus &amp;&amp; Array.isArray(section.contenus)) {
+            section.contenus.forEach(contenu => {
+                html += this.genererContenu(contenu);
+            });
+        }
+        
+        html += `&lt;/div>`;
+        return html;
+    }
+    
+    /**
+     * Génère le HTML d'un contenu
+     */
+    genererContenu(contenu) {
+        switch (contenu.type) {
+            case 'paragraphe':
+                return `&lt;p>${this.traiterMarkdown(contenu.texte)}&lt;/p>`;
+                
+            case 'liste':
+                const itemsListe = contenu.items.map(item => 
+                    `&lt;li>${this.traiterMarkdown(item)}&lt;/li>`
+                ).join('');
+                return `&lt;ul>${itemsListe}&lt;/ul>`;
+                
+            case 'liste-numerotee':
+                const itemsNumero = contenu.items.map(item => 
+                    `&lt;li>${this.traiterMarkdown(item)}&lt;/li>`
+                ).join('');
+                return `&lt;ol>${itemsNumero}&lt;/ol>`;
+                
+            case 'citation':
+                return `&lt;blockquote>${this.traiterMarkdown(contenu.texte)}&lt;/blockquote>`;
+                
+            case 'encadre':
+                let encadre = `&lt;div class="section-speciale">`;
+                if (contenu.titre) {
+                    encadre += `&lt;h4>${this.echapperHtml(contenu.titre).toUpperCase()}&lt;/h4>`;
+                }
+                encadre += `&lt;p>${this.traiterMarkdown(contenu.texte)}&lt;/p>`;
+                encadre += `&lt;/div>`;
+                return encadre;
+                
+            default:
+                return `&lt;p>${this.traiterMarkdown(contenu.texte || '')}&lt;/p>`;
+        }
+    }
+    
+    /**
+     * Traite le markdown simple (gras, italique)
+     */
+    traiterMarkdown(texte) {
+        if (!texte) return '';
+        
+        let html = this.echapperHtml(texte);
+        
+        // Gras
+        html = html.replace(/\*\*(.+?)\*\*/g, '&lt;strong>$1&lt;/strong>');
+        
+        // Italique
+        html = html.replace(/\*(.+?)\*/g, '&lt;em>$1&lt;/em>');
+        
+        return html;
+    }
+    
+    /**
+     * Échappe les caractères HTML
+     */
+    echapperHtml(texte) {
+        if (!texte) return '';
+        return texte
+            .replace(/&amp;/g, '&amp;amp;')
+            .replace(/&lt;/g, '&amp;lt;')
+            .replace(/>/g, '&amp;gt;')
+            .replace(/"/g, '&amp;quot;')
+            .replace(/'/g, '&amp;#x27;');
+    }
+    
+    /**
+     * Valide les données du formulaire
+     */
+    validerDonnees(donnees) {
+        const erreurs = [];
+        
+        if (!donnees.titre || donnees.titre.trim() === '') {
+            erreurs.push('Le titre est requis');
+        }
+        
+        if (!donnees.chapitre || donnees.chapitre.trim() === '') {
+            erreurs.push('Le type de document est requis');
+        }
+        
+        if (!donnees.sections || !Array.isArray(donnees.sections) || donnees.sections.length === 0) {
+            erreurs.push('Au moins une section est requise');
+        }
+        
+        if (donnees.sections) {
+            donnees.sections.forEach((section, index) => {
+                if (!section.titre || section.titre.trim() === '') {
+                    erreurs.push(`Le titre de la section ${index + 1} est requis`);
+                }
+                
+                // Le contenu n'est plus obligatoire pour les sections
+                // (peut être vide pour les titres de chapitre)
+            });
+        }
+        
+        if (erreurs.length > 0) {
+            throw new Error('Données invalides: ' + erreurs.join(', '));
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Retourne le pied de page par défaut selon le système
+     */
+    getPiedDePageDefaut(systeme) {
+        const { SystemeUtils } = require('../utils/systemesJeu');
+        const systemeData = SystemeUtils.getSysteme(systeme);
+        
+        if (systemeData) {
+            return `${systemeData.nom} • Document • brumisa3.fr`;
+        }
+        
+        // Fallback si le système n'est pas trouvé
+        return `${systeme} • Document • brumisa3.fr`;
+    }
+}
+
+module.exports = DocumentGeneriqueService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

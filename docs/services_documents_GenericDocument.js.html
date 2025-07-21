@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/documents/GenericDocument.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/documents/GenericDocument.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BasePdfKitService = require('../BasePdfKitService');
+const SystemTheme = require('../themes/SystemTheme');
+const fs = require('fs');
+
+/**
+ * Document générique - Structure universelle (titres, paragraphes, listes)
+ * Fonctionne avec tous les systèmes de jeu via SystemTheme
+ * 
+ * Usage :
+ * - Documents de règles
+ * - Guides et manuels  
+ * - Suppléments narratifs
+ * - Tout contenu avec structure classique
+ */
+class GenericDocument extends BasePdfKitService {
+    
+    /**
+     * @param {SystemTheme} theme - Thème du système de jeu (optionnel)
+     */
+    constructor(theme = null) {
+        super();
+        this.theme = theme;
+        this.documentType = 'generic';
+    }
+    
+    /**
+     * Génère un document PDF générique
+     * @param {Object} data - Données du document
+     * @param {string} filePath - Chemin de sortie du PDF
+     * @returns {Promise} Promise de génération
+     */
+    async generateDocument(data, filePath) {
+        return new Promise((resolve, reject) => {
+            try {
+                // Configurer le titre pour la sidebar et watermark
+                this.setupDocumentTexts(data);
+                
+                // Créer le document avec la configuration de base
+                const doc = this.createDocument({
+                    chapterTitle: this.chapterTitle
+                });
+                
+                const stream = doc.pipe(fs.createWriteStream(filePath));
+                
+                // Configurer le thème si disponible
+                this.setupTheme(doc);
+                
+                // Générer le contenu principal
+                this.renderContent(doc, data);
+                
+                // Finaliser le document (garde + TOC si nécessaire)
+                this.finalizeDocument(doc, data);
+                
+                // Finaliser le PDF
+                doc.end();
+                
+                // Handlers de fin
+                stream.on('finish', resolve);
+                stream.on('error', reject);
+                
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
+    /**
+     * Configure les textes du document (sidebar, watermark)
+     * @param {Object} data - Données du document
+     */
+    setupDocumentTexts(data) {
+        if (this.theme) {
+            this.chapterTitle = this.theme.getSidebarText(this.documentType, data);
+        } else {
+            this.chapterTitle = data.titre || 'DOCUMENT';
+        }
+    }
+    
+    /**
+     * Configure le thème (polices, couleurs)
+     * @param {PDFDocument} doc - Document PDFKit
+     */
+    setupTheme(doc) {
+        if (this.theme) {
+            // Enregistrer les polices du thème
+            this.theme.registerFonts(doc);
+            
+            // Appliquer la police de base
+            this.theme.applyFont(doc, 'body');
+        } else {
+            // Police par défaut
+            doc.font('Times-Roman');
+        }
+    }
+    
+    /**
+     * Génère le contenu principal du document
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} data - Données du document
+     */
+    renderContent(doc, data) {
+        // Titre principal
+        if (data.titre) {
+            this.addThemeTitle(doc, data.titre, 1, { 
+                addToToc: true, 
+                marginBottom: 20 
+            });
+        }
+        
+        // Sous-titre
+        if (data.sous_titre) {
+            this.addThemeTitle(doc, data.sous_titre, 2, { 
+                marginBottom: 15 
+            });
+        }
+        
+        // Introduction
+        if (data.introduction) {
+            this.addThemeParagraph(doc, data.introduction, { 
+                isIntro: true,
+                marginBottom: 20 
+            });
+        }
+        
+        // Sections principales
+        if (data.sections &amp;&amp; Array.isArray(data.sections)) {
+            for (const section of data.sections) {
+                this.renderSection(doc, section);
+            }
+        }
+    }
+    
+    /**
+     * Génère une section du document
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} section - Données de la section
+     */
+    renderSection(doc, section) {
+        // Vérifier l'espace disponible
+        this.checkNewPage(doc, 100);
+        
+        // Titre de section
+        if (section.titre) {
+            this.addThemeTitle(doc, section.titre, 2, {
+                addToToc: true,
+                tocLevel: 1,
+                marginTop: 25,
+                marginBottom: 15
+            });
+        }
+        
+        // Description de section
+        if (section.description) {
+            this.addThemeParagraph(doc, section.description, {
+                marginBottom: 15
+            });
+        }
+        
+        // Contenu de la section
+        if (section.contenu &amp;&amp; Array.isArray(section.contenu)) {
+            for (const element of section.contenu) {
+                this.renderElement(doc, element);
+            }
+        }
+    }
+    
+    /**
+     * Génère un élément de contenu
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} element - Élément à générer
+     */
+    renderElement(doc, element) {
+        switch (element.type) {
+            case 'paragraphe':
+                this.checkNewPage(doc, 50);
+                this.addThemeParagraph(doc, element.texte);
+                break;
+                
+            case 'liste':
+                this.checkNewPage(doc, 100);
+                this.addThemeList(doc, element.items);
+                break;
+                
+            case 'sous_section':
+                this.checkNewPage(doc, 80);
+                this.renderSubSection(doc, element);
+                break;
+                
+            case 'conseil':
+            case 'attention':
+            case 'exemple':
+                this.checkNewPage(doc, 80);
+                this.addThemeBox(doc, element.type, element.texte);
+                break;
+                
+            case 'separateur':
+                this.checkNewPage(doc, 30);
+                this.addSeparator(doc);
+                break;
+                
+            default:
+                console.warn(`Type d'élément non géré: ${element.type}`);
+        }
+    }
+    
+    /**
+     * Génère une sous-section
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} subSection - Données de la sous-section
+     */
+    renderSubSection(doc, subSection) {
+        // Titre de sous-section
+        if (subSection.titre) {
+            this.addThemeTitle(doc, subSection.titre, 3, {
+                addToToc: true,
+                tocLevel: 2,
+                marginTop: 20,
+                marginBottom: 10
+            });
+        }
+        
+        // Description
+        if (subSection.description) {
+            this.addThemeParagraph(doc, subSection.description);
+        }
+        
+        // Éléments de la sous-section
+        if (subSection.elements &amp;&amp; Array.isArray(subSection.elements)) {
+            for (const element of subSection.elements) {
+                this.renderElement(doc, element);
+            }
+        }
+    }
+    
+    /**
+     * Ajoute un titre avec style du thème
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {string} text - Texte du titre
+     * @param {number} level - Niveau du titre (1, 2, 3)
+     * @param {Object} options - Options supplémentaires
+     */
+    addThemeTitle(doc, text, level = 1, options = {}) {
+        if (this.theme &amp;&amp; typeof this.theme.applyTitleStyle === 'function') {
+            const styledText = this.theme.applyTitleStyle(doc, text, level, options);
+            this.addTitle(doc, styledText, {
+                fontSize: this.getThemeTitleSize(level),
+                ...options
+            });
+        } else {
+            this.addTitle(doc, text, {
+                fontSize: this.getDefaultTitleSize(level),
+                ...options
+            });
+        }
+    }
+    
+    /**
+     * Ajoute un paragraphe avec style du thème
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {string} text - Texte du paragraphe
+     * @param {Object} options - Options supplémentaires
+     */
+    addThemeParagraph(doc, text, options = {}) {
+        const isIntro = options.isIntro || false;
+        
+        if (this.theme &amp;&amp; typeof this.theme.applyParagraphStyle === 'function') {
+            this.theme.applyParagraphStyle(doc, isIntro);
+        }
+        
+        this.addParagraph(doc, text, options);
+    }
+    
+    /**
+     * Ajoute une liste avec style du thème
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Array} items - Éléments de la liste
+     */
+    addThemeList(doc, items) {
+        if (this.theme) {
+            const listConfig = this.theme.getListConfig();
+            this.addStarList(doc, items, {
+                bulletChar: listConfig.bulletChar,
+                fontSize: listConfig.fontSize || 11,
+                indent: listConfig.indent || 20
+            });
+        } else {
+            this.addStarList(doc, items);
+        }
+    }
+    
+    /**
+     * Ajoute un encadré avec style du thème
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {string} type - Type d'encadré
+     * @param {string} text - Texte de l'encadré
+     */
+    addThemeBox(doc, type, text) {
+        if (this.theme) {
+            const boxStyles = this.theme.getBoxStyles();
+            this.addBox(doc, type, text, {
+                padding: boxStyles.padding,
+                topPadding: boxStyles.marginTop || 15,
+                bottomPadding: boxStyles.marginBottom || 15
+            });
+        } else {
+            this.addBox(doc, type, text);
+        }
+    }
+    
+    /**
+     * Retourne la taille de titre selon le thème
+     * @param {number} level - Niveau du titre
+     * @returns {number} Taille de police
+     */
+    getThemeTitleSize(level) {
+        if (this.theme) {
+            const fonts = this.theme.getFonts();
+            if (fonts.titles &amp;&amp; fonts.titles.sizes) {
+                return fonts.titles.sizes[`h${level}`] || 12;
+            }
+        }
+        return this.getDefaultTitleSize(level);
+    }
+    
+    /**
+     * Tailles de titre par défaut
+     * @param {number} level - Niveau du titre
+     * @returns {number} Taille de police
+     */
+    getDefaultTitleSize(level) {
+        switch (level) {
+            case 1: return 18;
+            case 2: return 14;
+            case 3: return 12;
+            default: return 11;
+        }
+    }
+    
+    /**
+     * Finalise le document (garde + TOC si nécessaire)
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {Object} data - Données du document
+     */
+    finalizeDocument(doc, data) {
+        // Vérifier si le document nécessite une garde et une TOC
+        if (this.shouldAddLongDocumentPages()) {
+            console.log('📋 Document long détecté, ajout de la page de garde et TOC');
+            
+            // Note: Les pages spéciales sont gérées par initializeLongDocument
+            // qui doit être appelé AVANT le contenu principal
+            // Pour l'instant, on ne fait que signaler la nécessité
+        }
+    }
+    
+    /**
+     * Retourne le type de document
+     * @returns {string} Type de document
+     */
+    getDocumentType() {
+        return this.documentType;
+    }
+    
+    /**
+     * Retourne le thème utilisé
+     * @returns {SystemTheme|null} Thème ou null
+     */
+    getTheme() {
+        return this.theme;
+    }
+    
+    /**
+     * Définit un nouveau thème
+     * @param {SystemTheme} theme - Nouveau thème
+     */
+    setTheme(theme) {
+        if (theme &amp;&amp; !(theme instanceof SystemTheme)) {
+            throw new Error('Le thème doit être une instance de SystemTheme');
+        }
+        this.theme = theme;
+    }
+}
+
+module.exports = GenericDocument;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

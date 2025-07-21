@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/Pdf.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/Pdf.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseModel = require('./BaseModel');
+const path = require('path');
+const SystemRightsService = require('../services/SystemRightsService');
+
+/**
+ * Modèle PDF
+ */
+class Pdf extends BaseModel {
+    constructor() {
+        super('pdfs', 'id');
+        
+        // Service pour la gestion des droits
+        this.systemRightsService = new SystemRightsService();
+        
+        // Champs autorisés pour mass assignment
+        this.fillable = [
+            'nom_fichier', 'titre', 'utilisateur_id', 'personnage_id',
+            'systeme_jeu', 'chemin_fichier', 'taille_fichier', 'statut',
+            'type_export', 'options_export', 'hash_fichier', 'url_partage',
+            'template_utilise', 'system_rights'
+        ];
+        
+        // Champs protégés
+        this.guarded = ['id', 'date_creation', 'date_modification'];
+        
+        // Conversions automatiques
+        this.casts = {
+            options_export: 'json',
+            taille_fichier: 'integer'
+        };
+        
+        this.timestamps = true;
+    }
+
+    /**
+     * Validation métier
+     */
+    async validate(data, operation = 'create') {
+        const erreurs = [];
+
+        // Titre requis
+        if (!data.titre || data.titre.trim().length &lt; 2) {
+            erreurs.push('Titre requis (minimum 2 caractères)');
+        }
+
+        // Utilisateur requis
+        if (!data.utilisateur_id) {
+            erreurs.push('Utilisateur requis');
+        }
+
+        // Système de jeu requis
+        const systemesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+        if (!data.systeme_jeu || !systemesValides.includes(data.systeme_jeu)) {
+            erreurs.push('Système de jeu requis et valide');
+        }
+
+        // Type d'export valide
+        const typesValides = ['FICHE_COMPLETE', 'FICHE_SIMPLE', 'RESUME', 'CARTE_REFERENCE'];
+        if (data.type_export &amp;&amp; !typesValides.includes(data.type_export)) {
+            erreurs.push('Type d\'export invalide');
+        }
+
+        // Statut valide
+        const statutsValides = ['EN_COURS', 'TERMINE', 'ERREUR', 'SUPPRIME'];
+        if (data.statut &amp;&amp; !statutsValides.includes(data.statut)) {
+            erreurs.push('Statut invalide');
+        }
+
+        if (erreurs.length > 0) {
+            throw new Error(`Erreurs de validation: ${erreurs.join(', ')}`);
+        }
+
+        return true;
+    }
+
+    /**
+     * Définit les valeurs par défaut avant création
+     */
+    async beforeCreate(data) {
+        // Statut par défaut
+        if (!data.statut) {
+            data.statut = 'EN_COURS';
+        }
+
+        // Type d'export par défaut
+        if (!data.type_export) {
+            data.type_export = 'FICHE_COMPLETE';
+        }
+
+        // Options par défaut
+        if (!data.options_export) {
+            data.options_export = this.obtenirOptionsParDefaut(data.systeme_jeu, data.type_export);
+        }
+
+        // Génération du chemin et nom de fichier si non fourni
+        if (!data.nom_fichier || !data.chemin_fichier) {
+            const template = data.template_utilise || 'default';
+            const systemRights = this.determinerSystemRights(data);
+            const pdfPath = this.systemRightsService.generatePdfPath(
+                data.titre, 
+                data.systeme_jeu, 
+                data.utilisateur_id, 
+                template, 
+                systemRights
+            );
+            
+            data.nom_fichier = pdfPath.fileName;
+            data.chemin_fichier = pdfPath.fullPath;
+        }
+
+        return data;
+    }
+
+    /**
+     * Obtient les options par défaut selon le système et type
+     */
+    obtenirOptionsParDefaut(systeme, type) {
+        const defaults = {
+            format: 'A4',
+            orientation: 'portrait',
+            theme: systeme,
+            inclure_image: true,
+            inclure_notes: type === 'FICHE_COMPLETE',
+            inclure_historique: type === 'FICHE_COMPLETE',
+            qualite_image: 'haute',
+            filigrane: false
+        };
+
+        // Options spécifiques par système
+        switch (systeme) {
+            case 'monsterhearts':
+                defaults.couleur_theme = '#8b5cf6';
+                defaults.police_titre = 'serif';
+                break;
+            case 'engrenages':
+                defaults.couleur_theme = '#10b981';
+                defaults.inclure_carte = true;
+                break;
+            case 'metro2033':
+                defaults.couleur_theme = '#dc2626';
+                defaults.style_post_apo = true;
+                break;
+            case 'mistengine':
+                defaults.couleur_theme = '#ec4899';
+                defaults.style_fantastique = true;
+                break;
+        }
+
+        return defaults;
+    }
+
+    /**
+     * Génère un nom de fichier unique (LEGACY - utiliser SystemRightsService.generatePdfPath)
+     * @deprecated Utiliser this.systemRightsService.generatePdfPath() à la place
+     */
+    genererNomFichier(titre, systeme, userId = null, template = 'default', systemRights = 'private') {
+        const result = this.systemRightsService.generatePdfPath(titre, systeme, userId, template, systemRights);
+        return result.fileName;
+    }
+
+    /**
+     * Génère le chemin complet du fichier PDF (LEGACY - utiliser SystemRightsService.generatePdfPath)
+     * @deprecated Utiliser this.systemRightsService.generatePdfPath() à la place
+     */
+    genererCheminFichier(nomFichier, systeme) {
+        return path.join('output', 'pdfs', systeme, nomFichier);
+    }
+
+    /**
+     * Détermine le statut des droits pour le nommage du fichier
+     */
+    determinerSystemRights(data) {
+        return this.systemRightsService.determineSystemRights(data.utilisateur_id, data);
+    }
+
+    /**
+     * Trouve les PDFs d'un utilisateur
+     */
+    async findByUtilisateur(utilisateurId, filtres = {}) {
+        let where = 'utilisateur_id = ? AND statut != ?';
+        let params = [utilisateurId, 'SUPPRIME'];
+
+        // Filtre par système
+        if (filtres.systeme) {
+            where += ' AND systeme_jeu = ?';
+            params.push(filtres.systeme);
+        }
+
+        // Filtre par statut
+        if (filtres.statut) {
+            where += ' AND statut = ?';
+            params.push(filtres.statut);
+        }
+
+        // Filtre par type
+        if (filtres.type) {
+            where += ' AND type_export = ?';
+            params.push(filtres.type);
+        }
+
+        // Recherche textuelle
+        if (filtres.recherche) {
+            where += ' AND titre LIKE ?';
+            params.push(`%${filtres.recherche}%`);
+        }
+
+        return await this.findAll(where, params, 'date_creation DESC');
+    }
+
+    /**
+     * Trouve les PDFs d'un personnage
+     */
+    async findByPersonnage(personnageId) {
+        return await this.findAll(
+            'personnage_id = ? AND statut != ?',
+            [personnageId, 'SUPPRIME'],
+            'date_creation DESC'
+        );
+    }
+
+    /**
+     * Met à jour le statut de génération
+     */
+    async mettreAJourStatut(id, statut, donnees = {}) {
+        const updateData = { statut, ...donnees };
+        
+        // Informations du fichier généré
+        if (statut === 'TERMINE' &amp;&amp; donnees.cheminFichier) {
+            updateData.chemin_fichier = donnees.cheminFichier;
+            updateData.taille_fichier = donnees.tailleFichier || 0;
+            updateData.hash_fichier = donnees.hashFichier || null;
+        }
+
+        return await this.update(id, updateData);
+    }
+
+    /**
+     * Marque comme supprimé (soft delete)
+     */
+    async marquerSupprime(id, utilisateurId) {
+        const pdf = await this.findById(id);
+        if (!pdf) {
+            throw new Error('PDF non trouvé');
+        }
+
+        if (pdf.utilisateur_id !== utilisateurId) {
+            throw new Error('Pas de droits pour supprimer ce PDF');
+        }
+
+        return await this.update(id, { statut: 'SUPPRIME' });
+    }
+
+    /**
+     * Nettoie les PDFs en erreur anciens
+     */
+    async nettoyerPdfsErreur(joursAnciennete = 7) {
+        const dateLimit = new Date();
+        dateLimit.setDate(dateLimit.getDate() - joursAnciennete);
+        
+        const sql = `
+            UPDATE ${this.tableName} 
+            SET statut = 'SUPPRIME' 
+            WHERE statut = 'ERREUR' 
+            AND date_creation &lt; ?
+        `;
+        
+        const db = require('../database/db');
+        const result = await db.run(sql, [dateLimit.toISOString()]);
+        
+        return result.changes;
+    }
+
+    /**
+     * Statistiques de génération
+     */
+    async statistiquesGeneration(utilisateurId = null) {
+        let where = '';
+        let params = [];
+
+        if (utilisateurId) {
+            where = 'WHERE utilisateur_id = ?';
+            params = [utilisateurId];
+        }
+
+        const sql = `
+            SELECT 
+                COUNT(*) as total,
+                COUNT(CASE WHEN statut = 'TERMINE' THEN 1 END) as termines,
+                COUNT(CASE WHEN statut = 'EN_COURS' THEN 1 END) as en_cours,
+                COUNT(CASE WHEN statut = 'ERREUR' THEN 1 END) as erreurs,
+                AVG(taille_fichier) as taille_moyenne,
+                systeme_jeu,
+                type_export
+            FROM ${this.tableName} 
+            ${where}
+            AND statut != 'SUPPRIME'
+            GROUP BY systeme_jeu, type_export
+        `;
+        
+        const db = require('../database/db');
+        return await db.all(sql, params);
+    }
+
+    /**
+     * Obtient l'utilisation de l'espace disque
+     */
+    async utilisationEspace(utilisateurId = null) {
+        let where = '';
+        let params = [];
+
+        if (utilisateurId) {
+            where = 'WHERE utilisateur_id = ?';
+            params = [utilisateurId];
+        }
+
+        const sql = `
+            SELECT 
+                COUNT(*) as nombre_fichiers,
+                COALESCE(SUM(taille_fichier), 0) as taille_totale,
+                AVG(taille_fichier) as taille_moyenne,
+                MAX(taille_fichier) as taille_max
+            FROM ${this.tableName} 
+            ${where}
+            AND statut = 'TERMINE'
+        `;
+        
+        const db = require('../database/db');
+        return await db.get(sql, params);
+    }
+
+    /**
+     * Génère une URL de partage temporaire
+     */
+    async genererUrlPartage(id, utilisateurId, dureeHeures = 24) {
+        const pdf = await this.findById(id);
+        if (!pdf) {
+            throw new Error('PDF non trouvé');
+        }
+
+        if (pdf.utilisateur_id !== utilisateurId) {
+            throw new Error('Pas de droits pour partager ce PDF');
+        }
+
+        if (pdf.statut !== 'TERMINE') {
+            throw new Error('Le PDF n\'est pas prêt pour le partage');
+        }
+
+        // Générer un token unique
+        const crypto = require('crypto');
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiration = new Date();
+        expiration.setHours(expiration.getHours() + dureeHeures);
+
+        const urlPartage = {
+            token,
+            expiration: expiration.toISOString(),
+            active: true
+        };
+
+        await this.update(id, { url_partage: JSON.stringify(urlPartage) });
+
+        return `${process.env.BASE_URL || 'http://localhost:3000'}/partage/pdf/${token}`;
+    }
+
+    /**
+     * Vérifie la validité d'un token de partage
+     */
+    async verifierTokenPartage(token) {
+        const pdf = await this.findOne('url_partage LIKE ?', [`%${token}%`]);
+        
+        if (!pdf || !pdf.url_partage) {
+            return null;
+        }
+
+        try {
+            const urlData = JSON.parse(pdf.url_partage);
+            
+            if (!urlData.active || urlData.token !== token) {
+                return null;
+            }
+
+            if (new Date(urlData.expiration) &lt; new Date()) {
+                // Token expiré, le désactiver
+                await this.update(pdf.id, { 
+                    url_partage: JSON.stringify({ ...urlData, active: false }) 
+                });
+                return null;
+            }
+
+            return pdf;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Révoque l'URL de partage
+     */
+    async revoquerPartage(id, utilisateurId) {
+        const pdf = await this.findById(id);
+        if (!pdf || pdf.utilisateur_id !== utilisateurId) {
+            throw new Error('PDF non trouvé ou pas de droits');
+        }
+
+        return await this.update(id, { url_partage: null });
+    }
+
+    /**
+     * Getter pour l'URL de téléchargement du PDF
+     */
+    get urlTelecharger() {
+        if (!this.chemin_fichier || this.statut !== 'TERMINE') {
+            return null;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const cheminRelatif = this.chemin_fichier.replace(/\\/g, '/');
+        return `${baseUrl}/${cheminRelatif}`;
+    }
+
+    /**
+     * Getter pour l'URL d'aperçu du PDF (iframe)
+     */
+    get urlApercu() {
+        if (!this.urlTelecharger) {
+            return null;
+        }
+        
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        return `${baseUrl}/api/pdfs/${this.id}/apercu`;
+    }
+
+    /**
+     * Getter pour l'URL de partage public (si configuré)
+     */
+    get urlPartagePublic() {
+        if (!this.url_partage) {
+            return null;
+        }
+
+        try {
+            const urlData = JSON.parse(this.url_partage);
+            
+            if (!urlData.active || new Date(urlData.expiration) &lt; new Date()) {
+                return null;
+            }
+
+            const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+            return `${baseUrl}/partage/pdf/${urlData.token}`;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Getter pour l'URL de l'API du PDF
+     */
+    get urlApi() {
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        return `${baseUrl}/api/pdfs/${this.id}`;
+    }
+
+    /**
+     * Détermine si le PDF est accessible publiquement
+     */
+    get estPublic() {
+        return this.urlPartagePublic !== null;
+    }
+
+    /**
+     * Getter pour les informations complètes d'URL
+     */
+    get urls() {
+        return {
+            telecharger: this.urlTelecharger,
+            apercu: this.urlApercu,
+            partage: this.urlPartagePublic,
+            api: this.urlApi
+        };
+    }
+
+    /**
+     * Parse le nom de fichier pour extraire les métadonnées
+     */
+    get metadonneesFichier() {
+        if (!this.nom_fichier) {
+            return null;
+        }
+
+        // Utiliser le service s'il est disponible, sinon parsing direct
+        if (this.systemRightsService) {
+            const parsed = this.systemRightsService.parseFilename(this.nom_fichier);
+            if (parsed) {
+                return {
+                    userId: parsed.userId,
+                    droits: parsed.systemRights,
+                    template: parsed.template,
+                    uniqueId: parsed.uniqueId,
+                    format: 'structured'
+                };
+            }
+        }
+
+        // Fallback: parsing direct
+        const regex = /user-([^_]+)_rights-([^_]+)_template-([^_]+)_id-([^.]+)\.pdf$/;
+        const match = this.nom_fichier.match(regex);
+
+        if (!match) {
+            return {
+                userId: null,
+                droits: 'unknown',
+                template: 'default',
+                uniqueId: null,
+                format: 'legacy'
+            };
+        }
+
+        const userId = match[1] === '0' ? 0 : parseInt(match[1], 10);
+        return {
+            userId: isNaN(userId) ? 0 : userId,
+            droits: match[2],
+            template: match[3],
+            uniqueId: match[4],
+            format: 'structured'
+        };
+    }
+}
+
+module.exports = Pdf;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

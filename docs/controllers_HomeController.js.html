@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/HomeController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/HomeController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseController = require('./BaseController');
+const PdfService = require('../services/PdfService');
+const NewsletterService = require('../services/NewsletterService');
+const TemoignageService = require('../services/TemoignageService');
+
+/**
+ * Contrôleur pour la page d'accueil et fonctionnalités publiques
+ */
+class HomeController extends BaseController {
+    constructor() {
+        super('HomeController');
+        this.pdfService = new PdfService();
+        this.newsletterService = new NewsletterService();
+        this.temoignageService = new TemoignageService();
+    }
+
+    /**
+     * Données pour la page d'accueil
+     * GET /api/home/donnees
+     */
+    obtenirDonneesAccueil = this.wrapAsync(async (req, res) => {
+        const utilisateurRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        
+        // Récupérer les PDFs publics récents
+        const pdfsRecents = await this.pdfService.obtenirPdfsPublicsRecents(6, utilisateurRole);
+        
+        // Récupérer les actualités
+        const actualites = this.newsletterService.obtenirActualites(3);
+        
+        // Récupérer les témoignages
+        const temoignages = this.temoignageService.obtenirTemoignagesPublics(3);
+        
+        // Statistiques générales
+        const stats = {
+            nb_abonnes_newsletter: this.newsletterService.obtenirNombreAbonnes(),
+            stats_temoignages: this.temoignageService.obtenirStatistiques()
+        };
+        
+        return this.repondreSucces(res, {
+            pdfs_recents: pdfsRecents,
+            actualites,
+            temoignages,
+            statistiques: stats
+        }, 'Données d\'accueil récupérées');
+    });
+
+    /**
+     * Inscription à la newsletter
+     * POST /api/newsletter/inscription
+     */
+    inscrireNewsletter = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['email']);
+        
+        const { email, nom } = this.sanitizeInput(req.body);
+        
+        const resultat = await this.newsletterService.inscrire(email, nom);
+        
+        if (resultat.succes) {
+            return this.repondreSucces(res, { 
+                token_desinscription: resultat.token_desinscription 
+            }, resultat.message);
+        } else {
+            return this.repondreErreur(res, 409, resultat.message);
+        }
+    });
+
+    /**
+     * Désinscription de la newsletter
+     * POST /api/newsletter/desinscription/:token
+     */
+    desinscrireNewsletter = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['token']);
+        
+        const resultat = await this.newsletterService.desinscrire(req.params.token);
+        
+        if (resultat.succes) {
+            return this.repondreSucces(res, null, resultat.message);
+        } else {
+            return this.repondreErreur(res, 404, resultat.message);
+        }
+    });
+
+    /**
+     * Flux RSS des actualités
+     * GET /api/actualites/rss
+     */
+    fluxRSS = this.wrapAsync(async (req, res) => {
+        const rss = this.newsletterService.genererFluxRSS();
+        
+        res.set({
+            'Content-Type': 'application/rss+xml; charset=utf-8',
+            'Cache-Control': 'public, max-age=300' // Cache 5 minutes
+        });
+        
+        return res.send(rss);
+    });
+
+    /**
+     * Liste des actualités
+     * GET /api/actualites
+     */
+    listerActualites = this.wrapAsync(async (req, res) => {
+        const limite = Math.min(parseInt(req.query.limite) || 10, 50);
+        const actualites = this.newsletterService.obtenirActualites(limite);
+        
+        return this.repondreSucces(res, actualites, 'Actualités récupérées');
+    });
+
+    /**
+     * Ajouter une actualité (admin uniquement)
+     * POST /api/actualites
+     */
+    ajouterActualite = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['titre', 'contenu']);
+        
+        const { titre, contenu } = this.sanitizeInput(req.body);
+        const auteur = req.session.utilisateur.nom;
+        
+        const actualite = this.newsletterService.ajouterActualite(titre, contenu, auteur);
+        
+        return this.repondreSucces(res, actualite, 'Actualité ajoutée', 201);
+    });
+
+    /**
+     * Ajouter un témoignage
+     * POST /api/temoignages
+     */
+    ajouterTemoignage = this.wrapAsync(async (req, res) => {
+        const donnees = this.sanitizeInput({
+            ...req.body,
+            ip_adresse: req.ip
+        });
+        
+        const resultat = await this.temoignageService.ajouterTemoignage(donnees);
+        
+        return this.repondreSucces(res, { id: resultat.id }, resultat.message, 201);
+    });
+
+    /**
+     * Lister les témoignages publics
+     * GET /api/temoignages
+     */
+    listerTemoignages = this.wrapAsync(async (req, res) => {
+        const limite = Math.min(parseInt(req.query.limite) || 6, 20);
+        const temoignages = this.temoignageService.obtenirTemoignagesPublics(limite);
+        
+        return this.repondreSucces(res, temoignages, 'Témoignages récupérés');
+    });
+
+    /**
+     * Gérer les témoignages (admin uniquement)
+     * GET /api/admin/temoignages
+     */
+    gererTemoignages = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const filtres = {
+            approuve: req.query.approuve !== undefined ? req.query.approuve === 'true' : undefined,
+            affiche: req.query.affiche !== undefined ? req.query.affiche === 'true' : undefined,
+            systeme_utilise: req.query.systeme
+        };
+        
+        const temoignages = this.temoignageService.obtenirTousTemoignages(filtres);
+        
+        return this.repondreSucces(res, temoignages, 'Témoignages admin récupérés');
+    });
+
+    /**
+     * Approuver un témoignage (admin uniquement)
+     * POST /api/admin/temoignages/:id/approuver
+     */
+    approuverTemoignage = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['id']);
+        
+        const afficher = req.body.afficher !== false; // Afficher par défaut
+        const temoignage = await this.temoignageService.approuverTemoignage(req.params.id, afficher);
+        
+        return this.repondreSucces(res, temoignage, 'Témoignage approuvé');
+    });
+
+    /**
+     * Refuser un témoignage (admin uniquement)
+     * POST /api/admin/temoignages/:id/refuser
+     */
+    refuserTemoignage = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['id']);
+        
+        const raison = req.body.raison || null;
+        const temoignage = await this.temoignageService.refuserTemoignage(req.params.id, raison);
+        
+        return this.repondreSucces(res, temoignage, 'Témoignage refusé');
+    });
+
+    /**
+     * Basculer l'affichage d'un témoignage (admin uniquement)
+     * POST /api/admin/temoignages/:id/basculer-affichage
+     */
+    basculerAffichageTemoignage = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        this.validerParametres(req, ['id']);
+        
+        const temoignage = await this.temoignageService.basculerAffichage(req.params.id);
+        
+        return this.repondreSucces(res, temoignage, 
+            `Témoignage ${temoignage.affiche ? 'affiché' : 'masqué'}`);
+    });
+
+    /**
+     * Statistiques des témoignages (admin uniquement)
+     * GET /api/admin/temoignages/statistiques
+     */
+    statistiquesTemoignages = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const stats = this.temoignageService.obtenirStatistiques();
+        
+        return this.repondreSucces(res, stats, 'Statistiques témoignages récupérées');
+    });
+
+    /**
+     * Basculer la visibilité publique d'un PDF
+     * POST /api/pdfs/:id/basculer-visibilite
+     */
+    basculerVisibilitePdf = this.wrapAsync(async (req, res) => {
+        const utilisateur = this.verifierPermissions(req);
+        this.validerParametres(req, ['id']);
+        
+        const pdf = await this.pdfService.basculerVisibilitePublique(req.params.id, utilisateur.id);
+        
+        return this.repondreSucces(res, pdf, 
+            `PDF ${pdf.est_public ? 'rendu public' : 'rendu privé'}`);
+    });
+
+    /**
+     * Informations sur les dons (statique)
+     * GET /api/dons/infos
+     */
+    informationsDons = this.wrapAsync(async (req, res) => {
+        const infos = {
+            plateforme: "Liberapay", // ou Tipeee, Ko-fi, etc.
+            url_don: "https://liberapay.com/generateur-pdf-jdr", // URL fictive
+            objectifs: [
+                {
+                    montant: 50,
+                    description: "Hébergement serveur mensuel"
+                },
+                {
+                    montant: 150,
+                    description: "Développement nouveaux systèmes JDR"
+                },
+                {
+                    montant: 300,
+                    description: "Fonctionnalités premium gratuites"
+                }
+            ],
+            avantages_donateurs: [
+                "Accès prioritaire aux nouvelles fonctionnalités",
+                "Templates exclusifs",
+                "Support technique prioritaire"
+            ],
+            message: "Votre soutien nous aide à maintenir ce service gratuit et à développer de nouvelles fonctionnalités pour la communauté JDR !"
+        };
+        
+        return this.repondreSucces(res, infos, 'Informations dons récupérées');
+    });
+}
+
+module.exports = HomeController;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

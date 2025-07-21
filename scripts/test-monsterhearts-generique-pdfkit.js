@@ -15,11 +15,13 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
     }
 
     async generateDocument(data, filePath) {
-        const doc = this.createDocument();
-        const stream = doc.pipe(fs.createWriteStream(filePath));
-        
-        // Configurer le titre pour le watermark
+        // Configurer le titre pour le watermark AVANT de créer le document
         this.chapterTitle = data.titre || 'MONSTERHEARTS';
+        
+        const doc = this.createDocument({
+            chapterTitle: this.chapterTitle
+        });
+        const stream = doc.pipe(fs.createWriteStream(filePath));
         
         // Utiliser Times-Roman comme police principale (plus proche de Crimson Text)
         doc.font('Times-Roman');
@@ -50,7 +52,7 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
             this.checkNewPage(doc, 100);
             
             // Titre de section
-            this.addTitle(doc, section.titre, { fontSize: 14 });
+            this.addTitle(doc, section.titre, { fontSize: 14, marginTop: 15 });
             
             // Description de section
             if (section.description) {
@@ -62,6 +64,9 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
                 this.renderElement(doc, element);
             }
         }
+        
+        // Vérifier si on doit ajouter garde + TOC pour documents longs
+        this.finalizeLongDocument(doc, data);
         
         // Finaliser le document
         doc.end();
@@ -87,7 +92,7 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
                 
             case 'sous_section':
                 this.checkNewPage(doc, 80);
-                this.addTitle(doc, element.titre, { fontSize: 12 });
+                this.addTitle(doc, element.titre, { fontSize: 12, marginTop: 20 });
                 if (element.description) {
                     this.addParagraph(doc, element.description);
                 }
@@ -102,7 +107,7 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
             case 'attention':
             case 'exemple':
                 this.checkNewPage(doc, 80);
-                this.renderBox(doc, element.type, this.markdownService.toPlainText(element.texte));
+                this.addBox(doc, element.type, this.markdownService.toPlainText(element.texte));
                 break;
                 
             case 'separateur':
@@ -112,47 +117,6 @@ class MonsterheartsDocumentGenerator extends BasePdfKitService {
         }
     }
     
-    renderBox(doc, type, text) {
-        const labels = {
-            conseil: 'CONSEIL',
-            attention: 'ATTENTION',
-            exemple: 'EXEMPLE'
-        };
-        
-        // Sauvegarder la position actuelle
-        const startX = doc.x;
-        const startY = doc.y;
-        
-        // Calculer la largeur disponible
-        const pageNumber = this.currentPageNumber || 1;
-        const margins = this.getContentMargins(pageNumber);
-        const width = this.pageWidth - margins.left - margins.right;
-        
-        // Dessiner le cadre
-        doc.rect(startX, startY, width, 1)
-           .fillColor('#000000')
-           .fill();
-        
-        // Label
-        doc.fontSize(10)
-           .fillColor('#000000')
-           .text(labels[type], startX + 10, startY - 5);
-        
-        // Contenu
-        doc.fontSize(11)
-           .text(text, startX + 10, startY + 15, {
-               width: width - 20,
-               align: 'justify'
-           });
-        
-        // Ligne du bas
-        const endY = doc.y + 10;
-        doc.moveTo(startX, endY)
-           .lineTo(startX + width, endY)
-           .stroke('#000000');
-        
-        doc.moveDown(1);
-    }
 }
 
 async function testDocumentGenerique() {

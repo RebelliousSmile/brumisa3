@@ -1,0 +1,24 @@
+{
+  "source": {
+    "include": [
+      "./src/"
+    ],
+    "includePattern": "\\.(js)$",
+    "exclude": [
+      "node_modules/",
+      "tests/",
+      "scripts/"
+    ]
+  },
+  "opts": {
+    "destination": "./docs/",
+    "recurse": true
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  }
+}

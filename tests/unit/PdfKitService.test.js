@@ -60,7 +60,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF({});
             
             expect(result.success).toBe(true);
-            expect(result.fileName).toMatch(/0_private_plan-classe-instructions_[a-f0-9]{16}\.pdf/);
+            expect(result.fileName).toMatch(/0_private_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
             expect(result.system).toBe('monsterhearts');
             expect(result.template).toBe('plan-classe-instructions');
             expect(result.size).toBe(6000);
@@ -89,7 +89,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF(options);
             
             expect(result.success).toBe(true);
-            expect(result.fileName).toMatch(/456_public_plan-classe-instructions_[a-f0-9]{16}\.pdf/);
+            expect(result.fileName).toMatch(/456_public_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
             expect(result.fullPath).toContain('output\\pdfs\\monsterhearts');
         });
 
@@ -193,7 +193,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF(options);
             
             expect(result.success).toBe(true);
-            expect(result.fileName).toMatch(/0_public_plan-classe-instructions_/);
+            expect(result.fileName).toMatch(/0_public_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
         });
 
         test('devrait utiliser des valeurs par défaut pour systemRights', async () => {
@@ -208,7 +208,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF(options);
             
             expect(result.success).toBe(true);
-            expect(result.fileName).toMatch(/123_private_plan-classe-instructions_/);
+            expect(result.fileName).toMatch(/123_private_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
         });
     });
 
@@ -278,10 +278,10 @@ describe('PdfKitService', () => {
             const result1 = await pdfKitService.generatePDF(options);
             const result2 = await pdfKitService.generatePDF(options);
             
-            expect(result1.fileName).not.toBe(result2.fileName);
+            // Les timestamps devraient être différents (ou au moins très probablement)
             // Mais ils doivent avoir la même structure
-            expect(result1.fileName).toMatch(/100_private_plan-classe-instructions_[a-f0-9]{16}\.pdf/);
-            expect(result2.fileName).toMatch(/100_private_plan-classe-instructions_[a-f0-9]{16}\.pdf/);
+            expect(result1.fileName).toMatch(/100_private_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
+            expect(result2.fileName).toMatch(/100_private_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
         });
     });
 

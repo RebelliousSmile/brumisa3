@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/AuthentificationController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/AuthentificationController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseController = require('./BaseController');
+const UtilisateurService = require('../services/UtilisateurService');
+const config = require('../config');
+
+/**
+ * Contrôleur pour l'authentification et gestion des utilisateurs
+ */
+class AuthentificationController extends BaseController {
+    constructor() {
+        super('AuthentificationController');
+        this.utilisateurService = new UtilisateurService();
+    }
+
+    /**
+     * Connexion utilisateur
+     * POST /api/auth/connexion
+     */
+    connexion = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['email', 'motDePasse']);
+        
+        const { email, motDePasse } = this.sanitizeInput(req.body);
+        
+        // Valider le format email
+        if (!this.validerEmail(email)) {
+            return this.repondreErreur(res, 400, 'Format email invalide');
+        }
+        
+        // Authentifier l'utilisateur
+        const utilisateur = await this.utilisateurService.authentifier(email, motDePasse);
+        
+        if (!utilisateur) {
+            return this.repondreErreur(res, 401, 'Email ou mot de passe incorrect');
+        }
+        
+        // Vérifier que le compte est actif
+        if (!utilisateur.actif) {
+            return this.repondreErreur(res, 403, 'Compte désactivé');
+        }
+        
+        // Mettre à jour la dernière connexion
+        await this.utilisateurService.mettreAJourDerniereConnexion(utilisateur.id);
+        
+        // Créer la session
+        req.session.utilisateur = {
+            id: utilisateur.id,
+            nom: utilisateur.nom,
+            email: utilisateur.email,
+            role: utilisateur.role
+        };
+        
+        // Sauvegarder la session
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        this.logger.info('Connexion réussie', { 
+            utilisateur_id: utilisateur.id,
+            ip: req.ip
+        });
+        
+        return this.repondreSucces(res, {
+            utilisateur: {
+                id: utilisateur.id,
+                nom: utilisateur.nom,
+                email: utilisateur.email,
+                role: utilisateur.role
+            }
+        }, 'Connexion réussie');
+    });
+
+    /**
+     * Inscription d'un nouvel utilisateur
+     * POST /api/auth/inscription
+     */
+    inscription = this.wrapAsync(async (req, res) => {
+        // Debug temporaire
+        console.log('=== DEBUG INSCRIPTION ===');
+        console.log('req.body brut:', req.body);
+        console.log('typeof req.body:', typeof req.body);
+        console.log('req.headers:', req.headers);
+        
+        this.validerParametres(req, ['nom', 'email', 'motDePasse']);
+        
+        const { nom, email, motDePasse, confirmationMotDePasse } = this.sanitizeInput(req.body);
+        console.log('Après sanitizeInput:', { nom, email, motDePasse: motDePasse ? '***' : undefined });
+        
+        // Valider le format email
+        if (!this.validerEmail(email)) {
+            return this.repondreErreur(res, 400, 'Format email invalide');
+        }
+        
+        // Valider le mot de passe
+        if (!motDePasse || motDePasse.length &lt; 8) {
+            return this.repondreErreur(res, 400, 'Le mot de passe doit contenir au moins 8 caractères');
+        }
+        
+        // Vérifier la confirmation du mot de passe
+        if (confirmationMotDePasse &amp;&amp; motDePasse !== confirmationMotDePasse) {
+            return this.repondreErreur(res, 400, 'Les mots de passe ne correspondent pas');
+        }
+        
+        // Vérifier que l'utilisateur n'existe pas déjà
+        const utilisateurExistant = await this.utilisateurService.obtenirParEmail(email);
+        if (utilisateurExistant) {
+            return this.repondreErreur(res, 409, 'Un compte avec cet email existe déjà');
+        }
+        
+        // Créer le nouvel utilisateur
+        const utilisateur = await this.utilisateurService.creer({
+            nom: nom.trim(),
+            email: email.toLowerCase().trim(),
+            mot_de_passe: motDePasse,
+            role: 'UTILISATEUR'
+        });
+        
+        // Créer la session
+        req.session.utilisateur = {
+            id: utilisateur.id,
+            nom: utilisateur.nom,
+            email: utilisateur.email,
+            role: utilisateur.role
+        };
+        
+        // Sauvegarder la session
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        this.logger.info('Inscription et connexion réussies', { 
+            utilisateur_id: utilisateur.id,
+            ip: req.ip
+        });
+        
+        return this.repondreSucces(res, {
+            utilisateur: {
+                id: utilisateur.id,
+                nom: utilisateur.nom,
+                email: utilisateur.email,
+                role: utilisateur.role
+            }
+        }, 'Inscription réussie', 201);
+    });
+
+    /**
+     * Déconnexion
+     * POST /api/auth/deconnexion
+     */
+    deconnexion = this.wrapAsync(async (req, res) => {
+        const utilisateurId = req.session?.utilisateur?.id;
+        
+        // Détruire la session
+        await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        // Effacer le cookie de session
+        res.clearCookie('connect.sid');
+        
+        if (utilisateurId) {
+            this.logger.info('Déconnexion réussie', { 
+                utilisateur_id: utilisateurId,
+                ip: req.ip
+            });
+        }
+        
+        return this.repondreSucces(res, null, 'Déconnexion réussie');
+    });
+
+    /**
+     * Élévation de rôle avec code d'accès
+     * POST /api/auth/elevation-role
+     */
+    elevationRole = this.wrapAsync(async (req, res) => {
+        const utilisateur = this.verifierPermissions(req);
+        this.validerParametres(req, ['code_acces']);
+        
+        const { code_acces } = req.body;
+        
+        // Vérifier le code d'accès
+        let nouveauRole = null;
+        
+        if (code_acces === config.auth.codes.premium) {
+            nouveauRole = 'PREMIUM';
+        } else if (code_acces === config.auth.codes.admin) {
+            nouveauRole = 'ADMIN';
+        } else {
+            this.logger.warn('Tentative d\'élévation avec code invalide', {
+                utilisateur_id: utilisateur.id,
+                code_fourni: code_acces,
+                ip: req.ip
+            });
+            return this.repondreErreur(res, 401, 'Code d\'accès invalide');
+        }
+        
+        // Mettre à jour le rôle en base
+        const utilisateurMisAJour = await this.utilisateurService.mettreAJourRole(
+            utilisateur.id, 
+            nouveauRole
+        );
+        
+        // Mettre à jour la session
+        req.session.utilisateur.role = nouveauRole;
+        
+        // Sauvegarder la session
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        
+        this.logger.info('Élévation de rôle réussie', {
+            utilisateur_id: utilisateur.id,
+            ancien_role: utilisateur.role,
+            nouveau_role: nouveauRole,
+            ip: req.ip
+        });
+        
+        return this.repondreSucces(res, {
+            utilisateur: {
+                id: utilisateurMisAJour.id,
+                nom: utilisateurMisAJour.nom,
+                email: utilisateurMisAJour.email,
+                role: utilisateurMisAJour.role
+            },
+            role: nouveauRole
+        }, `Rôle élevé vers ${nouveauRole}`);
+    });
+
+    /**
+     * Vérifie le statut de la session
+     * GET /api/auth/statut
+     */
+    verifierStatut = this.wrapAsync(async (req, res) => {
+        if (!req.session || !req.session.utilisateur) {
+            return this.repondreErreur(res, 401, 'Non authentifié');
+        }
+        
+        // Vérifier que l'utilisateur existe toujours
+        const utilisateur = await this.utilisateurService.obtenirParId(req.session.utilisateur.id);
+        
+        if (!utilisateur || !utilisateur.actif) {
+            // Détruire la session si l'utilisateur n'existe plus
+            await new Promise((resolve) => {
+                req.session.destroy(() => resolve());
+            });
+            return this.repondreErreur(res, 401, 'Session invalide');
+        }
+        
+        // Mettre à jour les informations de session si nécessaires
+        if (req.session.utilisateur.role !== utilisateur.role) {
+            req.session.utilisateur.role = utilisateur.role;
+            await new Promise((resolve, reject) => {
+                req.session.save((err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+        
+        return this.repondreSucces(res, {
+            utilisateur: req.session.utilisateur,
+            session_id: req.sessionID
+        }, 'Session valide');
+    });
+
+    /**
+     * Obtient le profil utilisateur
+     * GET /api/auth/profil
+     */
+    obtenirProfil = this.wrapAsync(async (req, res) => {
+        const utilisateur = this.verifierPermissions(req);
+        
+        const profilComplet = await this.utilisateurService.obtenirParId(utilisateur.id);
+        
+        if (!profilComplet) {
+            return this.repondreErreur(res, 404, 'Utilisateur non trouvé');
+        }
+        
+        // Ne pas retourner d'informations sensibles
+        const profil = {
+            id: profilComplet.id,
+            nom: profilComplet.nom,
+            email: profilComplet.email,
+            role: profilComplet.role,
+            date_creation: profilComplet.date_creation,
+            derniere_connexion: profilComplet.derniere_connexion
+        };
+        
+        return this.repondreSucces(res, profil, 'Profil récupéré');
+    });
+
+    /**
+     * Met à jour le profil utilisateur
+     * PUT /api/auth/profil
+     */
+    mettreAJourProfil = this.wrapAsync(async (req, res) => {
+        const utilisateur = this.verifierPermissions(req);
+        
+        const donneesAutorisees = this.sanitizeInput({
+            nom: req.body.nom
+        });
+        
+        // Validation
+        if (donneesAutorisees.nom &amp;&amp; donneesAutorisees.nom.trim().length &lt; 2) {
+            return this.repondreErreur(res, 400, 'Le nom doit contenir au moins 2 caractères');
+        }
+        
+        const utilisateurMisAJour = await this.utilisateurService.mettreAJour(
+            utilisateur.id, 
+            donneesAutorisees
+        );
+        
+        // Mettre à jour la session
+        if (donneesAutorisees.nom) {
+            req.session.utilisateur.nom = utilisateurMisAJour.nom;
+            await new Promise((resolve, reject) => {
+                req.session.save((err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+        
+        return this.repondreSucces(res, {
+            id: utilisateurMisAJour.id,
+            nom: utilisateurMisAJour.nom,
+            email: utilisateurMisAJour.email,
+            role: utilisateurMisAJour.role
+        }, 'Profil mis à jour');
+    });
+
+    /**
+     * Middleware pour vérifier l'authentification
+     */
+    middlewareAuth = (req, res, next) => {
+        if (!req.session || !req.session.utilisateur) {
+            return this.repondreErreur(res, 401, 'Authentification requise');
+        }
+        next();
+    };
+
+    /**
+     * Middleware pour vérifier un rôle minimum
+     */
+    middlewareRole = (roleRequis) => {
+        return (req, res, next) => {
+            try {
+                this.verifierPermissions(req, roleRequis);
+                next();
+            } catch (erreur) {
+                this.gererErreur(res, erreur);
+            }
+        };
+    };
+
+    /**
+     * Demande de récupération de mot de passe
+     * POST /api/auth/mot-de-passe-oublie
+     */
+    motDePasseOublie = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['email']);
+        
+        const { email } = this.sanitizeInput(req.body);
+        
+        // Valider le format email
+        if (!this.validerEmail(email)) {
+            return this.repondreErreur(res, 400, 'Format email invalide');
+        }
+        
+        // Générer le token de récupération
+        const resultat = await this.utilisateurService.genererTokenRecuperation(email);
+        
+        if (resultat) {
+            this.logger.info('Token de récupération demandé', { 
+                email: email,
+                ip: req.ip
+            });
+            
+            // TODO: Envoyer l'email avec le lien de récupération
+            // En attendant l'intégration d'un service d'emailing, on log le token
+            this.logger.info('Lien de récupération (DEV SEULEMENT)', {
+                email: email,
+                token: resultat.token,
+                lien: `${req.protocol}://${req.get('host')}/reinitialiser-mot-de-passe/${resultat.token}`
+            });
+        }
+        
+        // Toujours répondre succès pour ne pas révéler si l'email existe
+        return this.repondreSucces(res, null, 'Si cet email existe, vous recevrez un lien de récupération');
+    });
+
+    /**
+     * Réinitialisation du mot de passe avec token
+     * POST /api/auth/reinitialiser-mot-de-passe
+     */
+    reinitialiserMotDePasse = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['token', 'motDePasse']);
+        
+        const { token, motDePasse, confirmationMotDePasse } = this.sanitizeInput(req.body);
+        
+        // Valider le mot de passe
+        if (!motDePasse || motDePasse.length &lt; 8) {
+            return this.repondreErreur(res, 400, 'Le mot de passe doit contenir au moins 8 caractères');
+        }
+        
+        // Vérifier la confirmation du mot de passe
+        if (confirmationMotDePasse &amp;&amp; motDePasse !== confirmationMotDePasse) {
+            return this.repondreErreur(res, 400, 'Les mots de passe ne correspondent pas');
+        }
+        
+        // Valider le token
+        const utilisateur = await this.utilisateurService.validerTokenRecuperation(token);
+        
+        if (!utilisateur) {
+            return this.repondreErreur(res, 400, 'Token invalide ou expiré');
+        }
+        
+        // Mettre à jour le mot de passe
+        await this.utilisateurService.mettreAJourMotDePasse(utilisateur.id, motDePasse);
+        
+        this.logger.info('Mot de passe réinitialisé', { 
+            utilisateur_id: utilisateur.id,
+            ip: req.ip
+        });
+        
+        return this.repondreSucces(res, null, 'Mot de passe mis à jour avec succès');
+    });
+}
+
+module.exports = AuthentificationController;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 15:33:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
