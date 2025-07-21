@@ -501,7 +501,7 @@ class PdfService extends BaseService {
      * @param {Object} options - Options de génération
      * @returns {Object} - Résultat de génération
      */
-    async genererPdfAvecPDFKit(options = {}) {
+    async genererPdf(options = {}) {
         try {
             const {
                 system = 'monsterhearts',
@@ -966,7 +966,7 @@ class PdfService extends BaseService {
             
             if (engine === 'pdfkit') {
                 // Utiliser PDFKit pour les templates supportés
-                const result = await this.genererPdfAvecPDFKit({
+                const result = await this.genererPdf({
                     system: options.systeme,
                     template: options.template,
                     titre: options.donnees.titre,

@@ -1,6 +1,7 @@
 const BaseController = require('./BaseController');
 const PdfService = require('../services/PdfService');
 const PersonnageService = require('../services/PersonnageService');
+const AnonymousTokenService = require('../services/AnonymousTokenService');
 const path = require('path');
 
 /**
@@ -11,6 +12,7 @@ class PdfController extends BaseController {
         super('PdfController');
         this.pdfService = new PdfService();
         this.personnageService = new PersonnageService();
+        this.anonymousTokenService = new AnonymousTokenService();
     }
 
     /**
@@ -386,6 +388,180 @@ class PdfController extends BaseController {
             }
             throw error;
         }
+    });
+
+    /**
+     * Génère un token temporaire pour utilisateurs anonymes
+     * POST /api/auth/token-anonyme
+     */
+    genererTokenAnonyme = this.wrapAsync(async (req, res) => {
+        const userAgent = req.get('User-Agent') || '';
+        const sessionFingerprint = req.body.fingerprint || null;
+        
+        // Créer un ID de session basé sur des données non sensibles
+        const sessionData = {
+            userAgent: userAgent.substring(0, 100),
+            fingerprint: sessionFingerprint,
+            timestamp: Date.now()
+        };
+        
+        const sessionId = require('crypto')
+            .createHash('sha256')
+            .update(JSON.stringify(sessionData))
+            .digest('hex')
+            .substring(0, 32);
+
+        // Générer le token avec limitations pour utilisateur anonyme
+        const tokenInfo = this.anonymousTokenService.generateToken(sessionId, {
+            maxUsage: 3, // Max 3 PDFs par token anonyme
+            maxSizeKB: 300, // Taille réduite pour anonymes
+            allowedSystems: ['monsterhearts'] // Seulement Monsterhearts pour commencer
+        });
+
+        return this.repondreSucces(res, {
+            token: tokenInfo.token,
+            expiresIn: tokenInfo.expiresIn,
+            limitations: tokenInfo.limitations
+        }, 'Token anonyme généré');
+    });
+
+    /**
+     * Génère un PDF de document générique pour utilisateur anonyme
+     * POST /api/pdfs/document-generique/:systeme
+     */
+    genererDocumentGeneriqueAnonyme = this.wrapAsync(async (req, res) => {
+        // Vérifier le token anonyme
+        const token = req.get('Authorization')?.replace('Bearer ', '') || req.body.token;
+        
+        if (!token) {
+            return this.repondreErreur(res, 401, 'Token anonyme requis');
+        }
+
+        const systeme = req.params.systeme;
+        const validation = this.anonymousTokenService.validateToken(token, systeme);
+        
+        if (!validation.valid) {
+            const message = AnonymousTokenService.getErrorMessage(validation.reason);
+            return this.repondreErreur(res, 401, message);
+        }
+
+        // Validation des données requises
+        const donneesRequises = ['titre', 'sections'];
+        this.validerCorps(req, donneesRequises);
+        
+        const { SystemeUtils } = require('../utils/systemesJeu');
+        
+        // Vérifier que le système existe
+        if (!SystemeUtils.getSysteme(systeme)) {
+            return this.repondreErreur(res, 400, `Système de jeu non supporté: ${systeme}`);
+        }
+        
+        // Utiliser le DocumentGeneriqueService pour valider et générer
+        const DocumentGeneriqueService = require('../services/DocumentGeneriqueService');
+        const documentService = new DocumentGeneriqueService();
+        
+        try {
+            // Valider les données
+            documentService.validerDonnees(req.body);
+            
+            // Limitations pour utilisateur anonyme
+            const donnees = { ...req.body };
+            
+            // Pas de pied de page personnalisé pour les anonymes
+            delete donnees.piedDePage;
+            
+            // Limitation du nombre de sections
+            if (donnees.sections && donnees.sections.length > 10) {
+                return this.repondreErreur(res, 400, 'Maximum 10 sections pour un utilisateur anonyme');
+            }
+            
+            // Limitation de la longueur du contenu
+            const totalContent = donnees.sections.reduce((total, section) => {
+                const contentLength = section.contenus?.reduce((sectionTotal, contenu) => {
+                    return sectionTotal + (contenu.texte?.length || 0);
+                }, 0) || 0;
+                return total + contentLength;
+            }, 0);
+            
+            if (totalContent > 10000) {
+                return this.repondreErreur(res, 400, 'Contenu trop long pour un utilisateur anonyme');
+            }
+            
+            // Créer un utilisateur virtuel pour les anonymes
+            const utilisateurAnonyme = {
+                id: `anonymous_${validation.sessionId}`,
+                type_compte: 'ANONYME',
+                role: 'ANONYME'
+            };
+            
+            // Préparer les options de génération
+            const optionsGeneration = {
+                template: 'document-generique-v2',
+                type_pdf: 'document-generique',
+                systeme: systeme,
+                donnees: donnees,
+                titre_personnalise: donnees.titre,
+                est_anonyme: true,
+                token_anonyme: token
+            };
+            
+            // Démarrer la génération PDF via PdfService
+            const pdf = await this.pdfService.genererDocumentGenerique(
+                utilisateurAnonyme.id,
+                optionsGeneration
+            );
+            
+            // Marquer le token comme utilisé
+            this.anonymousTokenService.markTokenUsed(token, 0); // Taille sera vérifiée plus tard
+            
+            return this.repondreSucces(res, pdf, 'Génération PDF document générique démarrée', 202);
+            
+        } catch (error) {
+            if (error.message.includes('Données invalides')) {
+                return this.repondreErreur(res, 400, error.message);
+            }
+            throw error;
+        }
+    });
+
+    /**
+     * Vérifie le statut de génération d'un PDF (version anonyme)
+     * GET /api/pdfs/:id/statut
+     */
+    verifierStatutAnonyme = this.wrapAsync(async (req, res) => {
+        this.validerParametres(req, ['id']);
+        
+        const pdf = await this.pdfService.obtenirParId(req.params.id);
+        
+        if (!pdf) {
+            return this.repondreErreur(res, 404, 'PDF non trouvé');
+        }
+        
+        // Pour les utilisateurs anonymes, vérifier le token
+        if (pdf.utilisateur_id.startsWith('anonymous_')) {
+            const token = req.get('Authorization')?.replace('Bearer ', '') || req.query.token;
+            
+            if (!token) {
+                return this.repondreErreur(res, 401, 'Token anonyme requis');
+            }
+            
+            const validation = this.anonymousTokenService.validateToken(token);
+            
+            if (!validation.valid || pdf.utilisateur_id !== `anonymous_${validation.sessionId}`) {
+                return this.repondreErreur(res, 403, 'Accès interdit à ce PDF');
+            }
+        } else {
+            // Pour les utilisateurs connectés, vérifier normalement
+            const utilisateur = this.verifierPermissions(req);
+            this.verifierProprietaire(req, pdf.utilisateur_id);
+        }
+        
+        return this.repondreSucces(res, {
+            id: pdf.id,
+            statut: pdf.statut,
+            progression: pdf.progression,
+            erreur_message: pdf.erreur_message
+        }, 'Statut du PDF récupéré');
     });
 
     /**

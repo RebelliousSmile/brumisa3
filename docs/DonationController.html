@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: MarkdownService</title>
+    <title>JSDoc: Class: DonationController</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: MarkdownService</h1>
+    <h1 class="page-title">Class: DonationController</h1>
 
     
 
@@ -28,10 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>MarkdownService<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>DonationController<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>Service pour la conversion du markdown en HTML
-Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
+            <div class="class-description"><p>Contrôleur pour la gestion des dons et paiements</p></div>
         
     
 </header>
@@ -46,7 +45,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
 
     
-    <h4 class="name" id="MarkdownService"><span class="type-signature"></span>new MarkdownService<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="DonationController"><span class="type-signature"></span>new DonationController<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -94,7 +93,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line5">line 5</a>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line8">line 8</a>
     </li></ul></dd>
     
 
@@ -140,82 +139,20 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
 
     
-
-    
-        <h3 class="subsection-title">Methods</h3>
+        <h3 class="subsection-title">Members</h3>
 
         
             
+<h4 class="name" id="creerSessionPaiement"><span class="type-signature"></span>creerSessionPaiement<span class="type-signature"></span></h4>
 
-    
-
-    
-    <h4 class="name" id="escapeHtml"><span class="type-signature"></span>escapeHtml<span class="signature">(text)</span><span class="type-signature"> &rarr; {string}</span></h4>
-    
-
-    
 
 
 
 <div class="description">
-    <p>Échappe les caractères HTML dangereux</p>
+    <p>Crée une session de paiement Stripe
+POST /api/donations/create-payment-intent</p>
 </div>
 
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>text</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Le texte à échapper</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -251,7 +188,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line86">line 86</a>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -267,39 +204,64 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
 
 
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
         
-<div class="param-desc">
-    <ul>
-<li>Le texte échappé</li>
-</ul>
+            
+<h4 class="name" id="obtenirStatistiquesDons"><span class="type-signature"></span>obtenirStatistiquesDons<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Obtient les statistiques des dons (admin)
+GET /api/admin/donations/stats</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
 
 
-    </dd>
-</dl>
+
+
+<dl class="details">
 
     
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line180">line 180</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
 
 
 
@@ -307,11 +269,143 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
         
             
+<h4 class="name" id="paiementSucces"><span class="type-signature"></span>paiementSucces<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Page de succès après paiement
+GET /support/success</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
 
     
 
     
-    <h4 class="name" id="registerHandlebarsHelpers"><span class="type-signature"></span>registerHandlebarsHelpers<span class="signature">(handlebars)</span><span class="type-signature"></span></h4>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line101">line 101</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="webhookStripe"><span class="type-signature"></span>webhookStripe<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Webhook Stripe pour traiter les paiements confirmés
+POST /api/donations/webhook</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line75">line 75</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="enregistrerDon"><span class="type-signature">(async) </span>enregistrerDon<span class="signature">(session)</span><span class="type-signature"></span></h4>
     
 
     
@@ -319,7 +413,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
 
 <div class="description">
-    <p>Enregistre les helpers Handlebars pour le markdown</p>
+    <p>Enregistre un don dans la base de données</p>
 </div>
 
 
@@ -355,7 +449,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
         <tr>
             
-                <td class="name"><code>handlebars</code></td>
+                <td class="name"><code>session</code></td>
             
 
             <td class="type">
@@ -371,7 +465,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
             
 
-            <td class="description last"><p>L'instance Handlebars</p></td>
+            <td class="description last"><p>Session Stripe</p></td>
         </tr>
 
     
@@ -412,7 +506,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line123">line 123</a>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line165">line 165</a>
     </li></ul></dd>
     
 
@@ -448,7 +542,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
 
     
-    <h4 class="name" id="toHtml"><span class="type-signature"></span>toHtml<span class="signature">(text)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="traiterPaiementConfirme"><span class="type-signature">(async) </span>traiterPaiementConfirme<span class="signature">(session)</span><span class="type-signature"></span></h4>
     
 
     
@@ -456,7 +550,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
 
 <div class="description">
-    <p>Convertit du texte markdown en HTML</p>
+    <p>Traite un paiement confirmé et active le Premium</p>
 </div>
 
 
@@ -492,13 +586,13 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
         <tr>
             
-                <td class="name"><code>text</code></td>
+                <td class="name"><code>session</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -508,7 +602,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
             
 
-            <td class="description last"><p>Le texte markdown à convertir</p></td>
+            <td class="description last"><p>Session Stripe</p></td>
         </tr>
 
     
@@ -549,7 +643,7 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line33">line 33</a>
+        <a href="controllers_DonationController.js.html">controllers/DonationController.js</a>, <a href="controllers_DonationController.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -574,353 +668,6 @@ Respecte le principe DRY - réutilisable pour tous les PDFs</p></div>
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <ul>
-<li>Le HTML généré</li>
-</ul>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="toPdfHtml"><span class="type-signature"></span>toPdfHtml<span class="signature">(text)</span><span class="type-signature"> &rarr; {string}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Convertit du markdown en HTML sécurisé pour les PDFs
-Version plus stricte sans liens externes</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>text</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Le texte markdown à convertir</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line63">line 63</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <ul>
-<li>Le HTML sécurisé</li>
-</ul>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="toPlainText"><span class="type-signature"></span>toPlainText<span class="signature">(text)</span><span class="type-signature"> &rarr; {string}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Extrait le texte brut du markdown (supprime tout formatage)</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>text</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Le texte markdown</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_MarkdownService.js.html">services/MarkdownService.js</a>, <a href="services_MarkdownService.js.html#line103">line 103</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <ul>
-<li>Le texte sans formatage</li>
-</ul>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 

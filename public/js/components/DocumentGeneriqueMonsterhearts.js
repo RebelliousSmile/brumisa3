@@ -18,6 +18,11 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         // État UI
         enTraitement: false,
         
+        // Token anonyme pour utilisateurs non connectés
+        anonymousToken: null,
+        tokenExpiration: null,
+        remainingUsage: 0,
+        
         // Droits utilisateur (sera initialisé via Alpine.store)
         get estPremium() {
             const utilisateur = Alpine.store('app')?.utilisateur;
@@ -32,16 +37,87 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         sectionIdCounter: 0,
         
         // Initialisation
-        init() {
+        async init() {
             // Ajouter une première section par défaut
             this.ajouterSection();
+            
+            // Récupérer un token anonyme si l'utilisateur n'est pas connecté
+            await this.ensureAnonymousToken();
+        },
+        
+        // Vérifie si l'utilisateur est connecté
+        get estConnecte() {
+            return Alpine.store('app')?.utilisateur != null;
+        },
+        
+        // Assure qu'un token anonyme valide est disponible
+        async ensureAnonymousToken() {
+            if (this.estConnecte) {
+                return; // Les utilisateurs connectés n'ont pas besoin de token anonyme
+            }
+            
+            // Vérifier si le token actuel est encore valide
+            if (this.anonymousToken && this.tokenExpiration && Date.now() < this.tokenExpiration) {
+                return; // Token encore valide
+            }
+            
+            try {
+                // Générer un fingerprint simple du navigateur
+                const fingerprint = this.generateBrowserFingerprint();
+                
+                const response = await Alpine.store('app').requeteApi('/auth/token-anonyme', {
+                    method: 'POST',
+                    body: JSON.stringify({ fingerprint })
+                });
+                
+                if (response.succes && response.donnees) {
+                    this.anonymousToken = response.donnees.token;
+                    this.tokenExpiration = Date.now() + (response.donnees.expiresIn * 1000);
+                    this.remainingUsage = response.donnees.limitations?.maxUsage || 0;
+                    
+                    console.log(`🎫 Token anonyme obtenu (${this.remainingUsage} utilisations restantes)`);
+                } else {
+                    throw new Error(response.message || 'Impossible d\'obtenir un token anonyme');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'obtention du token anonyme:', error);
+                Alpine.store('app').ajouterMessage(
+                    'Impossible de générer un accès temporaire. Veuillez vous connecter.',
+                    'erreur'
+                );
+            }
+        },
+        
+        // Génère un fingerprint simple du navigateur
+        generateBrowserFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('Browser fingerprint', 2, 2);
+            
+            return btoa(JSON.stringify({
+                userAgent: navigator.userAgent.substring(0, 100),
+                language: navigator.language,
+                platform: navigator.platform,
+                screen: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                canvas: canvas.toDataURL().substring(0, 100)
+            }));
         },
         
         // Vérifie si le formulaire peut être soumis
         get peutGenerer() {
-            return this.formData.titre.trim() !== '' && 
-                   this.formData.sections.length > 0 &&
-                   this.formData.sections.every(s => s.titre.trim() !== '');
+            const formValid = this.formData.titre.trim() !== '' && 
+                             this.formData.sections.length > 0 &&
+                             this.formData.sections.every(s => s.titre.trim() !== '');
+            
+            // Pour les utilisateurs anonymes, vérifier aussi le token
+            if (!this.estConnecte) {
+                return formValid && this.anonymousToken && this.remainingUsage > 0;
+            }
+            
+            return formValid;
         },
         
         // Ajouter une nouvelle section
@@ -225,18 +301,43 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
         async genererPdf() {
             if (!this.peutGenerer || this.enTraitement) return;
             
+            // S'assurer qu'un token anonyme valide est disponible si nécessaire
+            if (!this.estConnecte) {
+                await this.ensureAnonymousToken();
+                if (!this.anonymousToken) {
+                    Alpine.store('app').ajouterMessage(
+                        'Impossible d\'obtenir un accès temporaire. Veuillez réessayer.',
+                        'erreur'
+                    );
+                    return;
+                }
+            }
+            
             this.enTraitement = true;
             
             try {
                 const donnees = this.prepareDataForApi();
                 
+                // Préparer les headers selon le type d'utilisateur
+                const headers = { 'Content-Type': 'application/json' };
+                
+                if (!this.estConnecte && this.anonymousToken) {
+                    headers['Authorization'] = `Bearer ${this.anonymousToken}`;
+                }
+                
                 const response = await Alpine.store('app').requeteApi('/pdfs/document-generique/monsterhearts', {
                     method: 'POST',
+                    headers,
                     body: JSON.stringify(donnees)
                 });
                 
                 if (response.succes && response.donnees) {
                     const pdfId = response.donnees.id;
+                    
+                    // Décrémenter le compteur d'usage pour les anonymes
+                    if (!this.estConnecte) {
+                        this.remainingUsage = Math.max(0, this.remainingUsage - 1);
+                    }
                     
                     Alpine.store('app').ajouterMessage('Génération PDF démarrée...', 'info');
                     
@@ -248,10 +349,16 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                 }
             } catch (error) {
                 console.error('Erreur génération PDF:', error);
-                Alpine.store('app').ajouterMessage(
-                    'Erreur lors de la génération du PDF : ' + error.message,
-                    'erreur'
-                );
+                
+                let errorMessage = 'Erreur lors de la génération du PDF : ' + error.message;
+                
+                // Messages spécialisés pour les erreurs de token
+                if (error.message.includes('Token')) {
+                    errorMessage = error.message + '. Veuillez recharger la page.';
+                    this.anonymousToken = null; // Forcer un nouveau token au prochain essai
+                }
+                
+                Alpine.store('app').ajouterMessage(errorMessage, 'erreur');
                 this.enTraitement = false;
             }
         },
@@ -264,7 +371,18 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
             
             const checkStatus = async () => {
                 try {
-                    const response = await Alpine.store('app').requeteApi(`/pdfs/${pdfId}/statut`);
+                    // Préparer l'URL et les headers selon le type d'utilisateur
+                    let url = `/pdfs/${pdfId}/statut`;
+                    const headers = {};
+                    
+                    if (!this.estConnecte && this.anonymousToken) {
+                        headers['Authorization'] = `Bearer ${this.anonymousToken}`;
+                    }
+                    
+                    const response = await Alpine.store('app').requeteApi(url, {
+                        method: 'GET',
+                        headers: Object.keys(headers).length > 0 ? headers : undefined
+                    });
                     
                     if (response.succes && response.donnees) {
                         const statut = response.donnees.statut;

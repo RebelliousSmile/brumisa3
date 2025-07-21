@@ -3,6 +3,7 @@ const AuthentificationController = require('../controllers/AuthentificationContr
 const PersonnageController = require('../controllers/PersonnageController');
 const PdfController = require('../controllers/PdfController');
 const HomeController = require('../controllers/HomeController');
+const DonationController = require('../controllers/DonationController');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ const authController = new AuthentificationController();
 const personnageController = new PersonnageController();
 const pdfController = new PdfController();
 const homeController = new HomeController();
+const donationController = new DonationController();
 
 // ===== ROUTES AUTHENTIFICATION =====
 
@@ -59,10 +61,13 @@ router.get('/pdfs', authController.middlewareAuth, pdfController.lister);
 router.get('/pdfs/:id', authController.middlewareAuth, pdfController.obtenirParId);
 router.delete('/pdfs/:id', authController.middlewareAuth, pdfController.supprimer);
 
+// Token pour utilisateurs anonymes
+router.post('/auth/token-anonyme', pdfController.genererTokenAnonyme);
+
 // Génération et gestion PDFs
 router.post('/pdfs/generer', authController.middlewareAuth, pdfController.generer);
-router.post('/pdfs/document-generique/:systeme', pdfController.genererDocumentGenerique);
-router.get('/pdfs/:id/statut', authController.middlewareAuth, pdfController.verifierStatut);
+router.post('/pdfs/document-generique/:systeme', pdfController.genererDocumentGeneriqueAnonyme);
+router.get('/pdfs/:id/statut', pdfController.verifierStatutAnonyme);
 router.post('/pdfs/:id/relancer', authController.middlewareAuth, pdfController.relancerGeneration);
 
 // Téléchargement et partage
@@ -84,6 +89,15 @@ router.delete('/pdfs/nettoyage', authController.middlewareRole('ADMIN'), pdfCont
 
 // Visibilité des PDFs
 router.post('/pdfs/:id/basculer-visibilite', authController.middlewareAuth, homeController.basculerVisibilitePdf);
+
+// ===== ROUTES DONATIONS =====
+
+// Système de dons et Premium
+router.post('/donations/create-payment-intent', donationController.creerSessionPaiement);
+router.post('/donations/webhook', express.raw({type: 'application/json'}), donationController.webhookStripe);
+
+// Statistiques dons (admin)
+router.get('/admin/donations/stats', authController.middlewareRole('ADMIN'), donationController.obtenirStatistiquesDons);
 
 // ===== ROUTES PAGE D'ACCUEIL =====
 

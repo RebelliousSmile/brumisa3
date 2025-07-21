@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: DocumentFactory</title>
+    <title>JSDoc: Class: AnonymousTokenService</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: DocumentFactory</h1>
+    <h1 class="page-title">Class: AnonymousTokenService</h1>
 
     
 
@@ -28,10 +28,10 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>DocumentFactory<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>AnonymousTokenService<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>Factory pour créer les documents PDF avec la bonne architecture
-Document Type + System Theme</p></div>
+            <div class="class-description"><p>Service de gestion des tokens pour utilisateurs anonymes
+Permet la génération PDF sécurisée sans compte utilisateur</p></div>
         
     
 </header>
@@ -46,7 +46,7 @@ Document Type + System Theme</p></div>
     
 
     
-    <h4 class="name" id="DocumentFactory"><span class="type-signature"></span>new DocumentFactory<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AnonymousTokenService"><span class="type-signature"></span>new AnonymousTokenService<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -94,7 +94,7 @@ Document Type + System Theme</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line11">line 11</a>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line7">line 7</a>
     </li></ul></dd>
     
 
@@ -150,7 +150,7 @@ Document Type + System Theme</p></div>
     
 
     
-    <h4 class="name" id=".createDocument"><span class="type-signature">(static) </span>createDocument<span class="signature">(documentType, system, options)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="cleanupExpiredTokens"><span class="type-signature"></span>cleanupExpiredTokens<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
     
 
     
@@ -158,7 +158,227 @@ Document Type + System Theme</p></div>
 
 
 <div class="description">
-    <p>Crée un document selon le type et le système</p>
+    <p>Nettoie les tokens expirés</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line205">line 205</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Nombre de tokens supprimés</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="generateSessionId"><span class="type-signature"></span>generateSessionId<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Génère un ID de session unique</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line187">line 187</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>ID de session</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="generateToken"><span class="type-signature"></span>generateToken<span class="signature">(sessionId, limitations)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Génère un token temporaire pour utilisateur anonyme</p>
 </div>
 
 
@@ -184,6 +404,8 @@ Document Type + System Theme</p></div>
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -194,7 +416,7 @@ Document Type + System Theme</p></div>
 
         <tr>
             
-                <td class="name"><code>documentType</code></td>
+                <td class="name"><code>sessionId</code></td>
             
 
             <td class="type">
@@ -209,38 +431,21 @@ Document Type + System Theme</p></div>
             
 
             
-
-            <td class="description last"><p>Type de document ('generic', 'class-plan', 'character-sheet')</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>system</code></td>
-            
-
-            <td class="type">
-            
+                <td class="default">
                 
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
+                    null
+                
+                </td>
             
 
-            
-
-            <td class="description last"><p>Système de jeu ('monsterhearts', 'engrenages', 'metro2033', 'mistengine')</p></td>
+            <td class="description last"><p>ID de session ou fingerprint</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>limitations</code></td>
             
 
             <td class="type">
@@ -255,8 +460,12 @@ Document Type + System Theme</p></div>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Options supplémentaires</p></td>
+            <td class="description last"><p>Limitations spécifiques</p></td>
         </tr>
 
     
@@ -297,7 +506,7 @@ Document Type + System Theme</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line20">line 20</a>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line21">line 21</a>
     </li></ul></dd>
     
 
@@ -326,7 +535,7 @@ Document Type + System Theme</p></div>
 
         
 <div class="param-desc">
-    <p>Instance du document</p>
+    <p>Token et informations</p>
 </div>
 
 
@@ -355,7 +564,7 @@ Document Type + System Theme</p></div>
     
 
     
-    <h4 class="name" id=".createFromTemplate"><span class="type-signature">(static) </span>createFromTemplate<span class="signature">(system, template)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getGlobalStats"><span class="type-signature"></span>getGlobalStats<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -363,7 +572,117 @@ Document Type + System Theme</p></div>
 
 
 <div class="description">
-    <p>Crée un document à partir d'un template legacy</p>
+    <p>Obtient les statistiques globales</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line227">line 227</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Statistiques globales</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTokenStats"><span class="type-signature"></span>getTokenStats<span class="signature">(token)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Obtient les statistiques d'usage d'un token</p>
 </div>
 
 
@@ -399,7 +718,7 @@ Document Type + System Theme</p></div>
 
         <tr>
             
-                <td class="name"><code>system</code></td>
+                <td class="name"><code>token</code></td>
             
 
             <td class="type">
@@ -415,30 +734,7 @@ Document Type + System Theme</p></div>
 
             
 
-            <td class="description last"><p>Système de jeu</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>template</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Template legacy</p></td>
+            <td class="description last"><p>Token à analyser</p></td>
         </tr>
 
     
@@ -479,7 +775,7 @@ Document Type + System Theme</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line52">line 52</a>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line165">line 165</a>
     </li></ul></dd>
     
 
@@ -508,7 +804,7 @@ Document Type + System Theme</p></div>
 
         
 <div class="param-desc">
-    <p>Instance du document</p>
+    <p>Statistiques ou null si non trouvé</p>
 </div>
 
 
@@ -520,544 +816,6 @@ Document Type + System Theme</p></div>
     <dd>
         
 <span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".getAvailableDocumentTypes"><span class="type-signature">(static) </span>getAvailableDocumentTypes<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Liste tous les types de documents disponibles</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line141">line 141</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Liste des types</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".getSupportedSystems"><span class="type-signature">(static) </span>getSupportedSystems<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Liste tous les systèmes supportés</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line149">line 149</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Liste des systèmes</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".getSystemInfo"><span class="type-signature">(static) </span>getSystemInfo<span class="signature">(system)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Obtient des informations sur un système</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>system</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Système de jeu</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line176">line 176</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Informations du système</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".getSystemTheme"><span class="type-signature">(static) </span>getSystemTheme<span class="signature">(system)</span><span class="type-signature"> &rarr; {<a href="SystemTheme.html">SystemTheme</a>|null}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Obtient le thème pour un système donné</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>system</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Système de jeu</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line64">line 64</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Instance du thème ou null</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="SystemTheme.html">SystemTheme</a></span>
 |
 
 <span class="param-type">null</span>
@@ -1078,7 +836,7 @@ Document Type + System Theme</p></div>
     
 
     
-    <h4 class="name" id=".getTemplateMapping"><span class="type-signature">(static) </span>getTemplateMapping<span class="signature">(system, template)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="markTokenUsed"><span class="type-signature"></span>markTokenUsed<span class="signature">(token, pdfSizeKB)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -1086,7 +844,7 @@ Document Type + System Theme</p></div>
 
 
 <div class="description">
-    <p>Mappe les anciens templates vers les nouveaux types de documents</p>
+    <p>Marque un token comme utilisé</p>
 </div>
 
 
@@ -1112,6 +870,8 @@ Document Type + System Theme</p></div>
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -1122,7 +882,7 @@ Document Type + System Theme</p></div>
 
         <tr>
             
-                <td class="name"><code>system</code></td>
+                <td class="name"><code>token</code></td>
             
 
             <td class="type">
@@ -1137,21 +897,25 @@ Document Type + System Theme</p></div>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>Système de jeu</p></td>
+            <td class="description last"><p>Token utilisé</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>template</code></td>
+                <td class="name"><code>pdfSizeKB</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
             
@@ -1160,8 +924,14 @@ Document Type + System Theme</p></div>
             
 
             
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
 
-            <td class="description last"><p>Template legacy</p></td>
+            <td class="description last"><p>Taille du PDF généré</p></td>
         </tr>
 
     
@@ -1202,7 +972,7 @@ Document Type + System Theme</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line100">line 100</a>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line109">line 109</a>
     </li></ul></dd>
     
 
@@ -1231,7 +1001,695 @@ Document Type + System Theme</p></div>
 
         
 <div class="param-desc">
-    <p>Mapping vers le nouveau type</p>
+    <p>Succès de l'opération</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="revokeSessionTokens"><span class="type-signature"></span>revokeSessionTokens<span class="signature">(sessionId)</span><span class="type-signature"> &rarr; {number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Révoque tous les tokens d'une session</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>ID de session</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Nombre de tokens révoqués</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="revokeToken"><span class="type-signature"></span>revokeToken<span class="signature">(token)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Révoque un token spécifique</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>token</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Token à révoquer</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Succès de l'opération</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="startCleanup"><span class="type-signature"></span>startCleanup<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Nettoie automatiquement les tokens expirés</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line194">line 194</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Arrête le service de nettoyage</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line250">line 250</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="validateToken"><span class="type-signature"></span>validateToken<span class="signature">(token, system)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Valide un token et vérifie les limitations</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>token</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Token à valider</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>system</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    monsterhearts
+                
+                </td>
+            
+
+            <td class="description last"><p>Système de jeu demandé</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Résultat de validation</p>
 </div>
 
 
@@ -1260,7 +1718,7 @@ Document Type + System Theme</p></div>
     
 
     
-    <h4 class="name" id=".isDocumentTypeSupported"><span class="type-signature">(static) </span>isDocumentTypeSupported<span class="signature">(documentType)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id=".getErrorMessage"><span class="type-signature">(static) </span>getErrorMessage<span class="signature">(reason)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -1268,7 +1726,7 @@ Document Type + System Theme</p></div>
 
 
 <div class="description">
-    <p>Vérifie si un type de document est supporté</p>
+    <p>Obtient les erreurs en français</p>
 </div>
 
 
@@ -1304,7 +1762,7 @@ Document Type + System Theme</p></div>
 
         <tr>
             
-                <td class="name"><code>documentType</code></td>
+                <td class="name"><code>reason</code></td>
             
 
             <td class="type">
@@ -1320,7 +1778,7 @@ Document Type + System Theme</p></div>
 
             
 
-            <td class="description last"><p>Type à vérifier</p></td>
+            <td class="description last"><p>Raison de l'erreur</p></td>
         </tr>
 
     
@@ -1361,7 +1819,7 @@ Document Type + System Theme</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line167">line 167</a>
+        <a href="services_AnonymousTokenService.js.html">services/AnonymousTokenService.js</a>, <a href="services_AnonymousTokenService.js.html#line262">line 262</a>
     </li></ul></dd>
     
 
@@ -1390,7 +1848,7 @@ Document Type + System Theme</p></div>
 
         
 <div class="param-desc">
-    <p>true si supporté</p>
+    <p>Message d'erreur</p>
 </div>
 
 
@@ -1401,166 +1859,7 @@ Document Type + System Theme</p></div>
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".isSystemSupported"><span class="type-signature">(static) </span>isSystemSupported<span class="signature">(system)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Vérifie si un système est supporté</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>system</code></td>
-            
-
-            <td class="type">
-            
-                
 <span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Système à vérifier</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_DocumentFactory.js.html">services/DocumentFactory.js</a>, <a href="services_DocumentFactory.js.html#line158">line 158</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>true si supporté</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">boolean</span>
 
 
     </dd>

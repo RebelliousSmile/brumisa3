@@ -593,6 +593,96 @@ class UtilisateurService extends BaseService {
             throw erreur;
         }
     }
+
+    /**
+     * Active le statut Premium pour un utilisateur après un don
+     * @param {string} utilisateurId - ID de l'utilisateur
+     * @param {number} montantDon - Montant du don en euros
+     * @returns {Object} Utilisateur mis à jour
+     */
+    async activerPremium(utilisateurId, montantDon) {
+        try {
+            // Déterminer le nouveau rôle selon le montant
+            let nouveauRole = 'PREMIUM';
+            let typeCompte = 'PREMIUM';
+            
+            if (montantDon >= 10) {
+                typeCompte = 'PREMIUM_VIP';
+            }
+            
+            const utilisateur = await this.mettreAJour(utilisateurId, {
+                role: nouveauRole,
+                type_compte: typeCompte,
+                date_premium: new Date(),
+                montant_don_total: montantDon // Ou incrémenter si il existe déjà
+            });
+            
+            this.logger.info('Premium activé:', { 
+                utilisateur_id: utilisateurId, 
+                montant: montantDon,
+                type: typeCompte 
+            });
+            
+            return utilisateur;
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur activation Premium ${utilisateurId}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Crée un compte Premium temporaire pour un donateur sans compte
+     * @param {string} email - Email du donateur
+     * @param {number} montantDon - Montant du don
+     * @returns {Object} Nouvel utilisateur créé
+     */
+    async creerCompteDonateur(email, montantDon) {
+        try {
+            // Générer un mot de passe temporaire
+            const motDePasseTemp = crypto.randomBytes(8).toString('hex');
+            
+            // Déterminer le type de compte
+            let typeCompte = 'PREMIUM';
+            let role = 'PREMIUM';
+            
+            if (montantDon >= 10) {
+                typeCompte = 'PREMIUM_VIP';
+            }
+            
+            const donneesCompte = {
+                nom: `Donateur ${email.split('@')[0]}`,
+                email: email,
+                motDePasse: motDePasseTemp,
+                role: role,
+                type_compte: typeCompte,
+                date_premium: new Date(),
+                montant_don_total: montantDon,
+                compte_don_temporaire: true // Flag pour identifier les comptes créés par don
+            };
+            
+            const utilisateur = await this.creer(donneesCompte);
+            
+            this.logger.info('Compte donateur créé:', { 
+                utilisateur_id: utilisateur.id,
+                email: email,
+                montant: montantDon,
+                type: typeCompte,
+                mot_de_passe_temp: motDePasseTemp
+            });
+            
+            // TODO: Envoyer email avec mot de passe temporaire
+            
+            return {
+                ...utilisateur,
+                motDePasseTemporaire: motDePasseTemp
+            };
+            
+        } catch (erreur) {
+            this.logger.error(`Erreur création compte donateur ${email}:`, erreur);
+            throw erreur;
+        }
+    }
 }
 
 module.exports = UtilisateurService;

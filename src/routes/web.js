@@ -1,11 +1,13 @@
 const express = require('express');
 const AuthentificationController = require('../controllers/AuthentificationController');
+const DonationController = require('../controllers/DonationController');
 const systemesJeu = require('../utils/systemesJeu');
 
 const router = express.Router();
 
-// Initialiser le contrôleur d'authentification
+// Initialiser les contrôleurs
 const authController = new AuthentificationController();
+const donationController = new DonationController();
 
 // ===== MIDDLEWARE GLOBAL =====
 
@@ -296,6 +298,17 @@ router.get('/confidentialite', (req, res) => {
         title: 'Politique de Confidentialité - Générateur PDF JDR'
     });
 });
+
+// Page de soutien/don
+router.get('/support', (req, res) => {
+    res.render('systemes/support', {
+        title: 'Soutenir brumisa3.fr - Faire un don',
+        description: 'Soutenez le développement de brumisa3.fr et devenez Premium'
+    });
+});
+
+// Page de succès après don
+router.get('/support/success', donationController.paiementSucces);
 
 // ===== REDIRECTIONS =====
 

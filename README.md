@@ -115,21 +115,37 @@ npm run test:coverage     # Couverture de code
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! Merci de :
+Les contributions sont les bienvenues ! Nous accueillons tous types de contributions :
+
+### 🐛 Signaler un bug ou proposer une fonctionnalité
+
+- **[Créer une issue](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues/new)** pour signaler un problème
+- **[Parcourir les issues existantes](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues)** pour voir ce qui est en cours
+
+### 🔧 Contribuer au code
 
 1. **Fork** le repository
-2. **Créer une branche** pour votre fonctionnalité
+2. **Créer une branche** pour votre fonctionnalité : `git checkout -b feature/ma-fonctionnalite`
 3. **Respecter l'architecture** existante (SOLID/DRY)
 4. **Ajouter des tests** pour le nouveau code
 5. **Mettre à jour la documentation**
-6. **Soumettre une Pull Request**
+6. **Soumettre une [Pull Request](https://github.com/RebelliousSmile/generateur-pdf-jdr/pulls)**
 
-### Ajouter un nouveau système JDR
+### 🎲 Ajouter un nouveau système JDR
 
 1. Ajouter la configuration dans `src/utils/systemesJeu.js`
-2. Créer le template PDF dans `src/services/PdfService.js`
+2. Créer le template PDF dans `src/services/PdfService.js`  
 3. Ajouter les tests correspondants
 4. Mettre à jour la documentation
+
+### 📖 Améliorer la documentation
+
+- Corriger les fautes de frappe
+- Ajouter des exemples
+- Traduire en d'autres langues
+- Améliorer les guides d'utilisation
+
+**[Voir toutes les façons de contribuer →](https://github.com/RebelliousSmile/generateur-pdf-jdr/blob/main/CONTRIBUTING.md)**
 
 ## 📝 Licence
 

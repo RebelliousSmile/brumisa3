@@ -224,6 +224,33 @@
                 </div>
             </div>
 
+            <!-- Limitations pour utilisateurs anonymes -->
+            <div x-show="!estConnecte && anonymousToken" class="bg-blue-900/30 border border-blue-500/50 rounded-lg p-4 mb-4">
+                <div class="flex items-start">
+                    <i class="ra ra-info text-blue-400 text-xl mr-3 mt-0.5"></i>
+                    <div>
+                        <h3 class="text-blue-400 font-semibold mb-2">Accès temporaire</h3>
+                        <ul class="text-blue-300 text-sm space-y-1">
+                            <li class="flex items-center">
+                                <i class="ra ra-document text-blue-400 mr-2"></i>
+                                <span x-text="`${remainingUsage} PDF${remainingUsage > 1 ? 's' : ''} restant${remainingUsage > 1 ? 's' : ''}`"></span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="ra ra-hourglass text-blue-400 mr-2"></i>
+                                Maximum 10 sections par document
+                            </li>
+                            <li class="flex items-center">
+                                <i class="ra ra-lock text-blue-400 mr-2"></i>
+                                Pas de pied de page personnalisé
+                            </li>
+                        </ul>
+                        <p class="text-xs text-blue-400 mt-2">
+                            <a href="/connexion" class="underline hover:text-blue-300">Connectez-vous</a> pour plus de fonctionnalités
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Message de validation -->
             <div x-show="!peutGenerer && !enTraitement" class="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-4">
                 <div class="flex items-start">
