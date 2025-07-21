@@ -51,6 +51,8 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 - Utiliser les patterns décrits dans `documentation/testing.md`
 
 ## Structure du projet
+- le répertoire scripts ne doit pas avoir de sous-répertoire
+- le répertoire documentation doit comporter le moins de code possible. 
 
 ## Notes techniques
 
