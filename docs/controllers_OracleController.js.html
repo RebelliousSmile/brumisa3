@@ -28,6 +28,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>const BaseController = require('./BaseController');
 const OracleService = require('../services/OracleService');
+const AdminOracleService = require('../services/AdminOracleService');
 
 /**
  * Contrôleur Oracle - Endpoints API pour les tirages pondérés
@@ -36,6 +37,7 @@ class OracleController extends BaseController {
     constructor() {
         super('OracleController');
         this.oracleService = new OracleService();
+        this.adminOracleService = new AdminOracleService();
     }
 
     /**
@@ -402,6 +404,39 @@ class OracleController extends BaseController {
     });
 
     /**
+     * GET /oracles/systeme/:gameSystem - Liste des oracles pour un système de jeu
+     */
+    pageListeOraclesParSysteme = this.wrapAsync(async (req, res) => {
+        const { gameSystem } = req.params;
+        const pagination = this.extrairePagination(req);
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        
+        const oracles = await this.oracleService.listerOraclesParSysteme(
+            gameSystem,
+            userRole,
+            pagination.page,
+            pagination.limite
+        );
+        
+        // Noms des systèmes pour l'affichage
+        const nomsSystemes = {
+            'monsterhearts': 'Monsterhearts',
+            'engrenages': 'Engrenages &amp; Sortilèges',
+            'metro2033': 'Metro 2033',
+            'mistengine': 'Mist Engine'
+        };
+        
+        res.render('oracles/liste', {
+            titre: `Oracles ${nomsSystemes[gameSystem] || gameSystem}`,
+            oracles: oracles.data,
+            pagination: oracles.pagination,
+            gameSystem: gameSystem,
+            gameSystemName: nomsSystemes[gameSystem] || gameSystem,
+            utilisateur: req.session?.utilisateur || null
+        });
+    });
+
+    /**
      * GET /oracles/:id - Page détail d'un oracle
      */
     pageDetailOracle = this.wrapAsync(async (req, res) => {
@@ -456,7 +491,159 @@ class OracleController extends BaseController {
             utilisateur: req.session.utilisateur
         });
     });
+
+    /**
+     * GET /admin/oracles/imports - Page d'historique des imports (ADMIN uniquement)
+     */
+    pageHistoriqueImports = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const adminFilter = req.query.admin_id ? parseInt(req.query.admin_id) : null;
+
+        const imports = await this.adminOracleService.getImportHistory(adminFilter, limit);
+
+        res.render('admin/oracles/imports', {
+            titre: 'Historique des Imports',
+            imports,
+            utilisateur: req.session.utilisateur
+        });
+    });
+
+    // ===== ENDPOINTS IMPORT/EXPORT =====
+
+    /**
+     * POST /api/admin/oracles/import - Importe un oracle depuis un fichier (ADMIN uniquement)
+     */
+    importerFichier = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+
+        // Vérifier si le fichier a été uploadé
+        if (!req.file &amp;&amp; !req.files) {
+            return this.repondreErreur(res, 400, 'Fichier requis', 'validation');
+        }
+
+        const { importMode = 'CREATE' } = req.body;
+        const file = req.file || (req.files &amp;&amp; req.files.file);
+        
+        if (!file) {
+            return this.repondreErreur(res, 400, 'Fichier requis', 'validation');
+        }
+        
+        // Valider le type de fichier
+        const allowedTypes = ['.json', '.csv'];
+        const fileExt = path.extname(file.originalname || file.name || '').toLowerCase();
+        
+        if (!allowedTypes.includes(fileExt)) {
+            return this.repondreErreur(res, 400, 'Type de fichier non supporté. Utilisez JSON ou CSV.', 'validation');
+        }
+
+        try {
+            let result;
+            const fileBuffer = file.buffer || file.data;
+            const filename = file.originalname || file.name;
+            
+            if (fileExt === '.json') {
+                result = await this.adminOracleService.importFromJSON(
+                    fileBuffer,
+                    filename,
+                    importMode,
+                    admin.id
+                );
+            } else if (fileExt === '.csv') {
+                result = await this.adminOracleService.importFromCSV(
+                    fileBuffer,
+                    filename,
+                    importMode,
+                    admin.id
+                );
+            }
+
+            this.logger.info('Oracle importé avec succès', {
+                filename: filename,
+                oracle_id: result.oracle.id,
+                items_imported: result.stats.imported,
+                admin_id: admin.id
+            });
+
+            return this.repondreSucces(res, result, 'Import réussi', 201);
+
+        } catch (error) {
+            this.logError(error, { context: 'import_oracle', admin_id: admin.id });
+            return this.repondreErreur(res, 400, error.message, 'import_error');
+        }
+    });
+
+    /**
+     * GET /api/admin/oracles/:id/export/json - Exporte un oracle en JSON (ADMIN uniquement)
+     */
+    exporterJSON = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        const includeMetadata = req.query.metadata !== 'false';
+
+        const data = await this.adminOracleService.exportToJSON(id, includeMetadata);
+
+        // Définir le nom de fichier
+        const filename = `oracle_${data.oracle.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        return res.json(data);
+    });
+
+    /**
+     * GET /api/admin/oracles/:id/export/csv - Exporte un oracle en CSV (ADMIN uniquement)
+     */
+    exporterCSV = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+
+        const csvContent = await this.adminOracleService.exportToCSV(id);
+        
+        // Récupérer le nom de l'oracle pour le filename
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+        const oracle = await oracleModel.findById(id);
+        
+        const filename = `oracle_${oracle.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        return res.send(csvContent);
+    });
+
+    /**
+     * GET /api/admin/oracles/imports - Historique des imports (ADMIN uniquement)
+     */
+    historiqueImports = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const adminFilter = req.query.admin_id ? parseInt(req.query.admin_id) : null;
+
+        const imports = await this.adminOracleService.getImportHistory(adminFilter, limit);
+
+        return this.repondreSucces(res, imports, 'Historique récupéré');
+    });
+
+    /**
+     * POST /api/admin/oracles/imports/:importId/rollback - Annule un import (ADMIN uniquement)
+     */
+    annulerImport = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { importId } = req.params;
+
+        const result = await this.adminOracleService.rollbackImport(importId, admin.id);
+
+        return this.repondreSucces(res, result, 'Import annulé');
+    });
 }
+
+// Import path pour les exports de fichiers
+const path = require('path');
 
 module.exports = OracleController;</code></pre>
         </article>
@@ -468,13 +655,13 @@ module.exports = OracleController;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 09:21:38 GMT+0200 (heure d’été d’Europe centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 11:17:14 GMT+0200 (heure d’été d’Europe centrale)
 </footer>
 
 <script> prettyPrint(); </script>

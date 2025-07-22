@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/EmailService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/EmailService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseService = require('./BaseService');
+const { Resend } = require('resend');
+const EmailTemplate = require('./EmailTemplate');
+
+/**
+ * Service d'envoi d'emails avec Resend
+ * Utilise EmailTemplate pour le rendu des templates
+ */
+class EmailService extends BaseService {
+    constructor() {
+        super('EmailService');
+        
+        // Configuration Resend
+        this.apiKey = process.env.RESEND_API_KEY;
+        this.fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@localhost';
+        this.fromName = process.env.RESEND_FROM_NAME || 'Générateur PDF JDR';
+        this.isDevelopment = process.env.NODE_ENV === 'development';
+        this.forceRealEmails = process.env.FORCE_REAL_EMAILS === 'true';
+        
+        // Initialiser le service de templates
+        this.emailTemplate = new EmailTemplate();
+        
+        // Initialiser Resend seulement si on a une vraie clé API
+        if (this.apiKey &amp;&amp; this.apiKey !== 're_test_key_for_development') {
+            try {
+                this.resend = new Resend(this.apiKey);
+                this.log('info', 'Service Resend initialisé');
+            } catch (error) {
+                this.logError(error, { context: 'resend_init' });
+                this.resend = null;
+            }
+        } else {
+            this.resend = null;
+            this.log('warn', 'Mode développement : emails simulés (pas d\'API Resend configurée)');
+        }
+    }
+
+    /**
+     * Envoie un email de récupération de mot de passe
+     * @param {string} email - Email du destinataire
+     * @param {string} nom - Nom de l'utilisateur
+     * @param {string} token - Token de récupération
+     * @returns {Promise&lt;Object>} Résultat de l'envoi
+     */
+    async envoyerMotDePasseOublie(email, nom, token) {
+        const lienRecuperation = `${process.env.BASE_URL || 'http://localhost:3074'}/reinitialiser-mot-de-passe/${token}`;
+        
+        const variables = {
+            nom: nom,
+            lien_recuperation: lienRecuperation,
+            duree_validite: '24 heures',
+            token: token
+        };
+
+        return await this.envoyer({
+            to: email,
+            subject: 'Réinitialisation de votre mot de passe',
+            template: 'mot-de-passe-oublie',
+            variables
+        });
+    }
+
+    /**
+     * Envoie un email de bienvenue
+     * @param {string} email - Email du destinataire
+     * @param {string} nom - Nom de l'utilisateur
+     * @returns {Promise&lt;Object>} Résultat de l'envoi
+     */
+    async envoyerBienvenue(email, nom) {
+        const lienConnexion = `${process.env.BASE_URL || 'http://localhost:3074'}/connexion`;
+        
+        const variables = {
+            nom: nom,
+            lien_connexion: lienConnexion
+        };
+
+        return await this.envoyer({
+            to: email,
+            subject: `Bienvenue sur ${this.fromName} !`,
+            template: 'bienvenue',
+            variables
+        });
+    }
+
+    /**
+     * Envoie un email de newsletter
+     * @param {string} email - Email du destinataire
+     * @param {string} nom - Nom de l'utilisateur
+     * @param {string} token - Token de confirmation
+     * @returns {Promise&lt;Object>} Résultat de l'envoi
+     */
+    async envoyerNewsletter(email, nom, token) {
+        const lienConfirmation = `${process.env.BASE_URL || 'http://localhost:3074'}/newsletter/confirmer/${token}`;
+        
+        const variables = {
+            nom: nom,
+            lien_confirmation: lienConfirmation,
+            email: email
+        };
+
+        return await this.envoyer({
+            to: email,
+            subject: 'Confirmez votre inscription à la newsletter',
+            template: 'newsletter',
+            variables
+        });
+    }
+
+    /**
+     * Méthode générique d'envoi d'emails
+     * @param {Object} options - Options d'envoi
+     * @param {string} options.to - Destinataire
+     * @param {string} options.subject - Sujet
+     * @param {string} options.template - Nom du template
+     * @param {Object} options.variables - Variables pour le template
+     * @returns {Promise&lt;Object>} Résultat de l'envoi
+     */
+    async envoyer({ to, subject, template, variables = {} }) {
+        try {
+            // Générer le contenu HTML depuis le template
+            const htmlContent = await this.emailTemplate.render(template, variables);
+            
+            // En mode développement, simuler l'envoi
+            if ((this.isDevelopment &amp;&amp; !this.forceRealEmails) || !this.resend) {
+                return await this.simulerEnvoi(to, subject, htmlContent, template, variables);
+            }
+
+            // Envoi réel avec Resend
+            const result = await this.resend.emails.send({
+                from: `${this.fromName} &lt;${this.fromEmail}>`,
+                to: [to],
+                subject: subject,
+                html: htmlContent
+            });
+
+            this.log('info', 'Email envoyé avec succès', {
+                recipient: to,
+                subject: subject,
+                template: template,
+                resend_id: result.data?.id
+            });
+
+            return {
+                success: true,
+                id: result.data?.id,
+                messageId: result.data?.id,
+                message: 'Email envoyé'
+            };
+
+        } catch (error) {
+            this.logError(error, {
+                recipient: to,
+                subject: subject,
+                template: template,
+                context: 'email_send'
+            });
+
+            return {
+                success: false,
+                message: 'Erreur lors de l\'envoi',
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Simule l'envoi d'un email en développement
+     * @private
+     */
+    async simulerEnvoi(to, subject, htmlContent, template, variables) {
+        this.log('info', '📧 EMAIL SIMULÉ (mode développement)', {
+            destinataire: to,
+            sujet: subject,
+            template: template,
+            contenu_html_length: htmlContent.length
+        });
+
+        // En développement, afficher le contenu dans la console
+        if (template === 'mot-de-passe-oublie' &amp;&amp; variables.lien_recuperation) {
+            this.log('info', `🔗 Lien de récupération : ${variables.lien_recuperation}`);
+        }
+
+        return {
+            success: true,
+            id: `dev_${Date.now()}`,
+            message: 'Email simulé en mode développement'
+        };
+    }
+
+    /**
+     * Test la configuration du service email
+     * @param {string} testEmail - Email de test (optionnel)
+     * @returns {Promise&lt;Object>} Résultat du test
+     */
+    async testerConfiguration(testEmail = null) {
+        const emailTest = testEmail || process.env.ADMIN_EMAIL || 'test@example.com';
+        
+        this.log('info', 'Test de configuration email', { email_test: emailTest });
+
+        try {
+            const result = await this.envoyer({
+                to: emailTest,
+                subject: 'Test de configuration EmailService',
+                template: 'test-configuration',
+                variables: {
+                    message: 'Si vous recevez cet email, la configuration fonctionne correctement !',
+                    timestamp: new Date().toISOString()
+                }
+            });
+
+            return {
+                success: result.success,
+                message: result.success ? 'Test réussi' : 'Test échoué',
+                details: result
+            };
+
+        } catch (error) {
+            this.logError(error, { context: 'test_configuration' });
+            return {
+                success: false,
+                message: 'Erreur lors du test',
+                error: error.message
+            };
+        }
+    }
+}
+
+module.exports = EmailService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 11:17:14 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

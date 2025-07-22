@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/EmailTemplate.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/EmailTemplate.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseService = require('./BaseService');
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs').promises;
+
+/**
+ * Service pour la gestion des templates d'emails
+ * Centralisé les variables communes, helpers, et logique de rendu
+ */
+class EmailTemplate extends BaseService {
+    constructor() {
+        super('EmailTemplate');
+        this.templatesPath = path.join(process.cwd(), 'src', 'templates', 'emails');
+        this.layoutsPath = path.join(this.templatesPath, 'layouts');
+    }
+
+    /**
+     * Variables communes à tous les emails
+     */
+    getCommonVariables() {
+        return {
+            site_name: process.env.RESEND_FROM_NAME || 'Brumisa3 - Générateur PDF JDR',
+            site_url: process.env.BASE_URL || 'http://localhost:3074',
+            year: new Date().getFullYear(),
+            support_email: process.env.RESEND_FROM_EMAIL || 'support@localhost',
+            current_date: new Date().toLocaleDateString('fr-FR'),
+            logo_url: `${process.env.BASE_URL || 'http://localhost:3074'}/assets/logo.png`
+        };
+    }
+
+    /**
+     * Helpers pour les templates emails
+     */
+    getHelpers() {
+        return {
+            // Générer un lien bouton stylé
+            button: (text, url, style = 'primary') => {
+                const styles = {
+                    primary: 'background: linear-gradient(135deg, #8b5cf6, #a855f7); color: white;',
+                    secondary: 'background: #6b7280; color: white;',
+                    danger: 'background: #dc2626; color: white;',
+                    success: 'background: #10b981; color: white;'
+                };
+                
+                return `
+                    &lt;a href="${url}" style="${styles[style]} padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; text-align: center; margin: 10px 0;">
+                        ${text}
+                    &lt;/a>
+                `;
+            },
+
+            // Formater une date
+            formatDate: (date, format = 'fr-FR') => {
+                return new Date(date).toLocaleDateString(format);
+            },
+
+            // Générer une alerte stylée
+            alert: (message, type = 'info') => {
+                const styles = {
+                    info: 'background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af;',
+                    success: 'background: #f0fdf4; border-left: 4px solid #10b981; color: #065f46;',
+                    warning: 'background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e;',
+                    error: 'background: #fef2f2; border-left: 4px solid #dc2626; color: #991b1b;'
+                };
+
+                return `
+                    &lt;div style="${styles[type]} padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+                        ${message}
+                    &lt;/div>
+                `;
+            }
+        };
+    }
+
+    /**
+     * Render un template email avec layout
+     * @param {string} templateName - Nom du template (sans .ejs)
+     * @param {Object} variables - Variables pour le template
+     * @param {string} layout - Layout à utiliser (défaut: email-base)
+     * @returns {Promise&lt;string>} HTML généré
+     */
+    async render(templateName, variables = {}, layout = 'email-base') {
+        try {
+            // Combiner variables communes + spécifiques
+            const allVariables = {
+                ...this.getCommonVariables(),
+                ...this.getHelpers(),
+                ...variables
+            };
+
+            // Chemin vers le template
+            const templatePath = path.join(this.templatesPath, `${templateName}.ejs`);
+            
+            // Vérifier que le template existe
+            try {
+                await fs.access(templatePath);
+            } catch {
+                this.log('warn', `Template ${templateName}.ejs non trouvé`);
+                return this.createFallbackTemplate(templateName, allVariables);
+            }
+
+            // Render le template principal
+            const content = await ejs.renderFile(templatePath, allVariables);
+
+            // Si pas de layout demandé, retourner le contenu
+            if (!layout) {
+                return content;
+            }
+
+            // Render avec layout
+            const layoutPath = path.join(this.layoutsPath, `${layout}.ejs`);
+            
+            try {
+                await fs.access(layoutPath);
+                return await ejs.renderFile(layoutPath, {
+                    ...allVariables,
+                    body: content
+                });
+            } catch {
+                this.log('warn', `Layout ${layout}.ejs non trouvé, utilisation du contenu sans layout`);
+                return content;
+            }
+
+        } catch (error) {
+            this.logError(error, { template: templateName, layout });
+            return this.createErrorTemplate(error.message);
+        }
+    }
+
+    /**
+     * Template de secours quand le template principal est manquant
+     */
+    createFallbackTemplate(templateName, variables) {
+        return `
+            &lt;!DOCTYPE html>
+            &lt;html lang="fr">
+            &lt;head>
+                &lt;meta charset="UTF-8">
+                &lt;meta name="viewport" content="width=device-width, initial-scale=1.0">
+                &lt;title>${variables.site_name}&lt;/title>
+            &lt;/head>
+            &lt;body style="font-family: sans-serif; padding: 20px; background: #f4f4f4;">
+                &lt;div style="max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px;">
+                    &lt;h1 style="color: #8b5cf6;">${variables.site_name}&lt;/h1>
+                    &lt;p>Template &lt;strong>${templateName}&lt;/strong> manquant.&lt;/p>
+                    &lt;p>Variables disponibles : ${Object.keys(variables).join(', ')}&lt;/p>
+                &lt;/div>
+            &lt;/body>
+            &lt;/html>
+        `;
+    }
+
+    /**
+     * Template d'erreur
+     */
+    createErrorTemplate(errorMessage) {
+        return `
+            &lt;!DOCTYPE html>
+            &lt;html lang="fr">
+            &lt;body style="font-family: sans-serif; padding: 20px; background: #fef2f2;">
+                &lt;div style="max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                    &lt;h1 style="color: #dc2626;">Erreur de template&lt;/h1>
+                    &lt;p>${errorMessage}&lt;/p>
+                &lt;/div>
+            &lt;/body>
+            &lt;/html>
+        `;
+    }
+
+    /**
+     * Lister les templates disponibles
+     */
+    async listTemplates() {
+        try {
+            const files = await fs.readdir(this.templatesPath);
+            return files
+                .filter(file => file.endsWith('.ejs'))
+                .map(file => file.replace('.ejs', ''));
+        } catch (error) {
+            this.logError(error, { context: 'list_templates' });
+            return [];
+        }
+    }
+
+    /**
+     * Valider qu'un template existe
+     */
+    async validateTemplate(templateName) {
+        const templatePath = path.join(this.templatesPath, `${templateName}.ejs`);
+        try {
+            await fs.access(templatePath);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+}
+
+module.exports = EmailTemplate;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 11:17:14 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!-- En-tête de bienvenue -->
+<div style="text-align: center; margin-bottom: 30px;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
+    <h1>Bienvenue sur <%= site_name %> !</h1>
+</div>
+
+<p style="font-size: 18px;">Bonjour <strong><%= nom %></strong>,</p>
+
+<p>Nous sommes <strong>ravis</strong> de vous accueillir sur notre plateforme de génération de PDF pour jeux de rôle !</p>
+
+<!-- Alerte de succès avec helper -->
+<%- alert('🎲 <strong>Votre compte a été créé avec succès !</strong><br>Vous pouvez maintenant créer vos fiches de personnages pour différents systèmes de jeu.', 'success') %>
+
+<!-- Bouton d'action principal -->
+<div style="text-align: center; margin: 40px 0;">
+    <h3>🚀 Pour commencer :</h3>
+    <%- button('🎯 Se connecter et créer sa première fiche', lien_connexion, 'primary') %>
+</div>
+
+<!-- Informations sur les systèmes -->
+<%- alert(`
+    <h4 style="margin-top: 0;">🎮 Systèmes de jeu disponibles :</h4>
+    <ul style="margin-bottom: 0; padding-left: 20px;">
+        <li><strong>Monsterhearts</strong> - Romance gothique moderne</li>
+        <li><strong>Engrenages & Sortilèges</strong> - Fantasy médiévale</li>
+        <li><strong>Metro 2033</strong> - Survie post-apocalyptique</li>
+        <li><strong>Mist Engine</strong> - Ambiance poétique et onirique</li>
+    </ul>
+`, 'info') %>
+
+<!-- Nouvelles fonctionnalités -->
+<%- alert('🎲 <strong>Oracles disponibles !</strong><br>Découvrez nos tables aléatoires pour enrichir vos parties en mode solo ou comme aide de jeu.', 'info') %>
+
+<!-- Conseils d'utilisation -->
+<%- alert(`
+    <h4 style="margin-top: 0;">💡 Conseils d'utilisation :</h4>
+    <ul style="margin-bottom: 0; padding-left: 20px;">
+        <li>✨ Sauvegardez vos personnages pour les retrouver facilement</li>
+        <li>📋 Utilisez la fonction de duplication pour créer des variantes</li>
+        <li>🎲 Explorez les oracles pour des idées d'aventures</li>
+        <li>🎮 N'hésitez pas à tester les différents systèmes de jeu</li>
+    </ul>
+`, 'warning') %>
+
+<!-- Boutons d'actions secondaires -->
+<div style="text-align: center; margin: 30px 0;">
+    <%- button('📖 Explorer les systèmes', site_url, 'secondary') %>
+    <%- button('❓ Aide et Support', site_url + '/support', 'secondary') %>
+</div>
+
+<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+<p style="font-size: 14px; color: #6b7280;">
+    <strong>Besoin d'aide ?</strong> Consultez notre aide en ligne ou contactez-nous si vous avez des questions.
+</p>
+
+<p style="font-size: 14px; color: #6b7280; font-style: italic;">
+    Bon jeu et merci de nous faire confiance ! 🎲✨
+</p>
+
+<p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 40px;">
+    Email envoyé le <%= formatDate(current_date) %> • <%= site_name %> © <%= year %>
+</p>

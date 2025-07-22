@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-L'application utilise **Resend** comme service d'envoi d'emails pour toutes les communications automatisées avec les utilisateurs.
+L'application utilise **Resend** comme service d'envoi d'emails pour toutes les communications automatisées avec les utilisateurs. Le système est basé sur une architecture modulaire avec **EmailService** (envoi) et **EmailTemplate** (rendu des templates).
 
 ## Configuration
 
@@ -12,6 +12,10 @@ L'application utilise **Resend** comme service d'envoi d'emails pour toutes les 
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@votre-domaine.com
 RESEND_FROM_NAME=Générateur PDF JDR
+
+# Mode développement
+NODE_ENV=development
+FORCE_REAL_EMAILS=true  # Force l'envoi réel même en développement
 ```
 
 ## Services utilisant l'envoi d'emails
@@ -26,7 +30,7 @@ RESEND_FROM_NAME=Générateur PDF JDR
   - `lien_recuperation` : URL complète avec token
   - `duree_validite` : Durée de validité du lien (24h)
 
-#### Confirmation d'inscription *(à implémenter)*
+#### Confirmation d'inscription
 - **Route** : `POST /api/auth/inscription`
 - **Template** : `emails/bienvenue.ejs`
 - **Variables** :
@@ -44,10 +48,11 @@ RESEND_FROM_NAME=Générateur PDF JDR
 
 #### Inscription newsletter
 - **Route** : `POST /api/newsletter/inscription`
-- **Template** : `emails/newsletter-confirmation.ejs`
+- **Template** : `emails/newsletter.ejs`
 - **Variables** :
+  - `nom` : Nom de l'utilisateur
   - `email` : Email de l'inscrit
-  - `lien_desinscription` : Token de désinscription
+  - `lien_confirmation` : Lien de confirmation d'inscription
 
 #### Envoi newsletter *(à implémenter)*
 - **Template** : `emails/newsletter.ejs`
@@ -79,33 +84,81 @@ RESEND_FROM_NAME=Générateur PDF JDR
 ```
 src/
 ├── services/
-│   └── EmailService.js           # Service principal d'envoi
+│   ├── EmailService.js           # Service principal d'envoi
+│   └── EmailTemplate.js          # Service de rendu des templates avec helpers
 ├── templates/
 │   └── emails/                   # Templates EJS pour les emails
+│       ├── test-configuration.ejs
 │       ├── mot-de-passe-oublie.ejs
 │       ├── bienvenue.ejs
-│       ├── newsletter-confirmation.ejs
+│       ├── newsletter.ejs
 │       └── layouts/
 │           └── email-base.ejs    # Layout de base pour tous les emails
-└── utils/
-    └── emailTemplates.js         # Utilitaires et helpers pour les templates
+└── scripts/
+    ├── test-email-simple.js      # Tests d'envoi basiques
+    ├── debug-resend.cjs          # Diagnostic complet Resend
+    └── test-templates-helpers.js # Test des nouveaux templates
 ```
 
 ### Service EmailService.js
 
 ```javascript
-class EmailService {
+class EmailService extends BaseService {
     constructor() {
-        this.resend = new Resend(process.env.RESEND_API_KEY);
+        super('EmailService');
+        
+        // Configuration
+        this.apiKey = process.env.RESEND_API_KEY;
         this.fromEmail = process.env.RESEND_FROM_EMAIL;
         this.fromName = process.env.RESEND_FROM_NAME;
+        this.isDevelopment = process.env.NODE_ENV === 'development';
+        this.forceRealEmails = process.env.FORCE_REAL_EMAILS === 'true';
+        
+        // Services
+        this.emailTemplate = new EmailTemplate();
+        this.resend = new Resend(this.apiKey);
     }
 
     // Méthodes principales
     async envoyerMotDePasseOublie(email, nom, token)
     async envoyerBienvenue(email, nom)
-    async envoyerNewsletterConfirmation(email, token)
-    async envoyerNotificationAdmin(sujet, contenu)
+    async envoyerNewsletter(email, nom, token)
+    async envoyer({ to, subject, template, variables })
+    async testerConfiguration(testEmail)
+}
+```
+
+### Service EmailTemplate.js
+
+```javascript
+class EmailTemplate extends BaseService {
+    constructor() {
+        super('EmailTemplate');
+        this.templatesPath = path.join(process.cwd(), 'src', 'templates', 'emails');
+    }
+
+    // Variables communes automatiques
+    getCommonVariables() {
+        return {
+            site_name: process.env.RESEND_FROM_NAME,
+            site_url: process.env.BASE_URL,
+            year: new Date().getFullYear(),
+            current_date: new Date().toLocaleDateString('fr-FR'),
+            // ...
+        };
+    }
+
+    // Helpers pour les templates
+    getHelpers() {
+        return {
+            button: (text, url, style) => { /* Bouton stylé */ },
+            alert: (message, type) => { /* Alerte colorée */ },
+            formatDate: (date) => { /* Formatage de date */ }
+        };
+    }
+
+    // Rendu avec layout
+    async render(templateName, variables, layout = 'email-base')
 }
 ```
 
@@ -113,17 +166,79 @@ class EmailService {
 
 ### Layout de base (`layouts/email-base.ejs`)
 - Design responsive
-- Couleurs cohérentes avec l'application
+- Couleurs cohérentes avec l'application  
 - Header/footer standard
 - Support mode sombre
+- Variables communes injectées automatiquement
 
-### Template mot de passe oublié
-```html
-<h1>Récupération de mot de passe</h1>
-<p>Bonjour <%= nom %>,</p>
-<p>Vous avez demandé la récupération de votre mot de passe...</p>
-<a href="<%= lien_recuperation %>" class="btn-primary">Réinitialiser mon mot de passe</a>
-<p>Ce lien expire dans <%= duree_validite %>.</p>
+### Helpers disponibles dans tous les templates
+
+#### Helper `button(text, url, style)`
+Génère un bouton stylé avec différents styles :
+```ejs
+<%- button('Se connecter', lien_connexion, 'primary') %>
+<%- button('Annuler', '#', 'secondary') %>
+<%- button('Supprimer', '#', 'danger') %>
+<%- button('Valider', '#', 'success') %>
+```
+
+#### Helper `alert(message, type)`
+Génère une alerte colorée :
+```ejs
+<%- alert('Votre compte a été créé avec succès !', 'success') %>
+<%- alert('Attention, ce lien expire bientôt.', 'warning') %>
+<%- alert('Une erreur s\'est produite.', 'error') %>
+<%- alert('Information importante à retenir.', 'info') %>
+```
+
+#### Helper `formatDate(date)`
+Formate une date en français :
+```ejs
+<%= formatDate(current_date) %> <!-- 22/07/2025 -->
+<%= formatDate(new Date()) %> <!-- Date actuelle -->
+```
+
+### Variables communes automatiques
+Disponibles dans tous les templates :
+- `site_name` : Nom du site
+- `site_url` : URL de base
+- `year` : Année actuelle
+- `current_date` : Date actuelle
+- `support_email` : Email de support
+- `logo_url` : URL du logo
+
+### Templates avec helpers
+
+#### Template mot de passe oublié (moderne)
+```ejs
+<div style="text-align: center; margin-bottom: 30px;">
+    <h1>🔒 Réinitialisation de mot de passe</h1>
+</div>
+
+<p>Bonjour <strong><%= nom %></strong>,</p>
+
+<%- alert('🔐 Demande de réinitialisation reçue', 'warning') %>
+
+<div style="text-align: center; margin: 40px 0;">
+    <%- button('Réinitialiser mon mot de passe', lien_recuperation, 'danger') %>
+</div>
+
+<%- alert(`Ce lien expire dans ${duree_validite}`, 'info') %>
+```
+
+#### Template bienvenue (moderne)
+```ejs
+<div style="text-align: center;">
+    <h1>🎉 Bienvenue sur <%= site_name %> !</h1>
+</div>
+
+<p>Bonjour <strong><%= nom %></strong>,</p>
+
+<%- alert('🎲 Votre compte a été créé avec succès !', 'success') %>
+
+<div style="text-align: center; margin: 40px 0;">
+    <%- button('🎯 Se connecter', lien_connexion, 'primary') %>
+</div>
 ```
 
 ## Configuration Resend

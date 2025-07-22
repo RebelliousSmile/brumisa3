@@ -1,0 +1,63 @@
+<!-- En-tête newsletter -->
+<div style="text-align: center; margin-bottom: 30px;">
+    <div style="font-size: 48px; margin-bottom: 15px;">📰</div>
+    <h1>Confirmation d'inscription</h1>
+    <p style="color: #6b7280;">Newsletter <%= site_name %></p>
+</div>
+
+<p style="font-size: 18px;">Bonjour <strong><%= nom || 'amateur de JDR' %></strong>,</p>
+
+<p>Merci de votre intérêt pour notre newsletter ! Nous sommes ravis de vous compter parmi nos lecteurs.</p>
+
+<!-- Alerte de confirmation -->
+<%- alert('📧 <strong>Confirmez votre inscription</strong><br>Un clic suffit pour recevoir nos actualités, nouveautés et conseils JDR.', 'info') %>
+
+<!-- Bouton de confirmation -->
+<div style="text-align: center; margin: 40px 0;">
+    <h3>📫 Pour confirmer votre inscription :</h3>
+    <%- button('✅ Oui, je confirme mon inscription', lien_confirmation, 'success') %>
+</div>
+
+<!-- Ce que vous recevrez -->
+<%- alert(`
+    <h4 style="margin-top: 0;">📋 Ce que vous recevrez :</h4>
+    <ul style="margin-bottom: 0; padding-left: 20px;">
+        <li>🎲 <strong>Nouveautés :</strong> Nouveaux systèmes de jeu et fonctionnalités</li>
+        <li>📖 <strong>Guides :</strong> Conseils pour créer de meilleurs personnages</li>
+        <li>🎮 <strong>Actualités JDR :</strong> Tendances et sorties dans le milieu</li>
+        <li>🎁 <strong>Exclusivités :</strong> Accès anticipé à certaines fonctionnalités</li>
+    </ul>
+`, 'info') %>
+
+<!-- Fréquence -->
+<%- alert('🗓️ <strong>Fréquence :</strong> Maximum 1 email par mois, souvent moins. Pas de spam, que du contenu utile !', 'success') %>
+
+<!-- Boutons d'actions -->
+<div style="text-align: center; margin: 30px 0;">
+    <%- button('🌐 Visiter le site', site_url, 'secondary') %>
+    <%- button('🎯 Créer un personnage', site_url + '/personnages', 'secondary') %>
+</div>
+
+<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 40px 0;">
+
+<!-- Alternative par copier/coller -->
+<div style="margin: 30px 0;">
+    <p><strong>Lien de confirmation ne fonctionne pas ?</strong> Copiez et collez cette adresse :</p>
+    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 12px; color: #374151; border-left: 4px solid #10b981;">
+        <%= lien_confirmation %>
+    </div>
+</div>
+
+<!-- Note de désabonnement -->
+<p style="font-size: 14px; color: #6b7280;">
+    <strong>Changé d'avis ?</strong> Aucun problème ! Ignorez simplement cet email ou 
+    <a href="<%= site_url %>/newsletter/desabonnement/<%= email %>" style="color: #6b7280;">cliquez ici pour vous désabonner</a>.
+</p>
+
+<p style="font-size: 14px; color: #6b7280; text-align: center;">
+    📰 <%= site_name %> - Newsletter JDR
+</p>
+
+<p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 40px;">
+    Email: <%= email %> • <%= formatDate(current_date) %>
+</p>
