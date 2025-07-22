@@ -1,0 +1,30 @@
+<!-- Footer adaptatif par système -->
+<% if (locals.systeme && locals.systeme !== 'generique') { %>
+    <footer class="relative z-10 mt-16 border-t border-gray-700/50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <% if (systeme === 'monsterhearts') { %>
+                    <p class="text-gray-400 text-sm">
+                        <i class="ra ra-heartburn text-purple-400 mr-2"></i>
+                        Explorez les mystères romantiques et gothiques de Monsterhearts
+                    </p>
+                <% } else if (systeme === 'engrenages') { %>
+                    <p class="text-gray-400 text-sm">
+                        <i class="ra ra-gear-hammer text-emerald-400 mr-2"></i>
+                        Plongez dans l'univers médiéval-fantastique d'Engrenages & Sortilèges
+                    </p>
+                <% } else if (systeme === 'metro2033') { %>
+                    <p class="text-gray-400 text-sm">
+                        <i class="ra ra-burning-embers text-red-400 mr-2"></i>
+                        Survivez dans l'univers post-apocalyptique de Metro 2033
+                    </p>
+                <% } else if (systeme === 'mistengine') { %>
+                    <p class="text-gray-400 text-sm">
+                        <i class="ra ra-flower text-pink-400 mr-2"></i>
+                        Découvrez l'univers poétique et onirique de Mist Engine
+                    </p>
+                <% } %>
+            </div>
+        </div>
+    </footer>
+<% } %>

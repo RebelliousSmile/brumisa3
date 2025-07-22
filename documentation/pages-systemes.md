@@ -1,5 +1,7 @@
 # Pages Systèmes de Jeu
 
+> **Layouts thématiques** : Pour l'architecture des layouts par système, voir [`layouts-systemes.md`](./layouts-systemes.md).
+
 ## Vue d'ensemble
 
 Chaque système de jeu dispose maintenant de sa propre page dédiée pour un meilleur référencement SEO et une personnalisation spécifique.

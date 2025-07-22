@@ -475,6 +475,38 @@ class OracleService extends BaseService {
             throw error;
         }
     }
+
+    /**
+     * Liste les oracles accessibles pour un système de jeu spécifique
+     * @param {string} gameSystem - Code du système de jeu
+     * @param {string} userRole - Rôle de l'utilisateur
+     * @param {number} page - Page pour la pagination
+     * @param {number} limit - Nombre d'éléments par page
+     * @returns {Promise<Object>} Liste paginée des oracles
+     */
+    async listerOraclesParSysteme(gameSystem, userRole = 'UTILISATEUR', page = 1, limit = 20) {
+        try {
+            const result = await this.oracleModel.listerAvecStatsParSysteme(gameSystem, userRole, page, limit);
+            
+            // Filtrer les données selon les permissions
+            result.data = result.data.map(oracle => 
+                this.oracleModel.filterByPermission(oracle, userRole)
+            );
+
+            this.log('info', 'Liste des oracles par système récupérée', {
+                game_system: gameSystem,
+                user_role: userRole,
+                page,
+                limit,
+                total: result.pagination.total
+            });
+
+            return result;
+        } catch (error) {
+            this.logError(error, { game_system: gameSystem, user_role: userRole, page, limit });
+            throw error;
+        }
+    }
 }
 
 module.exports = OracleService;

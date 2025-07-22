@@ -48,6 +48,18 @@ node scripts/injecter-oracle.js --help
 
 ## 🗄️ Base de données
 
+### `add-game-system-column.js`
+Ajoute la colonne game_system à la table oracles.
+```bash
+node scripts/add-game-system-column.js
+```
+
+### `migrate-existing-oracles.js`
+Migre les oracles existants en leur attribuant leur système de jeu.
+```bash
+node scripts/migrate-existing-oracles.js
+```
+
 ### `migrate-db.js`
 Gestionnaire de migrations de base de données.
 ```bash
@@ -72,11 +84,17 @@ Pour configurer un nouvel environnement avec les oracles :
 # 1. Créer les tables
 node scripts/create-oracle-tables.js
 
-# 2. Injecter les oracles Monsterhearts
+# 2. Ajouter la colonne game_system
+node scripts/add-game-system-column.js
+
+# 3. Injecter les oracles Monsterhearts
 node scripts/inject-all-monsterhearts.js
 
-# 3. Tester les emails (optionnel)
-node test-email.js votre@email.com
+# 4. Migrer les oracles avec leur système de jeu
+node scripts/migrate-existing-oracles.js
+
+# 5. Tester les emails (optionnel)
+node scripts/test-email.js votre@email.com
 ```
 
 ## 📁 Format des fichiers JSON

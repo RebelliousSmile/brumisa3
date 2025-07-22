@@ -396,6 +396,73 @@ class Oracle extends BaseModel {
     }
 
     /**
+     * Liste les oracles avec statistiques pour un système de jeu spécifique
+     * @param {string} gameSystem - Code du système de jeu
+     * @param {string} userRole - Rôle utilisateur
+     * @param {number} page - Page courante
+     * @param {number} limit - Éléments par page
+     * @returns {Promise<Object>} Oracles avec stats et pagination
+     */
+    async listerAvecStatsParSysteme(gameSystem, userRole = 'UTILISATEUR', page = 1, limit = 20) {
+        const offset = (page - 1) * limit;
+        const db = require('../database/db');
+        
+        let whereClause = 'o.is_active = $1 AND o.game_system = $2';
+        let params = [true, gameSystem];
+        let paramCount = 2;
+
+        // Filtre pour utilisateurs standards
+        if (userRole === 'UTILISATEUR') {
+            paramCount++;
+            whereClause += ` AND o.premium_required = $${paramCount}`;
+            params.push(false);
+        }
+
+        const query = `
+            SELECT 
+                o.*,
+                COUNT(oi.id) as total_items,
+                COUNT(CASE WHEN oi.is_active THEN 1 END) as active_items,
+                COALESCE(draw_stats.total_draws, 0) as total_draws
+            FROM oracles o
+            LEFT JOIN oracle_items oi ON o.id = oi.oracle_id
+            LEFT JOIN (
+                SELECT oracle_id, COUNT(*) as total_draws
+                FROM oracle_draws 
+                GROUP BY oracle_id
+            ) draw_stats ON o.id = draw_stats.oracle_id
+            WHERE ${whereClause}
+            GROUP BY o.id, draw_stats.total_draws
+            ORDER BY o.name ASC
+            LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+        `;
+        params.push(limit, offset);
+        
+        const rows = await db.all(query, params);
+        
+        // Compte total pour pagination
+        const totalQuery = `
+            SELECT COUNT(*) as count 
+            FROM oracles o 
+            WHERE ${whereClause}
+        `;
+        const totalResult = await db.get(totalQuery, params.slice(0, paramCount));
+        const total = totalResult.count;
+
+        return {
+            data: rows.map(row => this.castAttributes(row)),
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit),
+                hasNext: page < Math.ceil(total / limit),
+                hasPrev: page > 1
+            }
+        };
+    }
+
+    /**
      * Filtre les données selon les permissions utilisateur
      */
     filterByPermission(oracle, userRole = 'UTILISATEUR') {

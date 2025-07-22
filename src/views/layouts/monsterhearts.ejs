@@ -1,0 +1,33 @@
+<!-- Layout Monsterhearts - Gothique romantique -->
+<div class="min-h-screen bg-gray-900 relative overflow-hidden">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-purple-800/30 to-gray-900"></div>
+    <div class="absolute inset-0">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl"></div>
+    </div>
+
+    <!-- Navigation principale -->
+    <%- include('../layouts/principal') %>
+
+    <!-- Fil d'Ariane -->
+    <%- include('../partials/breadcrumb', { systeme: 'monsterhearts' }) %>
+
+    <!-- Contenu principal -->
+    <main class="relative z-10">
+        <%- body %>
+    </main>
+
+    <!-- Footer système -->
+    <%- include('../partials/footer-systeme', { systeme: 'monsterhearts' }) %>
+</div>
+
+<style>
+:root {
+    --system-primary: #8b5cf6;
+    --system-secondary: #a855f7;
+    --system-accent: #ec4899;
+    --system-bg-from: #581c87;
+    --system-bg-to: #1f2937;
+}
+</style>

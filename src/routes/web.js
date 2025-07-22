@@ -254,6 +254,7 @@ router.get('/systemes/:systeme', (req, res) => {
 
 // Pages publiques oracles
 router.get('/oracles', oracleController.pageListeOracles);
+router.get('/oracles/systeme/:gameSystem', oracleController.pageListeOraclesParSysteme);
 router.get('/oracles/:id', oracleController.pageDetailOracle);
 
 // ===== ADMINISTRATION =====

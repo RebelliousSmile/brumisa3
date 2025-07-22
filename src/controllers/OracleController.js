@@ -376,6 +376,39 @@ class OracleController extends BaseController {
     });
 
     /**
+     * GET /oracles/systeme/:gameSystem - Liste des oracles pour un système de jeu
+     */
+    pageListeOraclesParSysteme = this.wrapAsync(async (req, res) => {
+        const { gameSystem } = req.params;
+        const pagination = this.extrairePagination(req);
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        
+        const oracles = await this.oracleService.listerOraclesParSysteme(
+            gameSystem,
+            userRole,
+            pagination.page,
+            pagination.limite
+        );
+        
+        // Noms des systèmes pour l'affichage
+        const nomsSystemes = {
+            'monsterhearts': 'Monsterhearts',
+            'engrenages': 'Engrenages & Sortilèges',
+            'metro2033': 'Metro 2033',
+            'mistengine': 'Mist Engine'
+        };
+        
+        res.render('oracles/liste', {
+            titre: `Oracles ${nomsSystemes[gameSystem] || gameSystem}`,
+            oracles: oracles.data,
+            pagination: oracles.pagination,
+            gameSystem: gameSystem,
+            gameSystemName: nomsSystemes[gameSystem] || gameSystem,
+            utilisateur: req.session?.utilisateur || null
+        });
+    });
+
+    /**
      * GET /oracles/:id - Page détail d'un oracle
      */
     pageDetailOracle = this.wrapAsync(async (req, res) => {

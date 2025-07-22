@@ -1,0 +1,366 @@
+<!-- Page liste des oracles - Version avec layout système -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête de page -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+            <i class="ra ra-crystal-ball mr-3" style="color: var(--system-primary)"></i>
+            <%= titre %>
+        </h1>
+        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+            Découvrez une collection d'oracles pour enrichir vos parties de jeu de rôle. 
+            Tirez au sort des éléments pondérés pour créer des histoires uniques.
+        </p>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="mb-8" x-data="{ searchQuery: '', showAdvanced: false }">
+        <div class="max-w-2xl mx-auto">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    x-model="searchQuery"
+                    data-search-input
+                    placeholder="Rechercher un oracle..."
+                    class="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:border-transparent backdrop-blur-sm"
+                    style="focus:ring-color: var(--system-primary)"
+                >
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des oracles -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="oracles-grid">
+        <% oracles.forEach(oracle => { %>
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105">
+                <!-- En-tête de carte -->
+                <div class="p-6 bg-gradient-to-r" style="background: linear-gradient(to right, color-mix(in srgb, var(--system-primary) 30%, transparent), color-mix(in srgb, var(--system-secondary) 30%, transparent))">
+                    <div class="flex items-start justify-between">
+                        <h3 class="text-xl font-bold text-white mb-2">
+                            <%= oracle.name %>
+                        </h3>
+                        <div class="flex space-x-2">
+                            <% if (oracle.premium_required) { %>
+                                <span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full flex items-center border border-yellow-500/30">
+                                    <i class="fas fa-crown mr-1"></i>
+                                    Premium
+                                </span>
+                            <% } %>
+                            <span class="text-xs px-2 py-1 rounded-full border" style="background: color-mix(in srgb, var(--system-secondary) 20%, transparent); color: var(--system-secondary); border-color: color-mix(in srgb, var(--system-secondary) 30%, transparent)">
+                                <%= oracle.total_items || 0 %> éléments
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <% if (oracle.description) { %>
+                        <p class="text-gray-300 text-sm line-clamp-2">
+                            <%= oracle.description %>
+                        </p>
+                    <% } %>
+                </div>
+
+                <!-- Statistiques -->
+                <div class="px-6 py-4 bg-gray-900/50">
+                    <div class="flex justify-between text-sm text-gray-400">
+                        <span>
+                            <i class="fas fa-dice mr-1"></i>
+                            <%= oracle.total_draws || 0 %> tirages
+                        </span>
+                        <span>
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <%= oracle.active_items || 0 %> actifs
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="p-6 flex space-x-3">
+                    <a href="/oracles/<%= oracle.id %>" 
+                       class="flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors"
+                       style="background: var(--system-primary); hover:background: color-mix(in srgb, var(--system-primary) 90%, black)">
+                        <i class="ra ra-crystal-ball mr-2"></i>
+                        Consulter
+                    </a>
+                    
+                    <% if (!oracle.premium_required || (utilisateur && (utilisateur.role === 'PREMIUM' || utilisateur.role === 'ADMIN'))) { %>
+                        <button 
+                            data-oracle-id="<%= oracle.id %>"
+                            class="btn-tirage-rapide text-white px-4 py-2 rounded-lg transition-colors"
+                            style="background: var(--system-secondary); hover:background: color-mix(in srgb, var(--system-secondary) 90%, black)">
+                            <i class="fas fa-dice mr-1"></i>
+                            Tirer
+                        </button>
+                    <% } else { %>
+                        <button 
+                            disabled
+                            class="bg-gray-600 text-gray-400 px-4 py-2 rounded-lg cursor-not-allowed">
+                            <i class="fas fa-lock mr-1"></i>
+                            Premium
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+    <!-- Message si aucun oracle -->
+    <% if (oracles.length === 0) { %>
+        <div class="text-center py-16">
+            <div class="text-6xl text-gray-500 mb-4">
+                <i class="ra ra-crystal-ball"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-300 mb-2">Aucun oracle disponible</h3>
+            <p class="text-gray-400">Les oracles seront bientôt ajoutés par nos administrateurs.</p>
+        </div>
+    <% } %>
+
+    <!-- Pagination -->
+    <% if (pagination && pagination.pages > 1) { %>
+        <div class="flex justify-center mt-12">
+            <nav class="flex space-x-2">
+                <% if (pagination.hasPrev) { %>
+                    <a href="/oracles?page=<%= pagination.page - 1 %>" 
+                       class="px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-lg hover:bg-gray-700/50 transition-colors text-white backdrop-blur-sm">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <% } %>
+                
+                <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
+                    <a href="/oracles?page=<%= i %>" 
+                       class="px-4 py-2 rounded-lg transition-colors <%= i === pagination.page ? 'text-white' : 'bg-gray-800/50 border border-gray-600 hover:bg-gray-700/50 text-white backdrop-blur-sm' %>"
+                       <% if (i === pagination.page) { %>style="background: var(--system-primary)"<% } %>>
+                        <%= i %>
+                    </a>
+                <% } %>
+                
+                <% if (pagination.hasNext) { %>
+                    <a href="/oracles?page=<%= pagination.page + 1 %>" 
+                       class="px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-lg hover:bg-gray-700/50 transition-colors text-white backdrop-blur-sm">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <% } %>
+            </nav>
+        </div>
+    <% } %>
+</div>
+
+<!-- Modal résultat tirage rapide -->
+<div id="modal-tirage" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-800 border border-gray-600 rounded-xl shadow-2xl max-w-md w-full p-6 backdrop-blur-sm">
+            <div class="text-center">
+                <div class="text-4xl mb-4" style="color: var(--system-primary)">
+                    <i class="ra ra-crystal-ball"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-4">Résultat du Tirage</h3>
+                
+                <div id="resultat-tirage" class="bg-gray-900/50 rounded-lg p-4 mb-6 text-white">
+                    <!-- Le résultat sera inséré ici -->
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button id="btn-fermer-modal"
+                            class="flex-1 bg-gray-600 text-gray-200 py-2 px-4 rounded-lg hover:bg-gray-500 transition-colors">
+                        Fermer
+                    </button>
+                    <button id="btn-refaire-tirage"
+                            class="flex-1 text-white py-2 px-4 rounded-lg transition-colors"
+                            style="background: var(--system-primary); hover:background: color-mix(in srgb, var(--system-primary) 90%, black)">
+                        <i class="fas fa-redo mr-2"></i>
+                        Refaire
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentOracleId = null;
+
+// Initialisation des event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Event listeners pour les boutons de tirage rapide
+    document.querySelectorAll('.btn-tirage-rapide').forEach(button => {
+        button.addEventListener('click', function() {
+            const oracleId = this.dataset.oracleId;
+            tirageRapide(oracleId);
+        });
+    });
+    
+    // Event listeners pour la modal
+    document.getElementById('btn-fermer-modal').addEventListener('click', fermerModalTirage);
+    document.getElementById('btn-refaire-tirage').addEventListener('click', refaireTirage);
+    
+    // Fermer modal en cliquant sur le fond
+    document.getElementById('modal-tirage').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fermerModalTirage();
+        }
+    });
+    
+    // Event listener pour la recherche
+    const searchInput = document.querySelector('[data-search-input]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                rechercherOracles(e.target.value);
+            }, 300);
+        });
+    }
+});
+
+// Tirage rapide depuis la liste
+async function tirageRapide(oracleId) {
+    try {
+        currentOracleId = oracleId;
+        
+        const response = await fetch(`/api/oracles/${oracleId}/draw`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                count: 1,
+                withReplacement: true
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.succes) {
+            throw new Error(data.message);
+        }
+        
+        const resultat = data.donnees.results[0];
+        
+        document.getElementById('resultat-tirage').innerHTML = `
+            <div class="text-lg font-semibold text-white mb-2">${resultat.value}</div>
+            ${resultat.metadata && Object.keys(resultat.metadata).length > 0 ? 
+                `<div class="text-sm text-gray-300">
+                    ${Object.entries(resultat.metadata).map(([key, value]) => 
+                        `<span class="inline-block bg-gray-700 rounded px-2 py-1 text-xs mr-1 mb-1">${key}: ${value}</span>`
+                    ).join('')}
+                </div>` : ''
+            }
+        `;
+        
+        document.getElementById('modal-tirage').classList.remove('hidden');
+        
+    } catch (error) {
+        alert('Erreur lors du tirage: ' + error.message);
+    }
+}
+
+// Refaire le même tirage
+function refaireTirage() {
+    if (currentOracleId) {
+        tirageRapide(currentOracleId);
+    }
+}
+
+// Fermer la modal
+function fermerModalTirage() {
+    document.getElementById('modal-tirage').classList.add('hidden');
+    currentOracleId = null;
+}
+
+// Recherche d'oracles
+async function rechercherOracles(query) {
+    if (query.length < 2) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/oracles/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.succes) {
+            afficherResultatsRecherche(data.donnees);
+        }
+    } catch (error) {
+        console.error('Erreur de recherche:', error);
+    }
+}
+
+// Afficher les résultats de recherche
+function afficherResultatsRecherche(oracles) {
+    const grid = document.getElementById('oracles-grid');
+    
+    if (oracles.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <div class="text-4xl text-gray-500 mb-4">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-300">Aucun oracle trouvé</h3>
+                <p class="text-gray-400">Essayez avec d'autres termes de recherche.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Regénérer la grille avec les résultats de recherche
+    grid.innerHTML = oracles.map(oracle => `
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105">
+            <div class="p-6" style="background: linear-gradient(to right, color-mix(in srgb, var(--system-primary) 30%, transparent), color-mix(in srgb, var(--system-secondary) 30%, transparent))">
+                <div class="flex items-start justify-between">
+                    <h3 class="text-xl font-bold text-white mb-2">${oracle.name}</h3>
+                    <div class="flex space-x-2">
+                        ${oracle.premium_required ? 
+                            '<span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full flex items-center border border-yellow-500/30"><i class="fas fa-crown mr-1"></i>Premium</span>' : 
+                            ''
+                        }
+                        <span class="text-xs px-2 py-1 rounded-full border" style="background: color-mix(in srgb, var(--system-secondary) 20%, transparent); color: var(--system-secondary); border-color: color-mix(in srgb, var(--system-secondary) 30%, transparent)">${oracle.total_items || 0} éléments</span>
+                    </div>
+                </div>
+                ${oracle.description ? `<p class="text-gray-300 text-sm line-clamp-2">${oracle.description}</p>` : ''}
+            </div>
+            <div class="px-6 py-4 bg-gray-900/50">
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span><i class="fas fa-dice mr-1"></i>${oracle.total_draws || 0} tirages</span>
+                    <span><i class="fas fa-check-circle mr-1"></i>${oracle.active_items || 0} actifs</span>
+                </div>
+            </div>
+            <div class="p-6 flex space-x-3">
+                <a href="/oracles/${oracle.id}" class="flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors" style="background: var(--system-primary)">
+                    <i class="ra ra-crystal-ball mr-2"></i>Consulter
+                </a>
+                ${!oracle.premium_required ? 
+                    `<button data-oracle-id="${oracle.id}" class="btn-tirage-rapide text-white px-4 py-2 rounded-lg transition-colors" style="background: var(--system-secondary)">
+                        <i class="fas fa-dice mr-1"></i>Tirer
+                    </button>` : 
+                    `<button disabled class="bg-gray-600 text-gray-400 px-4 py-2 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-lock mr-1"></i>Premium
+                    </button>`
+                }
+            </div>
+        </div>
+    `).join('');
+    
+    // Réattacher les event listeners aux nouveaux boutons
+    document.querySelectorAll('.btn-tirage-rapide').forEach(button => {
+        if (!button.hasAttribute('data-listener-attached')) {
+            button.addEventListener('click', function() {
+                const oracleId = this.dataset.oracleId;
+                tirageRapide(oracleId);
+            });
+            button.setAttribute('data-listener-attached', 'true');
+        }
+    });
+}
+
+// Fermer modal avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fermerModalTirage();
+    }
+});
+</script>
+
+<%- contentFor('title') %>
+<%= titre %>

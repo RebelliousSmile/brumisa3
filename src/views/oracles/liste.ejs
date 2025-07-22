@@ -1,73 +1,45 @@
-<%- contentFor('body') %>
-
 <!-- Page principale - Liste des oracles -->
-<div class="min-h-screen bg-gradient-to-br from-stone-50 to-orange-50">
-    <!-- Navigation -->
-    <header class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <a href="/" class="text-2xl font-bold text-red-800 hover:text-red-700 transition-colors">
-                        <i class="ra ra-dice-five mr-2"></i>
-                        brumisa3.fr
-                    </a>
-                </div>
-                
-                <nav class="hidden md:flex space-x-6">
-                    <a href="/" class="text-gray-700 hover:text-red-600 transition-colors">Accueil</a>
-                    <a href="/oracles" class="text-red-600 font-semibold">Oracles</a>
-                    <% if (utilisateur) { %>
-                        <a href="/mes-documents" class="text-gray-700 hover:text-red-600 transition-colors">Mes Documents</a>
-                    <% } %>
-                </nav>
+<div class="min-h-screen bg-gray-900 relative overflow-hidden">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/30 to-gray-900"></div>
+    <div class="absolute inset-0">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"></div>
+    </div>
 
-                <div class="flex items-center space-x-4">
-                    <% if (utilisateur) { %>
-                        <div class="flex items-center space-x-3">
-                            <span class="text-sm text-gray-600">Bonjour, <%= utilisateur.nom %></span>
-                            <% if (utilisateur.role === 'PREMIUM') { %>
-                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Premium</span>
-                            <% } else if (utilisateur.role === 'ADMIN') { %>
-                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Admin</span>
-                            <% } %>
-                            <a href="/deconnexion" class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </a>
-                        </div>
-                    <% } else { %>
-                        <a href="/connexion" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-                            Connexion
-                        </a>
-                    <% } %>
-                </div>
+    <!-- Fil d'Ariane -->
+    <nav class="relative z-10 pt-8 pb-4 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center text-sm text-gray-400 space-x-2">
+                <a href="/" class="hover:text-purple-400 transition-colors">
+                    <i class="ra ra-dice-five mr-1"></i>
+                    Accueil
+                </a>
+                <i class="fas fa-chevron-right text-gray-600"></i>
+                <% if (gameSystem) { %>
+                    <a href="/oracles" class="hover:text-purple-400 transition-colors">Oracles</a>
+                    <i class="fas fa-chevron-right text-gray-600"></i>
+                    <span class="text-purple-400"><%= gameSystemName %></span>
+                <% } else { %>
+                    <span class="text-purple-400">Oracles</span>
+                <% } %>
             </div>
         </div>
-    </header>
+    </nav>
 
     <!-- Contenu principal -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- En-tête de page -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                <i class="ra ra-crystal-ball mr-3 text-purple-600"></i>
-                Oracles Mystiques
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+                <i class="ra ra-crystal-ball mr-3 text-purple-400"></i>
+                <%= titre %>
             </h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
                 Découvrez une collection d'oracles pour enrichir vos parties de jeu de rôle. 
                 Tirez au sort des éléments pondérés pour créer des histoires uniques.
             </p>
             
-            <!-- Info Premium -->
-            <% if (!utilisateur || utilisateur.role === 'UTILISATEUR') { %>
-                <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto">
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-crown text-yellow-500 mr-2"></i>
-                        <span class="text-sm text-yellow-800">
-                            Certains oracles nécessitent un compte Premium pour accéder aux fonctionnalités avancées
-                        </span>
-                    </div>
-                </div>
-            <% } %>
         </div>
 
         <!-- Barre de recherche -->
@@ -77,9 +49,9 @@
                     <input 
                         type="text" 
                         x-model="searchQuery"
-                        @input.debounce.300ms="rechercherOracles($event.target.value)"
+                        data-search-input
                         placeholder="Rechercher un oracle..."
-                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-lg"
+                        class="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
                     >
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <i class="fas fa-search text-gray-400"></i>
@@ -91,36 +63,36 @@
         <!-- Grille des oracles -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="oracles-grid">
             <% oracles.forEach(oracle => { %>
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105">
                     <!-- En-tête de carte -->
-                    <div class="p-6 bg-gradient-to-r from-red-50 to-purple-50">
+                    <div class="p-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30">
                         <div class="flex items-start justify-between">
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">
+                            <h3 class="text-xl font-bold text-white mb-2">
                                 <%= oracle.name %>
                             </h3>
                             <div class="flex space-x-2">
                                 <% if (oracle.premium_required) { %>
-                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full flex items-center border border-yellow-500/30">
                                         <i class="fas fa-crown mr-1"></i>
                                         Premium
                                     </span>
                                 <% } %>
-                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full border border-blue-500/30">
                                     <%= oracle.total_items || 0 %> éléments
                                 </span>
                             </div>
                         </div>
                         
                         <% if (oracle.description) { %>
-                            <p class="text-gray-600 text-sm line-clamp-2">
+                            <p class="text-gray-300 text-sm line-clamp-2">
                                 <%= oracle.description %>
                             </p>
                         <% } %>
                     </div>
 
                     <!-- Statistiques -->
-                    <div class="px-6 py-4 bg-gray-50">
-                        <div class="flex justify-between text-sm text-gray-500">
+                    <div class="px-6 py-4 bg-gray-900/50">
+                        <div class="flex justify-between text-sm text-gray-400">
                             <span>
                                 <i class="fas fa-dice mr-1"></i>
                                 <%= oracle.total_draws || 0 %> tirages
@@ -135,22 +107,22 @@
                     <!-- Actions -->
                     <div class="p-6 flex space-x-3">
                         <a href="/oracles/<%= oracle.id %>" 
-                           class="flex-1 bg-red-600 text-white text-center py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                           class="flex-1 bg-purple-600 text-white text-center py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
                             <i class="ra ra-crystal-ball mr-2"></i>
                             Consulter
                         </a>
                         
                         <% if (!oracle.premium_required || (utilisateur && (utilisateur.role === 'PREMIUM' || utilisateur.role === 'ADMIN'))) { %>
                             <button 
-                                onclick="tirageRapide('<%= oracle.id %>')"
-                                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                data-oracle-id="<%= oracle.id %>"
+                                class="btn-tirage-rapide bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                                 <i class="fas fa-dice mr-1"></i>
                                 Tirer
                             </button>
                         <% } else { %>
                             <button 
                                 disabled
-                                class="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed">
+                                class="bg-gray-600 text-gray-400 px-4 py-2 rounded-lg cursor-not-allowed">
                                 <i class="fas fa-lock mr-1"></i>
                                 Premium
                             </button>
@@ -163,11 +135,11 @@
         <!-- Message si aucun oracle -->
         <% if (oracles.length === 0) { %>
             <div class="text-center py-16">
-                <div class="text-6xl text-gray-300 mb-4">
+                <div class="text-6xl text-gray-500 mb-4">
                     <i class="ra ra-crystal-ball"></i>
                 </div>
-                <h3 class="text-xl font-medium text-gray-600 mb-2">Aucun oracle disponible</h3>
-                <p class="text-gray-500">Les oracles seront bientôt ajoutés par nos administrateurs.</p>
+                <h3 class="text-xl font-medium text-gray-300 mb-2">Aucun oracle disponible</h3>
+                <p class="text-gray-400">Les oracles seront bientôt ajoutés par nos administrateurs.</p>
             </div>
         <% } %>
 
@@ -177,21 +149,21 @@
                 <nav class="flex space-x-2">
                     <% if (pagination.hasPrev) { %>
                         <a href="/oracles?page=<%= pagination.page - 1 %>" 
-                           class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                           class="px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-lg hover:bg-gray-700/50 transition-colors text-white backdrop-blur-sm">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     <% } %>
                     
                     <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) { %>
                         <a href="/oracles?page=<%= i %>" 
-                           class="px-4 py-2 rounded-lg transition-colors <%= i === pagination.page ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-50' %>">
+                           class="px-4 py-2 rounded-lg transition-colors <%= i === pagination.page ? 'bg-purple-600 text-white' : 'bg-gray-800/50 border border-gray-600 hover:bg-gray-700/50 text-white backdrop-blur-sm' %>">
                             <%= i %>
                         </a>
                     <% } %>
                     
                     <% if (pagination.hasNext) { %>
                         <a href="/oracles?page=<%= pagination.page + 1 %>" 
-                           class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                           class="px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-lg hover:bg-gray-700/50 transition-colors text-white backdrop-blur-sm">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     <% } %>
@@ -201,25 +173,25 @@
     </main>
 
     <!-- Modal résultat tirage rapide -->
-    <div id="modal-tirage" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" onclick="fermerModalTirage()">
+    <div id="modal-tirage" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+            <div class="bg-gray-800 border border-gray-600 rounded-xl shadow-2xl max-w-md w-full p-6 backdrop-blur-sm">
                 <div class="text-center">
-                    <div class="text-4xl text-purple-600 mb-4">
+                    <div class="text-4xl text-purple-400 mb-4">
                         <i class="ra ra-crystal-ball"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Résultat du Tirage</h3>
+                    <h3 class="text-xl font-bold text-white mb-4">Résultat du Tirage</h3>
                     
-                    <div id="resultat-tirage" class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div id="resultat-tirage" class="bg-gray-900/50 rounded-lg p-4 mb-6 text-white">
                         <!-- Le résultat sera inséré ici -->
                     </div>
                     
                     <div class="flex space-x-3">
-                        <button onclick="fermerModalTirage()" 
-                                class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                        <button id="btn-fermer-modal"
+                                class="flex-1 bg-gray-600 text-gray-200 py-2 px-4 rounded-lg hover:bg-gray-500 transition-colors">
                             Fermer
                         </button>
-                        <button onclick="refaireTirage()" 
+                        <button id="btn-refaire-tirage"
                                 class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
                             <i class="fas fa-redo mr-2"></i>
                             Refaire
@@ -233,6 +205,40 @@
 
 <script>
 let currentOracleId = null;
+
+// Initialisation des event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Event listeners pour les boutons de tirage rapide
+    document.querySelectorAll('.btn-tirage-rapide').forEach(button => {
+        button.addEventListener('click', function() {
+            const oracleId = this.dataset.oracleId;
+            tirageRapide(oracleId);
+        });
+    });
+    
+    // Event listeners pour la modal
+    document.getElementById('btn-fermer-modal').addEventListener('click', fermerModalTirage);
+    document.getElementById('btn-refaire-tirage').addEventListener('click', refaireTirage);
+    
+    // Fermer modal en cliquant sur le fond
+    document.getElementById('modal-tirage').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fermerModalTirage();
+        }
+    });
+    
+    // Event listener pour la recherche
+    const searchInput = document.querySelector('[data-search-input]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                rechercherOracles(e.target.value);
+            }, 300);
+        });
+    }
+});
 
 // Tirage rapide depuis la liste
 async function tirageRapide(oracleId) {
@@ -259,11 +265,11 @@ async function tirageRapide(oracleId) {
         const resultat = data.donnees.results[0];
         
         document.getElementById('resultat-tirage').innerHTML = `
-            <div class="text-lg font-semibold text-gray-900 mb-2">${resultat.value}</div>
+            <div class="text-lg font-semibold text-white mb-2">${resultat.value}</div>
             ${resultat.metadata && Object.keys(resultat.metadata).length > 0 ? 
-                `<div class="text-sm text-gray-600">
+                `<div class="text-sm text-gray-300">
                     ${Object.entries(resultat.metadata).map(([key, value]) => 
-                        `<span class="inline-block bg-gray-200 rounded px-2 py-1 text-xs mr-1 mb-1">${key}: ${value}</span>`
+                        `<span class="inline-block bg-gray-700 rounded px-2 py-1 text-xs mr-1 mb-1">${key}: ${value}</span>`
                     ).join('')}
                 </div>` : ''
             }
@@ -314,40 +320,64 @@ function afficherResultatsRecherche(oracles) {
     if (oracles.length === 0) {
         grid.innerHTML = `
             <div class="col-span-full text-center py-16">
-                <div class="text-4xl text-gray-300 mb-4">
+                <div class="text-4xl text-gray-500 mb-4">
                     <i class="fas fa-search"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-600">Aucun oracle trouvé</h3>
-                <p class="text-gray-500">Essayez avec d'autres termes de recherche.</p>
+                <h3 class="text-lg font-medium text-gray-300">Aucun oracle trouvé</h3>
+                <p class="text-gray-400">Essayez avec d'autres termes de recherche.</p>
             </div>
         `;
         return;
     }
     
     // Regénérer la grille avec les résultats de recherche
-    // (Dans un vrai projet, on utiliserait un template engine côté client)
     grid.innerHTML = oracles.map(oracle => `
-        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-            <div class="p-6 bg-gradient-to-r from-red-50 to-purple-50">
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105">
+            <div class="p-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30">
                 <div class="flex items-start justify-between">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">${oracle.name}</h3>
+                    <h3 class="text-xl font-bold text-white mb-2">${oracle.name}</h3>
                     <div class="flex space-x-2">
                         ${oracle.premium_required ? 
-                            '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center"><i class="fas fa-crown mr-1"></i>Premium</span>' : 
+                            '<span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full flex items-center border border-yellow-500/30"><i class="fas fa-crown mr-1"></i>Premium</span>' : 
                             ''
                         }
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${oracle.total_items || 0} éléments</span>
+                        <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full border border-blue-500/30">${oracle.total_items || 0} éléments</span>
                     </div>
                 </div>
-                ${oracle.description ? `<p class="text-gray-600 text-sm line-clamp-2">${oracle.description}</p>` : ''}
+                ${oracle.description ? `<p class="text-gray-300 text-sm line-clamp-2">${oracle.description}</p>` : ''}
+            </div>
+            <div class="px-6 py-4 bg-gray-900/50">
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span><i class="fas fa-dice mr-1"></i>${oracle.total_draws || 0} tirages</span>
+                    <span><i class="fas fa-check-circle mr-1"></i>${oracle.active_items || 0} actifs</span>
+                </div>
             </div>
             <div class="p-6 flex space-x-3">
-                <a href="/oracles/${oracle.id}" class="flex-1 bg-red-600 text-white text-center py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                <a href="/oracles/${oracle.id}" class="flex-1 bg-purple-600 text-white text-center py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
                     <i class="ra ra-crystal-ball mr-2"></i>Consulter
                 </a>
+                ${!oracle.premium_required ? 
+                    `<button data-oracle-id="${oracle.id}" class="btn-tirage-rapide bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-dice mr-1"></i>Tirer
+                    </button>` : 
+                    `<button disabled class="bg-gray-600 text-gray-400 px-4 py-2 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-lock mr-1"></i>Premium
+                    </button>`
+                }
             </div>
         </div>
     `).join('');
+    
+    // Réattacher les event listeners aux nouveaux boutons
+    document.querySelectorAll('.btn-tirage-rapide').forEach(button => {
+        if (!button.hasAttribute('data-listener-attached')) {
+            button.addEventListener('click', function() {
+                const oracleId = this.dataset.oracleId;
+                tirageRapide(oracleId);
+            });
+            button.setAttribute('data-listener-attached', 'true');
+        }
+    });
 }
 
 // Fermer modal avec Escape

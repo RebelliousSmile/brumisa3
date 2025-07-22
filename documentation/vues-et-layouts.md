@@ -1,52 +1,62 @@
 # Système de Vues et Layouts
 
+> **Note** : Ce document couvre l'architecture générale des vues. Pour les layouts thématiques par système de jeu, voir [`layouts-systemes.md`](./layouts-systemes.md).
+
 ## Architecture des vues
 
-Le projet utilise **Express EJS Layouts** pour gérer le système de templates. Cela permet de réutiliser des structures communes entre les pages.
+Le projet utilise un système de layouts EJS thématiques pour assurer la cohérence visuelle tout en permettant la personnalisation par système de jeu.
 
 ### Structure des dossiers
 
 ```
 src/views/
 ├── layouts/
-│   └── principal.ejs      # Layout principal du site
-├── partials/              # Composants réutilisables
+│   ├── base.ejs          # Structure HTML de base
+│   ├── principal.ejs     # Layout principal du site  
+│   ├── generique.ejs     # Layout générique (bleu)
+│   ├── monsterhearts.ejs # Layout Monsterhearts (purple)
+│   ├── engrenages.ejs    # Layout Engrenages (emerald)
+│   ├── metro2033.ejs     # Layout Metro 2033 (red)
+│   └── mistengine.ejs    # Layout Mist Engine (pink)
+├── partials/             # Composants réutilisables
+│   ├── breadcrumb.ejs    # Fil d'ariane adaptatif
+│   ├── footer-systeme.ejs# Footer thématique
 │   ├── floating-menu.ejs
-│   ├── back-to-top.ejs
-│   └── ...
-├── auth/                  # Pages d'authentification
-│   └── connexion.ejs
-├── personnages/           # Pages liées aux personnages
-├── errors/                # Pages d'erreur
-│   ├── 404.ejs
-│   └── 500.ejs
-└── index.ejs             # Page d'accueil
+│   └── back-to-top.ejs
+├── systemes/             # Pages dédiées par système
+│   └── monsterhearts.ejs
+├── oracles/              # Pages oracles
+│   ├── liste.ejs
+│   └── detail.ejs
+├── auth/                 # Pages d'authentification  
+├── personnages/          # Pages personnages
+├── errors/               # Pages d'erreur
+└── index.ejs            # Page d'accueil
 ```
 
-## Comment fonctionne le système de layouts
+## Système de layouts thématiques
 
-### Configuration (dans src/app.js)
+### Layout de base (base.ejs)
+Structure HTML commune avec meta tags, fonts, et scripts. Définit les variables CSS système par défaut.
+
+### Layouts par système de jeu
+Chaque système a son propre layout avec :
+- Couleurs thématiques (variables CSS `--system-primary`, `--system-secondary`)
+- Effets de fond adaptés à l'ambiance
+- Navigation cohérente
+- Fil d'ariane et footer adaptatifs
+
+### Utilisation dans les contrôleurs
 
 ```javascript
-// Express EJS Layouts
-this.app.use(expressLayouts);
-this.app.set('layout', 'layouts/principal');
-this.app.set('layout extractScripts', true);
-this.app.set('layout extractStyles', true);
+// Layout automatique selon le système
+res.render('oracles/liste', {
+    layout: 'layouts/monsterhearts',
+    titre: 'Oracles Monsterhearts',
+    gameSystem: 'monsterhearts',
+    oracles: data
+});
 ```
-
-### Layout principal (layouts/principal.ejs)
-
-Le layout principal contient :
-- La structure HTML de base
-- Le header avec navigation
-- Le footer
-- Les scripts et styles communs
-- Un emplacement pour le contenu : `<%- body %>`
-
-### Injection du contenu
-
-Chaque page EJS est automatiquement injectée dans le layout à l'emplacement `<%- body %>`.
 
 ## Créer une nouvelle page
 
@@ -83,60 +93,32 @@ Dans le layout et les vues, vous avez accès à :
 - `locals.systemes` : Systèmes de jeu disponibles
 - Variables passées dans `res.render()`
 
-## Layouts spécifiques par jeu
+## Layouts thématiques
 
-### Créer un layout pour un système de jeu
+> **Détails complets** : Voir [`layouts-systemes.md`](./layouts-systemes.md) pour l'architecture complète des layouts par système.
 
-1. **Créer le layout** :
-
-```ejs
-<!-- src/views/layouts/monsterhearts.ejs -->
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <!-- Meta et styles spécifiques à Monsterhearts -->
-    <style>
-        :root {
-            --couleur-principale: #8b0000; /* Rouge sombre */
-        }
-    </style>
-</head>
-<body class="bg-red-950">
-    <!-- Header spécifique Monsterhearts -->
-    <nav class="bg-red-900 border-b border-red-800">
-        <!-- Navigation thématique -->
-    </nav>
-    
-    <!-- Contenu de la page -->
-    <main>
-        <%- body %>
-    </main>
-    
-    <!-- Footer thématique -->
-</body>
-</html>
-```
-
-2. **Utiliser le layout dans une route** :
-
-```javascript
-router.get('/monsterhearts/creation', (req, res) => {
-    res.render('personnages/creation-monsterhearts', {
-        layout: 'layouts/monsterhearts',
-        title: 'Créer un personnage - Monsterhearts'
-    });
-});
-```
-
-### Organisation suggérée pour plusieurs layouts
+### Organisation des layouts
 
 ```
 src/views/layouts/
-├── principal.ejs          # Layout général du site
-├── monsterhearts.ejs      # Layout thème dark/gothique
-├── engrenages.ejs         # Layout thème steampunk
-├── metro2033.ejs          # Layout thème post-apo
-└── mistengine.ejs         # Layout thème fantastique
+├── base.ejs              # Structure HTML de base
+├── principal.ejs         # Layout principal actuel
+├── generique.ejs         # Layout générique (bleu)
+├── monsterhearts.ejs     # Layout gothique (purple)
+├── engrenages.ejs        # Layout fantasy (emerald)  
+├── metro2033.ejs         # Layout post-apo (red)
+└── mistengine.ejs        # Layout onirique (pink)
+```
+
+### Variables CSS système
+
+Chaque layout définit ses variables CSS :
+```css
+:root {
+    --system-primary: #8b5cf6;    /* Couleur principale */
+    --system-secondary: #a855f7;  /* Couleur secondaire */
+    --system-accent: #ec4899;     /* Couleur d'accent */
+}
 ```
 
 ## Composants réutilisables (Partials)

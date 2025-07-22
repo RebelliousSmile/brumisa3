@@ -1,0 +1,33 @@
+<!-- Layout Engrenages - Fantasy épique médiéval -->
+<div class="min-h-screen bg-gray-900 relative overflow-hidden">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-emerald-800/30 to-gray-900"></div>
+    <div class="absolute inset-0">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-yellow-500/10 rounded-full filter blur-3xl"></div>
+    </div>
+
+    <!-- Navigation principale -->
+    <%- include('../layouts/principal') %>
+
+    <!-- Fil d'Ariane -->
+    <%- include('../partials/breadcrumb', { systeme: 'engrenages' }) %>
+
+    <!-- Contenu principal -->
+    <main class="relative z-10">
+        <%- body %>
+    </main>
+
+    <!-- Footer système -->
+    <%- include('../partials/footer-systeme', { systeme: 'engrenages' }) %>
+</div>
+
+<style>
+:root {
+    --system-primary: #10b981;
+    --system-secondary: #34d399;
+    --system-accent: #fbbf24;
+    --system-bg-from: #047857;
+    --system-bg-to: #1f2937;
+}
+</style>
