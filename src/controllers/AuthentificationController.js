@@ -1,5 +1,6 @@
 const BaseController = require('./BaseController');
 const UtilisateurService = require('../services/UtilisateurService');
+const EmailService = require('../services/EmailService');
 const config = require('../config');
 
 /**
@@ -9,6 +10,7 @@ class AuthentificationController extends BaseController {
     constructor() {
         super('AuthentificationController');
         this.utilisateurService = new UtilisateurService();
+        this.emailService = new EmailService();
     }
 
     /**
@@ -76,16 +78,9 @@ class AuthentificationController extends BaseController {
      * POST /api/auth/inscription
      */
     inscription = this.wrapAsync(async (req, res) => {
-        // Debug temporaire
-        console.log('=== DEBUG INSCRIPTION ===');
-        console.log('req.body brut:', req.body);
-        console.log('typeof req.body:', typeof req.body);
-        console.log('req.headers:', req.headers);
-        
         this.validerParametres(req, ['nom', 'email', 'motDePasse']);
         
         const { nom, email, motDePasse, confirmationMotDePasse } = this.sanitizeInput(req.body);
-        console.log('Après sanitizeInput:', { nom, email, motDePasse: motDePasse ? '***' : undefined });
         
         // Valider le format email
         if (!this.validerEmail(email)) {
@@ -136,6 +131,32 @@ class AuthentificationController extends BaseController {
             utilisateur_id: utilisateur.id,
             ip: req.ip
         });
+        
+        // Envoyer l'email de bienvenue (de manière asynchrone)
+        try {
+            const emailResult = await this.emailService.envoyerBienvenue(
+                utilisateur.email,
+                utilisateur.nom
+            );
+            
+            if (emailResult.success) {
+                this.logger.info('Email de bienvenue envoyé', {
+                    utilisateur_id: utilisateur.id,
+                    resend_id: emailResult.id
+                });
+            } else {
+                this.logger.error('Échec envoi email de bienvenue', {
+                    utilisateur_id: utilisateur.id,
+                    error: emailResult.error
+                });
+            }
+        } catch (error) {
+            // Ne pas bloquer l'inscription si l'email échoue
+            this.logError(error, { 
+                context: 'envoi_email_bienvenue',
+                utilisateur_id: utilisateur.id 
+            });
+        }
         
         return this.repondreSucces(res, {
             utilisateur: {
@@ -386,13 +407,31 @@ class AuthentificationController extends BaseController {
                 ip: req.ip
             });
             
-            // TODO: Envoyer l'email avec le lien de récupération
-            // En attendant l'intégration d'un service d'emailing, on log le token
-            this.logger.info('Lien de récupération (DEV SEULEMENT)', {
-                email: email,
-                token: resultat.token,
-                lien: `${req.protocol}://${req.get('host')}/reinitialiser-mot-de-passe/${resultat.token}`
-            });
+            // Envoyer l'email avec le lien de récupération
+            try {
+                const emailResult = await this.emailService.envoyerMotDePasseOublie(
+                    email,
+                    resultat.utilisateur.nom,
+                    resultat.token
+                );
+                
+                if (emailResult.success) {
+                    this.logger.info('Email de récupération envoyé', {
+                        email: email,
+                        resend_id: emailResult.id
+                    });
+                } else {
+                    this.logger.error('Échec envoi email de récupération', {
+                        email: email,
+                        error: emailResult.error
+                    });
+                }
+            } catch (error) {
+                this.logError(error, { 
+                    context: 'envoi_email_recuperation',
+                    email: email 
+                });
+            }
         }
         
         // Toujours répondre succès pour ne pas révéler si l'email existe

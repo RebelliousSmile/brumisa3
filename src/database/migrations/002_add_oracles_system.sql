@@ -219,9 +219,9 @@ GROUP BY o.id, o.name, o.total_weight, draw_stats.total_draws, draw_stats.unique
 
 -- 12. Données d'exemple pour tests
 INSERT INTO oracles (id, name, description, premium_required, is_active, created_by) VALUES
-('11111111-1111-1111-1111-111111111111', 'Armes médiévales', 'Collection d''armes pour jeux médiévaux fantastiques', FALSE, TRUE, 0),
-('22222222-2222-2222-2222-222222222222', 'Sorts de magie', 'Grimoire de sorts variés (Premium)', TRUE, TRUE, 0),
-('33333333-3333-3333-3333-333333333333', 'Événements aléatoires', 'Événements pour pimenter vos aventures', FALSE, TRUE, 0)
+('11111111-1111-1111-1111-111111111111', 'Armes médiévales', 'Collection d''armes pour jeux médiévaux fantastiques', FALSE, TRUE, NULL),
+('22222222-2222-2222-2222-222222222222', 'Sorts de magie', 'Grimoire de sorts variés (Premium)', TRUE, TRUE, NULL),
+('33333333-3333-3333-3333-333333333333', 'Événements aléatoires', 'Événements pour pimenter vos aventures', FALSE, TRUE, NULL)
 ON CONFLICT (id) DO NOTHING;
 
 -- Items pour l'oracle "Armes médiévales"
