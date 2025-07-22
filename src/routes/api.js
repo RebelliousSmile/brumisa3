@@ -1,12 +1,39 @@
 const express = require('express');
+const multer = require('multer');
 const AuthentificationController = require('../controllers/AuthentificationController');
 const PersonnageController = require('../controllers/PersonnageController');
 const PdfController = require('../controllers/PdfController');
 const HomeController = require('../controllers/HomeController');
 const DonationController = require('../controllers/DonationController');
 const AdminController = require('../controllers/AdminController');
+const OracleController = require('../controllers/OracleController');
 
 const router = express.Router();
+
+// Configuration multer pour l'upload de fichiers oracles
+const uploadOracle = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB max
+        files: 1
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['application/json', 'text/csv', 'application/vnd.ms-excel'];
+        const allowedExtensions = ['.json', '.csv'];
+        
+        const hasValidType = allowedTypes.includes(file.mimetype) || 
+                            file.mimetype === 'application/octet-stream'; // Pour certains navigateurs
+        const hasValidExtension = allowedExtensions.some(ext => 
+            file.originalname.toLowerCase().endsWith(ext)
+        );
+        
+        if (hasValidType && hasValidExtension) {
+            cb(null, true);
+        } else {
+            cb(new Error('Type de fichier non supporté. Utilisez JSON ou CSV.'), false);
+        }
+    }
+});
 
 // Initialiser les contrôleurs
 const authController = new AuthentificationController();
@@ -15,6 +42,7 @@ const pdfController = new PdfController();
 const homeController = new HomeController();
 const donationController = new DonationController();
 const adminController = new AdminController();
+const oracleController = new OracleController();
 
 // ===== ROUTES AUTHENTIFICATION =====
 
@@ -139,6 +167,33 @@ router.post('/temoignages', homeController.ajouterTemoignage);
 
 // Dons
 router.get('/dons/infos', homeController.informationsDons);
+
+// ===== ROUTES ORACLES =====
+
+// Routes publiques/utilisateur
+router.get('/oracles', oracleController.lister);
+router.get('/oracles/search', oracleController.rechercher);
+router.get('/oracles/:id', oracleController.obtenirParId);
+router.post('/oracles/:id/draw', oracleController.effectuerTirage);
+router.get('/oracles/:id/stats', oracleController.obtenirStatistiques);
+
+// Routes administrateur
+router.post('/admin/oracles', authController.middlewareRole('ADMIN'), oracleController.creer);
+router.put('/admin/oracles/:id', authController.middlewareRole('ADMIN'), oracleController.mettreAJour);
+router.delete('/admin/oracles/:id', authController.middlewareRole('ADMIN'), oracleController.supprimer);
+router.post('/admin/oracles/:id/items', authController.middlewareRole('ADMIN'), oracleController.ajouterItem);
+router.put('/admin/oracles/:oracleId/items/:itemId', authController.middlewareRole('ADMIN'), oracleController.mettreAJourItem);
+router.delete('/admin/oracles/:oracleId/items/:itemId', authController.middlewareRole('ADMIN'), oracleController.supprimerItem);
+router.post('/admin/oracles/:id/clone', authController.middlewareRole('ADMIN'), oracleController.cloner);
+router.post('/admin/oracles/:id/toggle', authController.middlewareRole('ADMIN'), oracleController.basculerStatut);
+router.get('/admin/oracles/:id/distribution', authController.middlewareRole('ADMIN'), oracleController.analyserDistribution);
+
+// Routes import/export
+router.post('/admin/oracles/import', authController.middlewareRole('ADMIN'), uploadOracle.single('file'), oracleController.importerFichier);
+router.get('/admin/oracles/:id/export/json', authController.middlewareRole('ADMIN'), oracleController.exporterJSON);
+router.get('/admin/oracles/:id/export/csv', authController.middlewareRole('ADMIN'), oracleController.exporterCSV);
+router.get('/admin/oracles/imports', authController.middlewareRole('ADMIN'), oracleController.historiqueImports);
+router.post('/admin/oracles/imports/:importId/rollback', authController.middlewareRole('ADMIN'), oracleController.annulerImport);
 
 // ===== ROUTES ADMIN TÉMOIGNAGES =====
 

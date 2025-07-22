@@ -938,11 +938,12 @@ class PdfService extends BaseService {
             const pdf = await this.pdfModel.creer({
                 personnage_id: null, // Pas de personnage pour un document générique
                 utilisateur_id: utilisateurId,
+                systeme_jeu: options.systeme, // Ajouter le système requis par la validation
                 type_pdf: options.type_pdf || 'document-generique',
                 nom_fichier: nomFichier,
                 chemin_fichier: cheminFichier,
                 options_generation: JSON.stringify(options),
-                statut: 'EN_ATTENTE',
+                statut: 'EN_ATTENTE', // Statut initial pour les PDFs en cours de génération
                 progression: 0,
                 est_public: options.est_public || false,
                 titre: options.titre_personnalise || options.donnees.titre
@@ -1047,6 +1048,49 @@ class PdfService extends BaseService {
         const id = crypto.randomBytes(4).toString('hex');
         return `user-system_rights-public_template-document-generique_${systeme}_${titreNettoye}_id-${id}.pdf`;
     }
+
+    /**
+     * Obtient les statistiques globales des PDFs
+     */
+    async obtenirStatistiquesGlobales() {
+        try {
+            const stats = await this.pdfModel.obtenirStatistiques();
+            return stats || {
+                total: 0,
+                ce_mois: 0,
+                en_cours: 0,
+                echecs: 0,
+                total_monsterhearts: 0,
+                total_engrenages: 0,
+                total_metro: 0,
+                total_mist: 0
+            };
+        } catch (error) {
+            this.logger.error('Erreur récupération statistiques PDFs:', error);
+            return {
+                total: 0,
+                ce_mois: 0,
+                en_cours: 0,
+                echecs: 0,
+                total_monsterhearts: 0,
+                total_engrenages: 0,
+                total_metro: 0,
+                total_mist: 0
+            };
+        }
+    }
+
+    /**
+     * Obtient les PDFs récents
+     */
+    async obtenirRecents(limite = 10) {
+        try {
+            return await this.pdfModel.obtenirRecents(limite);
+        } catch (error) {
+            this.logger.error('Erreur récupération PDFs récents:', error);
+            return [];
+        }
+    }
 }
 
 module.exports = PdfService;</code></pre>
@@ -1059,13 +1103,13 @@ module.exports = PdfService;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 16:01:04 GMT+0200 (heure d’été d’Europe centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 09:21:38 GMT+0200 (heure d’été d’Europe centrale)
 </footer>
 
 <script> prettyPrint(); </script>

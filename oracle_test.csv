@@ -1,0 +1,11 @@
+value,weight,is_active,type,rareté
+"Épée longue",15,true,"arme","commune"
+"Bouclier en bois",20,true,"armure","commune"
+"Arc elfique",10,true,"arme","rare"
+"Flèches empoisonnées",18,true,"munitions","rare"
+"Armure de cuir",22,true,"armure","commune"
+"Cape d'invisibilité",5,true,"accessoire","légendaire"
+"Bottes de vitesse",8,true,"accessoire","rare"
+"Dague empoisonnée",12,true,"arme","rare"
+"Parchemin de sorts",7,true,"consommable","rare"
+"Cristal de mana",6,true,"consommable","légendaire"
