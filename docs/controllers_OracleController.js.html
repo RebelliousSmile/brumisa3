@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/OracleController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/OracleController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseController = require('./BaseController');
+const OracleService = require('../services/OracleService');
+
+/**
+ * Contrôleur Oracle - Endpoints API pour les tirages pondérés
+ */
+class OracleController extends BaseController {
+    constructor() {
+        super('OracleController');
+        this.oracleService = new OracleService();
+    }
+
+    /**
+     * GET /api/oracles - Liste tous les oracles accessibles
+     */
+    lister = this.wrapAsync(async (req, res) => {
+        const pagination = this.extrairePagination(req);
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+
+        const oracles = await this.oracleService.listerOraclesAccessibles(
+            userRole,
+            pagination.page,
+            pagination.limite
+        );
+
+        return this.repondrePagine(res, oracles.data, oracles.pagination, 'Oracles récupérés');
+    });
+
+    /**
+     * GET /api/oracles/search?q=query - Recherche d'oracles
+     */
+    rechercher = this.wrapAsync(async (req, res) => {
+        const query = req.query.q;
+        if (!query || query.trim().length &lt; 2) {
+            return this.repondreErreur(res, 400, 'Requête de recherche trop courte (minimum 2 caractères)', 'validation');
+        }
+
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const oracles = await this.oracleService.rechercherOracles(query, userRole, limit);
+
+        return this.repondreSucces(res, oracles, 'Recherche effectuée');
+    });
+
+    /**
+     * GET /api/oracles/:id - Récupère un oracle spécifique
+     */
+    obtenirParId = this.wrapAsync(async (req, res) => {
+        const { id } = req.params;
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        const includeItems = req.query.items === 'true';
+
+        const oracle = await this.oracleService.obtenirOracle(id, userRole, includeItems);
+
+        return this.repondreSucces(res, oracle, 'Oracle récupéré');
+    });
+
+    /**
+     * POST /api/oracles/:id/draw - Effectue un tirage depuis un oracle
+     */
+    effectuerTirage = this.wrapAsync(async (req, res) => {
+        const { id } = req.params;
+        const {
+            count = 1,
+            filters = null,
+            withReplacement = true
+        } = this.sanitizeInput(req.body);
+
+        // Validation des paramètres
+        if (count &lt; 1 || count > 100) {
+            return this.repondreErreur(res, 400, 'Le nombre d\'éléments à tirer doit être entre 1 et 100', 'validation');
+        }
+
+        // Données utilisateur et session
+        const userId = req.session?.utilisateur?.id || null;
+        const sessionId = req.sessionID;
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        const userAgent = req.get('user-agent');
+
+        const result = await this.oracleService.effectuerTirage(
+            id,
+            count,
+            filters,
+            withReplacement,
+            userRole,
+            userId,
+            sessionId,
+            ipAddress,
+            userAgent
+        );
+
+        return this.repondreSucces(res, result, 'Tirage effectué');
+    });
+
+    /**
+     * GET /api/oracles/:id/stats - Statistiques d'un oracle
+     */
+    obtenirStatistiques = this.wrapAsync(async (req, res) => {
+        const { id } = req.params;
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+
+        const stats = await this.oracleService.obtenirStatistiques(id, userRole);
+
+        return this.repondreSucces(res, stats, 'Statistiques récupérées');
+    });
+
+    // ===== ENDPOINTS ADMINISTRATEUR =====
+
+    /**
+     * POST /api/admin/oracles - Crée un nouvel oracle (ADMIN uniquement)
+     */
+    creer = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        
+        this.validerCorps(req, ['name']);
+        
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+        
+        const donnees = this.sanitizeInput(req.body);
+        donnees.created_by = admin.id;
+
+        const oracle = await oracleModel.create(donnees);
+
+        this.logger.info('Oracle créé par admin', {
+            oracle_id: oracle.id,
+            oracle_name: oracle.name,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, oracle, 'Oracle créé', 201);
+    });
+
+    /**
+     * PUT /api/admin/oracles/:id - Met à jour un oracle (ADMIN uniquement)
+     */
+    mettreAJour = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+        
+        // Vérifier l'existence
+        const existant = await oracleModel.findById(id);
+        if (!existant) {
+            return this.repondreErreur(res, 404, 'Oracle introuvable', 'non_trouve');
+        }
+
+        const donnees = this.sanitizeInput(req.body);
+        const oracle = await oracleModel.update(id, donnees);
+
+        this.logger.info('Oracle mis à jour par admin', {
+            oracle_id: id,
+            admin_id: admin.id,
+            changes: Object.keys(donnees)
+        });
+
+        return this.repondreSucces(res, oracle, 'Oracle mis à jour');
+    });
+
+    /**
+     * DELETE /api/admin/oracles/:id - Supprime un oracle (ADMIN uniquement)
+     */
+    supprimer = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+
+        // Vérifier l'existence
+        const existant = await oracleModel.findById(id);
+        if (!existant) {
+            return this.repondreErreur(res, 404, 'Oracle introuvable', 'non_trouve');
+        }
+
+        await oracleModel.supprimerCompletement(id);
+
+        this.logger.info('Oracle supprimé par admin', {
+            oracle_id: id,
+            oracle_name: existant.name,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, null, 'Oracle supprimé');
+    });
+
+    /**
+     * POST /api/admin/oracles/:id/items - Ajoute un item à un oracle (ADMIN uniquement)
+     */
+    ajouterItem = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        
+        this.validerCorps(req, ['value']);
+        
+        const OracleItem = require('../models/OracleItem');
+        const oracleItemModel = new OracleItem();
+        
+        // Vérifier que l'oracle existe
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+        const oracle = await oracleModel.findById(id);
+        if (!oracle) {
+            return this.repondreErreur(res, 404, 'Oracle introuvable', 'non_trouve');
+        }
+
+        const donnees = this.sanitizeInput(req.body);
+        donnees.oracle_id = id;
+
+        const item = await oracleItemModel.create(donnees);
+
+        this.logger.info('Item ajouté à l\'oracle par admin', {
+            oracle_id: id,
+            item_id: item.id,
+            item_value: item.value,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, item, 'Item ajouté', 201);
+    });
+
+    /**
+     * PUT /api/admin/oracles/:oracleId/items/:itemId - Met à jour un item (ADMIN uniquement)
+     */
+    mettreAJourItem = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { oracleId, itemId } = req.params;
+        
+        const OracleItem = require('../models/OracleItem');
+        const oracleItemModel = new OracleItem();
+        
+        // Vérifier que l'item existe et appartient à l'oracle
+        const item = await oracleItemModel.findOne('id = ? AND oracle_id = ?', [itemId, oracleId]);
+        if (!item) {
+            return this.repondreErreur(res, 404, 'Item introuvable dans cet oracle', 'non_trouve');
+        }
+
+        const donnees = this.sanitizeInput(req.body);
+        const itemMisAJour = await oracleItemModel.update(itemId, donnees);
+
+        this.logger.info('Item mis à jour par admin', {
+            oracle_id: oracleId,
+            item_id: itemId,
+            admin_id: admin.id,
+            changes: Object.keys(donnees)
+        });
+
+        return this.repondreSucces(res, itemMisAJour, 'Item mis à jour');
+    });
+
+    /**
+     * DELETE /api/admin/oracles/:oracleId/items/:itemId - Supprime un item (ADMIN uniquement)
+     */
+    supprimerItem = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { oracleId, itemId } = req.params;
+        
+        const OracleItem = require('../models/OracleItem');
+        const oracleItemModel = new OracleItem();
+        
+        // Vérifier que l'item existe et appartient à l'oracle
+        const item = await oracleItemModel.findOne('id = ? AND oracle_id = ?', [itemId, oracleId]);
+        if (!item) {
+            return this.repondreErreur(res, 404, 'Item introuvable dans cet oracle', 'non_trouve');
+        }
+
+        await oracleItemModel.delete(itemId);
+
+        this.logger.info('Item supprimé par admin', {
+            oracle_id: oracleId,
+            item_id: itemId,
+            item_value: item.value,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, null, 'Item supprimé');
+    });
+
+    /**
+     * POST /api/admin/oracles/:id/clone - Clone un oracle (ADMIN uniquement)
+     */
+    cloner = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        
+        this.validerCorps(req, ['newName']);
+        
+        const { newName } = this.sanitizeInput(req.body);
+        
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+
+        const oracleClone = await oracleModel.cloner(id, newName, admin.id);
+
+        this.logger.info('Oracle cloné par admin', {
+            source_oracle_id: id,
+            new_oracle_id: oracleClone.id,
+            new_name: newName,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, oracleClone, 'Oracle cloné', 201);
+    });
+
+    /**
+     * POST /api/admin/oracles/:id/toggle - Active/désactive un oracle (ADMIN uniquement)
+     */
+    basculerStatut = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        
+        const Oracle = require('../models/Oracle');
+        const oracleModel = new Oracle();
+        
+        const oracle = await oracleModel.findById(id);
+        if (!oracle) {
+            return this.repondreErreur(res, 404, 'Oracle introuvable', 'non_trouve');
+        }
+
+        const oracleMisAJour = oracle.is_active ? 
+            await oracleModel.desactiver(id) : 
+            await oracleModel.reactiver(id);
+
+        const action = oracle.is_active ? 'désactivé' : 'réactivé';
+
+        this.logger.info(`Oracle ${action} par admin`, {
+            oracle_id: id,
+            oracle_name: oracle.name,
+            new_status: !oracle.is_active,
+            admin_id: admin.id
+        });
+
+        return this.repondreSucces(res, oracleMisAJour, `Oracle ${action}`);
+    });
+
+    /**
+     * GET /api/admin/oracles/:id/distribution - Analyse de distribution (ADMIN uniquement)
+     */
+    analyserDistribution = this.wrapAsync(async (req, res) => {
+        const admin = this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+        const limite = Math.min(parseInt(req.query.days) || 30, 365);
+
+        const distribution = await this.oracleService.analyserDistribution(id, admin.role, limite);
+
+        return this.repondreSucces(res, distribution, 'Analyse de distribution effectuée');
+    });
+
+    // ===== ENDPOINTS POUR VUES WEB =====
+
+    /**
+     * GET /oracles - Page de liste des oracles
+     */
+    pageListeOracles = this.wrapAsync(async (req, res) => {
+        const pagination = this.extrairePagination(req);
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+
+        const oracles = await this.oracleService.listerOraclesAccessibles(
+            userRole,
+            pagination.page,
+            pagination.limite
+        );
+
+        res.render('oracles/liste', {
+            titre: 'Oracles Disponibles',
+            oracles: oracles.data,
+            pagination: oracles.pagination,
+            utilisateur: req.session?.utilisateur || null
+        });
+    });
+
+    /**
+     * GET /oracles/:id - Page détail d'un oracle
+     */
+    pageDetailOracle = this.wrapAsync(async (req, res) => {
+        const { id } = req.params;
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+
+        const oracle = await this.oracleService.obtenirOracle(id, userRole, true);
+        const stats = await this.oracleService.obtenirStatistiques(id, userRole);
+
+        res.render('oracles/detail', {
+            titre: oracle.name,
+            oracle,
+            stats,
+            utilisateur: req.session?.utilisateur || null
+        });
+    });
+
+    /**
+     * GET /admin/oracles - Page d'administration des oracles (ADMIN uniquement)
+     */
+    pageAdminOracles = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+
+        const pagination = this.extrairePagination(req);
+
+        const oracles = await this.oracleService.listerOraclesAccessibles(
+            'ADMIN',
+            pagination.page,
+            pagination.limite
+        );
+
+        res.render('admin/oracles/liste', {
+            titre: 'Administration des Oracles',
+            oracles: oracles.data,
+            pagination: oracles.pagination,
+            utilisateur: req.session.utilisateur
+        });
+    });
+
+    /**
+     * GET /admin/oracles/:id/edit - Page d'édition d'un oracle (ADMIN uniquement)
+     */
+    pageEditionOracle = this.wrapAsync(async (req, res) => {
+        this.verifierPermissions(req, 'ADMIN');
+        const { id } = req.params;
+
+        const oracle = await this.oracleService.obtenirOracle(id, 'ADMIN', true);
+
+        res.render('admin/oracles/edition', {
+            titre: `Édition - ${oracle.name}`,
+            oracle,
+            utilisateur: req.session.utilisateur
+        });
+    });
+}
+
+module.exports = OracleController;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 09:21:38 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

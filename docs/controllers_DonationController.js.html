@@ -28,7 +28,14 @@
         <article>
             <pre class="prettyprint source linenums"><code>const BaseController = require('./BaseController');
 const UtilisateurService = require('../services/UtilisateurService');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Initialiser Stripe seulement si la clé est configurée
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+} else {
+    console.warn('⚠️  STRIPE_SECRET_KEY non configuré. Le système de dons sera désactivé.');
+}
 
 /**
  * Contrôleur pour la gestion des dons et paiements
@@ -44,6 +51,11 @@ class DonationController extends BaseController {
      * POST /api/donations/create-payment-intent
      */
     creerSessionPaiement = this.wrapAsync(async (req, res) => {
+        // Vérifier si Stripe est configuré
+        if (!stripe) {
+            return this.repondreErreur(res, 503, 'Système de dons temporairement indisponible');
+        }
+        
         this.validerCorps(req, ['amount', 'email']);
         
         const { amount, email, message } = req.body;
@@ -101,8 +113,18 @@ class DonationController extends BaseController {
      * POST /api/donations/webhook
      */
     webhookStripe = this.wrapAsync(async (req, res) => {
+        // Vérifier si Stripe est configuré
+        if (!stripe) {
+            return res.status(503).send('Stripe non configuré');
+        }
+        
         const sig = req.headers['stripe-signature'];
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        
+        if (!endpointSecret) {
+            console.error('STRIPE_WEBHOOK_SECRET non configuré');
+            return res.status(500).send('Configuration webhook manquante');
+        }
         
         let event;
         
@@ -131,6 +153,11 @@ class DonationController extends BaseController {
         
         if (!session_id) {
             return res.redirect('/support');
+        }
+        
+        // Si Stripe n'est pas configuré, rediriger vers support avec message
+        if (!stripe) {
+            return res.redirect('/support?error=config');
         }
         
         try {
@@ -219,6 +246,18 @@ class DonationController extends BaseController {
         
         return this.repondreSucces(res, stats, 'Statistiques récupérées');
     });
+
+    /**
+     * Vérifie si Stripe est configuré et disponible
+     * GET /api/donations/status
+     */
+    verifierStatut = this.wrapAsync(async (req, res) => {
+        if (!stripe) {
+            return this.repondreErreur(res, 503, 'Stripe non configuré');
+        }
+        
+        return this.repondreSucces(res, { disponible: true }, 'Stripe disponible');
+    });
 }
 
 module.exports = DonationController;</code></pre>
@@ -231,13 +270,13 @@ module.exports = DonationController;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 21 2025 16:01:04 GMT+0200 (heure d’été d’Europe centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 09:21:38 GMT+0200 (heure d’été d’Europe centrale)
 </footer>
 
 <script> prettyPrint(); </script>

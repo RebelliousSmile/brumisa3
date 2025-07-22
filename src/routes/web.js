@@ -1,6 +1,7 @@
 const express = require('express');
 const AuthentificationController = require('../controllers/AuthentificationController');
 const DonationController = require('../controllers/DonationController');
+const OracleController = require('../controllers/OracleController');
 const systemesJeu = require('../utils/systemesJeu');
 
 const router = express.Router();
@@ -8,6 +9,7 @@ const router = express.Router();
 // Initialiser les contrôleurs
 const authController = new AuthentificationController();
 const donationController = new DonationController();
+const oracleController = new OracleController();
 
 // ===== MIDDLEWARE GLOBAL =====
 
@@ -248,6 +250,14 @@ router.get('/systemes/:systeme', (req, res) => {
 
 // ===== ADMINISTRATION =====
 
+// ===== ORACLES =====
+
+// Pages publiques oracles
+router.get('/oracles', oracleController.pageListeOracles);
+router.get('/oracles/:id', oracleController.pageDetailOracle);
+
+// ===== ADMINISTRATION =====
+
 // Dashboard admin
 router.get('/admin', authController.middlewareRole('ADMIN'), (req, res) => {
     res.render('admin/dashboard', {
@@ -268,6 +278,11 @@ router.get('/admin/statistiques', authController.middlewareRole('ADMIN'), (req, 
         title: 'Statistiques - Admin'
     });
 });
+
+// Gestion des oracles (admin)
+router.get('/admin/oracles', authController.middlewareRole('ADMIN'), oracleController.pageAdminOracles);
+router.get('/admin/oracles/:id/edit', authController.middlewareRole('ADMIN'), oracleController.pageEditionOracle);
+router.get('/admin/oracles/imports', authController.middlewareRole('ADMIN'), oracleController.pageHistoriqueImports);
 
 // ===== PAGES STATIQUES =====
 

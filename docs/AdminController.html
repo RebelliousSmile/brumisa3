@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: AdminController</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: AdminController</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>AdminController<span class="signature">()</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description"><p>Contrôleur pour les fonctionnalités d'administration</p></div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    
+    <h4 class="name" id="AdminController"><span class="type-signature"></span>new AdminController<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="creerSauvegarde"><span class="type-signature"></span>creerSauvegarde<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Crée une sauvegarde de la base de données
+POST /api/admin/backup</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line217">line 217</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="listerUtilisateurs"><span class="type-signature"></span>listerUtilisateurs<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Liste les utilisateurs avec filtres (admin)
+GET /api/admin/utilisateurs</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line132">line 132</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="modifierRoleUtilisateur"><span class="type-signature"></span>modifierRoleUtilisateur<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Modifie le rôle d'un utilisateur (admin)
+PUT /api/admin/utilisateurs/:id/role</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line186">line 186</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="nettoyerTokens"><span class="type-signature"></span>nettoyerTokens<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Nettoie les tokens anonymes expirés
+POST /api/admin/cleanup-tokens</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line203">line 203</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="obtenirActiviteRecente"><span class="type-signature"></span>obtenirActiviteRecente<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Obtient l'activité récente du site
+GET /api/admin/activite-recente</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line82">line 82</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="obtenirLogs"><span class="type-signature"></span>obtenirLogs<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Obtient les logs système
+GET /api/admin/logs</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line245">line 245</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="obtenirStatistiques"><span class="type-signature"></span>obtenirStatistiques<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Obtient les statistiques globales du site
+GET /api/admin/statistiques</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line23">line 23</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="supprimerUtilisateur"><span class="type-signature"></span>supprimerUtilisateur<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Supprime un utilisateur (admin)
+DELETE /api/admin/utilisateurs/:id</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line165">line 165</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="compterNouveauxCeMois"><span class="type-signature"></span>compterNouveauxCeMois<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Compte les nouveaux utilisateurs ce mois</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line311">line 311</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatTempsRelatif"><span class="type-signature"></span>formatTempsRelatif<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Formate un timestamp en temps relatif</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line339">line 339</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formaterDuree"><span class="type-signature"></span>formaterDuree<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Formate une durée en millisecondes</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line324">line 324</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="obtenirStatistiquesDons"><span class="type-signature">(async) </span>obtenirStatistiquesDons<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Obtient les statistiques des dons</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line298">line 298</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="obtenirStatistiquesSysteme"><span class="type-signature"></span>obtenirStatistiquesSysteme<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Obtient les statistiques système</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_AdminController.js.html">controllers/AdminController.js</a>, <a href="controllers_AdminController.js.html#line281">line 281</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 09:21:38 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
