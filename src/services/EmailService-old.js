@@ -42,7 +42,7 @@ class EmailService extends BaseService {
      * @returns {Promise<Object>} Résultat de l'envoi
      */
     async envoyerMotDePasseOublie(email, nom, token) {
-        const lienRecuperation = `${process.env.BASE_URL || 'http://localhost:3074'}/reinitialiser-mot-de-passe/${token}`;
+        const lienRecuperation = `${process.env.BASE_URL}/reinitialiser-mot-de-passe/${token}`;
         
         const variables = {
             nom: nom,
@@ -68,7 +68,7 @@ class EmailService extends BaseService {
     async envoyerBienvenue(email, nom) {
         const variables = {
             nom: nom,
-            lien_connexion: `${process.env.BASE_URL || 'http://localhost:3074'}/connexion`,
+            lien_connexion: `${process.env.BASE_URL}/connexion`,
             site_name: this.fromName
         };
 
@@ -89,7 +89,7 @@ class EmailService extends BaseService {
     async envoyerNewsletterConfirmation(email, token) {
         const variables = {
             email: email,
-            lien_desinscription: `${process.env.BASE_URL || 'http://localhost:3074'}/newsletter/desinscription/${token}`,
+            lien_desinscription: `${process.env.BASE_URL}/newsletter/desinscription/${token}`,
             site_name: this.fromName
         };
 
@@ -232,7 +232,7 @@ class EmailService extends BaseService {
             // Variables communes à tous les templates
             const commonVariables = {
                 site_name: this.fromName,
-                site_url: process.env.BASE_URL || 'http://localhost:3074',
+                site_url: process.env.BASE_URL,
                 year: new Date().getFullYear(),
                 ...variables
             };

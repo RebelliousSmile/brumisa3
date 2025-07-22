@@ -46,7 +46,7 @@ npm run db:seed
 npm run dev
 ```
 
-L'application sera accessible sur http://localhost:3000
+L'application sera accessible sur http://localhost:3074
 
 ## 📚 Documentation
 

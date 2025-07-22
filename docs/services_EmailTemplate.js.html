@@ -48,11 +48,11 @@ class EmailTemplate extends BaseService {
     getCommonVariables() {
         return {
             site_name: process.env.RESEND_FROM_NAME || 'Brumisa3 - Générateur PDF JDR',
-            site_url: process.env.BASE_URL || 'http://localhost:3074',
+            site_url: process.env.BASE_URL,
             year: new Date().getFullYear(),
             support_email: process.env.RESEND_FROM_EMAIL || 'support@localhost',
             current_date: new Date().toLocaleDateString('fr-FR'),
-            logo_url: `${process.env.BASE_URL || 'http://localhost:3074'}/assets/logo.png`
+            logo_url: `${process.env.BASE_URL}/assets/logo.png`
         };
     }
 

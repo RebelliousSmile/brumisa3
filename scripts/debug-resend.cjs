@@ -25,7 +25,7 @@ console.log(`   RESEND_API_KEY: ${process.env.RESEND_API_KEY ? `${process.env.RE
 console.log(`   RESEND_FROM_EMAIL: ${process.env.RESEND_FROM_EMAIL || '❌ MANQUANTE'}`);
 console.log(`   RESEND_FROM_NAME: ${process.env.RESEND_FROM_NAME || 'Par défaut: Générateur PDF JDR'}`);
 console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-console.log(`   BASE_URL: ${process.env.BASE_URL || 'http://localhost:3074'}`);
+console.log(`   BASE_URL: ${process.env.BASE_URL}`);
 
 // 2. Test de l'initialisation Resend
 console.log('\n🔧 Test d\'initialisation Resend...');

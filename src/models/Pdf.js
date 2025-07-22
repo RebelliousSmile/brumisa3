@@ -418,7 +418,7 @@ class Pdf extends BaseModel {
             return null;
         }
         
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const baseUrl = process.env.BASE_URL;
         const cheminRelatif = this.chemin_fichier.replace(/\\/g, '/');
         return `${baseUrl}/${cheminRelatif}`;
     }
@@ -431,7 +431,7 @@ class Pdf extends BaseModel {
             return null;
         }
         
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const baseUrl = process.env.BASE_URL;
         return `${baseUrl}/api/pdfs/${this.id}/apercu`;
     }
 
@@ -450,7 +450,7 @@ class Pdf extends BaseModel {
                 return null;
             }
 
-            const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+            const baseUrl = process.env.BASE_URL;
             return `${baseUrl}/partage/pdf/${urlData.token}`;
         } catch (error) {
             return null;
@@ -461,7 +461,7 @@ class Pdf extends BaseModel {
      * Getter pour l'URL de l'API du PDF
      */
     get urlApi() {
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const baseUrl = process.env.BASE_URL;
         return `${baseUrl}/api/pdfs/${this.id}`;
     }
 

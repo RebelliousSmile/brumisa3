@@ -140,7 +140,7 @@ class NewsletterService extends BaseService {
      */
     genererFluxRSS() {
         const actualites = this.obtenirActualites(10);
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3076';
+        const baseUrl = process.env.BASE_URL;
         
         let rss = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">

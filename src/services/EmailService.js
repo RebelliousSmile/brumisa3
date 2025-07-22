@@ -43,7 +43,7 @@ class EmailService extends BaseService {
      * @returns {Promise<Object>} Résultat de l'envoi
      */
     async envoyerMotDePasseOublie(email, nom, token) {
-        const lienRecuperation = `${process.env.BASE_URL || 'http://localhost:3074'}/reinitialiser-mot-de-passe/${token}`;
+        const lienRecuperation = `${process.env.BASE_URL}/reinitialiser-mot-de-passe/${token}`;
         
         const variables = {
             nom: nom,
@@ -67,7 +67,7 @@ class EmailService extends BaseService {
      * @returns {Promise<Object>} Résultat de l'envoi
      */
     async envoyerBienvenue(email, nom) {
-        const lienConnexion = `${process.env.BASE_URL || 'http://localhost:3074'}/connexion`;
+        const lienConnexion = `${process.env.BASE_URL}/connexion`;
         
         const variables = {
             nom: nom,
@@ -90,7 +90,7 @@ class EmailService extends BaseService {
      * @returns {Promise<Object>} Résultat de l'envoi
      */
     async envoyerNewsletter(email, nom, token) {
-        const lienConfirmation = `${process.env.BASE_URL || 'http://localhost:3074'}/newsletter/confirmer/${token}`;
+        const lienConfirmation = `${process.env.BASE_URL}/newsletter/confirmer/${token}`;
         
         const variables = {
             nom: nom,
