@@ -369,7 +369,7 @@ class PdfKitService {
         // Footer watermark discret mais visible - coin bas droite
         doc.fontSize(8)
            .fillColor('#999999')
-           .text('brumisa3.fr', pageWidth - 65, pageHeight - 40);
+           .text('brumisater', pageWidth - 65, pageHeight - 40);
 
         // Page 2 (paire - barre à droite)
         doc.addPage();
@@ -455,7 +455,7 @@ class PdfKitService {
         // Footer watermark discret mais visible - coin bas gauche (éviter la barre droite)
         doc.fontSize(8)
            .fillColor('#999999')
-           .text('brumisa3.fr', 15, pageHeight - 40);
+           .text('brumisater', 15, pageHeight - 40);
     }
 
     /**
@@ -519,7 +519,7 @@ class PdfKitService {
 
         doc.fontSize(9)
            .fillColor('#666666')
-           .text(`Monsterhearts • Plan de Classe • brumisa3.fr`, 
+           .text(`Monsterhearts • Plan de Classe • brumisater`, 
                  footerX, footerY, {
                    width: footerWidth,
                    align: 'center'

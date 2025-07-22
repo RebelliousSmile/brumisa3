@@ -24,7 +24,7 @@ describe('Simple API Tests', () => {
     const pkg = require('../../package.json');
     
     expect(pkg.name).toBe('brumisa3');
-    expect(pkg.description).toContain('brumisa3.fr');
+    expect(pkg.description).toContain('brumisater');
     expect(pkg.scripts.test).toBeDefined();
     expect(pkg.devDependencies.jest).toBeDefined();
   });

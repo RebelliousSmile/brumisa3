@@ -140,7 +140,7 @@ describe('API Integration Tests', () => {
         .get('/')
         .expect(200);
 
-      expect(response.text).toContain('brumisa3.fr');
+      expect(response.text).toContain('brumisater');
       expect(response.text).toContain('EMBARK ON AN EXCITING');
     });
 
@@ -150,7 +150,7 @@ describe('API Integration Tests', () => {
         .expect(200);
 
       expect(response.text).toContain('Mentions Légales');
-      expect(response.text).toContain('brumisa3.fr');
+      expect(response.text).toContain('brumisater');
     });
 
     test('GET /cgu should return terms page', async () => {
@@ -159,7 +159,7 @@ describe('API Integration Tests', () => {
         .expect(200);
 
       expect(response.text).toContain('Conditions Générales');
-      expect(response.text).toContain('brumisa3.fr');
+      expect(response.text).toContain('brumisater');
     });
   });
 
@@ -170,7 +170,7 @@ describe('API Integration Tests', () => {
         .expect(404);
 
       expect(response.text).toContain('Page non trouvée');
-      expect(response.text).toContain('brumisa3.fr');
+      expect(response.text).toContain('brumisater');
     });
   });
 

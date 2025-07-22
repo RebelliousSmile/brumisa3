@@ -197,11 +197,11 @@ class DocumentGeneriqueService extends BaseService {
         const systemeData = SystemeUtils.getSysteme(systeme);
         
         if (systemeData) {
-            return `${systemeData.nom} • Document • brumisa3.fr`;
+            return `${systemeData.nom} • Document • brumisater`;
         }
         
         // Fallback si le système n'est pas trouvé
-        return `${systeme} • Document • brumisa3.fr`;
+        return `${systeme} • Document • brumisater`;
     }
 }
 

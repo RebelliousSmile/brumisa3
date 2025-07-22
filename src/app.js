@@ -167,7 +167,7 @@ class App {
       res.locals.user = req.session.user || null;
       res.locals.messages = req.session.messages || {};
       res.locals.config = {
-        appName: 'brumisa3.fr',
+        appName: 'brumisater',
         version: '1.0.0',
         env: config.server.env
       };
@@ -213,13 +213,13 @@ class App {
     // Pages légales
     this.app.get('/mentions-legales', (req, res) => {
       res.render('mentions-legales', {
-        title: 'Mentions légales - brumisa3.fr'
+        title: 'Mentions légales - brumisater'
       });
     });
 
     this.app.get('/cgu', (req, res) => {
       res.render('cgu', {
-        title: 'Conditions Générales d\'Utilisation - brumisa3.fr'
+        title: 'Conditions Générales d\'Utilisation - brumisater'
       });
     });
 

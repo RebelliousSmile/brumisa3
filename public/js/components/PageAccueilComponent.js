@@ -224,7 +224,7 @@ window.AlpineComponents.pageAccueil = () => ({
         if (navigator.share) {
             navigator.share({
                 title: `Fiche ${pdf.personnage_nom} - ${pdf.systeme_jeu}`,
-                text: `Découvrez cette fiche de personnage créée avec brumisa3.fr`,
+                text: `Découvrez cette fiche de personnage créée avec brumisater`,
                 url: `${window.location.origin}/pdfs/${pdf.id}`
             });
         } else {

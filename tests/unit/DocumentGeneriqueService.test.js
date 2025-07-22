@@ -309,7 +309,7 @@ describe('DocumentGeneriqueService', () => {
 
             expect(resultat).toContain('<div class="page-number">1</div>');
             expect(resultat).toContain('<div class="sidebar-text">MONSTERHEARTS</div>');
-            expect(resultat).toContain('Monsterhearts • Document • brumisa3.fr');
+            expect(resultat).toContain('Monsterhearts • Document • brumisater');
         });
 
         test('devrait gérer les valeurs par défaut pour Engrenages', async () => {
@@ -321,7 +321,7 @@ describe('DocumentGeneriqueService', () => {
             const resultat = await service.genererHtml('document-generique-v2', donnees, 'engrenages');
 
             expect(resultat).toContain('<div class="sidebar-text">ENGRENAGES</div>');
-            expect(resultat).toContain('Roue du Temps • Document • brumisa3.fr');
+            expect(resultat).toContain('Roue du Temps • Document • brumisater');
         });
 
         test('devrait gérer l\'absence d\'introduction', async () => {
@@ -469,14 +469,14 @@ describe('DocumentGeneriqueService', () => {
 
     describe('getPiedDePageDefaut', () => {
         test('devrait retourner le bon pied de page pour chaque système', () => {
-            expect(service.getPiedDePageDefaut('monsterhearts')).toBe('Monsterhearts • Document • brumisa3.fr');
-            expect(service.getPiedDePageDefaut('engrenages')).toBe('Roue du Temps • Document • brumisa3.fr');
-            expect(service.getPiedDePageDefaut('metro2033')).toBe('Metro 2033 • Document • brumisa3.fr');
-            expect(service.getPiedDePageDefaut('mistengine')).toBe('Mist Engine • Document • brumisa3.fr');
+            expect(service.getPiedDePageDefaut('monsterhearts')).toBe('Monsterhearts • Document • brumisater');
+            expect(service.getPiedDePageDefaut('engrenages')).toBe('Roue du Temps • Document • brumisater');
+            expect(service.getPiedDePageDefaut('metro2033')).toBe('Metro 2033 • Document • brumisater');
+            expect(service.getPiedDePageDefaut('mistengine')).toBe('Mist Engine • Document • brumisater');
         });
 
         test('devrait gérer un système inconnu', () => {
-            expect(service.getPiedDePageDefaut('systeme-inconnu')).toBe('systeme-inconnu • Document • brumisa3.fr');
+            expect(service.getPiedDePageDefaut('systeme-inconnu')).toBe('systeme-inconnu • Document • brumisater');
         });
     });
 

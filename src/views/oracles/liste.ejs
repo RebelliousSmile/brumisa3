@@ -71,14 +71,8 @@
                                 <%= oracle.name %>
                             </h3>
                             <div class="flex space-x-2">
-                                <% if (oracle.premium_required) { %>
-                                    <span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full flex items-center border border-yellow-500/30">
-                                        <i class="fas fa-crown mr-1"></i>
-                                        Premium
-                                    </span>
-                                <% } %>
                                 <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full border border-blue-500/30">
-                                    <%= oracle.total_items || 0 %> éléments
+                                    <%= oracle.total_items || 0 %>
                                 </span>
                             </div>
                         </div>
@@ -97,10 +91,10 @@
                                 <i class="fas fa-dice mr-1"></i>
                                 <%= oracle.total_draws || 0 %> tirages
                             </span>
-                            <span>
+                            <!--span>
                                 <i class="fas fa-check-circle mr-1"></i>
                                 <%= oracle.active_items || 0 %> actifs
-                            </span>
+                            </span-->
                         </div>
                     </div>
 

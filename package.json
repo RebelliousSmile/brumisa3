@@ -1,7 +1,7 @@
 {
   "name": "brumisa3",
   "version": "1.0.0",
-  "description": "Créateur de fiches de personnages JDR immersives - brumisa3.fr",
+  "description": "Créateur de fiches de personnages JDR immersives - brumisater",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

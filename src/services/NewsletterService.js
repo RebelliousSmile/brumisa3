@@ -145,7 +145,7 @@ class NewsletterService extends BaseService {
         let rss = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
 <channel>
-    <title>brumisa3.fr - Actualités</title>
+    <title>brumisater - Actualités</title>
     <description>Les dernières actualités du générateur de fiches de personnages JDR</description>
     <link>${baseUrl}</link>
     <language>fr-FR</language>

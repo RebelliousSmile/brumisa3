@@ -1,8 +1,8 @@
-# Guide de Tests - brumisa3.fr
+# Guide de Tests - brumisater
 
 ## Vue d'ensemble
 
-Ce document détaille les différents éléments à tester dans l'application brumisa3.fr, les méthodes de test et les outils recommandés.
+Ce document détaille les différents éléments à tester dans l'application brumisater, les méthodes de test et les outils recommandés.
 
 ## Types de Tests
 

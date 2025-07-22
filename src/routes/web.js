@@ -318,8 +318,8 @@ router.get('/confidentialite', (req, res) => {
 // Page de soutien/don
 router.get('/support', (req, res) => {
     res.render('systemes/support', {
-        title: 'Soutenir brumisa3.fr - Faire un don',
-        description: 'Soutenez le développement de brumisa3.fr et devenez Premium'
+        title: 'Soutenir brumisater - Faire un don',
+        description: 'Soutenez le développement de brumisater et devenez Premium'
     });
 });
 

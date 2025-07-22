@@ -11,7 +11,7 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
             introduction: '',
             typeDocument: 'AIDE DE JEU',
             numeroPage: 1,
-            piedDePage: 'Monsterhearts • Document • brumisa3.fr',
+            piedDePage: 'Monsterhearts • Document • brumisater',
             sections: []
         },
         
@@ -452,7 +452,7 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                     introduction: '',
                     typeDocument: 'AIDE DE JEU',
                     numeroPage: 1,
-                    piedDePage: 'Monsterhearts • Document • brumisa3.fr',
+                    piedDePage: 'Monsterhearts • Document • brumisater',
                     sections: []
                 };
                 this.sectionIdCounter = 0;
@@ -527,7 +527,7 @@ window.AlpineComponents.documentGeneriqueMonsterhearts = function() {
                 this.formData = {
                     ...exemple,
                     numeroPage: 1,
-                    piedDePage: 'Monsterhearts • Document • brumisa3.fr',
+                    piedDePage: 'Monsterhearts • Document • brumisater',
                     sections: []
                 };
                 

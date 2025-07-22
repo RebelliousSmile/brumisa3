@@ -196,7 +196,7 @@ describe('PageAccueilComponent', () => {
 
       expect(mockShare).toHaveBeenCalledWith({
         title: 'Fiche Luna - monsterhearts',
-        text: 'Découvrez cette fiche de personnage créée avec brumisa3.fr',
+        text: 'Découvrez cette fiche de personnage créée avec brumisater',
         url: 'http://localhost:3076/pdfs/test-id'
       });
     });

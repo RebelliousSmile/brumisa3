@@ -238,7 +238,7 @@ describe('MonsterheartsTheme', () => {
     describe('getWatermarkText', () => {
         test('devrait retourner l\'URL du site', () => {
             const result = theme.getWatermarkText();
-            expect(result).toBe('brumisa3.fr');
+            expect(result).toBe('brumisater');
         });
     });
 
