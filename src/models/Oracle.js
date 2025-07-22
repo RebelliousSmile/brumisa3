@@ -356,7 +356,10 @@ class Oracle extends BaseModel {
                 o.*,
                 COUNT(oi.id) as total_items,
                 COUNT(CASE WHEN oi.is_active THEN 1 END) as active_items,
-                COALESCE(draw_stats.total_draws, 0) as total_draws
+                COALESCE(draw_stats.total_draws, 0) as total_draws,
+                u.nom as creator_name,
+                u.id as creator_id,
+                u.role as creator_role
             FROM oracles o
             LEFT JOIN oracle_items oi ON o.id = oi.oracle_id
             LEFT JOIN (
@@ -364,8 +367,9 @@ class Oracle extends BaseModel {
                 FROM oracle_draws 
                 GROUP BY oracle_id
             ) draw_stats ON o.id = draw_stats.oracle_id
+            LEFT JOIN utilisateurs u ON o.created_by = u.id
             WHERE ${whereClause}
-            GROUP BY o.id, draw_stats.total_draws
+            GROUP BY o.id, draw_stats.total_draws, u.nom, u.id, u.role
             ORDER BY o.name ASC
             LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
         `;
@@ -423,7 +427,10 @@ class Oracle extends BaseModel {
                 o.*,
                 COUNT(oi.id) as total_items,
                 COUNT(CASE WHEN oi.is_active THEN 1 END) as active_items,
-                COALESCE(draw_stats.total_draws, 0) as total_draws
+                COALESCE(draw_stats.total_draws, 0) as total_draws,
+                u.nom as creator_name,
+                u.id as creator_id,
+                u.role as creator_role
             FROM oracles o
             LEFT JOIN oracle_items oi ON o.id = oi.oracle_id
             LEFT JOIN (
@@ -431,8 +438,9 @@ class Oracle extends BaseModel {
                 FROM oracle_draws 
                 GROUP BY oracle_id
             ) draw_stats ON o.id = draw_stats.oracle_id
+            LEFT JOIN utilisateurs u ON o.created_by = u.id
             WHERE ${whereClause}
-            GROUP BY o.id, draw_stats.total_draws
+            GROUP BY o.id, draw_stats.total_draws, u.nom, u.id, u.role
             ORDER BY o.name ASC
             LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
         `;
@@ -474,7 +482,7 @@ class Oracle extends BaseModel {
         if (userRole === 'UTILISATEUR') {
             delete filtered.total_weight;
             delete filtered.filters;
-            delete filtered.created_by;
+            // Ne pas supprimer created_by, creator_name et creator_id pour permettre l'affichage
             
             // Masquer les poids des items si présents
             if (filtered.items) {

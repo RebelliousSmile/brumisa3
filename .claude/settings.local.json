@@ -58,7 +58,8 @@
       "Bash(npx create-docusaurus:*)",
       "Bash(mv:*)",
       "Bash(npx jsdoc:*)",
-      "Bash(npx rimraf:*)"
+      "Bash(npx rimraf:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": []
   }

@@ -371,6 +371,8 @@ class OracleController extends BaseController {
             titre: 'Oracles Disponibles',
             oracles: oracles.data,
             pagination: oracles.pagination,
+            gameSystem: null,
+            gameSystemName: null,
             utilisateur: req.session?.utilisateur || null
         });
     });

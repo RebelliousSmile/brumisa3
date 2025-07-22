@@ -43,12 +43,12 @@
         </div>
 
         <!-- Barre de recherche -->
-        <div class="mb-8" x-data="{ searchQuery: '', showAdvanced: false }">
+        <div class="mb-8">
             <div class="max-w-2xl mx-auto">
                 <div class="relative">
                     <input 
                         type="text" 
-                        x-model="searchQuery"
+                        id="search-input"
                         data-search-input
                         placeholder="Rechercher un oracle..."
                         class="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
@@ -78,8 +78,24 @@
                         </div>
                         
                         <% if (oracle.description) { %>
-                            <p class="text-gray-300 text-sm line-clamp-2">
+                            <p class="text-gray-300 text-sm line-clamp-2 mb-2">
                                 <%= oracle.description %>
+                            </p>
+                        <% } %>
+                        
+                        <% if (oracle.created_by !== null) { %>
+                            <% if (oracle.creator_name && ['ADMIN'].includes(oracle.creator_role)) { %>
+                                <p class="text-gray-400 text-xs">
+                                    <span class="text-purple-400">Brumisater</span>
+                                </p>
+                            <% } else if (oracle.creator_name && oracle.creator_id) { %>
+                                <p class="text-gray-400 text-xs">
+                                    Créé par <a href="/profil/<%= oracle.creator_id %>" class="text-purple-400 hover:text-purple-300 transition-colors"><%= oracle.creator_name %></a>
+                                </p>
+                            <% } %>
+                        <% } else { %>
+                            <p class="text-gray-400 text-xs">
+                                <span class="text-purple-400">Brumisater</span>
                             </p>
                         <% } %>
                     </div>
@@ -100,11 +116,20 @@
 
                     <!-- Actions -->
                     <div class="p-6 flex space-x-3">
-                        <a href="/oracles/<%= oracle.id %>" 
-                           class="flex-1 bg-purple-600 text-white text-center py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-                            <i class="ra ra-crystal-ball mr-2"></i>
-                            Consulter
-                        </a>
+                        <% if (oracle.premium_required && (!utilisateur || (utilisateur.role !== 'PREMIUM' && utilisateur.role !== 'ADMIN'))) { %>
+                            <button 
+                                disabled
+                                class="flex-1 bg-gray-600 text-gray-400 text-center py-2 px-4 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-lock mr-2"></i>
+                                Consulter (Premium)
+                            </button>
+                        <% } else { %>
+                            <a href="/oracles/<%= oracle.id %>" 
+                               class="flex-1 bg-purple-600 text-white text-center py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="ra ra-crystal-ball mr-2"></i>
+                                Consulter
+                            </a>
+                        <% } %>
                         
                         <% if (!oracle.premium_required || (utilisateur && (utilisateur.role === 'PREMIUM' || utilisateur.role === 'ADMIN'))) { %>
                             <button 
@@ -253,7 +278,11 @@ async function tirageRapide(oracleId) {
         const data = await response.json();
         
         if (!data.succes) {
-            throw new Error(data.message);
+            throw new Error(data.message || 'Erreur lors du tirage');
+        }
+        
+        if (!data.donnees || !data.donnees.results || data.donnees.results.length === 0) {
+            throw new Error('Aucun résultat de tirage');
         }
         
         const resultat = data.donnees.results[0];

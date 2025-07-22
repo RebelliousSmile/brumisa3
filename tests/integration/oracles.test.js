@@ -1,5 +1,7 @@
+/**
+ * Tests d'intégration pour l'API Oracles - Migration vers Jest
+ */
 const request = require('supertest');
-const { expect } = require('chai');
 const app = require('../../src/app');
 const db = require('../../src/database/db');
 
@@ -8,7 +10,7 @@ describe('Oracles API Integration Tests', () => {
     let userSession = {};
     let testOracleId;
     
-    before(async () => {
+    beforeAll(async () => {
         // Assurer que la base est initialisée
         await db.init();
         
@@ -25,7 +27,7 @@ describe('Oracles API Integration Tests', () => {
             .post('/api/auth/inscription')
             .send(adminUser);
             
-        expect(adminSignup.status).to.equal(201);
+        expect(adminSignup.status).toBe(201);
         
         // Connexion admin
         const adminLogin = await request(app)
@@ -35,7 +37,7 @@ describe('Oracles API Integration Tests', () => {
                 mot_de_passe: adminUser.mot_de_passe
             });
             
-        expect(adminLogin.status).to.equal(200);
+        expect(adminLogin.status).toBe(200);
         adminSession.cookie = adminLogin.headers['set-cookie'];
         
         // Créer un utilisateur standard
@@ -60,7 +62,7 @@ describe('Oracles API Integration Tests', () => {
         userSession.cookie = userLogin.headers['set-cookie'];
     });
     
-    after(async () => {
+    afterAll(async () => {
         // Nettoyer la base de test
         if (testOracleId) {
             await db.run('DELETE FROM oracle_draws WHERE oracle_id = $1', [testOracleId]);
@@ -78,9 +80,9 @@ describe('Oracles API Integration Tests', () => {
                 .get('/api/oracles')
                 .expect(200);
                 
-            expect(response.body.succes).to.be.true;
-            expect(response.body.donnees).to.have.property('items');
-            expect(response.body.donnees).to.have.property('pagination');
+            expect(response.body.succes).toBe(true);
+            expect(response.body.donnees).toHaveProperty('items');
+            expect(response.body.donnees).toHaveProperty('pagination');
         });
         
         it('devrait supporter la pagination', async () => {
@@ -88,8 +90,8 @@ describe('Oracles API Integration Tests', () => {
                 .get('/api/oracles?page=1&limite=5')
                 .expect(200);
                 
-            expect(response.body.donnees.pagination.page).to.equal(1);
-            expect(response.body.donnees.pagination.limite).to.equal(5);
+            expect(response.body.donnees.pagination.page).toBe(1);
+            expect(response.body.donnees.pagination.limite).toBe(5);
         });
     });
 
@@ -108,8 +110,8 @@ describe('Oracles API Integration Tests', () => {
                 .send(newOracle)
                 .expect(201);
                 
-            expect(response.body.succes).to.be.true;
-            expect(response.body.donnees.name).to.equal(newOracle.name);
+            expect(response.body.succes).toBe(true);
+            expect(response.body.donnees.name).toBe(newOracle.name);
             testOracleId = response.body.donnees.id;
         });
         
@@ -154,9 +156,9 @@ describe('Oracles API Integration Tests', () => {
                 .send(newItem)
                 .expect(201);
                 
-            expect(response.body.succes).to.be.true;
-            expect(response.body.donnees.value).to.equal(newItem.value);
-            expect(response.body.donnees.weight).to.equal(newItem.weight);
+            expect(response.body.succes).toBe(true);
+            expect(response.body.donnees.value).toBe(newItem.value);
+            expect(response.body.donnees.weight).toBe(newItem.weight);
         });
         
         it('devrait ajouter plusieurs éléments pour les tests de tirage', async () => {
@@ -188,10 +190,10 @@ describe('Oracles API Integration Tests', () => {
                 .send(drawRequest)
                 .expect(200);
                 
-            expect(response.body.succes).to.be.true;
-            expect(response.body.donnees.results).to.have.length(1);
-            expect(response.body.donnees.results[0]).to.have.property('value');
-            expect(response.body.donnees.draw_info.oracle_id).to.equal(testOracleId);
+            expect(response.body.succes).toBe(true);
+            expect(response.body.donnees.results).toHaveLength(1);
+            expect(response.body.donnees.results[0]).toHaveProperty('value');
+            expect(response.body.donnees.draw_info.oracle_id).toBe(testOracleId);
         });
         
         it('devrait effectuer un tirage multiple', async () => {
@@ -205,7 +207,7 @@ describe('Oracles API Integration Tests', () => {
                 .send(drawRequest)
                 .expect(200);
                 
-            expect(response.body.donnees.results).to.have.length(3);
+            expect(response.body.donnees.results).toHaveLength(3);
         });
         
         it('devrait respecter le mode sans remise', async () => {
@@ -220,12 +222,12 @@ describe('Oracles API Integration Tests', () => {
                 .expect(200);
                 
             const results = response.body.donnees.results;
-            expect(results).to.have.length(4);
+            expect(results).toHaveLength(4);
             
             // Vérifier l'unicité
             const values = results.map(r => r.value);
             const uniqueValues = [...new Set(values)];
-            expect(uniqueValues).to.have.length(4);
+            expect(uniqueValues).toHaveLength(4);
         });
         
         it('devrait valider les paramètres de tirage', async () => {
@@ -250,7 +252,7 @@ describe('Oracles API Integration Tests', () => {
                 .send({ count: 1 })
                 .expect(200);
                 
-            expect(userResponse.body.donnees.results[0]).to.not.have.property('weight');
+            expect(userResponse.body.donnees.results[0]).not.toHaveProperty('weight');
             
             // Admin - devrait voir les poids
             const adminResponse = await request(app)
@@ -259,7 +261,7 @@ describe('Oracles API Integration Tests', () => {
                 .send({ count: 1 })
                 .expect(200);
                 
-            expect(adminResponse.body.donnees.results[0]).to.have.property('weight');
+            expect(adminResponse.body.donnees.results[0]).toHaveProperty('weight');
         });
     });
 
@@ -269,10 +271,10 @@ describe('Oracles API Integration Tests', () => {
                 .get(`/api/oracles/${testOracleId}/stats`)
                 .expect(200);
                 
-            expect(response.body.succes).to.be.true;
-            expect(response.body.donnees).to.have.property('total_items');
-            expect(response.body.donnees).to.have.property('active_items');
-            expect(response.body.donnees).to.have.property('total_draws');
+            expect(response.body.succes).toBe(true);
+            expect(response.body.donnees).toHaveProperty('total_items');
+            expect(response.body.donnees).toHaveProperty('active_items');
+            expect(response.body.donnees).toHaveProperty('total_draws');
         });
         
         it('devrait filtrer les stats selon les permissions', async () => {
@@ -282,7 +284,7 @@ describe('Oracles API Integration Tests', () => {
                 .set('Cookie', userSession.cookie)
                 .expect(200);
                 
-            expect(userResponse.body.donnees).to.not.have.property('unique_users');
+            expect(userResponse.body.donnees).not.toHaveProperty('unique_users');
             
             // Admin
             const adminResponse = await request(app)
@@ -290,7 +292,7 @@ describe('Oracles API Integration Tests', () => {
                 .set('Cookie', adminSession.cookie)
                 .expect(200);
                 
-            expect(adminResponse.body.donnees).to.have.property('unique_users');
+            expect(adminResponse.body.donnees).toHaveProperty('unique_users');
         });
     });
 
@@ -300,8 +302,8 @@ describe('Oracles API Integration Tests', () => {
                 .get('/api/oracles/search?q=Test')
                 .expect(200);
                 
-            expect(response.body.succes).to.be.true;
-            expect(Array.isArray(response.body.donnees)).to.be.true;
+            expect(response.body.succes).toBe(true);
+            expect(Array.isArray(response.body.donnees)).toBe(true);
         });
         
         it('devrait valider la longueur de la requête', async () => {
@@ -324,7 +326,7 @@ describe('Oracles API Integration Tests', () => {
                 .send(updates)
                 .expect(200);
                 
-            expect(response.body.donnees.name).to.equal(updates.name);
+            expect(response.body.donnees.name).toBe(updates.name);
         });
         
         it('devrait rejeter les modifications par un utilisateur standard', async () => {
@@ -344,7 +346,7 @@ describe('Oracles API Integration Tests', () => {
                 .set('Cookie', adminSession.cookie)
                 .expect(200);
                 
-            expect(response1.body.donnees.is_active).to.be.false;
+            expect(response1.body.donnees.is_active).toBe(false);
             
             // Réactiver
             const response2 = await request(app)
@@ -352,7 +354,7 @@ describe('Oracles API Integration Tests', () => {
                 .set('Cookie', adminSession.cookie)
                 .expect(200);
                 
-            expect(response2.body.donnees.is_active).to.be.true;
+            expect(response2.body.donnees.is_active).toBe(true);
         });
     });
 
@@ -368,8 +370,8 @@ describe('Oracles API Integration Tests', () => {
                 .send(cloneRequest)
                 .expect(201);
                 
-            expect(response.body.donnees.name).to.equal(cloneRequest.newName);
-            expect(response.body.donnees.items).to.have.length.greaterThan(0);
+            expect(response.body.donnees.name).toBe(cloneRequest.newName);
+            expect(response.body.donnees.items.length).toBeGreaterThan(0);
             
             // Nettoyer le clone
             const cloneId = response.body.donnees.id;
@@ -416,8 +418,8 @@ describe('Oracles API Integration Tests', () => {
             const responses = await Promise.all(promises);
             
             responses.forEach(response => {
-                expect(response.status).to.equal(200);
-                expect(response.body.succes).to.be.true;
+                expect(response.status).toBe(200);
+                expect(response.body.succes).toBe(true);
             });
         });
     });

@@ -6,6 +6,36 @@ const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
+// Mock du logger pour éviter les erreurs pendant les tests
+jest.mock('../src/utils/logManager', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn()
+}));
+
+// Mock global robuste pour fs
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  existsSync: jest.fn(() => true),
+  readFileSync: jest.fn(),
+  writeFileSync: jest.fn(),
+  promises: {
+    readdir: jest.fn(),
+    readFile: jest.fn(),
+    writeFile: jest.fn(),
+    access: jest.fn().mockResolvedValue(),
+    mkdir: jest.fn().mockResolvedValue(),
+    stat: jest.fn().mockResolvedValue({ size: 1024000 }),
+    unlink: jest.fn().mockResolvedValue(),
+    copyFile: jest.fn().mockResolvedValue()
+  }
+}));
+
+// Configuration de l'environnement de test
+process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'silent';
+
 // Mock global pour Alpine.js
 global.Alpine = {
   store: jest.fn(() => ({
@@ -17,14 +47,21 @@ global.Alpine = {
   }))
 };
 
-// Mock global pour window - seulement si pas déjà défini
-if (!window.location) {
+// Mock global pour window
+if (typeof window === 'undefined') {
+  global.window = {};
+}
+
+// Configuration de window.location seulement si nécessaire
+if (!window.location || !window.location.origin) {
+  const testOrigin = `http://${process.env.HOST || 'localhost'}:${process.env.PORT || 3076}`;
   Object.defineProperty(window, 'location', {
     value: {
-      origin: 'http://localhost:3076',
-      href: 'http://localhost:3076'
+      origin: testOrigin,
+      href: testOrigin
     },
-    writable: true
+    writable: true,
+    configurable: true
   });
 }
 

@@ -15,11 +15,13 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 - **Shell** : cmd.exe / PowerShell
 - **Séparateurs** : Antislash `\` pour les chemins
 - **Commandes** : Windows natives (dir, mkdir, del, copy, etc.)
+- **Tests** : Jest pour les tests unitaires, supertest pour les tests api
 
 ## Règles de développement
 
 ### 📝 Conventions de développement
 - N'utilise pas de pictogramme en tant que caractère.
+- **Variables d'environnement** : Toujours utiliser les variables d'environnement pour les URLs, ports, et hostnames plutôt que des valeurs codées en dur (localhost, 3076, etc.)
 
 ### 🏗️ Principes de développement
 - **Principes SOLID** : Respecter les 5 principes SOLID pour un code maintenable

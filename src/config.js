@@ -1,5 +1,22 @@
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
+
+// Charger les variables d'environnement avec priorité
+const envPath = path.join(__dirname, '..', '.env');
+const envLocalPath = path.join(__dirname, '..', '.env.local');
+
+// Charger .env d'abord
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
+
+// Puis charger .env.local qui écrasera les valeurs de .env
+if (fs.existsSync(envLocalPath)) {
+  require('dotenv').config({ path: envLocalPath, override: true });
+  console.log('📁 Chargement de .env.local');
+} else {
+  console.log('📁 Utilisation de .env');
+}
 
 const config = {
   // Serveur
