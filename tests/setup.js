@@ -6,12 +6,16 @@ const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
+// Polyfill pour setImmediate (requis par Express/Node.js)
+global.setImmediate = global.setImmediate || ((fn, ...args) => global.setTimeout(fn, 0, ...args));
+
 // Mock du logger pour éviter les erreurs pendant les tests
 jest.mock('../src/utils/logManager', () => ({
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  debug: jest.fn()
+  debug: jest.fn(),
+  logRequest: jest.fn((req, res, next) => next())
 }));
 
 // Mock global robuste pour fs

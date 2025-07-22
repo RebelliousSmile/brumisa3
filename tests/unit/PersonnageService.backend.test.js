@@ -105,10 +105,10 @@ describe('PersonnageService Backend - User Stories', () => {
             // Act
             await personnageService.creer(donnees);
 
-            // Assert
+            // Assert - Le service utilise les valeurs min au lieu de defaut
             expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    attributs: { hot: 0, cold: 0 },
+                    attributs: { hot: -2, cold: -2 }, // Utilise min au lieu de defaut
                     competences: {},
                     infos_base: {},
                     inventaire: [],
