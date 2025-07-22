@@ -114,7 +114,18 @@ class SystemTheme {
      */
     applyFont(doc, fontType, fontSize) {
         const fonts = this.getFonts();
-        const fontConfig = fonts[fontType];
+        
+        // Compatibilité avec les anciens types de police
+        const fontTypeMap = {
+            'title': 'titles',
+            'body': 'body',
+            'titles': 'titles',
+            'italic': 'italic',
+            'sidebar': 'sidebar'
+        };
+        
+        const mappedType = fontTypeMap[fontType] || fontType;
+        const fontConfig = fonts[mappedType];
         
         if (!fontConfig) {
             console.warn(`Type de police '${fontType}' non trouvé dans le thème`);
@@ -179,6 +190,28 @@ class SystemTheme {
             missing: missing,
             errors: errors
         };
+    }
+    
+    /**
+     * Applique le style de titre (méthode optionnelle avec implémentation par défaut)
+     * @param {PDFDocument} doc - Document PDFKit 
+     * @param {string} text - Texte du titre
+     * @param {number} level - Niveau du titre (1, 2, 3...)
+     * @param {Object} options - Options additionnelles
+     * @returns {string} Texte formaté
+     */
+    applyTitleStyle(doc, text, level, options) {
+        // Implémentation par défaut : retourne le texte tel quel
+        return text;
+    }
+    
+    /**
+     * Applique le style de paragraphe (méthode optionnelle avec implémentation par défaut)
+     * @param {PDFDocument} doc - Document PDFKit
+     * @param {boolean} isIntro - True si c'est un paragraphe d'introduction
+     */
+    applyParagraphStyle(doc, isIntro) {
+        // Implémentation par défaut : ne fait rien
     }
 }
 

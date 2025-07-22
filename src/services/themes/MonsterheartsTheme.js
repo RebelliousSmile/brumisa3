@@ -8,6 +8,11 @@ const fs = require('fs');
  */
 class MonsterheartsTheme extends SystemTheme {
     
+    constructor() {
+        super();
+        this.systemName = 'monsterhearts';
+    }
+    
     /**
      * Couleurs du thème Monsterhearts - Palette monochrome
      */
@@ -18,8 +23,7 @@ class MonsterheartsTheme extends SystemTheme {
             secondary: '#333333',      // Gris foncé
             accent: '#FFFFFF',         // Blanc pur pour texte sur noir
             sidebar: '#000000',        // Noir pour bande latérale
-            text: '#000000',           // Texte principal
-            border: '#000000'          // Bordures d'encadrés
+            text: '#000000'            // Texte principal
         };
     }
     
@@ -29,19 +33,20 @@ class MonsterheartsTheme extends SystemTheme {
     getFonts() {
         return {
             body: {
-                family: 'Crimson-Regular',
+                family: 'CrimsonText-Regular',
                 fallback: ['Times-Roman', 'Georgia', 'serif'],
-                size: 11,
+                size: 12,
                 lineHeight: 1.45
             },
             titles: {
-                family: 'Crimson-Bold',
+                family: 'CrimsonText-Bold',
                 fallback: ['Times-Bold', 'Georgia', 'serif'], 
                 weight: '600',
                 transform: 'uppercase',
                 letterSpacing: 0.1,
+                size: 14,  // Default title size
                 sizes: {
-                    h1: 16,
+                    h1: 18,
                     h2: 14, 
                     h3: 12
                 }
@@ -54,9 +59,9 @@ class MonsterheartsTheme extends SystemTheme {
                 transform: 'uppercase'
             },
             italic: {
-                family: 'Crimson-Italic',
+                family: 'CrimsonText-Italic',
                 fallback: ['Times-Italic', 'Georgia', 'serif'],
-                size: 11
+                size: 12
             }
         };
     }
@@ -72,23 +77,29 @@ class MonsterheartsTheme extends SystemTheme {
             const crimsonRegular = path.join(fontsDir, 'CrimsonText-Regular.ttf');
             const crimsonBold = path.join(fontsDir, 'CrimsonText-Bold.ttf');
             const crimsonItalic = path.join(fontsDir, 'CrimsonText-Italic.ttf');
+            const crimsonBoldItalic = path.join(fontsDir, 'CrimsonText-BoldItalic.ttf');
             const bebasRegular = path.join(fontsDir, 'BebasNeue-Regular.ttf');
             
             let fontsLoaded = 0;
             
             // Crimson Text (corps et titres)
             if (fs.existsSync(crimsonRegular)) {
-                doc.registerFont('Crimson-Regular', crimsonRegular);
+                doc.registerFont('CrimsonText-Regular', crimsonRegular);
                 fontsLoaded++;
             }
             
             if (fs.existsSync(crimsonBold)) {
-                doc.registerFont('Crimson-Bold', crimsonBold);
+                doc.registerFont('CrimsonText-Bold', crimsonBold);
                 fontsLoaded++;
             }
             
             if (fs.existsSync(crimsonItalic)) {
-                doc.registerFont('Crimson-Italic', crimsonItalic);
+                doc.registerFont('CrimsonText-Italic', crimsonItalic);
+                fontsLoaded++;
+            }
+            
+            if (fs.existsSync(crimsonBoldItalic)) {
+                doc.registerFont('CrimsonText-BoldItalic', crimsonBoldItalic);
                 fontsLoaded++;
             }
             
@@ -171,9 +182,9 @@ class MonsterheartsTheme extends SystemTheme {
             showLogo: false,              // Monsterhearts privilégie la sobriété
             showOrnaments: false,         // Pas d'ornements décoratifs
             layout: 'minimal',            // Layout épuré
-            titleFont: 'Crimson-Bold',
-            subtitleFont: 'Crimson-Regular',
-            authorFont: 'Crimson-Italic',
+            titleFont: 'CrimsonText-Bold',
+            subtitleFont: 'CrimsonText-Regular',
+            authorFont: 'CrimsonText-Italic',
             centerVertically: true,
             addSeparatorLine: true        // Ligne horizontale caractéristique
         };
@@ -235,16 +246,19 @@ class MonsterheartsTheme extends SystemTheme {
      * @param {Object} options - Options supplémentaires
      */
     applyTitleStyle(doc, text, level = 1, options = {}) {
-        const fonts = this.getFonts();
-        const colors = this.getColors();
-        
-        // Appliquer la police et couleur
-        this.applyFont(doc, 'titles');
-        this.applyColor(doc, 'primary');
-        
-        // Taille selon le niveau
-        const fontSize = fonts.titles.sizes[`h${level}`] || 12;
-        doc.fontSize(fontSize);
+        // Si le document est fourni, appliquer les styles
+        if (doc) {
+            const fonts = this.getFonts();
+            const colors = this.getColors();
+            
+            // Appliquer la police et couleur
+            this.applyFont(doc, 'titles');
+            this.applyColor(doc, 'primary');
+            
+            // Taille selon le niveau
+            const fontSize = fonts.titles.sizes[`h${level}`] || 12;
+            doc.fontSize(fontSize);
+        }
         
         // Toujours en majuscules pour Monsterhearts
         const titleText = text.toUpperCase();

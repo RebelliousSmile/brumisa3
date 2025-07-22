@@ -41,7 +41,17 @@ jest.mock('pdfkit', () => {
         lineTo: jest.fn().mockReturnThis(),
         stroke: jest.fn().mockReturnThis(),
         font: jest.fn().mockReturnThis(),
-        addPage: jest.fn().mockReturnThis()
+        addPage: jest.fn().mockReturnThis(),
+        registerFont: jest.fn().mockReturnThis(),
+        lineWidth: jest.fn().mockReturnThis(),
+        stroke: jest.fn().mockReturnThis(),
+        strokeColor: jest.fn().mockReturnThis(),
+        on: jest.fn((event, callback) => {
+            if (event === 'end') {
+                // Simulate PDF generation completion
+                setTimeout(callback, 5);
+            }
+        })
     }));
 });
 
@@ -57,7 +67,15 @@ describe('PdfKitService', () => {
 
     describe('generatePDF', () => {
         test('devrait générer un PDF avec des options par défaut', async () => {
-            const result = await pdfKitService.generatePDF({});
+            const result = await pdfKitService.generatePDF({
+                data: {
+                    className: 'The Chosen',
+                    description: 'Classe description de test',
+                    stats: ['hot', 'cold', 'volatile', 'dark'],
+                    moves: ['move1', 'move2'],
+                    sections: []
+                }
+            });
             
             expect(result.success).toBe(true);
             expect(result.fileName).toMatch(/0_private_plan-classe-instructions_\d{8}-\d{6}\.pdf/);
@@ -74,6 +92,7 @@ describe('PdfKitService', () => {
                 userId: 456,
                 systemRights: 'public',
                 data: {
+                    className: 'The Witch',
                     introduction: 'Introduction de test',
                     sections: [
                         {
@@ -103,7 +122,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF(options);
             
             expect(result.success).toBe(false);
-            expect(result.error).toContain('Système systeme-invalide non supporté');
+            expect(result.error).toContain('Aucun mapping trouvé pour le système: systeme-invalide');
         });
 
         test('devrait gérer les erreurs pour template non supporté', async () => {
@@ -116,7 +135,7 @@ describe('PdfKitService', () => {
             const result = await pdfKitService.generatePDF(options);
             
             expect(result.success).toBe(false);
-            expect(result.error).toContain('Template Monsterhearts template-invalide non supporté');
+            expect(result.error).toContain('Template non supporté pour monsterhearts: template-invalide');
         });
     });
 
