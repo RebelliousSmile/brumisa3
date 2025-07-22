@@ -179,6 +179,11 @@ class TemplateService extends BaseService {
      * Préparations spécifiques pour Monsterhearts
      */
     preparerDonneesMonsterhearts(donnees) {
+        // S'assurer que les données personnage existent
+        if (!donnees.personnage) {
+            donnees.personnage = {};
+        }
+        
         const personnage = donnees.personnage;
         
         // S'assurer que les données Monsterhearts sont bien structurées

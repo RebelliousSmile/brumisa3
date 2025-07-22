@@ -35,6 +35,20 @@ class UtilisateurService extends BaseService {
                 date_creation: new Date(),
                 derniere_connexion: new Date()
             };
+
+            // Ajouter les champs premium si fournis
+            if (donnees.type_compte) {
+                donneesCompletes.type_compte = donnees.type_compte;
+            }
+            if (donnees.date_premium) {
+                donneesCompletes.date_premium = donnees.date_premium;
+            }
+            if (donnees.montant_don_total !== undefined) {
+                donneesCompletes.montant_don_total = donnees.montant_don_total;
+            }
+            if (donnees.compte_don_temporaire !== undefined) {
+                donneesCompletes.compte_don_temporaire = donnees.compte_don_temporaire;
+            }
             
             // Créer l'utilisateur
             const utilisateur = await this.utilisateurModel.create(donneesCompletes);
@@ -545,7 +559,11 @@ class UtilisateurService extends BaseService {
      * Filtre les données autorisées pour une mise à jour
      */
     filtrerDonneesMAJ(donnees) {
-        const champsAutorises = ['nom', 'email', 'role', 'actif', 'derniere_connexion', 'mot_de_passe', 'token_recuperation', 'token_expiration'];
+        const champsAutorises = [
+            'nom', 'email', 'role', 'actif', 'derniere_connexion', 'mot_de_passe', 
+            'token_recuperation', 'token_expiration', 'type_compte', 'date_premium', 
+            'montant_don_total', 'compte_don_temporaire'
+        ];
         const donneesFiltr = {};
         
         champsAutorises.forEach(champ => {

@@ -1,0 +1,150 @@
+{
+  "oracle": {
+    "name": "Initiative - Metro 2033",
+    "description": "Système d'initiative et d'actions pour les combats",
+    "premium_required": false,
+    "is_active": true
+  },
+  "items": [
+    {
+      "value": "Aucune action utilisée - Prêt à agir",
+      "weight": 25,
+      "metadata": {
+        "type": "statut",
+        "actions_disponibles": "toutes",
+        "carte": 1
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action rapide utilisée - Une action lente restante",
+      "weight": 20,
+      "metadata": {
+        "type": "statut",
+        "actions_disponibles": "lente",
+        "carte": 2
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action lente utilisée - Une action rapide restante",
+      "weight": 20,
+      "metadata": {
+        "type": "statut",
+        "actions_disponibles": "rapide",
+        "carte": 3
+      },
+      "is_active": true
+    },
+    {
+      "value": "Les deux actions utilisées - Tour terminé",
+      "weight": 15,
+      "metadata": {
+        "type": "statut",
+        "actions_disponibles": "aucune",
+        "carte": 4
+      },
+      "is_active": true
+    },
+    {
+      "value": "Initiative haute - Agir en premier",
+      "weight": 10,
+      "metadata": {
+        "type": "ordre",
+        "priorité": "haute",
+        "modificateur": "Réflexes éclair"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Initiative moyenne - Ordre standard",
+      "weight": 30,
+      "metadata": {
+        "type": "ordre",
+        "priorité": "normale",
+        "modificateur": "aucun"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Initiative basse - Agir en dernier",
+      "weight": 10,
+      "metadata": {
+        "type": "ordre",
+        "priorité": "basse",
+        "modificateur": "blessures ou fatigue"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action rapide: Tirer une fois",
+      "weight": 18,
+      "metadata": {
+        "type": "action_rapide",
+        "categorie": "attaque",
+        "description": "Une attaque à distance"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action rapide: Se déplacer",
+      "weight": 20,
+      "metadata": {
+        "type": "action_rapide",
+        "categorie": "mouvement",
+        "description": "Déplacement court"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action rapide: Dégainer/Rengainer",
+      "weight": 15,
+      "metadata": {
+        "type": "action_rapide",
+        "categorie": "préparation",
+        "description": "Changer d'arme"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action lente: Viser soigneusement",
+      "weight": 12,
+      "metadata": {
+        "type": "action_lente",
+        "categorie": "préparation",
+        "description": "Bonus au prochain tir"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action lente: Courir",
+      "weight": 16,
+      "metadata": {
+        "type": "action_lente",
+        "categorie": "mouvement",
+        "description": "Déplacement long"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action lente: Soigner un allié",
+      "weight": 10,
+      "metadata": {
+        "type": "action_lente",
+        "categorie": "soutien",
+        "description": "Premiers soins"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Action lente: Recharger arme complexe",
+      "weight": 14,
+      "metadata": {
+        "type": "action_lente",
+        "categorie": "préparation",
+        "description": "Recharger arme lourde"
+      },
+      "is_active": true
+    }
+  ]
+}

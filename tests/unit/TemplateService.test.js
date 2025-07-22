@@ -46,7 +46,7 @@ describe('TemplateService - US011 Templates personnalisés Premium', () => {
 
             // Assert
             expect(fs.readdir).toHaveBeenCalledWith(
-                expect.stringContaining('templates/pdf/monsterhearts')
+                expect.stringContaining('src\\templates\\pdf\\monsterhearts')
             );
             expect(result).toHaveLength(2);
             expect(result[0]).toEqual(
@@ -105,7 +105,7 @@ describe('TemplateService - US011 Templates personnalisés Premium', () => {
 
             // Assert
             expect(fs.readFile).toHaveBeenCalledWith(
-                expect.stringContaining('monsterhearts/fiche-personnage.html'),
+                expect.stringContaining('monsterhearts\\fiche-personnage.html'),
                 'utf8'
             );
             expect(result).toEqual({
@@ -382,7 +382,7 @@ describe('TemplateService - US011 Templates personnalisés Premium', () => {
     describe('Gestion des erreurs', () => {
         test('devrait gérer les erreurs de rendu de template', async () => {
             // Arrange
-            const mockTemplate = '{{#invalid_helper}}{{/invalid_helper}}';
+            const mockTemplate = '{{#if unclosed_if}}template avec syntaxe invalide';
             fs.readFile.mockResolvedValue(mockTemplate);
 
             // Act & Assert

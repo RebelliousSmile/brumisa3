@@ -1,0 +1,170 @@
+{
+  "oracle": {
+    "name": "Événements Extérieurs - Metro 2033",
+    "description": "Dangers et rencontres en surface dans le monde post-apocalyptique de Moscou",
+    "premium_required": false,
+    "is_active": true
+  },
+  "items": [
+    {
+      "value": "Secte eschatologique - 2D6+2 membres",
+      "weight": 10,
+      "metadata": {
+        "type": "rencontre",
+        "lieu": "extérieur",
+        "danger": "variable"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Effondrement de terrain",
+      "weight": 12,
+      "metadata": {
+        "type": "environnement",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "1D3+1 enfants du parc en vadrouille",
+      "weight": 14,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Éboulement de bâtiment",
+      "weight": 13,
+      "metadata": {
+        "type": "catastrophe",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Groupe de freux hostiles",
+      "weight": 11,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "1D3 stalkers en mission",
+      "weight": 16,
+      "metadata": {
+        "type": "rencontre",
+        "lieu": "extérieur",
+        "danger": "variable"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Terrain miné - Mine de Puissance 5",
+      "weight": 8,
+      "metadata": {
+        "type": "piège",
+        "lieu": "extérieur",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "1D3 ptérodactyles affamés",
+      "weight": 9,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Chute brutale de température",
+      "weight": 10,
+      "metadata": {
+        "type": "climat",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "1D3 sentinelles mortelles",
+      "weight": 7,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "extrême"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Pluie acide corrosive",
+      "weight": 11,
+      "metadata": {
+        "type": "climat",
+        "lieu": "extérieur",
+        "danger": "moyen"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Obscurité soudaine et totale",
+      "weight": 12,
+      "metadata": {
+        "type": "climat",
+        "lieu": "extérieur",
+        "danger": "faible"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Brouillard radioactif orangeâtre",
+      "weight": 6,
+      "metadata": {
+        "type": "radiation",
+        "lieu": "extérieur",
+        "danger": "extrême"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Meute de 1D6+3 chiens sauvages",
+      "weight": 13,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Visions et mirages collectifs",
+      "weight": 8,
+      "metadata": {
+        "type": "surnaturel",
+        "lieu": "extérieur",
+        "danger": "psychologique"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Bibliothécaire exilé et enragé",
+      "weight": 5,
+      "metadata": {
+        "type": "créature",
+        "lieu": "extérieur",
+        "danger": "extrême"
+      },
+      "is_active": true
+    }
+  ]
+}
