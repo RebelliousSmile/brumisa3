@@ -1,0 +1,24 @@
+<!-- Hero Section -->
+<div class="bg-gradient-to-br <%= gradient %> text-white">
+    <div class="relative py-24 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="mb-8">
+                <i class="<%= icone %> text-8xl <%= couleurIcone %> mb-6 block"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 font-display">
+                <%= titre %>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 <%= couleurTexte %> max-w-3xl mx-auto">
+                <%= description %>
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="<%= couleurBoutonPrimaire %> text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                    <%= texteBoutonPrimaire %>
+                </button>
+                <button class="border-2 <%= couleurBoutonSecondaire %> px-8 py-4 rounded-lg text-lg font-semibold transition-colors">
+                    <%= texteBoutonSecondaire %>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -392,20 +392,48 @@ class OracleController extends BaseController {
             pagination.limite
         );
         
-        // Noms des systèmes pour l'affichage
-        const nomsSystemes = {
-            'monsterhearts': 'Monsterhearts',
-            'engrenages': 'Engrenages & Sortilèges',
-            'metro2033': 'Metro 2033',
-            'mistengine': 'Mist Engine'
+        // Récupération des informations du système depuis systemesJeu.js
+        const { systemesJeu } = require('../utils/systemesJeu');
+        const systemeInfo = systemesJeu[gameSystem];
+        const nomSysteme = systemeInfo ? systemeInfo.nom : gameSystem;
+        
+        // Configuration des couleurs par système
+        const couleursSystemes = {
+            'monsterhearts': {
+                primary: 'purple',
+                gradient: 'from-purple-900/20 via-purple-800/30 to-pink-900/20',
+                accent: 'purple-400',
+                icon: 'ra-heartburn'
+            },
+            'engrenages': {
+                primary: 'emerald',
+                gradient: 'from-emerald-900/20 via-emerald-800/30 to-green-900/20',
+                accent: 'emerald-400',
+                icon: 'ra-gear-hammer'
+            },
+            'metro2033': {
+                primary: 'orange',
+                gradient: 'from-orange-900/20 via-red-800/30 to-gray-900/20',
+                accent: 'orange-400',
+                icon: 'ra-radiation'
+            },
+            'mistengine': {
+                primary: 'slate',
+                gradient: 'from-slate-900/20 via-gray-800/30 to-slate-900/20',
+                accent: 'slate-400',
+                icon: 'ra-mist'
+            }
         };
         
+        const couleurSysteme = couleursSystemes[gameSystem] || couleursSystemes['monsterhearts'];
+        
         res.render('oracles/liste', {
-            titre: `Oracles ${nomsSystemes[gameSystem] || gameSystem}`,
+            titre: `Oracles ${nomSysteme}`,
             oracles: oracles.data,
             pagination: oracles.pagination,
             gameSystem: gameSystem,
-            gameSystemName: nomsSystemes[gameSystem] || gameSystem,
+            gameSystemName: nomSysteme,
+            couleurSysteme: couleurSysteme,
             utilisateur: req.session?.utilisateur || null
         });
     });
