@@ -199,6 +199,12 @@ Le fichier `tests/unit/fillable-regression.test.js` a été créé suite à un b
 
 ### Tests d'Intégration API
 
+  OUI, les tests d'intégration servent à tester les appels API complets :
+  - ✅ Endpoint à endpoint : Requête HTTP → Réponse JSON
+  - ✅ Flux complet : Routing → Controller → Service → Base de données → Réponse
+  - ✅ Données réelles : Base de test, vraies connexions
+  - ✅ Format de réponse : Structure JSON, codes HTTP, headers
+
 Les tests dans `tests/integration/api.test.js` vérifient le bon fonctionnement des endpoints principaux :
 - `GET /api/home/donnees` - Données de la page d'accueil
 - `POST /api/auth/elevation-role` - Élévation de rôles utilisateur

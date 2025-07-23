@@ -8,25 +8,8 @@ const path = require('path');
 const crypto = require('crypto');
 const systemesJeu = require('../utils/systemesJeu');
 
-// Import Puppeteer conditionally pour éviter les erreurs si pas installé
-let puppeteer;
-try {
-    puppeteer = require('puppeteer');
-} catch (error) {
-    console.warn('⚠️  Puppeteer n\'est pas installé. Seul PDFKit sera disponible pour la génération PDF.');
-}
-
 /**
  * Service pour la génération et gestion des PDFs
- * 
- * ⚠️  MIGRATION VERS PDFKIT
- * - Puppeteer est déprécié et sera supprimé dans les futures versions
- * - PDFKit est maintenant le moteur par défaut (90% plus léger, plus rapide)
- * - Pour migrer un template Puppeteer vers PDFKit:
- *   1. Créer une méthode dans PdfKitService pour votre système
- *   2. Ajouter le template dans determineEngine()
- *   3. Tester la génération
- * - Les anciens templates continueront de fonctionner avec Puppeteer en mode compatibilité
  */
 class PdfService extends BaseService {
     constructor() {
@@ -39,7 +22,7 @@ class PdfService extends BaseService {
         this.templatesDir = path.join(process.cwd(), 'src', 'templates', 'pdf');
         
         // Configuration du moteur PDF par défaut
-        this.defaultEngine = 'pdfkit'; // 'pdfkit' préféré, 'puppeteer' déprécié, 'auto' pour compatibilité
+        this.defaultEngine = 'pdfkit';
         
         // Initialiser le dossier de sortie
         this.initialiserDossierSortie();
@@ -190,7 +173,7 @@ class PdfService extends BaseService {
             
             // Générer le PDF avec Puppeteer
             const pdf = await this.obtenirParId(pdfId);
-            await this.genererPdfAvecPuppeteer(html, pdf.chemin_fichier, options);
+            await this.genererPdf(html, pdf.chemin_fichier, options);
             
             await this.pdfModel.mettreAJour(pdfId, { progression: 80 });
             
@@ -337,58 +320,6 @@ class PdfService extends BaseService {
     }
 
     /**
-     * Génère le PDF avec Puppeteer (DÉPRÉCIÉ - utiliser PDFKit)
-     * @deprecated Utiliser genererPdfAvecPDFKit() à la place
-     */
-    async genererPdfAvecPuppeteer(html, cheminFichier, options = {}) {
-        if (!puppeteer) {
-            throw new Error('Puppeteer n\'est pas disponible. Utilisez PDFKit à la place.');
-        }
-
-        this.logger.warn('⚠️  genererPdfAvecPuppeteer() est déprécié. Migrez vers PDFKit pour de meilleures performances.');
-        
-        let browser;
-        
-        try {
-            browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-            
-            const page = await browser.newPage();
-            
-            // Définir le contenu HTML
-            await page.setContent(html, {
-                waitUntil: 'networkidle0',
-                timeout: 30000
-            });
-            
-            // Options PDF
-            const pdfOptions = {
-                path: cheminFichier,
-                format: options.format || 'A4',
-                landscape: options.orientation === 'landscape',
-                printBackground: true,
-                margin: {
-                    top: '20px',
-                    right: '20px',
-                    bottom: '20px',
-                    left: '20px'
-                },
-                ...options.pdfOptions
-            };
-            
-            // Générer le PDF
-            await page.pdf(pdfOptions);
-            
-        } finally {
-            if (browser) {
-                await browser.close();
-            }
-        }
-    }
-
-    /**
      * Supprime un PDF
      */
     async supprimer(id) {
@@ -458,24 +389,15 @@ class PdfService extends BaseService {
      * Détermine le moteur PDF à utiliser selon le système et template
      * @param {string} system - Système de jeu
      * @param {string} template - Template à utiliser
-     * @param {string} enginePreference - Préférence de moteur ('auto', 'pdfkit', 'puppeteer')
-     * @returns {string} - 'pdfkit' ou 'puppeteer'
+     * @param {string} enginePreference - Préférence de moteur ('auto', 'pdfkit')
+     * @returns {string} - 'pdfkit'
      */
     determineEngine(system, template, enginePreference = this.defaultEngine) {
         // Préférence explicite
         if (enginePreference === 'pdfkit') {
             return 'pdfkit';
         }
-        
-        if (enginePreference === 'puppeteer') {
-            if (!puppeteer) {
-                this.logger.warn('⚠️  Puppeteer demandé mais non disponible, utilisation de PDFKit');
-                return 'pdfkit';
-            }
-            this.logger.warn('⚠️  Puppeteer est déprécié, considérez migrer vers PDFKit');
-            return 'puppeteer';
-        }
-
+       
         // Mode auto : priorité à PDFKit
         const pdfkitTemplates = {
             'monsterhearts': ['plan-classe-instructions', 'plan-classe-instructions-test', 'document-generique', 'document-generique-v2']
@@ -486,14 +408,8 @@ class PdfService extends BaseService {
             return 'pdfkit';
         }
 
-        // Fallback vers Puppeteer si disponible
-        if (puppeteer) {
-            this.logger.warn(`⚠️  Template ${system}/${template} non supporté par PDFKit, utilisation de Puppeteer (déprécié)`);
-            return 'puppeteer';
-        }
-
         // Aucun moteur disponible pour ce template
-        throw new Error(`Template ${system}/${template} non supporté par PDFKit et Puppeteer non disponible`);
+        throw new Error(`Template ${system}/${template} non supporté par PDFKit`);
     }
 
     /**
@@ -980,9 +896,6 @@ class PdfService extends BaseService {
                 if (!result.success) {
                     throw new Error(result.error || 'Erreur génération PDFKit');
                 }
-            } else {
-                // Utiliser Puppeteer pour les autres templates
-                await this.genererPdfDepuisHtml(html, pdf.chemin_fichier);
             }
             
             await this.pdfModel.mettreAJour(pdfId, { progression: 90 });

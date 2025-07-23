@@ -4,15 +4,16 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const db = require('../../src/database/db');
+const { setupTest, teardownTest, cleanupTestData } = require('../helpers/test-cleanup');
 
 describe('Oracles API Integration Tests', () => {
+    let server;
     let adminSession = {};
     let userSession = {};
     let testOracleId;
     
     beforeAll(async () => {
-        // Assurer que la base est initialisée
-        await db.init();
+        server = await setupTest(app);
         
         // Créer un utilisateur admin pour les tests
         const adminUser = {
@@ -71,12 +72,12 @@ describe('Oracles API Integration Tests', () => {
         }
         
         await db.run('DELETE FROM utilisateurs WHERE email LIKE \'%@test.com\'');
-        await db.close();
+        await teardownTest(server);
     });
 
     describe('GET /api/oracles', () => {
         it('devrait lister les oracles disponibles', async () => {
-            const response = await request(app)
+            const response = await request(server)
                 .get('/api/oracles')
                 .expect(200);
                 
@@ -86,7 +87,7 @@ describe('Oracles API Integration Tests', () => {
         });
         
         it('devrait supporter la pagination', async () => {
-            const response = await request(app)
+            const response = await request(server)
                 .get('/api/oracles?page=1&limite=5')
                 .expect(200);
                 
@@ -104,7 +105,7 @@ describe('Oracles API Integration Tests', () => {
                 is_active: true
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post('/api/admin/oracles')
                 .set('Cookie', adminSession.cookie)
                 .send(newOracle)
@@ -150,7 +151,7 @@ describe('Oracles API Integration Tests', () => {
                 is_active: true
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post(`/api/admin/oracles/${testOracleId}/items`)
                 .set('Cookie', adminSession.cookie)
                 .send(newItem)
@@ -185,7 +186,7 @@ describe('Oracles API Integration Tests', () => {
                 withReplacement: true
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post(`/api/oracles/${testOracleId}/draw`)
                 .send(drawRequest)
                 .expect(200);
@@ -202,7 +203,7 @@ describe('Oracles API Integration Tests', () => {
                 withReplacement: true
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post(`/api/oracles/${testOracleId}/draw`)
                 .send(drawRequest)
                 .expect(200);
@@ -216,7 +217,7 @@ describe('Oracles API Integration Tests', () => {
                 withReplacement: false
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post(`/api/oracles/${testOracleId}/draw`)
                 .send(drawRequest)
                 .expect(200);
@@ -267,7 +268,7 @@ describe('Oracles API Integration Tests', () => {
 
     describe('GET /api/oracles/:id/stats', () => {
         it('devrait retourner les statistiques d\'un oracle', async () => {
-            const response = await request(app)
+            const response = await request(server)
                 .get(`/api/oracles/${testOracleId}/stats`)
                 .expect(200);
                 
@@ -298,7 +299,7 @@ describe('Oracles API Integration Tests', () => {
 
     describe('GET /api/oracles/search', () => {
         it('devrait rechercher des oracles par nom', async () => {
-            const response = await request(app)
+            const response = await request(server)
                 .get('/api/oracles/search?q=Test')
                 .expect(200);
                 
@@ -320,7 +321,7 @@ describe('Oracles API Integration Tests', () => {
                 description: 'Description mise à jour'
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .put(`/api/admin/oracles/${testOracleId}`)
                 .set('Cookie', adminSession.cookie)
                 .send(updates)
@@ -364,7 +365,7 @@ describe('Oracles API Integration Tests', () => {
                 newName: 'Clone de Test Oracle'
             };
             
-            const response = await request(app)
+            const response = await request(server)
                 .post(`/api/admin/oracles/${testOracleId}/clone`)
                 .set('Cookie', adminSession.cookie)
                 .send(cloneRequest)

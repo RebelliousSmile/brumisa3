@@ -1,21 +1,17 @@
 const request = require('supertest');
 const path = require('path');
 const app = require('../../src/app');
+const { setupTest, teardownTest } = require('../helpers/test-cleanup');
 
 describe('API Integration Tests', () => {
   let server;
 
   beforeAll(async () => {
-    // Initialiser l'app pour les tests
-    await app.initialize();
-    server = app.instance;
+    server = await setupTest(app);
   });
 
   afterAll(async () => {
-    // Nettoyer après les tests
-    if (app.server) {
-      await app.shutdown();
-    }
+    await teardownTest(server);
   });
 
   describe('Homepage API', () => {

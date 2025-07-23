@@ -5,255 +5,512 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title><%= site_name %></title>
+    
+    <!-- Import des polices selon la charte graphique -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.typekit.net/vpm3oax.css">
+    
     <style>
-        /* Reset CSS */
-        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        /* Variables CSS selon la charte graphique */
+        :root {
+            /* Couleurs principales */
+            --brand-violet: #7641d3;
+            --brand-violet-dark: #5c28ae;
+            --noir: #000000;
+            --noir-charbon: #1e1e1e;
+            --blanc: #ffffff;
+            
+            /* Couleurs d'accent */
+            --gris-fonce: #32373c;
+            --gris-clair: #abb8c3;
+            --violet-electrique: #9b51e0;
+            
+            /* Couleur principale brumisa3 */
+            --brumisa-bleu: #3b82f6;
+            --brumisa-bleu-dark: #2563eb;
+            
+            /* Couleurs fonctionnelles */
+            --succes: #22c55e;
+            --erreur: #f97316;
+            --avertissement: #eab308;
+            --info: #06b6d4;
+            
+            /* Typographie */
+            --font-display: 'Shackleton', sans-serif;
+            --font-serif: 'Source Serif 4', serif;
+        }
 
-        /* Base styles */
+        /* Reset CSS pour emails */
+        body, table, td, a { 
+            -webkit-text-size-adjust: 100%; 
+            -ms-text-size-adjust: 100%; 
+        }
+        table, td { 
+            mso-table-lspace: 0pt; 
+            mso-table-rspace: 0pt; 
+        }
+        img { 
+            -ms-interpolation-mode: bicubic; 
+            border: 0; 
+            outline: none; 
+            text-decoration: none; 
+        }
+
+        /* Base styles - Esthétique gaming/horror sombre */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0 !important;
             padding: 0 !important;
-            background-color: #f4f4f4;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--noir);
+            font-family: var(--font-serif);
             font-size: 16px;
             line-height: 1.6;
-            color: #333333;
+            color: var(--blanc);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Container */
+        /* Container principal - Design mystérieux */
         .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
+            background: var(--noir-charbon);
+            border: 1px solid var(--gris-fonce);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(118, 65, 211, 0.1);
+            position: relative;
         }
 
-        /* Header */
+        /* Effet mystique sur le container */
+        .email-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--brumisa-bleu) 20%, 
+                var(--violet-electrique) 50%, 
+                var(--brumisa-bleu) 80%, 
+                transparent 100%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Header - Style gaming avec dégradé brumisa3 */
         .email-header {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-            padding: 30px 40px;
+            background: linear-gradient(135deg, 
+                var(--brumisa-bleu) 0%, 
+                var(--brumisa-bleu-dark) 100%);
+            color: var(--blanc);
+            padding: 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effet particules sur le header */
+        .email-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.1), transparent);
+            background-repeat: repeat;
+            background-size: 150px 100px;
+            animation: stars 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes stars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
         }
 
         .email-header h1 {
             margin: 0;
-            font-size: 24px;
+            font-family: var(--font-display);
+            font-size: 28px;
             font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(59, 130, 246, 0.3);
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 1;
         }
 
         .email-header .subtitle {
-            margin: 8px 0 0 0;
-            font-size: 14px;
+            margin: 12px 0 0 0;
+            font-family: var(--font-serif);
+            font-size: 16px;
             opacity: 0.9;
-            font-weight: 300;
+            font-weight: 400;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Content */
+        /* Content - Zone de contenu sombre */
         .email-content {
             padding: 40px;
+            background: var(--noir-charbon);
+            position: relative;
         }
 
-        .email-content h2 {
-            color: #1f2937;
-            font-size: 22px;
-            font-weight: 600;
+        .email-content h1,
+        .email-content h2,
+        .email-content h3,
+        .email-content h4,
+        .email-content h5,
+        .email-content h6 {
+            font-family: var(--font-display);
+            color: var(--blanc);
             margin: 0 0 20px 0;
-            line-height: 1.3;
+            line-height: 1.2;
         }
 
-        .email-content h3 {
-            color: #374151;
-            font-size: 18px;
-            font-weight: 500;
-            margin: 24px 0 12px 0;
+        .email-content h1 { font-size: 32px; font-weight: 700; }
+        .email-content h2 { 
+            font-size: 24px; 
+            font-weight: 600;
+            color: var(--brumisa-bleu);
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
         }
+        .email-content h3 { font-size: 20px; font-weight: 600; }
 
         .email-content p {
+            font-family: var(--font-serif);
+            color: var(--blanc);
             margin: 0 0 16px 0;
-            color: #4b5563;
-            line-height: 1.7;
+            line-height: 1.6;
         }
 
-        /* Buttons */
+        .email-content a {
+            color: var(--brumisa-bleu);
+            text-decoration: none;
+            transition: all 200ms ease-in-out;
+        }
+
+        .email-content a:hover {
+            color: var(--violet-electrique);
+            text-shadow: 0 0 8px rgba(155, 81, 224, 0.5);
+        }
+
+        .email-content strong {
+            color: var(--brumisa-bleu);
+            font-weight: 600;
+        }
+
+        /* Boutons - Style gaming moderne */
         .button {
             display: inline-block;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
+            padding: 16px 32px;
+            font-family: var(--font-display);
             font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
             text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .button:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .button-secondary {
-            background: linear-gradient(135deg, #6b7280, #4b5563);
-            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
-        }
-
-        .button-secondary:hover {
-            background: linear-gradient(135deg, #4b5563, #374151);
-            box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4);
-        }
-
-        /* Alert boxes */
-        .alert {
-            padding: 16px;
-            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 8px;
+            transition: all 300ms ease-in-out;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
             margin: 20px 0;
         }
 
-        .alert-info {
-            background-color: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            color: #1e40af;
+        .button-primary {
+            background: linear-gradient(135deg, var(--brumisa-bleu), var(--brumisa-bleu-dark));
+            color: var(--blanc);
+            border-color: var(--brumisa-bleu);
+            box-shadow: 
+                0 8px 20px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        .alert-warning {
-            background-color: #fffbeb;
-            border-left: 4px solid #f59e0b;
-            color: #92400e;
+        .button-primary:hover {
+            background: linear-gradient(135deg, var(--brumisa-bleu-dark), var(--brumisa-bleu));
+            box-shadow: 
+                0 12px 30px rgba(59, 130, 246, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: var(--blanc);
+        }
+
+        .button-secondary {
+            background: linear-gradient(135deg, var(--gris-fonce), var(--noir-charbon));
+            color: var(--gris-clair);
+            border-color: var(--gris-fonce);
+            box-shadow: 
+                0 8px 20px rgba(50, 55, 60, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .button-secondary:hover {
+            background: linear-gradient(135deg, var(--noir-charbon), var(--gris-fonce));
+            color: var(--blanc);
+            border-color: var(--brumisa-bleu);
+            box-shadow: 
+                0 12px 30px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Effet de pulsation pour les boutons importants */
+        .button-pulse::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            border-radius: inherit;
+            opacity: 0.3;
+            animation: pulse-wave 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+
+        @keyframes pulse-wave {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.05); opacity: 0.1; }
+            100% { transform: scale(1.1); opacity: 0; }
+        }
+
+        /* Alert boxes - Style gaming */
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+            border-left: 4px solid;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-info {
+            background: rgba(6, 182, 212, 0.1);
+            border-left-color: var(--info);
+            color: var(--blanc);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
         }
 
         .alert-success {
-            background-color: #f0fdf4;
-            border-left: 4px solid #10b981;
-            color: #065f46;
+            background: rgba(34, 197, 94, 0.1);
+            border-left-color: var(--succes);
+            color: var(--blanc);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
         }
 
-        /* Code blocks */
+        .alert-warning {
+            background: rgba(234, 179, 8, 0.1);
+            border-left-color: var(--avertissement);
+            color: var(--blanc);
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
+        }
+
+        .alert-error {
+            background: rgba(249, 115, 22, 0.1);
+            border-left-color: var(--erreur);
+            color: var(--blanc);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.1);
+        }
+
+        /* Code blocks - Style terminal */
         .code-block {
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 16px;
-            font-family: 'Monaco', 'Menlo', monospace;
+            background: var(--noir);
+            border: 1px solid var(--gris-fonce);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
             font-size: 14px;
-            color: #1f2937;
+            color: var(--brumisa-bleu);
             overflow-x: auto;
-            margin: 16px 0;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* Links */
-        a {
-            color: #3b82f6;
-            text-decoration: none;
+        .code-block::before {
+            content: '$ ';
+            color: var(--violet-electrique);
+            font-weight: bold;
         }
 
-        a:hover {
-            color: #2563eb;
-            text-decoration: underline;
+        /* Liste stylisée */
+        .email-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 20px 0;
         }
 
-        /* Footer */
+        .email-content li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+            color: var(--blanc);
+        }
+
+        .email-content li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--brumisa-bleu);
+            font-weight: bold;
+        }
+
+        /* Footer - Style mystérieux */
         .email-footer {
-            background-color: #f9fafb;
+            background: var(--noir);
+            color: var(--gris-clair);
             padding: 30px 40px;
             text-align: center;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--gris-fonce);
+            position: relative;
+        }
+
+        .email-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--brumisa-bleu), 
+                transparent);
+            animation: flow 4s ease-in-out infinite;
+        }
+
+        @keyframes flow {
+            0%, 100% { transform: translateX(-100%); opacity: 0; }
+            50% { transform: translateX(0); opacity: 1; }
         }
 
         .email-footer p {
-            margin: 0 0 8px 0;
+            font-family: var(--font-serif);
             font-size: 14px;
-            color: #6b7280;
+            margin: 8px 0;
+            line-height: 1.5;
         }
 
-        .email-footer .social-links {
-            margin: 20px 0 0 0;
+        .social-links {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gris-fonce);
         }
 
-        .email-footer .social-links a {
-            display: inline-block;
+        .social-links a {
+            color: var(--gris-clair);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 200ms ease-in-out;
             margin: 0 8px;
-            color: #9ca3af;
-            font-size: 12px;
         }
 
-        /* Responsive */
-        @media screen and (max-width: 600px) {
+        .social-links a:hover {
+            color: var(--brumisa-bleu);
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Responsive - Mobile first */
+        @media (max-width: 640px) {
             .email-container {
-                margin: 10px;
-                border-radius: 0;
+                margin: 0 10px;
+                border-radius: 8px;
             }
-            
+
             .email-header,
             .email-content,
             .email-footer {
-                padding: 20px !important;
+                padding: 20px;
             }
 
             .email-header h1 {
-                font-size: 20px;
+                font-size: 24px;
             }
 
             .email-content h2 {
-                font-size: 18px;
+                font-size: 20px;
             }
 
             .button {
                 display: block;
                 width: 100%;
-                box-sizing: border-box;
-                text-align: center;
+                margin: 16px 0;
+            }
+
+            .social-links a {
+                display: block;
+                margin: 8px 0;
             }
         }
 
-        /* Dark mode support */
+        /* Dark mode support pour clients qui le supportent */
         @media (prefers-color-scheme: dark) {
+            /* Les styles sont déjà sombres, on peut ajouter des ajustements si nécessaire */
             .email-container {
-                background-color: #1f2937;
+                box-shadow: 
+                    0 20px 40px rgba(0, 0, 0, 0.9),
+                    0 0 40px rgba(118, 65, 211, 0.15);
             }
-            
-            .email-content {
-                background-color: #1f2937;
-            }
+        }
 
-            .email-content h2,
-            .email-content h3 {
-                color: #f9fafb;
+        /* Print styles au cas où */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
             }
-
-            .email-content p {
-                color: #d1d5db;
+            .email-container {
+                background: white !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
             }
-
-            .email-footer {
-                background-color: #111827;
-                border-color: #374151;
+            .email-header {
+                background: #f0f0f0 !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <!-- Header -->
+        <!-- Header avec effet mystique -->
         <div class="email-header">
             <h1><%= site_name %></h1>
             <p class="subtitle">Générateur de fiches de personnages JDR</p>
         </div>
 
-        <!-- Content -->
+        <!-- Content principal -->
         <div class="email-content">
             <%- content %>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer avec liens -->
         <div class="email-footer">
             <p>&copy; <%= year %> <%= site_name %>. Tous droits réservés.</p>
             <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>

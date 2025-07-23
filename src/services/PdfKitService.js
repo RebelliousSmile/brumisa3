@@ -7,7 +7,6 @@ const DocumentFactory = require('./DocumentFactory');
 
 /**
  * Service de génération PDF avec PDFKit
- * Remplace Puppeteer pour un contrôle précis de la mise en page
  */
 class PdfKitService {
     constructor() {

@@ -180,9 +180,11 @@ class AuthentificationController extends BaseController {
             }
         } catch (error) {
             // Ne pas bloquer l'inscription si l'email échoue
-            this.logError(error, { 
+            this.logger.error('Erreur lors de l\'envoi de l\'email de bienvenue', { 
                 context: 'envoi_email_bienvenue',
-                utilisateur_id: utilisateur.id 
+                utilisateur_id: utilisateur.id,
+                error: error.message,
+                stack: error.stack
             });
         }
         
@@ -455,9 +457,11 @@ class AuthentificationController extends BaseController {
                     });
                 }
             } catch (error) {
-                this.logError(error, { 
+                this.logger.error('Erreur lors de l\'envoi de l\'email de récupération', { 
                     context: 'envoi_email_recuperation',
-                    email: email 
+                    email: email,
+                    error: error.message,
+                    stack: error.stack
                 });
             }
         }
@@ -502,6 +506,40 @@ class AuthentificationController extends BaseController {
         
         return this.repondreSucces(res, null, 'Mot de passe mis à jour avec succès');
     });
+
+    /**
+     * Test de l'endpoint mot de passe oublié avec l'email de configuration
+     * GET /api/auth/test-mot-de-passe-oublie
+     * Endpoint de développement uniquement
+     */
+    testMotDePasseOublie = this.wrapAsync(async (req, res) => {
+        // Seulement en développement
+        if (process.env.NODE_ENV === 'production') {
+            return this.repondreErreur(res, 404, 'Endpoint non disponible en production');
+        }
+
+        const emailTest = process.env.TEST_EMAIL || process.env.ADMIN_EMAIL || 'internet@fxguillois.email';
+        
+        try {
+            // Simuler une requête POST vers motDePasseOublie
+            const fakeReq = {
+                ...req,
+                body: { email: emailTest },
+                method: 'POST'
+            };
+
+            // Appeler la méthode motDePasseOublie
+            await this.motDePasseOublie(fakeReq, res);
+            
+        } catch (error) {
+            this.logger.error('Erreur lors du test mot de passe oublié', {
+                error: error.message,
+                stack: error.stack,
+                email_test: emailTest
+            });
+            return this.repondreErreur(res, 500, 'Erreur lors du test');
+        }
+    });
 }
 
 module.exports = AuthentificationController;</code></pre>
@@ -514,13 +552,13 @@ module.exports = AuthentificationController;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="EngrenagesTheme.html">EngrenagesTheme</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="Metro2033Theme.html">Metro2033Theme</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="ShareService.html">ShareService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemService.html">SystemService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 22 2025 11:17:14 GMT+0200 (heure d’été d’Europe centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Jul 23 2025 17:42:32 GMT+0200 (heure d’été d’Europe centrale)
 </footer>
 
 <script> prettyPrint(); </script>

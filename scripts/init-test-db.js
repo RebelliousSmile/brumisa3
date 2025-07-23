@@ -120,16 +120,17 @@ async function main() {
             if (!initOk) {
                 throw new Error('Échec de l\'initialisation des tables de base');
             }
-            
-            // Étape 2: Appliquer les migrations
-            await executerMigrations();
-            
-            // Vérifier l'état final
-            console.log('\n🔍 Vérification finale...');
-            await verifierTables();
         } else {
             console.log('\n✅ Base de données déjà initialisée');
         }
+        
+        // Toujours appliquer les migrations (au cas où il y en a de nouvelles)
+        console.log('\n🔄 Vérification des migrations...');
+        await executerMigrations();
+        
+        // Vérifier l'état final
+        console.log('\n🔍 Vérification finale...');
+        await verifierTables();
         
         console.log('\n🎉 Base de données de test prête !');
         

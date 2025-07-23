@@ -2,15 +2,15 @@ const request = require('supertest');
 const crypto = require('crypto');
 const app = require('../../src/app');
 const db = require('../../src/database/db');
+const { setupTest, teardownTest, cleanupTestData } = require('../helpers/test-cleanup');
 
 describe('Authentication API Integration Tests', () => {
     let server;
     let testUser;
 
     beforeAll(async () => {
-        // Initialiser l'app pour les tests
-        await app.initialize();
-        server = app.instance;
+        // Initialiser l'app et nettoyer les données de test
+        server = await setupTest(app);
     });
 
     beforeEach(async () => {
@@ -315,5 +315,16 @@ describe('Authentication API Integration Tests', () => {
 
             expect(response.body.succes).toBe(true);
         });
+    });
+
+    afterEach(async () => {
+        // Nettoyer les données de test après chaque test
+        await cleanupTestData(testUser);
+        testUser = null;
+    });
+
+    afterAll(async () => {
+        // Fermer proprement toutes les connexions
+        await teardownTest(server);
     });
 });

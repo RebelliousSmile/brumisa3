@@ -48,7 +48,6 @@
       "Bash(taskkill:*)",
       "Bash(PORT=3077 node src/app.js)",
       "Bash(pnpm start:*)",
-      "Bash(npx puppeteer browsers:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",

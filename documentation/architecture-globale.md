@@ -72,7 +72,7 @@ Créer et gérer des fiches de personnages pour différents systèmes de JDR ave
 ## Performance
 
 ### Génération PDF
-- **Asynchrone** : Puppeteer en arrière-plan
+- **Asynchrone** : PDFKit en arrière-plan
 - **Statuts** : Suivi EN_ATTENTE → EN_TRAITEMENT → TERMINÉ/ÉCHEC
 - **Cache** : Templates compilés
 - **Nettoyage** : Expiration automatique des PDFs
