@@ -1,39 +1,81 @@
+/**
+ * Tests d'intégration API - Génération et gestion des PDFs
+ * 
+ * Objectif : Tester tous les endpoints de génération et gestion des PDFs
+ * - Génération de PDFs pour personnages
+ * - Génération de documents génériques
+ * - Gestion du statut de génération (asynchrone)
+ * - Téléchargement de PDFs
+ * - Partage de PDFs (liens temporaires)
+ * - Listage et suppression de PDFs
+ * - Templates et types de PDFs disponibles
+ * - Statistiques de génération
+ * 
+ * Couverture : Cycle complet de génération PDF avec gestion d'erreurs
+ * Architecture : Utilise BaseApiTest avec principes SOLID
+ */
+
 const request = require('supertest');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+class PdfsApiTest extends BaseApiTest {
+    constructor() {
+        super({
+            timeout: 30000,
+            cleanupUsers: true
+        });
+        
+        this.pdfId = null;
+        this.tokenAnonyme = null;
+        this.authenticatedAgent = null;
+    }
+
+    createTestContext() {
+        return TestFactory.createTestContext(this.config);
+    }
+
+    async customSetup() {
+        // Créer et connecter l'utilisateur principal de test
+        const authResult = await this.createAndLoginUser({
+            nom: 'Test User PDFs',
+            email: `test_pdf_${Date.now()}@example.com`,
+            motDePasse: 'motdepasse123'
+        });
+        
+        this.authenticatedAgent = authResult.agent;
+    }
+
+    getServer() {
+        return this.setupData?.server;
+    }
+}
+
+const pdfsApiTest = new PdfsApiTest();
 
 describe('API PDFs', () => {
-    let app, server, agent;
-    let testUser = {
-        nom: 'Test User PDFs',
-        email: `test_pdf_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
-    let pdfId, tokenAnonyme;
+    let testInstance;
 
     beforeAll(async () => {
-        app = require('../../src/app');
-        server = await setupTest(app);
-        
-        // Créer utilisateur et se connecter
-        agent = request.agent(server);
-        await agent.post('/api/auth/inscription').send(testUser);
+        testInstance = pdfsApiTest;
+        await testInstance.baseSetup();
     });
 
     afterAll(async () => {
-        await teardownTest(server);
+        await testInstance.baseTeardown();
     });
 
     describe('POST /api/auth/token-anonyme', () => {
         test('doit générer token pour utilisateur anonyme', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/auth/token-anonyme')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('token');
             expect(response.body.donnees).toHaveProperty('expires_at');
             
-            tokenAnonyme = response.body.donnees.token;
+            testInstance.tokenAnonyme = response.body.donnees.token;
         });
     });
 
@@ -57,32 +99,32 @@ describe('API PDFs', () => {
                 }
             };
 
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/pdfs/generer')
                 .send(pdfData)
                 .expect(201);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees).toHaveProperty('id');
             expect(response.body.donnees).toHaveProperty('statut');
             expect(response.body.donnees.statut).toBe('en_cours');
             
-            pdfId = response.body.donnees.id;
+            testInstance.pdfId = response.body.donnees.id;
         });
 
         test('doit refuser génération sans authentification', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/pdfs/generer')
                 .send({ systeme: 'dnd5' })
                 .expect(401);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertAuthenticationRequired(response);
         });
     });
 
     describe('POST /api/pdfs/document-generique/:systeme', () => {
         test('doit générer document générique pour utilisateur authentifié', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/pdfs/document-generique/dnd5')
                 .send({
                     template: 'feuille-vierge',
@@ -90,92 +132,91 @@ describe('API PDFs', () => {
                 })
                 .expect(201);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees).toHaveProperty('id');
         });
     });
 
     describe('POST /api/pdfs/document-generique-anonyme/:systeme', () => {
         test('doit générer document générique pour anonyme avec token', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/pdfs/document-generique-anonyme/dnd5')
-                .set('Authorization', `Bearer ${tokenAnonyme}`)
+                .set('Authorization', `Bearer ${testInstance.tokenAnonyme}`)
                 .send({
                     template: 'feuille-vierge',
                     options: { format: 'A4' }
                 })
                 .expect(201);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees).toHaveProperty('id');
         });
 
         test('doit refuser génération anonyme sans token', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/pdfs/document-generique-anonyme/dnd5')
                 .send({ template: 'test' })
                 .expect(401);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertAuthenticationRequired(response);
         });
     });
 
     describe('GET /api/pdfs', () => {
         test('doit lister les PDFs de l\'utilisateur', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/pdfs')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(Array.isArray(response.body.donnees)).toBe(true);
         });
 
         test('doit supporter pagination', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/pdfs')
                 .query({ page: 1, limit: 5 })
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees.length).toBeLessThanOrEqual(5);
         });
     });
 
     describe('GET /api/pdfs/:id', () => {
         test('doit récupérer détails d\'un PDF', async () => {
-            const response = await agent
-                .get(`/api/pdfs/${pdfId}`)
+            const response = await testInstance.authenticatedAgent
+                .get(`/api/pdfs/${testInstance.pdfId}`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toMatchObject({
-                id: pdfId
+                id: testInstance.pdfId
             });
         });
 
         test('doit refuser accès PDF d\'un autre utilisateur', async () => {
-            const autreAgent = request.agent(server);
-            await autreAgent.post('/api/auth/inscription').send({
+            const autreUserResult = await testInstance.createAndLoginUser({
                 nom: 'Autre User',
                 email: `autre_pdf_${Date.now()}@example.com`,
                 motDePasse: 'motdepasse123'
             });
 
-            const response = await autreAgent
-                .get(`/api/pdfs/${pdfId}`)
+            const response = await autreUserResult.agent
+                .get(`/api/pdfs/${testInstance.pdfId}`)
                 .expect(404);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertApiResponse(response, 404, false);
         });
     });
 
     describe('GET /api/pdfs/:id/statut', () => {
         test('doit retourner statut génération PDF', async () => {
-            const response = await request(server)
-                .get(`/api/pdfs/${pdfId}/statut`)
+            const response = await request(testInstance.getServer())
+                .get(`/api/pdfs/${testInstance.pdfId}/statut`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('statut');
             expect(['en_cours', 'termine', 'erreur']).toContain(response.body.donnees.statut);
         });
@@ -183,26 +224,26 @@ describe('API PDFs', () => {
 
     describe('POST /api/pdfs/:id/relancer', () => {
         test('doit relancer génération PDF échouée', async () => {
-            const response = await agent
-                .post(`/api/pdfs/${pdfId}/relancer`)
+            const response = await testInstance.authenticatedAgent
+                .post(`/api/pdfs/${testInstance.pdfId}/relancer`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('relancée');
         });
     });
 
     describe('POST /api/pdfs/:id/partager', () => {
         test('doit créer lien de partage', async () => {
-            const response = await agent
-                .post(`/api/pdfs/${pdfId}/partager`)
+            const response = await testInstance.authenticatedAgent
+                .post(`/api/pdfs/${testInstance.pdfId}/partager`)
                 .send({
                     duree: 24, // heures
                     mot_de_passe: 'secret123'
                 })
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('lien_partage');
             expect(response.body.donnees).toHaveProperty('token');
         });
@@ -212,36 +253,36 @@ describe('API PDFs', () => {
         let tokenPartage;
 
         beforeEach(async () => {
-            const shareResponse = await agent
-                .post(`/api/pdfs/${pdfId}/partager`)
+            const shareResponse = await testInstance.authenticatedAgent
+                .post(`/api/pdfs/${testInstance.pdfId}/partager`)
                 .send({ duree: 1 });
             
             tokenPartage = shareResponse.body.donnees.token;
         });
 
         test('doit afficher PDF partagé avec token valide', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get(`/api/pdfs/partage/${tokenPartage}`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('pdf');
         });
 
         test('doit refuser token de partage invalide', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get('/api/pdfs/partage/token-invalide')
                 .expect(404);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertApiResponse(response, 404, false);
         });
     });
 
     describe('GET /api/pdfs/:id/telecharger', () => {
         test('doit permettre téléchargement par propriétaire', async () => {
             // Ce test nécessiterait que le PDF soit généré et prêt
-            const response = await agent
-                .get(`/api/pdfs/${pdfId}/telecharger`)
+            const response = await testInstance.authenticatedAgent
+                .get(`/api/pdfs/${testInstance.pdfId}/telecharger`)
                 .expect(200);
 
             expect(response.headers['content-type']).toContain('application/pdf');
@@ -259,12 +300,12 @@ describe('API PDFs', () => {
                 }
             };
 
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/pdfs/preview-html')
                 .send(previewData)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('html');
             expect(typeof response.body.donnees.html).toBe('string');
         });
@@ -272,44 +313,44 @@ describe('API PDFs', () => {
 
     describe('GET /api/pdfs/types', () => {
         test('doit retourner types de PDF disponibles (public)', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get('/api/pdfs/types')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(Array.isArray(response.body.donnees)).toBe(true);
         });
     });
 
     describe('GET /api/pdfs/templates/:systeme', () => {
         test('doit lister templates pour un système', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/pdfs/templates/dnd5')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(Array.isArray(response.body.donnees)).toBe(true);
         });
     });
 
     describe('GET /api/pdfs/types-templates', () => {
         test('doit retourner mapping types-templates', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/pdfs/types-templates')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(typeof response.body.donnees).toBe('object');
         });
     });
 
     describe('GET /api/pdfs/statistiques', () => {
         test('doit retourner statistiques PDFs utilisateur', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/pdfs/statistiques')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('total_pdfs');
             expect(response.body.donnees).toHaveProperty('par_statut');
         });
@@ -317,28 +358,30 @@ describe('API PDFs', () => {
 
     describe('POST /api/pdfs/:id/basculer-visibilite', () => {
         test('doit basculer visibilité d\'un PDF', async () => {
-            const response = await agent
-                .post(`/api/pdfs/${pdfId}/basculer-visibilite`)
+            const response = await testInstance.authenticatedAgent
+                .post(`/api/pdfs/${testInstance.pdfId}/basculer-visibilite`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('visibilité');
         });
     });
 
     describe('DELETE /api/pdfs/:id', () => {
         test('doit supprimer un PDF', async () => {
-            const response = await agent
-                .delete(`/api/pdfs/${pdfId}`)
+            const response = await testInstance.authenticatedAgent
+                .delete(`/api/pdfs/${testInstance.pdfId}`)
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('supprimé');
 
             // Vérifier suppression
-            await agent
-                .get(`/api/pdfs/${pdfId}`)
+            const verifyResponse = await testInstance.authenticatedAgent
+                .get(`/api/pdfs/${testInstance.pdfId}`)
                 .expect(404);
+            
+            testInstance.assertApiResponse(verifyResponse, 404, false);
         });
     });
 });

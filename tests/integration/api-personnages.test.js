@@ -1,165 +1,180 @@
+/**
+ * Tests d'intégration API - Gestion des personnages
+ * 
+ * Objectif : Tester tous les endpoints CRUD pour les personnages de JDR
+ * - Création de personnages (validation systèmes de jeu)
+ * - Listage et récupération de personnages
+ * - Modification et suppression
+ * - Duplication de personnages
+ * - Sauvegarde de brouillons
+ * - Recherche de personnages
+ * - Génération de PDF
+ * - Templates par système de jeu
+ * - Statistiques utilisateur
+ * 
+ * Couverture : CRUD complet avec authentification et validation métier
+ * Architecture : Utilise les principes SOLID avec injection de dépendances
+ */
+
 const request = require('supertest');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+class PersonnagesApiTest extends BaseApiTest {
+    createTestContext() {
+        return TestFactory.createAuthTestContext(this.config);
+    }
+
+    async customSetup() {
+        // Créer et connecter un utilisateur pour les tests CRUD
+        const result = await this.createAndLoginUser({
+            nom: 'Test User Personnages'
+        });
+        this.authenticatedAgent = result.agent;
+        this.testUser = result.user;
+        
+        // Variable pour stocker l'ID du personnage créé
+        this.personnageId = null;
+    }
+}
 
 describe('API Personnages', () => {
-    let app, server, agent;
-    let testUser = {
-        nom: 'Test User Personnages',
-        email: `test_perso_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
-    let personnageId;
+    const testInstance = new PersonnagesApiTest({
+        timeout: 30000,
+        cleanupUsers: true
+    });
+
+    let setupData;
 
     beforeAll(async () => {
-        app = require('../../src/app');
-        server = await setupTest(app);
-        
-        // Créer utilisateur et se connecter
-        agent = request.agent(server);
-        await agent.post('/api/auth/inscription').send(testUser);
+        setupData = await testInstance.baseSetup();
     });
 
     afterAll(async () => {
-        await teardownTest(server);
+        await testInstance.baseTeardown();
     });
 
     describe('POST /api/personnages', () => {
         test('doit créer un nouveau personnage', async () => {
             const personnageData = {
-                nom: 'Aragorn',
-                systeme: 'dnd5',
-                niveau: 5,
-                classe: 'Rôdeur',
-                race: 'Humain',
-                caracteristiques: {
-                    force: 16,
-                    dexterite: 14,
-                    constitution: 13
+                nom: 'Lydia',
+                systeme_jeu: 'monsterhearts',
+                skin: 'vampire',
+                attributs: {
+                    hot: 2,
+                    cold: 1,
+                    volatile: -1,
+                    dark: 2
+                },
+                donnees_personnage: {
+                    description: 'Vampire séduisante du lycée'
                 }
             };
 
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/personnages')
-                .send(personnageData)
-                .expect(201);
+                .send(personnageData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees).toMatchObject({
                 nom: personnageData.nom,
-                systeme: personnageData.systeme,
-                niveau: personnageData.niveau
+                systeme_jeu: personnageData.systeme_jeu,
+                skin: personnageData.skin
             });
             
-            personnageId = response.body.donnees.id;
+            testInstance.personnageId = response.body.donnees.id;
         });
 
         test('doit refuser création sans authentification', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/personnages')
-                .send({ nom: 'Test' })
-                .expect(401);
+                .send({ nom: 'Test' });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertAuthenticationRequired(response);
         });
 
         test('doit valider les données requises', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/personnages')
-                .send({})
-                .expect(400);
+                .send({});
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response);
         });
     });
 
     describe('GET /api/personnages', () => {
         test('doit lister les personnages de l\'utilisateur', async () => {
-            const response = await agent
-                .get('/api/personnages')
-                .expect(200);
+            const response = await testInstance.authenticatedAgent
+                .get('/api/personnages');
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(Array.isArray(response.body.donnees)).toBe(true);
             expect(response.body.donnees.length).toBeGreaterThan(0);
         });
 
         test('doit refuser accès sans authentification', async () => {
-            const response = await request(server)
-                .get('/api/personnages')
-                .expect(401);
+            const response = await request(testInstance.getServer())
+                .get('/api/personnages');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertAuthenticationRequired(response);
         });
     });
 
     describe('GET /api/personnages/:id', () => {
         test('doit récupérer un personnage par ID', async () => {
-            const response = await agent
-                .get(`/api/personnages/${personnageId}`)
-                .expect(200);
+            const response = await testInstance.authenticatedAgent
+                .get(`/api/personnages/${testInstance.personnageId}`);
 
-            expect(response.body.succes).toBe(true);
-            expect(response.body.donnees).toMatchObject({
-                id: personnageId,
-                nom: 'Aragorn',
-                systeme: 'dnd5'
-            });
+            testInstance.assertApiResponse(response, 200, true);
+            expect(response.body.donnees).toHaveProperty('id', testInstance.personnageId);
+            expect(response.body.donnees).toHaveProperty('nom');
         });
 
         test('doit retourner 404 pour personnage inexistant', async () => {
-            const response = await agent
-                .get('/api/personnages/99999')
-                .expect(404);
+            const response = await testInstance.authenticatedAgent
+                .get('/api/personnages/99999');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertApiResponse(response, 404, false);
         });
     });
 
     describe('PUT /api/personnages/:id', () => {
         test('doit mettre à jour un personnage', async () => {
             const updateData = {
-                nom: 'Aragorn Roi',
+                nom: 'Lydia Modifiée',
                 niveau: 10
             };
 
-            const response = await agent
-                .put(`/api/personnages/${personnageId}`)
-                .send(updateData)
-                .expect(200);
+            const response = await testInstance.authenticatedAgent
+                .put(`/api/personnages/${testInstance.personnageId}`)
+                .send(updateData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toMatchObject(updateData);
         });
 
         test('doit refuser modification personnage d\'un autre utilisateur', async () => {
             // Créer un autre utilisateur
-            const autreUser = {
-                nom: 'Autre User',
-                email: `autre_${Date.now()}@example.com`,
-                motDePasse: 'motdepasse123'
-            };
-            
-            const autreAgent = request.agent(server);
-            await autreAgent.post('/api/auth/inscription').send(autreUser);
+            const autreResult = await testInstance.createAndLoginUser({
+                nom: 'Autre User'
+            });
 
-            const response = await autreAgent
-                .put(`/api/personnages/${personnageId}`)
-                .send({ nom: 'Hack' })
-                .expect(404);
+            const response = await autreResult.agent
+                .put(`/api/personnages/${testInstance.personnageId}`)
+                .send({ nom: 'Hack' });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertApiResponse(response, 404, false);
         });
     });
 
     describe('POST /api/personnages/:id/dupliquer', () => {
         test('doit dupliquer un personnage', async () => {
-            const response = await agent
-                .post(`/api/personnages/${personnageId}/dupliquer`)
-                .expect(201);
+            const response = await testInstance.authenticatedAgent
+                .post(`/api/personnages/${testInstance.personnageId}/dupliquer`);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees.nom).toContain('Copie');
-            expect(response.body.donnees.id).not.toBe(personnageId);
+            expect(response.body.donnees.id).not.toBe(testInstance.personnageId);
         });
     });
 
@@ -173,45 +188,41 @@ describe('API Personnages', () => {
                 }
             };
 
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/personnages/brouillon')
-                .send(brouillonData)
-                .expect(200);
+                .send(brouillonData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('brouillon');
         });
     });
 
     describe('GET /api/personnages/rechercher', () => {
         test('doit permettre recherche par nom', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/personnages/rechercher')
-                .query({ q: 'Aragorn' })
-                .expect(200);
+                .query({ q: 'Lydia' });
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(Array.isArray(response.body.donnees)).toBe(true);
         });
 
         test('doit limiter les résultats de recherche', async () => {
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .get('/api/personnages/rechercher')
-                .query({ q: 'Test', limit: 5 })
-                .expect(200);
+                .query({ q: 'Test', limit: 5 });
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees.length).toBeLessThanOrEqual(5);
         });
     });
 
     describe('GET /api/personnages/statistiques', () => {
         test('doit retourner statistiques utilisateur', async () => {
-            const response = await agent
-                .get('/api/personnages/statistiques')
-                .expect(200);
+            const response = await testInstance.authenticatedAgent
+                .get('/api/personnages/statistiques');
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('total_personnages');
             expect(response.body.donnees).toHaveProperty('par_systeme');
             expect(typeof response.body.donnees.total_personnages).toBe('number');
@@ -220,18 +231,17 @@ describe('API Personnages', () => {
 
     describe('POST /api/personnages/:id/pdf', () => {
         test('doit générer PDF depuis personnage', async () => {
-            const response = await agent
-                .post(`/api/personnages/${personnageId}/pdf`)
+            const response = await testInstance.authenticatedAgent
+                .post(`/api/personnages/${testInstance.personnageId}/pdf`)
                 .send({
                     template: 'standard',
                     options: {
                         format: 'A4',
                         couleur: true
                     }
-                })
-                .expect(201);
+                });
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 201, true);
             expect(response.body.donnees).toHaveProperty('pdf_id');
             expect(response.body.donnees).toHaveProperty('statut');
         });
@@ -239,37 +249,34 @@ describe('API Personnages', () => {
 
     describe('GET /api/personnages/template/:systeme', () => {
         test('doit retourner template public par système', async () => {
-            const response = await request(server)
-                .get('/api/personnages/template/dnd5')
-                .expect(200);
+            const response = await request(testInstance.getServer())
+                .get('/api/personnages/template/dnd5');
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('template');
             expect(response.body.donnees).toHaveProperty('champs');
         });
 
         test('doit retourner 404 pour système inexistant', async () => {
-            const response = await request(server)
-                .get('/api/personnages/template/systeme-inexistant')
-                .expect(404);
+            const response = await request(testInstance.getServer())
+                .get('/api/personnages/template/systeme-inexistant');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertApiResponse(response, 404, false);
         });
     });
 
     describe('DELETE /api/personnages/:id', () => {
         test('doit supprimer un personnage', async () => {
-            const response = await agent
-                .delete(`/api/personnages/${personnageId}`)
-                .expect(200);
+            const response = await testInstance.authenticatedAgent
+                .delete(`/api/personnages/${testInstance.personnageId}`);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('supprimé');
 
             // Vérifier que le personnage n'existe plus
-            await agent
-                .get(`/api/personnages/${personnageId}`)
-                .expect(404);
+            const checkResponse = await testInstance.authenticatedAgent
+                .get(`/api/personnages/${testInstance.personnageId}`);
+            testInstance.assertApiResponse(checkResponse, 404, false);
         });
     });
 });

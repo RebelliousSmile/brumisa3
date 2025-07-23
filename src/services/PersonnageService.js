@@ -1,6 +1,6 @@
 const BaseService = require('./BaseService');
 const Personnage = require('../models/Personnage');
-const systemesJeu = require('../utils/systemesJeu');
+const { systemesJeu } = require('../config/systemesJeu');
 
 /**
  * Service pour la gestion des personnages

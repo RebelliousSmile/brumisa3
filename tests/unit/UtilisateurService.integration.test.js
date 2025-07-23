@@ -1,57 +1,82 @@
 /**
- * Tests d'intégration pour UtilisateurService
- * Ces tests utilisent la vraie base de données pour détecter les problèmes de configuration
+ * Tests d'intégration pour UtilisateurService avec pattern SOLID
+ * Principe SOLID : Single Responsibility - Tests focalisés sur une seule responsabilité
  */
 
 const crypto = require('crypto');
+const BaseUnitTest = require('../helpers/BaseUnitTest');
+const UnitTestFactory = require('../helpers/UnitTestFactory');
 const UtilisateurService = require('../../src/services/UtilisateurService');
 const db = require('../../src/database/db');
 
-describe('UtilisateurService Integration Tests', () => {
-    let utilisateurService;
-    let testUser;
+class UtilisateurServiceIntegrationTest extends BaseUnitTest {
+    constructor() {
+        super({ mockDatabase: false, mockExternalServices: false }); // Tests d'intégration avec vraie DB
+        this.testContext = UnitTestFactory.createServiceTestContext('UtilisateurService');
+        this.utilisateurService = null;
+        this.testUser = null;
+    }
 
-    beforeAll(async () => {
-        utilisateurService = new UtilisateurService();
-    });
+    async customSetup() {
+        this.utilisateurService = new UtilisateurService();
+    }
 
-    beforeEach(async () => {
-        // Créer un utilisateur de test pour chaque test
+    async createTestUser() {
         const email = `test_${crypto.randomBytes(8).toString('hex')}@example.com`;
         const nom = 'Test User';
         const motDePasse = 'testPassword123!';
 
-        // Utiliser le service pour créer l'utilisateur
-        testUser = await utilisateurService.creer({
+        return await this.utilisateurService.creer({
             nom,
             email,
             mot_de_passe: motDePasse,
             role: 'UTILISATEUR'
         });
+    }
+
+    async cleanupTestUser() {
+        if (this.testUser?.id) {
+            await db.run('DELETE FROM utilisateurs WHERE id = $1', [this.testUser.id]);
+        }
+    }
+}
+
+describe('UtilisateurService Integration Tests', () => {
+    let testInstance;
+
+    beforeAll(async () => {
+        testInstance = new UtilisateurServiceIntegrationTest();
+        await testInstance.baseSetup();
+    });
+
+    afterAll(async () => {
+        await testInstance.baseTeardown();
+    });
+
+    beforeEach(async () => {
+        testInstance.testUser = await testInstance.createTestUser();
     });
 
     afterEach(async () => {
-        // Nettoyer l'utilisateur de test
-        if (testUser?.id) {
-            await db.run('DELETE FROM utilisateurs WHERE id = $1', [testUser.id]);
-        }
+        await testInstance.cleanupTestUser();
     });
 
     describe('Token Recovery Management', () => {
         test('should generate and persist token correctly', async () => {
             // Act
-            const result = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const result = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
 
             // Assert
-            expect(result).toBeTruthy();
-            expect(result.token).toBeTruthy();
-            expect(result.expiration).toBeInstanceOf(Date);
+            testInstance.assertObjectStructure(result, {
+                token: expect.any(String),
+                expiration: expect.any(Date)
+            });
             expect(result.token).toHaveLength(64); // 32 bytes en hex
 
             // Vérifier la persistance en base
             const userInDb = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [testInstance.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBe(result.token);
@@ -60,43 +85,46 @@ describe('UtilisateurService Integration Tests', () => {
 
         test('should validate token correctly after generation', async () => {
             // Arrange
-            const tokenResult = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const tokenResult = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
 
             // Act
-            const validation = await utilisateurService.validerTokenRecuperation(tokenResult.token);
+            const validation = await testInstance.utilisateurService.validerTokenRecuperation(tokenResult.token);
 
             // Assert
-            expect(validation).toBeTruthy();
-            expect(validation.id).toBe(testUser.id);
-            expect(validation.email).toBe(testUser.email);
-            expect(validation.token_recuperation).toBe(tokenResult.token);
+            testInstance.assertObjectStructure(validation, {
+                id: testInstance.testUser.id,
+                email: testInstance.testUser.email,
+                token_recuperation: tokenResult.token
+            });
         });
 
         test('should return null for non-existent email', async () => {
-            // Act
-            const result = await utilisateurService.genererTokenRecuperation('nonexistent@example.com');
-
-            // Assert
-            expect(result).toBeNull();
+            // Act & Assert
+            await testInstance.assertAsyncFunction(
+                (email) => testInstance.utilisateurService.genererTokenRecuperation(email),
+                'nonexistent@example.com',
+                null
+            );
         });
 
         test('should return null for inactive user', async () => {
             // Arrange: Désactiver l'utilisateur
-            await utilisateurService.mettreAJour(testUser.id, { actif: false });
+            await testInstance.utilisateurService.mettreAJour(testInstance.testUser.id, { actif: false });
 
-            // Act
-            const result = await utilisateurService.genererTokenRecuperation(testUser.email);
-
-            // Assert
-            expect(result).toBeNull();
+            // Act & Assert
+            await testInstance.assertAsyncFunction(
+                (email) => testInstance.utilisateurService.genererTokenRecuperation(email),
+                testInstance.testUser.email,
+                null
+            );
         });
 
         test('should replace existing token when generating new one', async () => {
             // Arrange
-            const firstToken = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const firstToken = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
             
             // Act
-            const secondToken = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const secondToken = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
 
             // Assert
             expect(secondToken.token).not.toBe(firstToken.token);
@@ -104,7 +132,7 @@ describe('UtilisateurService Integration Tests', () => {
             // Vérifier que seul le nouveau token est en base
             const userInDb = await db.get(
                 'SELECT token_recuperation FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [testInstance.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBe(secondToken.token);
@@ -112,24 +140,25 @@ describe('UtilisateurService Integration Tests', () => {
 
         test('should handle token expiration correctly', async () => {
             // Arrange: Créer un token et l'expirer manuellement
-            const tokenResult = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const tokenResult = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
             
             // Expirer le token en base
             await db.run(
                 'UPDATE utilisateurs SET token_expiration = $1 WHERE id = $2',
-                [new Date(Date.now() - 1000), testUser.id]
+                [new Date(Date.now() - 1000), testInstance.testUser.id]
             );
 
-            // Act
-            const validation = await utilisateurService.validerTokenRecuperation(tokenResult.token);
-
-            // Assert
-            expect(validation).toBeNull();
+            // Act & Assert
+            await testInstance.assertAsyncFunction(
+                (token) => testInstance.utilisateurService.validerTokenRecuperation(token),
+                tokenResult.token,
+                null
+            );
 
             // Vérifier que le token expiré a été nettoyé
             const userInDb = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [testInstance.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBeNull();
@@ -138,15 +167,15 @@ describe('UtilisateurService Integration Tests', () => {
 
         test('should clean token after password update', async () => {
             // Arrange
-            const tokenResult = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const tokenResult = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
             
             // Act: Mettre à jour le mot de passe
-            await utilisateurService.mettreAJourMotDePasse(testUser.id, 'newPassword123!');
+            await testInstance.utilisateurService.mettreAJourMotDePasse(testInstance.testUser.id, 'newPassword123!');
 
             // Assert: Le token doit être nettoyé
             const userInDb = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [testInstance.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBeNull();
@@ -160,19 +189,20 @@ describe('UtilisateurService Integration Tests', () => {
             const testExpiration = new Date(Date.now() + 60 * 60 * 1000);
 
             // Act: Utiliser la méthode mettreAJour du service
-            const result = await utilisateurService.mettreAJour(testUser.id, {
+            const result = await testInstance.utilisateurService.mettreAJour(testInstance.testUser.id, {
                 token_recuperation: testToken,
                 token_expiration: testExpiration
             });
 
             // Assert
-            expect(result).toBeTruthy();
-            expect(result.id).toBe(testUser.id);
+            testInstance.assertObjectStructure(result, {
+                id: testInstance.testUser.id
+            });
 
             // Vérifier en base
             const userInDb = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [testInstance.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBe(testToken);
@@ -181,7 +211,7 @@ describe('UtilisateurService Integration Tests', () => {
 
         test('should filter out non-allowed fields correctly', async () => {
             // Act: Essayer de mettre à jour des champs non autorisés
-            const result = await utilisateurService.mettreAJour(testUser.id, {
+            const result = await testInstance.utilisateurService.mettreAJour(testInstance.testUser.id, {
                 id: 999, // Champ protégé
                 date_creation: new Date(), // Champ protégé
                 nom: 'Nouveau nom', // Champ autorisé
@@ -190,7 +220,7 @@ describe('UtilisateurService Integration Tests', () => {
 
             // Assert: Seuls les champs autorisés doivent être mis à jour
             expect(result.nom).toBe('Nouveau nom');
-            expect(result.id).toBe(testUser.id); // ID inchangé
+            expect(result.id).toBe(testInstance.testUser.id); // ID inchangé
         });
     });
 
@@ -199,7 +229,7 @@ describe('UtilisateurService Integration Tests', () => {
             // Arrange: Générer plusieurs tokens
             const tokens = [];
             for (let i = 0; i < 5; i++) {
-                const result = await utilisateurService.genererTokenRecuperation(testUser.email);
+                const result = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
                 tokens.push(result.token);
             }
 
@@ -217,7 +247,7 @@ describe('UtilisateurService Integration Tests', () => {
             const beforeGeneration = new Date();
             
             // Act
-            const result = await utilisateurService.genererTokenRecuperation(testUser.email);
+            const result = await testInstance.utilisateurService.genererTokenRecuperation(testInstance.testUser.email);
             
             const afterGeneration = new Date();
 
@@ -238,20 +268,23 @@ describe('UtilisateurService Integration Tests', () => {
             const fakeId = 99999;
 
             // Act & Assert
-            await expect(
-                utilisateurService.mettreAJour(fakeId, {
+            await testInstance.assertThrowsAsync(
+                async (id) => testInstance.utilisateurService.mettreAJour(id, {
                     token_recuperation: 'test',
                     token_expiration: new Date()
-                })
-            ).rejects.toThrow('Utilisateur non trouvé');
+                }),
+                fakeId,
+                'Utilisateur non trouvé'
+            );
         });
 
         test('should validate email format in genererTokenRecuperation', async () => {
             // Act & Assert: Tester avec un email malformé
-            const result = await utilisateurService.genererTokenRecuperation('invalid-email');
-            
-            // Le service ne doit pas crasher, mais retourner null
-            expect(result).toBeNull();
+            await testInstance.assertAsyncFunction(
+                (email) => testInstance.utilisateurService.genererTokenRecuperation(email),
+                'invalid-email',
+                null
+            );
         });
     });
 });

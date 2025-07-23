@@ -6,7 +6,7 @@ const PdfKitService = require('./PdfKitService');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
-const systemesJeu = require('../utils/systemesJeu');
+const { systemesJeu } = require('../config/systemesJeu');
 
 /**
  * Service pour la génération et gestion des PDFs
@@ -386,30 +386,19 @@ class PdfService extends BaseService {
     }
 
     /**
-     * Détermine le moteur PDF à utiliser selon le système et template
+     * Valide qu'un template PDF est supporté
      * @param {string} system - Système de jeu
      * @param {string} template - Template à utiliser
-     * @param {string} enginePreference - Préférence de moteur ('auto', 'pdfkit')
-     * @returns {string} - 'pdfkit'
+     * @throws {Error} Si le template n'est pas supporté
      */
-    determineEngine(system, template, enginePreference = this.defaultEngine) {
-        // Préférence explicite
-        if (enginePreference === 'pdfkit') {
-            return 'pdfkit';
-        }
-       
-        // Mode auto : priorité à PDFKit
-        const pdfkitTemplates = {
+    validerTemplate(system, template) {
+        const templatesSupportes = {
             'monsterhearts': ['plan-classe-instructions', 'plan-classe-instructions-test', 'document-generique', 'document-generique-v2']
         };
-
-        // PDFKit disponible pour ce template
-        if (pdfkitTemplates[system] && pdfkitTemplates[system].includes(template)) {
-            return 'pdfkit';
+        
+        if (!templatesSupportes[system] || !templatesSupportes[system].includes(template)) {
+            throw new Error(`Template ${system}/${template} non supporté`);
         }
-
-        // Aucun moteur disponible pour ce template
-        throw new Error(`Template ${system}/${template} non supporté par PDFKit`);
     }
 
     /**
@@ -877,25 +866,23 @@ class PdfService extends BaseService {
             
             await this.pdfModel.mettreAJour(pdfId, { progression: 50 });
             
-            // Déterminer le moteur à utiliser
+            // Valider le template
             const pdf = await this.pdfModel.obtenirParId(pdfId);
-            const engine = this.determineEngine(options.systeme, options.template);
+            this.validerTemplate(options.systeme, options.template);
             
-            if (engine === 'pdfkit') {
-                // Utiliser PDFKit pour les templates supportés
-                const result = await this.genererPdf({
-                    system: options.systeme,
-                    template: options.template,
-                    titre: options.donnees.titre,
-                    userId: pdf.utilisateur_id,
-                    systemRights: pdf.system_rights || 'private',
-                    data: options.donnees,
-                    cheminFichier: pdf.chemin_fichier
-                });
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Erreur génération PDFKit');
-                }
+            // Utiliser PDFKit pour générer le PDF
+            const result = await this.genererPdf({
+                system: options.systeme,
+                template: options.template,
+                titre: options.donnees.titre,
+                userId: pdf.utilisateur_id,
+                systemRights: pdf.system_rights || 'private',
+                data: options.donnees,
+                cheminFichier: pdf.chemin_fichier
+            });
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Erreur génération PDFKit');
             }
             
             await this.pdfModel.mettreAJour(pdfId, { progression: 90 });

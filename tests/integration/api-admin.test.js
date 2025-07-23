@@ -1,35 +1,81 @@
+/**
+ * Tests d'intégration API - Administration
+ * 
+ * Utilise l'architecture SOLID avec :
+ * - BaseApiTest : Classe de base avec méthodes communes
+ * - TestFactory : Factory pour contextes de test admin
+ * - AuthTestHelper : Helper spécialisé pour l'authentification
+ * 
+ * Objectif : Tester tous les endpoints d'administration (rôle ADMIN requis)
+ * - Dashboard administrateur (statistiques globales)
+ * - Gestion des utilisateurs (liste, modération)
+ * - Gestion des oracles (CRUD, import/export)
+ * - Gestion des PDFs (modération, nettoyage)
+ * - Gestion des témoignages (validation/rejet)
+ * - Statistiques avancées du système
+ * - Logs et monitoring
+ * 
+ * Sécurité : Tests de contrôle d'accès et élévation de privilèges
+ * 
+ * @jest-environment node
+ */
+
 const request = require('supertest');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+/**
+ * Classe de tests pour l'API d'administration
+ * Hérite de BaseApiTest pour bénéficier des méthodes communes
+ */
+class AdminApiTest extends BaseApiTest {
+    /**
+     * Crée le contexte de test spécialisé pour les tests admin
+     */
+    createTestContext() {
+        return TestFactory.createAdminTestContext(this.config);
+    }
+
+    /**
+     * Setup personnalisé pour les tests admin
+     */
+    async customSetup() {
+        // Créer un utilisateur normal pour les tests de refus d'accès
+        this.normalUserResult = await this.createAndLoginUser({ role: 'UTILISATEUR' });
+        
+        // L'utilisateur admin est créé automatiquement par createAdminTestContext
+        this.adminResult = this.setupData.admin;
+    }
+
+    /**
+     * Obtient l'agent pour l'utilisateur normal
+     */
+    getNormalUserAgent() {
+        return this.normalUserResult.agent;
+    }
+
+    /**
+     * Obtient l'agent pour l'utilisateur admin
+     */
+    getAdminAgent() {
+        return this.adminResult.agent;
+    }
+}
 
 describe('API Administration', () => {
-    let app, server, agent, adminAgent;
-    let testUser = {
-        nom: 'Test User Admin',
-        email: `test_admin_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
-    let adminUser = {
-        nom: 'Admin User',
-        email: `admin_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
+    const testInstance = new AdminApiTest({
+        timeout: 30000,
+        cleanupUsers: true
+    });
+    
+    let setupData;
 
     beforeAll(async () => {
-        app = require('../../src/app');
-        server = await setupTest(app);
-        
-        // Créer utilisateur normal
-        agent = request.agent(server);
-        await agent.post('/api/auth/inscription').send(testUser);
-        
-        // Créer utilisateur admin (simulé)
-        adminAgent = request.agent(server);
-        await adminAgent.post('/api/auth/inscription').send(adminUser);
-        // Note: En réalité, il faudrait utiliser un code d'accès admin valide
+        setupData = await testInstance.baseSetup();
     });
 
     afterAll(async () => {
-        await teardownTest(server);
+        await testInstance.baseTeardown();
     });
 
     describe('Contrôle d\'accès', () => {
@@ -42,31 +88,27 @@ describe('API Administration', () => {
             ];
 
             for (const route of routes) {
-                const response = await agent
-                    .get(route)
-                    .expect(403);
+                const response = await testInstance.getNormalUserAgent()
+                    .get(route);
 
-                expect(response.body.succes).toBe(false);
-                expect(response.body.message).toContain('interdit');
+                testInstance.assertInsufficientPermissions(response);
             }
         });
 
         test('doit refuser accès sans authentification', async () => {
-            const response = await request(server)
-                .get('/api/admin/statistiques')
-                .expect(401);
+            const response = await request(testInstance.getServer())
+                .get('/api/admin/statistiques');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertAuthenticationRequired(response);
         });
     });
 
     describe('GET /api/admin/statistiques', () => {
         test('doit refuser accès utilisateur normal', async () => {
-            const response = await agent
-                .get('/api/admin/statistiques')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/statistiques');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         // Test avec vraie authentification admin nécessiterait code d'accès
@@ -104,11 +146,10 @@ describe('API Administration', () => {
 
     describe('GET /api/admin/activite-recente', () => {
         test('doit refuser accès utilisateur normal', async () => {
-            const response = await agent
-                .get('/api/admin/activite-recente')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/activite-recente');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('structure attendue activité récente', async () => {
@@ -128,11 +169,10 @@ describe('API Administration', () => {
 
     describe('GET /api/admin/logs', () => {
         test('doit refuser accès utilisateur normal', async () => {
-            const response = await agent
-                .get('/api/admin/logs')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/logs');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('doit supporter filtrage par niveau', async () => {
@@ -149,11 +189,10 @@ describe('API Administration', () => {
 
     describe('GET /api/admin/utilisateurs', () => {
         test('doit refuser accès utilisateur normal', async () => {
-            const response = await agent
-                .get('/api/admin/utilisateurs')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/utilisateurs');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('structure attendue liste utilisateurs', async () => {
@@ -178,11 +217,10 @@ describe('API Administration', () => {
 
     describe('DELETE /api/admin/utilisateurs/:id', () => {
         test('doit refuser suppression par utilisateur normal', async () => {
-            const response = await agent
-                .delete('/api/admin/utilisateurs/999')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .delete('/api/admin/utilisateurs/999');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('doit empêcher auto-suppression admin', async () => {
@@ -195,12 +233,11 @@ describe('API Administration', () => {
 
     describe('PUT /api/admin/utilisateurs/:id/role', () => {
         test('doit refuser modification rôle par utilisateur normal', async () => {
-            const response = await agent
+            const response = await testInstance.getNormalUserAgent()
                 .put('/api/admin/utilisateurs/999/role')
-                .send({ role: 'ADMIN' })
-                .expect(403);
+                .send({ role: 'ADMIN' });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('doit valider rôles autorisés', async () => {
@@ -211,11 +248,10 @@ describe('API Administration', () => {
 
     describe('POST /api/admin/cleanup-tokens', () => {
         test('doit refuser nettoyage par utilisateur normal', async () => {
-            const response = await agent
-                .post('/api/admin/cleanup-tokens')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .post('/api/admin/cleanup-tokens');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('structure attendue résultat nettoyage', async () => {
@@ -233,11 +269,10 @@ describe('API Administration', () => {
 
     describe('POST /api/admin/backup', () => {
         test('doit refuser sauvegarde par utilisateur normal', async () => {
-            const response = await agent
-                .post('/api/admin/backup')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .post('/api/admin/backup');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('structure attendue création sauvegarde', async () => {
@@ -257,22 +292,20 @@ describe('API Administration', () => {
 
     describe('DELETE /api/pdfs/nettoyage', () => {
         test('doit refuser nettoyage PDFs par utilisateur normal', async () => {
-            const response = await agent
-                .delete('/api/pdfs/nettoyage')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .delete('/api/pdfs/nettoyage');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
     });
 
     describe('Routes donations admin', () => {
         describe('GET /api/admin/donations/stats', () => {
             test('doit refuser statistiques donations par utilisateur normal', async () => {
-                const response = await agent
-                    .get('/api/admin/donations/stats')
-                    .expect(403);
+                const response = await testInstance.getNormalUserAgent()
+                    .get('/api/admin/donations/stats');
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertInsufficientPermissions(response);
             });
 
             test('structure attendue statistiques donations', async () => {
@@ -302,11 +335,10 @@ describe('API Administration', () => {
         ];
 
         test('doit refuser gestion témoignages par utilisateur normal', async () => {
-            const response = await agent
-                .get('/api/admin/temoignages')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/temoignages');
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertInsufficientPermissions(response);
         });
 
         test('structure attendue gestion témoignages', async () => {
@@ -356,10 +388,11 @@ describe('API Administration', () => {
 
         test('doit logger tentatives d\'accès non autorisées', async () => {
             // Vérifier qu'une tentative d'accès est loggée
-            await agent
-                .get('/api/admin/statistiques')
-                .expect(403);
+            const response = await testInstance.getNormalUserAgent()
+                .get('/api/admin/statistiques');
 
+            testInstance.assertInsufficientPermissions(response);
+            
             // En réalité, on vérifierait les logs
             const shouldLogUnauthorizedAccess = true;
             expect(shouldLogUnauthorizedAccess).toBe(true);

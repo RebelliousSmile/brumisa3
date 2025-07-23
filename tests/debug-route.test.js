@@ -5,7 +5,7 @@ const path = require('path');
 describe('Debug - Route principale', () => {
     test('vérifier que le middleware fonctionne', () => {
         const app = express();
-        const { SystemeUtils } = require('../src/utils/systemesJeu');
+        const { SystemeUtils } = require('../src/config/systemesJeu');
         
         // Simuler le middleware exact
         app.use((req, res, next) => {
@@ -41,7 +41,7 @@ describe('Debug - Route principale', () => {
     
     test('vérifier la route index avec données explicites', () => {
         const app = express();
-        const { SystemeUtils } = require('../src/utils/systemesJeu');
+        const { SystemeUtils } = require('../src/config/systemesJeu');
         
         app.set('view engine', 'ejs');
         app.set('views', path.join(__dirname, '../src/views'));

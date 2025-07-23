@@ -1,8 +1,11 @@
 /**
  * Tests unitaires pour UtilisateurService (Backend) - User Stories US005, US013
  * Tests basés sur les user stories d'authentification et gestion admin
+ * Utilise l'architecture SOLID pour les tests unitaires
  */
 
+const BaseUnitTest = require('../helpers/BaseUnitTest');
+const UnitTestFactory = require('../helpers/UnitTestFactory');
 const UtilisateurService = require('../../src/services/UtilisateurService');
 
 // Mock des dépendances
@@ -12,15 +15,18 @@ jest.mock('../../src/database/db');
 const Utilisateur = require('../../src/models/Utilisateur');
 const crypto = require('crypto');
 
-describe('UtilisateurService Backend - User Stories', () => {
-    let utilisateurService;
-    let mockUtilisateurModel;
+class UtilisateurServiceBackendTest extends BaseUnitTest {
+    constructor() {
+        super({
+            mockDatabase: true,
+            mockExternalServices: true
+        });
+        this.testContext = UnitTestFactory.createServiceTestContext('UtilisateurService');
+    }
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        
+    async customSetup() {
         // Mock du modèle Utilisateur
-        mockUtilisateurModel = {
+        this.mockUtilisateurModel = {
             create: jest.fn(),
             update: jest.fn(),
             obtenirParId: jest.fn(),
@@ -33,9 +39,26 @@ describe('UtilisateurService Backend - User Stories', () => {
             convertPlaceholders: jest.fn()
         };
         
-        Utilisateur.mockImplementation(() => mockUtilisateurModel);
+        Utilisateur.mockImplementation(() => this.mockUtilisateurModel);
         
-        utilisateurService = new UtilisateurService();
+        this.utilisateurService = new UtilisateurService();
+    }
+}
+
+describe('UtilisateurService Backend - User Stories', () => {
+    let testInstance;
+
+    beforeAll(async () => {
+        testInstance = new UtilisateurServiceBackendTest();
+        await testInstance.baseSetup();
+    });
+
+    afterAll(async () => {
+        await testInstance.baseTeardown();
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('US005 - Connexion pour sauvegarder', () => {
@@ -47,24 +70,24 @@ describe('UtilisateurService Backend - User Stories', () => {
                 motDePasse: 'password123'
             };
             
-            const utilisateurCree = {
+            const utilisateurCree = testInstance.createTestData('user', {
                 id: 123,
                 nom: 'Test User',
                 email: 'test@example.com',
                 role: 'UTILISATEUR',
                 actif: true,
                 date_creation: new Date()
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null); // Pas d'utilisateur existant
-            mockUtilisateurModel.create.mockResolvedValue(utilisateurCree);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null);
+            testInstance.mockUtilisateurModel.create.mockResolvedValue(utilisateurCree);
 
             // Act
-            const result = await utilisateurService.creer(donnees);
+            const result = await testInstance.utilisateurService.creer(donnees);
 
             // Assert
-            expect(mockUtilisateurModel.obtenirParEmail).toHaveBeenCalledWith('test@example.com');
-            expect(mockUtilisateurModel.create).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.obtenirParEmail, ['test@example.com']);
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.create, [
                 expect.objectContaining({
                     nom: 'Test User',
                     email: 'test@example.com',
@@ -72,8 +95,8 @@ describe('UtilisateurService Backend - User Stories', () => {
                     role: 'UTILISATEUR',
                     actif: true
                 })
-            );
-            expect(result).toEqual(utilisateurCree);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurCree);
         });
 
         test('devrait rejeter la création avec un email déjà existant', async () => {
@@ -84,16 +107,19 @@ describe('UtilisateurService Backend - User Stories', () => {
                 motDePasse: 'password123'
             };
             
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: 456,
                 email: 'existing@example.com'
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateurExistant);
 
             // Act & Assert
-            await expect(utilisateurService.creer(donnees))
-                .rejects.toThrow('Un utilisateur avec cet email existe déjà');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.utilisateurService.creer(donnees),
+                null,
+                'Un utilisateur avec cet email existe déjà'
+            );
         });
 
         test('devrait authentifier un utilisateur avec des identifiants valides', async () => {
@@ -101,27 +127,27 @@ describe('UtilisateurService Backend - User Stories', () => {
             const email = 'test@example.com';
             const motDePasse = 'password123';
             
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: 123,
                 email: 'test@example.com',
                 nom: 'Test User',
                 mot_de_passe: '$2b$10$hashedpassword',
                 actif: true
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.verifierMotDePasse.mockResolvedValue(true);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.verifierMotDePasse.mockResolvedValue(true);
 
             // Act
-            const result = await utilisateurService.authentifier(email, motDePasse);
+            const result = await testInstance.utilisateurService.authentifier(email, motDePasse);
 
             // Assert
-            expect(mockUtilisateurModel.obtenirParEmail).toHaveBeenCalledWith('test@example.com');
-            expect(mockUtilisateurModel.verifierMotDePasse).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.obtenirParEmail, ['test@example.com']);
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.verifierMotDePasse, [
                 'password123',
                 '$2b$10$hashedpassword'
-            );
-            expect(result).toEqual(utilisateur);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateur);
         });
 
         test('devrait rejeter l\'authentification avec un mot de passe incorrect', async () => {
@@ -129,20 +155,20 @@ describe('UtilisateurService Backend - User Stories', () => {
             const email = 'test@example.com';
             const motDePasse = 'wrongpassword';
             
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: 123,
                 email: 'test@example.com',
                 mot_de_passe: '$2b$10$hashedpassword'
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.verifierMotDePasse.mockResolvedValue(false);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.verifierMotDePasse.mockResolvedValue(false);
 
             // Act
-            const result = await utilisateurService.authentifier(email, motDePasse);
+            const result = await testInstance.utilisateurService.authentifier(email, motDePasse);
 
             // Assert
-            expect(result).toBeNull();
+            testInstance.assertFunction(() => result, null, null);
         });
 
         test('devrait rejeter l\'authentification pour un email inexistant', async () => {
@@ -150,42 +176,42 @@ describe('UtilisateurService Backend - User Stories', () => {
             const email = 'nonexistent@example.com';
             const motDePasse = 'password123';
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null);
 
             // Act
-            const result = await utilisateurService.authentifier(email, motDePasse);
+            const result = await testInstance.utilisateurService.authentifier(email, motDePasse);
 
             // Assert
-            expect(result).toBeNull();
+            testInstance.assertFunction(() => result, null, null);
         });
 
         test('devrait mettre à jour la dernière connexion', async () => {
             // Arrange
             const utilisateurId = 123;
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 email: 'test@example.com'
-            };
+            });
             
             const utilisateurMAJ = {
                 ...utilisateurExistant,
                 derniere_connexion: expect.any(Date)
             };
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue(utilisateurMAJ);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue(utilisateurMAJ);
 
             // Act
-            const result = await utilisateurService.mettreAJourDerniereConnexion(utilisateurId);
+            const result = await testInstance.utilisateurService.mettreAJourDerniereConnexion(utilisateurId);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     derniere_connexion: expect.any(Date)
                 })
-            );
-            expect(result).toEqual(utilisateurMAJ);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurMAJ);
         });
     });
 
@@ -193,32 +219,32 @@ describe('UtilisateurService Backend - User Stories', () => {
         test('devrait lister tous les utilisateurs avec pagination', async () => {
             // Arrange
             const mockUtilisateurs = [
-                { id: 1, nom: 'User 1', email: 'user1@example.com', role: 'UTILISATEUR' },
-                { id: 2, nom: 'User 2', email: 'user2@example.com', role: 'PREMIUM' },
-                { id: 3, nom: 'Admin', email: 'admin@example.com', role: 'ADMIN' }
+                testInstance.createTestData('user', { id: 1, nom: 'User 1', email: 'user1@example.com', role: 'UTILISATEUR' }),
+                testInstance.createTestData('user', { id: 2, nom: 'User 2', email: 'user2@example.com', role: 'PREMIUM' }),
+                testInstance.createTestData('user', { id: 3, nom: 'Admin', email: 'admin@example.com', role: 'ADMIN' })
             ];
             
-            mockUtilisateurModel.count.mockResolvedValue(25);
-            mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
+            testInstance.mockUtilisateurModel.count.mockResolvedValue(25);
+            testInstance.mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
 
             // Act
-            const result = await utilisateurService.lister(
+            const result = await testInstance.utilisateurService.lister(
                 {}, 
                 { offset: 0, limite: 20 }
             );
 
             // Assert
-            expect(mockUtilisateurModel.count).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.count, [
                 'date_suppression IS NULL',
                 []
-            );
-            expect(mockUtilisateurModel.findAll).toHaveBeenCalledWith(
+            ]);
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.findAll, [
                 'date_suppression IS NULL',
                 [],
                 'date_creation DESC',
                 20
-            );
-            expect(result).toEqual({
+            ]);
+            testInstance.assertObjectStructure(result, {
                 utilisateurs: mockUtilisateurs,
                 total: 25
             });
@@ -228,46 +254,46 @@ describe('UtilisateurService Backend - User Stories', () => {
             // Arrange
             const filtres = { role: 'PREMIUM' };
             const mockUtilisateurs = [
-                { id: 2, nom: 'Premium User', email: 'premium@example.com', role: 'PREMIUM' }
+                testInstance.createTestData('user', { id: 2, nom: 'Premium User', email: 'premium@example.com', role: 'PREMIUM' })
             ];
             
-            mockUtilisateurModel.count.mockResolvedValue(5);
-            mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
+            testInstance.mockUtilisateurModel.count.mockResolvedValue(5);
+            testInstance.mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
 
             // Act
-            const result = await utilisateurService.lister(filtres);
+            const result = await testInstance.utilisateurService.lister(filtres);
 
             // Assert
-            expect(mockUtilisateurModel.findAll).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.findAll, [
                 'role = ? AND date_suppression IS NULL',
                 ['PREMIUM'],
                 'date_creation DESC',
                 20
-            );
-            expect(result.utilisateurs).toEqual(mockUtilisateurs);
+            ]);
+            testInstance.assertObjectStructure(result.utilisateurs, mockUtilisateurs);
         });
 
         test('devrait rechercher des utilisateurs par nom ou email', async () => {
             // Arrange
             const filtres = { recherche: 'john' };
             const mockUtilisateurs = [
-                { id: 5, nom: 'John Doe', email: 'john@example.com', role: 'UTILISATEUR' }
+                testInstance.createTestData('user', { id: 5, nom: 'John Doe', email: 'john@example.com', role: 'UTILISATEUR' })
             ];
             
-            mockUtilisateurModel.count.mockResolvedValue(1);
-            mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
+            testInstance.mockUtilisateurModel.count.mockResolvedValue(1);
+            testInstance.mockUtilisateurModel.findAll.mockResolvedValue(mockUtilisateurs);
 
             // Act
-            const result = await utilisateurService.lister(filtres);
+            const result = await testInstance.utilisateurService.lister(filtres);
 
             // Assert
-            expect(mockUtilisateurModel.findAll).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.findAll, [
                 '(nom ILIKE ? OR email ILIKE ?) AND date_suppression IS NULL',
                 ['%john%', '%john%'],
                 'date_creation DESC',
                 20
-            );
-            expect(result.utilisateurs).toEqual(mockUtilisateurs);
+            ]);
+            testInstance.assertObjectStructure(result.utilisateurs, mockUtilisateurs);
         });
 
         test('devrait mettre à jour le rôle d\'un utilisateur', async () => {
@@ -275,30 +301,30 @@ describe('UtilisateurService Backend - User Stories', () => {
             const utilisateurId = 123;
             const nouveauRole = 'PREMIUM';
             
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 role: 'UTILISATEUR'
-            };
+            });
             
             const utilisateurMAJ = {
                 ...utilisateurExistant,
                 role: 'PREMIUM'
             };
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue(utilisateurMAJ);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue(utilisateurMAJ);
 
             // Act
-            const result = await utilisateurService.mettreAJourRole(utilisateurId, nouveauRole);
+            const result = await testInstance.utilisateurService.mettreAJourRole(utilisateurId, nouveauRole);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     role: 'PREMIUM'
                 })
-            );
-            expect(result).toEqual(utilisateurMAJ);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurMAJ);
         });
 
         test('devrait rejeter un rôle invalide', async () => {
@@ -307,66 +333,69 @@ describe('UtilisateurService Backend - User Stories', () => {
             const roleInvalide = 'SUPER_ADMIN';
 
             // Act & Assert
-            await expect(utilisateurService.mettreAJourRole(utilisateurId, roleInvalide))
-                .rejects.toThrow('Rôle invalide');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.utilisateurService.mettreAJourRole(utilisateurId, roleInvalide),
+                null,
+                'Rôle invalide'
+            );
         });
 
         test('devrait désactiver un utilisateur', async () => {
             // Arrange
             const utilisateurId = 123;
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 actif: true
-            };
+            });
             
             const utilisateurDesactive = {
                 ...utilisateurExistant,
                 actif: false
             };
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue(utilisateurDesactive);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue(utilisateurDesactive);
 
             // Act
-            const result = await utilisateurService.desactiver(utilisateurId);
+            const result = await testInstance.utilisateurService.desactiver(utilisateurId);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     actif: false
                 })
-            );
-            expect(result).toEqual(utilisateurDesactive);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurDesactive);
         });
 
         test('devrait réactiver un utilisateur', async () => {
             // Arrange
             const utilisateurId = 123;
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 actif: false
-            };
+            });
             
             const utilisateurReactive = {
                 ...utilisateurExistant,
                 actif: true
             };
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue(utilisateurReactive);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue(utilisateurReactive);
 
             // Act
-            const result = await utilisateurService.reactiver(utilisateurId);
+            const result = await testInstance.utilisateurService.reactiver(utilisateurId);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     actif: true
                 })
-            );
-            expect(result).toEqual(utilisateurReactive);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurReactive);
         });
 
         test('devrait obtenir les statistiques des utilisateurs', async () => {
@@ -378,42 +407,42 @@ describe('UtilisateurService Backend - User Stories', () => {
                 ADMIN: 5
             };
             
-            mockUtilisateurModel.compterParRole.mockResolvedValue(mockStats);
+            testInstance.mockUtilisateurModel.compterParRole.mockResolvedValue(mockStats);
 
             // Act
-            const result = await utilisateurService.obtenirStatistiques();
+            const result = await testInstance.utilisateurService.obtenirStatistiques();
 
             // Assert
-            expect(mockUtilisateurModel.compterParRole).toHaveBeenCalled();
-            expect(result).toEqual(mockStats);
+            testInstance.assertMockCallCount(testInstance.mockUtilisateurModel.compterParRole, 1);
+            testInstance.assertObjectStructure(result, mockStats);
         });
 
         test('devrait supprimer un utilisateur (soft delete)', async () => {
             // Arrange
             const utilisateurId = 123;
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 email: 'test@example.com',
                 nom: 'Test User'
-            };
+            });
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue({ ...utilisateurExistant, supprime: true });
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue({ ...utilisateurExistant, supprime: true });
 
             // Act
-            const result = await utilisateurService.supprimer(utilisateurId);
+            const result = await testInstance.utilisateurService.supprimer(utilisateurId);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     email: `deleted_${utilisateurId}@example.com`,
                     nom: 'Utilisateur supprimé',
                     actif: false,
-                    date_modification: expect.any(Date)  // Le service utilise date_modification
+                    date_modification: expect.any(Date)
                 })
-            );
-            expect(result).toBe(true);
+            ]);
+            testInstance.assertFunction(() => result, null, true);
         });
     });
 
@@ -421,105 +450,103 @@ describe('UtilisateurService Backend - User Stories', () => {
         test('devrait générer un token de récupération de mot de passe', async () => {
             // Arrange
             const email = 'test@example.com';
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: 123,
                 email: 'test@example.com',
                 actif: true
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.update.mockResolvedValue({ ...utilisateur, token_recuperation: 'mocked_token' });
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue({ ...utilisateur, token_recuperation: 'mocked_token' });
 
             // Act
-            const result = await utilisateurService.genererTokenRecuperation(email);
+            const result = await testInstance.utilisateurService.genererTokenRecuperation(email);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 123,
                 expect.objectContaining({
                     token_recuperation: expect.any(String),
                     token_expiration: expect.any(Date)
                 })
-            );
-            expect(result).toEqual(
-                expect.objectContaining({
-                    token: expect.any(String),
-                    expiration: expect.any(Date)
-                })
-            );
+            ]);
+            testInstance.assertObjectStructure(result, {
+                token: expect.any(String),
+                expiration: expect.any(Date)
+            });
         });
 
         test('devrait valider un token de récupération valide', async () => {
             // Arrange
             const token = 'valid_token_123';
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: 123,
                 token_recuperation: token,
-                token_expiration: new Date(Date.now() + 60 * 60 * 1000) // 1 heure dans le futur
-            };
+                token_expiration: new Date(Date.now() + 60 * 60 * 1000)
+            });
             
-            mockUtilisateurModel.obtenirParToken.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.obtenirParToken.mockResolvedValue(utilisateur);
 
             // Act
-            const result = await utilisateurService.validerTokenRecuperation(token);
+            const result = await testInstance.utilisateurService.validerTokenRecuperation(token);
 
             // Assert
-            expect(result).toEqual(utilisateur);
+            testInstance.assertObjectStructure(result, utilisateur);
         });
 
         test('devrait rejeter un token expiré', async () => {
             // Arrange
             const token = 'expired_token_123';
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: 123,
                 token_recuperation: token,
-                token_expiration: new Date(Date.now() - 60 * 60 * 1000) // 1 heure dans le passé
-            };
+                token_expiration: new Date(Date.now() - 60 * 60 * 1000)
+            });
             
-            mockUtilisateurModel.obtenirParToken.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.update.mockResolvedValue({ id: 123, email: 'test@example.com' });
+            testInstance.mockUtilisateurModel.obtenirParToken.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue({ id: 123, email: 'test@example.com' });
 
             // Act
-            const result = await utilisateurService.validerTokenRecuperation(token);
+            const result = await testInstance.utilisateurService.validerTokenRecuperation(token);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 123,
                 expect.objectContaining({
                     token_recuperation: null,
                     token_expiration: null
                 })
-            );
-            expect(result).toBeNull();
+            ]);
+            testInstance.assertFunction(() => result, null, null);
         });
 
         test('devrait mettre à jour le mot de passe d\'un utilisateur', async () => {
             // Arrange
             const utilisateurId = 123;
             const nouveauMotDePasse = 'newpassword123';
-            const utilisateur = {
+            const utilisateur = testInstance.createTestData('user', {
                 id: utilisateurId,
                 email: 'test@example.com'
-            };
+            });
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
-            mockUtilisateurModel.update.mockResolvedValue({ id: 123, email: 'test@example.com' });
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateur);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue({ id: 123, email: 'test@example.com' });
 
             // Act
-            const result = await utilisateurService.mettreAJourMotDePasse(utilisateurId, nouveauMotDePasse);
+            const result = await testInstance.utilisateurService.mettreAJourMotDePasse(utilisateurId, nouveauMotDePasse);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     mot_de_passe: 'newpassword123',
                     token_recuperation: null,
                     token_expiration: null
                 })
-            );
-            expect(result).toBe(true);
+            ]);
+            testInstance.assertFunction(() => result, null, true);
         });
     });
 
@@ -534,7 +561,7 @@ describe('UtilisateurService Backend - User Stories', () => {
 
             // Act & Assert - Ne devrait pas lever d'erreur
             expect(() => {
-                utilisateurService.validerDonnees(donneesValides);
+                testInstance.utilisateurService.validerDonnees(donneesValides);
             }).not.toThrow();
         });
 
@@ -546,9 +573,11 @@ describe('UtilisateurService Backend - User Stories', () => {
             };
 
             // Act & Assert
-            expect(() => {
-                utilisateurService.validerDonnees(donneesInvalides);
-            }).toThrow('Le nom doit contenir au moins 2 caractères');
+            testInstance.assertThrows(
+                () => testInstance.utilisateurService.validerDonnees(donneesInvalides),
+                donneesInvalides,
+                'Le nom doit contenir au moins 2 caractères'
+            );
         });
 
         test('devrait rejeter un email invalide', () => {
@@ -559,19 +588,21 @@ describe('UtilisateurService Backend - User Stories', () => {
             };
 
             // Act & Assert
-            expect(() => {
-                utilisateurService.validerDonnees(donneesInvalides);
-            }).toThrow('Format email invalide');
+            testInstance.assertThrows(
+                () => testInstance.utilisateurService.validerDonnees(donneesInvalides),
+                donneesInvalides,
+                'Format email invalide'
+            );
         });
 
         test('devrait valider le format email', () => {
             // Arrange & Act
-            const emailValide = utilisateurService.validerFormatEmail('test@example.com');
-            const emailInvalide = utilisateurService.validerFormatEmail('invalid-email');
+            const emailValide = testInstance.utilisateurService.validerFormatEmail('test@example.com');
+            const emailInvalide = testInstance.utilisateurService.validerFormatEmail('invalid-email');
 
             // Assert
-            expect(emailValide).toBe(true);
-            expect(emailInvalide).toBe(false);
+            testInstance.assertFunction(() => emailValide, null, true);
+            testInstance.assertFunction(() => emailInvalide, null, false);
         });
     });
 
@@ -581,10 +612,10 @@ describe('UtilisateurService Backend - User Stories', () => {
             const utilisateurId = 123;
             const montantDon = 5.00;
             
-            const utilisateurExistant = {
+            const utilisateurExistant = testInstance.createTestData('user', {
                 id: utilisateurId,
                 role: 'UTILISATEUR'
-            };
+            });
             
             const utilisateurPremium = {
                 ...utilisateurExistant,
@@ -593,14 +624,14 @@ describe('UtilisateurService Backend - User Stories', () => {
                 date_premium: expect.any(Date)
             };
             
-            mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
-            mockUtilisateurModel.update.mockResolvedValue(utilisateurPremium);
+            testInstance.mockUtilisateurModel.obtenirParId.mockResolvedValue(utilisateurExistant);
+            testInstance.mockUtilisateurModel.update.mockResolvedValue(utilisateurPremium);
 
             // Act
-            const result = await utilisateurService.activerPremium(utilisateurId, montantDon);
+            const result = await testInstance.utilisateurService.activerPremium(utilisateurId, montantDon);
 
             // Assert
-            expect(mockUtilisateurModel.update).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.update, [
                 utilisateurId,
                 expect.objectContaining({
                     role: 'PREMIUM',
@@ -608,8 +639,8 @@ describe('UtilisateurService Backend - User Stories', () => {
                     date_premium: expect.any(Date),
                     montant_don_total: 5.00
                 })
-            );
-            expect(result).toEqual(utilisateurPremium);
+            ]);
+            testInstance.assertObjectStructure(result, utilisateurPremium);
         });
 
         test('devrait créer un compte donateur pour un don sans compte existant', async () => {
@@ -617,22 +648,22 @@ describe('UtilisateurService Backend - User Stories', () => {
             const email = 'donateur@example.com';
             const montantDon = 15.00;
             
-            const compteCree = {
+            const compteCree = testInstance.createTestData('user', {
                 id: 456,
                 email: 'donateur@example.com',
                 nom: 'Donateur donateur',
                 role: 'PREMIUM',
                 type_compte: 'PREMIUM_VIP'
-            };
+            });
             
-            mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null);
-            mockUtilisateurModel.create.mockResolvedValue(compteCree);
+            testInstance.mockUtilisateurModel.obtenirParEmail.mockResolvedValue(null);
+            testInstance.mockUtilisateurModel.create.mockResolvedValue(compteCree);
 
             // Act
-            const result = await utilisateurService.creerCompteDonateur(email, montantDon);
+            const result = await testInstance.utilisateurService.creerCompteDonateur(email, montantDon);
 
             // Assert
-            expect(mockUtilisateurModel.create).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockUtilisateurModel.create, [
                 expect.objectContaining({
                     nom: 'Donateur donateur',
                     email: 'donateur@example.com',
@@ -641,13 +672,11 @@ describe('UtilisateurService Backend - User Stories', () => {
                     montant_don_total: 15.00,
                     compte_don_temporaire: true
                 })
-            );
-            expect(result).toEqual(
-                expect.objectContaining({
-                    ...compteCree,
-                    motDePasseTemporaire: expect.any(String)
-                })
-            );
+            ]);
+            testInstance.assertObjectStructure(result, {
+                ...compteCree,
+                motDePasseTemporaire: expect.any(String)
+            });
         });
     });
 });

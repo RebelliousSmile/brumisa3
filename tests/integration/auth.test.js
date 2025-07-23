@@ -1,68 +1,116 @@
-const request = require('supertest');
+/**
+ * Tests d'intégration - Authentification avec architecture SOLID
+ * 
+ * Utilise l'architecture SOLID avec :
+ * - BaseApiTest pour les méthodes communes
+ * - TestFactory pour créer le contexte d'authentification
+ * - AuthTestHelper pour les opérations d'authentification
+ * - DatabaseTestHelper pour les opérations de base de données
+ */
+
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
 const crypto = require('crypto');
-const app = require('../../src/app');
+const request = require('supertest');
 const db = require('../../src/database/db');
-const { setupTest, teardownTest, cleanupTestData } = require('../helpers/test-cleanup');
+
+/**
+ * Classe de test pour l'authentification avec architecture SOLID
+ */
+class AuthTest extends BaseApiTest {
+    constructor() {
+        super({
+            timeout: 30000,
+            cleanupUsers: true
+        });
+        this.testUser = null;
+    }
+
+    /**
+     * Crée le contexte de test d'authentification
+     */
+    createTestContext() {
+        return TestFactory.createAuthTestContext();
+    }
+
+    /**
+     * Setup personnalisé pour créer un utilisateur de test
+     */
+    async customSetup() {
+        // Créer un utilisateur de test avec l'AuthHelper
+        const userData = {
+            nom: 'Test User',
+            email: `test_${crypto.randomBytes(8).toString('hex')}@example.com`,
+            motDePasse: 'testPassword123!',
+            confirmationMotDePasse: 'testPassword123!'
+        };
+
+        // Enregistrer l'utilisateur via l'API
+        const registerResponse = await this.getAuthHelper().registerUser(this.getServer(), userData);
+        
+        // Récupérer l'ID de l'utilisateur depuis la base de données
+        const userInDb = await db.get(
+            'SELECT id, nom, email, role, actif FROM utilisateurs WHERE email = $1',
+            [userData.email]
+        );
+        
+        // Stocker les données utilisateur pour les tests
+        this.testUser = {
+            ...userData,
+            id: userInDb.id,
+            email: userData.email,
+            password: userData.motDePasse
+        };
+    }
+
+    /**
+     * Cleanup personnalisé pour nettoyer l'utilisateur de test
+     */
+    async customTeardown() {
+        // Le cleanup sera géré automatiquement par BaseApiTest
+        // qui utilise getDatabaseHelper().cleanupTestUsers()
+        this.testUser = null;
+    }
+}
+
+// Instance de la classe de test
+const authTest = new AuthTest();
 
 describe('Authentication API Integration Tests', () => {
-    let server;
-    let testUser;
-
     beforeAll(async () => {
-        // Initialiser l'app et nettoyer les données de test
-        server = await setupTest(app);
+        await authTest.baseSetup();
     });
 
     beforeEach(async () => {
-        // Créer un utilisateur de test pour chaque test
-        const email = `test_${crypto.randomBytes(8).toString('hex')}@example.com`;
-        const nom = 'Test User';
-        const motDePasse = 'testPassword123!';
-
-        // Insérer directement en base pour éviter les dépendances
-        // Utiliser un hash simple pour les tests
-        const simpleHash = require('crypto').createHash('sha256').update(motDePasse).digest('hex');
-        const result = await db.get(
-            `INSERT INTO utilisateurs (nom, email, mot_de_passe, role, actif) 
-             VALUES ($1, $2, $3, 'UTILISATEUR', true) 
-             RETURNING id, nom, email, role, actif`,
-            [nom, email, simpleHash]
-        );
-
-        testUser = { ...result, password: motDePasse };
+        // Recréer l'utilisateur de test pour chaque test
+        await authTest.customSetup();
     });
 
     afterEach(async () => {
-        // Nettoyer l'utilisateur de test
-        if (testUser?.id) {
-            await db.run('DELETE FROM utilisateurs WHERE id = $1', [testUser.id]);
-        }
+        // Nettoyer l'utilisateur de test après chaque test
+        await authTest.customTeardown();
     });
 
     afterAll(async () => {
-        // Nettoyer après les tests
-        if (app.server) {
-            await app.shutdown();
-        }
+        await authTest.baseTeardown();
     });
 
     describe('POST /api/auth/mot-de-passe-oublie', () => {
         test('should generate and persist password reset token for existing user', async () => {
             // Act: Demander la récupération de mot de passe
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
-            // Assert: Vérifier la réponse
-            expect(response.body).toHaveProperty('succes', true);
-            expect(response.body).toHaveProperty('message');
+            // Assert: Vérifier la réponse avec les assertions SOLID
+            authTest.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('Si cet email existe');
 
             // CRUCIAL: Vérifier que le token est bien persisté en base
             const userInDb = await db.get(
                 'SELECT id, email, token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(userInDb).toBeTruthy();
@@ -85,13 +133,13 @@ describe('Authentication API Integration Tests', () => {
             const fakeEmail = 'nonexistent@example.com';
 
             // Act
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
                 .send({ email: fakeEmail })
                 .expect(200);
 
             // Assert: Même réponse que pour un email existant (sécurité)
-            expect(response.body).toHaveProperty('succes', true);
+            authTest.assertApiResponse(response, 200, true);
             expect(response.body.message).toContain('Si cet email existe');
         });
 
@@ -99,22 +147,22 @@ describe('Authentication API Integration Tests', () => {
             // Arrange: Désactiver l'utilisateur
             await db.run(
                 'UPDATE utilisateurs SET actif = false WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             // Act
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
             // Assert: Même réponse (sécurité) mais pas de token généré
-            expect(response.body).toHaveProperty('succes', true);
+            authTest.assertApiResponse(response, 200, true);
             
             // Vérifier qu'aucun token n'a été généré
             const userInDb = await db.get(
                 'SELECT token_recuperation FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBeNull();
@@ -122,50 +170,48 @@ describe('Authentication API Integration Tests', () => {
 
         test('should validate required email field', async () => {
             // Act: Requête sans email
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
                 .send({})
                 .expect(400);
 
-            // Assert
-            expect(response.body).toHaveProperty('succes', false);
-            expect(response.body).toHaveProperty('erreur');
+            // Assert: Utiliser les assertions SOLID pour la validation
+            authTest.assertValidationError(response, 'email');
         });
 
         test('should validate email format', async () => {
             // Act: Email invalide
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
                 .send({ email: 'invalid-email' })
                 .expect(400);
 
-            // Assert
-            expect(response.body).toHaveProperty('succes', false);
-            expect(response.body).toHaveProperty('erreur');
+            // Assert: Utiliser les assertions SOLID pour la validation
+            authTest.assertValidationError(response, 'email');
         });
 
         test('should replace old token when generating new one', async () => {
             // Arrange: Générer un premier token
-            await request(server)
+            await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
             const firstToken = await db.get(
                 'SELECT token_recuperation FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             // Act: Générer un deuxième token
-            await request(server)
+            await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
             // Assert: Le token doit être différent
             const secondToken = await db.get(
                 'SELECT token_recuperation FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(secondToken.token_recuperation).toBeTruthy();
@@ -178,15 +224,15 @@ describe('Authentication API Integration Tests', () => {
 
         beforeEach(async () => {
             // Générer un token de récupération pour les tests
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
             // Récupérer le token généré
             const userWithToken = await db.get(
                 'SELECT token_recuperation FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             resetToken = userWithToken.token_recuperation;
@@ -202,8 +248,8 @@ describe('Authentication API Integration Tests', () => {
 
             // Assert
             expect(result).toBeTruthy();
-            expect(result.id).toBe(testUser.id);
-            expect(result.email).toBe(testUser.email);
+            expect(result.id).toBe(authTest.testUser.id);
+            expect(result.email).toBe(authTest.testUser.email);
             expect(result.token_recuperation).toBe(resetToken);
         });
 
@@ -224,7 +270,7 @@ describe('Authentication API Integration Tests', () => {
             // Arrange: Expirer le token en modifiant sa date d'expiration
             await db.run(
                 'UPDATE utilisateurs SET token_expiration = $1 WHERE id = $2',
-                [new Date(Date.now() - 1000), testUser.id] // Expiré il y a 1 seconde
+                [new Date(Date.now() - 1000), authTest.testUser.id] // Expiré il y a 1 seconde
             );
 
             const UtilisateurService = require('../../src/services/UtilisateurService');
@@ -239,7 +285,7 @@ describe('Authentication API Integration Tests', () => {
             // Vérifier que le token expiré a été nettoyé
             const cleanedUser = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(cleanedUser.token_recuperation).toBeNull();
@@ -253,12 +299,12 @@ describe('Authentication API Integration Tests', () => {
             const newPassword = 'newSecurePassword123!';
 
             // Act: Réinitialiser le mot de passe
-            await utilisateurService.mettreAJourMotDePasse(testUser.id, newPassword);
+            await utilisateurService.mettreAJourMotDePasse(authTest.testUser.id, newPassword);
 
             // Assert: Vérifier que le token a été nettoyé
             const userAfterReset = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(userAfterReset.token_recuperation).toBeNull();
@@ -275,19 +321,19 @@ describe('Authentication API Integration Tests', () => {
             const testExpiration = new Date(Date.now() + 60 * 60 * 1000);
 
             // Act: Tenter de mettre à jour les champs de token
-            const result = await utilisateurModel.update(testUser.id, {
+            const result = await utilisateurModel.update(authTest.testUser.id, {
                 token_recuperation: testToken,
                 token_expiration: testExpiration
             });
 
             // Assert: La mise à jour doit réussir
             expect(result).toBeTruthy();
-            expect(result.id).toBe(testUser.id);
+            expect(result.id).toBe(authTest.testUser.id);
 
             // Vérifier en base que les champs ont été mis à jour
             const userInDb = await db.get(
                 'SELECT token_recuperation, token_expiration FROM utilisateurs WHERE id = $1',
-                [testUser.id]
+                [authTest.testUser.id]
             );
 
             expect(userInDb.token_recuperation).toBe(testToken);
@@ -308,23 +354,13 @@ describe('Authentication API Integration Tests', () => {
         test('should send password reset email when token is generated', async () => {
             // Ce test nécessiterait de mocker le service email ou d'utiliser un service de test
             // Pour l'instant, on vérifie juste que le processus ne lève pas d'erreur
-            const response = await request(server)
+            const response = await request(authTest.getServer())
                 .post('/api/auth/mot-de-passe-oublie')
-                .send({ email: testUser.email })
+                .send({ email: authTest.testUser.email })
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            authTest.assertApiResponse(response, 200, true);
         });
     });
 
-    afterEach(async () => {
-        // Nettoyer les données de test après chaque test
-        await cleanupTestData(testUser);
-        testUser = null;
-    });
-
-    afterAll(async () => {
-        // Fermer proprement toutes les connexions
-        await teardownTest(server);
-    });
 });

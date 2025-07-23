@@ -1,27 +1,33 @@
 /**
  * Tests unitaires pour PersonnageService (Backend) - User Stories US002, US006-US008
  * Tests basés sur les user stories principales
+ * Utilise l'architecture SOLID pour les tests unitaires
  */
 
+const BaseUnitTest = require('../helpers/BaseUnitTest');
+const UnitTestFactory = require('../helpers/UnitTestFactory');
 const PersonnageService = require('../../src/services/PersonnageService');
 
 // Mock des dépendances
 jest.mock('../../src/models/Personnage');
-jest.mock('../../src/utils/systemesJeu');
+jest.mock('../../src/config/systemesJeu');
 jest.mock('../../src/database/db');
 
 const Personnage = require('../../src/models/Personnage');
-const systemesJeu = require('../../src/utils/systemesJeu');
+const { systemesJeu } = require('../../src/config/systemesJeu');
 
-describe('PersonnageService Backend - User Stories', () => {
-    let personnageService;
-    let mockPersonnageModel;
+class PersonnageServiceBackendTest extends BaseUnitTest {
+    constructor() {
+        super({
+            mockDatabase: true,
+            mockExternalServices: true
+        });
+        this.testContext = UnitTestFactory.createServiceTestContext('PersonnageService');
+    }
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        
+    async customSetup() {
         // Mock du modèle Personnage
-        mockPersonnageModel = {
+        this.mockPersonnageModel = {
             findAll: jest.fn(),
             obtenirParId: jest.fn(),
             creer: jest.fn(),
@@ -33,7 +39,7 @@ describe('PersonnageService Backend - User Stories', () => {
             supprimerBrouillonsAnciens: jest.fn()
         };
         
-        Personnage.mockImplementation(() => mockPersonnageModel);
+        Personnage.mockImplementation(() => this.mockPersonnageModel);
         
         // Mock des systèmes de jeu
         systemesJeu.monsterhearts = {
@@ -48,7 +54,24 @@ describe('PersonnageService Backend - User Stories', () => {
             }
         };
         
-        personnageService = new PersonnageService();
+        this.personnageService = new PersonnageService();
+    }
+}
+
+describe('PersonnageService Backend - User Stories', () => {
+    let testInstance;
+
+    beforeAll(async () => {
+        testInstance = new PersonnageServiceBackendTest();
+        await testInstance.baseSetup();
+    });
+
+    afterAll(async () => {
+        await testInstance.baseTeardown();
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('US002 - Création de personnage de base', () => {
@@ -61,14 +84,18 @@ describe('PersonnageService Backend - User Stories', () => {
                 utilisateur_id: 1
             };
             
-            const personnageCree = { id: 123, ...donnees, date_creation: new Date() };
-            mockPersonnageModel.creer.mockResolvedValue(personnageCree);
+            const personnageCree = testInstance.createTestData('personnage', {
+                id: 123, 
+                ...donnees, 
+                date_creation: new Date()
+            });
+            testInstance.mockPersonnageModel.creer.mockResolvedValue(personnageCree);
 
             // Act
-            const result = await personnageService.creer(donnees);
+            const result = await testInstance.personnageService.creer(donnees);
 
             // Assert
-            expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.creer, [
                 expect.objectContaining({
                     nom: 'Luna Darkwood',
                     concept: 'Vampire rebelle',
@@ -76,8 +103,8 @@ describe('PersonnageService Backend - User Stories', () => {
                     attributs: expect.any(Object),
                     competences: expect.any(Object)
                 })
-            );
-            expect(result).toEqual(personnageCree);
+            ]);
+            testInstance.assertObjectStructure(result, personnageCree);
         });
 
         test('devrait rejeter un personnage avec système invalide', async () => {
@@ -88,8 +115,11 @@ describe('PersonnageService Backend - User Stories', () => {
             };
 
             // Act & Assert
-            await expect(personnageService.creer(donnees))
-                .rejects.toThrow('Système de jeu invalide');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.personnageService.creer(donnees),
+                null,
+                'Système de jeu invalide'
+            );
         });
 
         test('devrait appliquer les défauts du système lors de la création', async () => {
@@ -100,13 +130,13 @@ describe('PersonnageService Backend - User Stories', () => {
                 systeme_jeu: 'monsterhearts'
             };
             
-            mockPersonnageModel.creer.mockResolvedValue({ id: 1, ...donnees });
+            testInstance.mockPersonnageModel.creer.mockResolvedValue({ id: 1, ...donnees });
 
             // Act
-            await personnageService.creer(donnees);
+            await testInstance.personnageService.creer(donnees);
 
             // Assert - Le service utilise les valeurs min au lieu de defaut
-            expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.creer, [
                 expect.objectContaining({
                     attributs: { hot: -2, cold: -2 }, // Utilise min au lieu de defaut
                     competences: {},
@@ -114,7 +144,7 @@ describe('PersonnageService Backend - User Stories', () => {
                     inventaire: [],
                     notes: ''
                 })
-            );
+            ]);
         });
     });
 
@@ -127,21 +157,25 @@ describe('PersonnageService Backend - User Stories', () => {
                 // Concept manquant mais acceptable pour un brouillon
             };
             
-            const brouillonSauvegarde = { id: 456, ...donneesBrouillon, est_brouillon: true };
-            mockPersonnageModel.creer.mockResolvedValue(brouillonSauvegarde);
+            const brouillonSauvegarde = testInstance.createTestData('personnage', {
+                id: 456, 
+                ...donneesBrouillon, 
+                est_brouillon: true
+            });
+            testInstance.mockPersonnageModel.creer.mockResolvedValue(brouillonSauvegarde);
 
             // Act
-            const result = await personnageService.sauvegarderBrouillon(donneesBrouillon);
+            const result = await testInstance.personnageService.sauvegarderBrouillon(donneesBrouillon);
 
             // Assert
-            expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.creer, [
                 expect.objectContaining({
                     nom: 'Brouillon Test',
                     systeme_jeu: 'monsterhearts',
                     est_brouillon: true
                 })
-            );
-            expect(result).toEqual(brouillonSauvegarde);
+            ]);
+            testInstance.assertObjectStructure(result, brouillonSauvegarde);
         });
 
         test('devrait mettre à jour un brouillon existant', async () => {
@@ -153,20 +187,22 @@ describe('PersonnageService Backend - User Stories', () => {
             };
             
             const brouillonMAJ = { ...donneesMAJ, est_brouillon: true };
-            mockPersonnageModel.mettreAJour.mockResolvedValue(brouillonMAJ);
+            // Mock pour que obtenirParId ne retourne pas null
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue({ id: 456 });
+            testInstance.mockPersonnageModel.mettreAJour.mockResolvedValue(brouillonMAJ);
 
             // Act
-            const result = await personnageService.sauvegarderBrouillon(donneesMAJ);
+            const result = await testInstance.personnageService.sauvegarderBrouillon(donneesMAJ);
 
             // Assert
-            expect(mockPersonnageModel.mettreAJour).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.mettreAJour, [
                 456,
                 expect.objectContaining({
                     nom: 'Brouillon Modifié',
                     est_brouillon: true
                 })
-            );
-            expect(result).toEqual(brouillonMAJ);
+            ]);
+            testInstance.assertObjectStructure(result, brouillonMAJ);
         });
 
         test('devrait rejeter un brouillon sans nom ou système', async () => {
@@ -174,8 +210,11 @@ describe('PersonnageService Backend - User Stories', () => {
             const donneesInvalides = { concept: 'Test sans nom' };
 
             // Act & Assert
-            await expect(personnageService.sauvegarderBrouillon(donneesInvalides))
-                .rejects.toThrow('Nom et système requis même pour un brouillon');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.personnageService.sauvegarderBrouillon(donneesInvalides),
+                null,
+                'Nom et système requis même pour un brouillon'
+            );
         });
     });
 
@@ -184,30 +223,30 @@ describe('PersonnageService Backend - User Stories', () => {
             // Arrange
             const utilisateurId = 1;
             const mockPersonnages = [
-                { id: 1, nom: 'Hero 1', systeme_jeu: 'monsterhearts' },
-                { id: 2, nom: 'Hero 2', systeme_jeu: 'engrenages' }
+                testInstance.createTestData('personnage', { id: 1, nom: 'Hero 1', systeme_jeu: 'monsterhearts' }),
+                testInstance.createTestData('personnage', { id: 2, nom: 'Hero 2', systeme_jeu: 'engrenages' })
             ];
             
-            mockPersonnageModel.count.mockResolvedValue(25);
-            mockPersonnageModel.findAll.mockResolvedValue(mockPersonnages);
+            testInstance.mockPersonnageModel.count.mockResolvedValue(25);
+            testInstance.mockPersonnageModel.findAll.mockResolvedValue(mockPersonnages);
 
             // Act
-            const result = await personnageService.listerParUtilisateur(
+            const result = await testInstance.personnageService.listerParUtilisateur(
                 utilisateurId, 
                 {}, 
                 { offset: 0, limite: 20 }
             );
 
             // Assert
-            expect(mockPersonnageModel.count).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.count, [
                 'utilisateur_id = ?',
                 [utilisateurId]
-            );
-            expect(mockPersonnageModel.findAll).toHaveBeenCalledWith(
+            ]);
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.findAll, [
                 expect.stringContaining('utilisateur_id = ?'),
                 [utilisateurId]
-            );
-            expect(result).toEqual({
+            ]);
+            testInstance.assertObjectStructure(result, {
                 personnages: mockPersonnages,
                 total: 25
             });
@@ -218,17 +257,17 @@ describe('PersonnageService Backend - User Stories', () => {
             const utilisateurId = 1;
             const filtres = { systeme_jeu: 'monsterhearts' };
             
-            mockPersonnageModel.count.mockResolvedValue(5);
-            mockPersonnageModel.findAll.mockResolvedValue([]);
+            testInstance.mockPersonnageModel.count.mockResolvedValue(5);
+            testInstance.mockPersonnageModel.findAll.mockResolvedValue([]);
 
             // Act
-            await personnageService.listerParUtilisateur(utilisateurId, filtres);
+            await testInstance.personnageService.listerParUtilisateur(utilisateurId, filtres);
 
             // Assert
-            expect(mockPersonnageModel.findAll).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.findAll, [
                 expect.stringContaining('systeme_jeu = ?'),
                 [utilisateurId, 'monsterhearts']
-            );
+            ]);
         });
 
         test('devrait rechercher par nom', async () => {
@@ -236,17 +275,17 @@ describe('PersonnageService Backend - User Stories', () => {
             const utilisateurId = 1;
             const filtres = { nom: 'Luna' };
             
-            mockPersonnageModel.count.mockResolvedValue(3);
-            mockPersonnageModel.findAll.mockResolvedValue([]);
+            testInstance.mockPersonnageModel.count.mockResolvedValue(3);
+            testInstance.mockPersonnageModel.findAll.mockResolvedValue([]);
 
             // Act
-            await personnageService.listerParUtilisateur(utilisateurId, filtres);
+            await testInstance.personnageService.listerParUtilisateur(utilisateurId, filtres);
 
             // Assert
-            expect(mockPersonnageModel.findAll).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.findAll, [
                 expect.stringContaining('nom ILIKE ?'),
                 [utilisateurId, '%Luna%']
-            );
+            ]);
         });
     });
 
@@ -254,12 +293,12 @@ describe('PersonnageService Backend - User Stories', () => {
         test('devrait mettre à jour un personnage existant', async () => {
             // Arrange
             const personnageId = 123;
-            const personnageExistant = {
+            const personnageExistant = testInstance.createTestData('personnage', {
                 id: personnageId,
                 nom: 'Ancien Nom',
                 concept: 'Ancien Concept',
                 systeme_jeu: 'monsterhearts'
-            };
+            });
             
             const nouvellesDonnees = {
                 nom: 'Nouveau Nom',
@@ -268,36 +307,39 @@ describe('PersonnageService Backend - User Stories', () => {
             
             const personnageMisAJour = { ...personnageExistant, ...nouvellesDonnees };
             
-            mockPersonnageModel.obtenirParId.mockResolvedValue(personnageExistant);
-            mockPersonnageModel.mettreAJour.mockResolvedValue(personnageMisAJour);
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue(personnageExistant);
+            testInstance.mockPersonnageModel.mettreAJour.mockResolvedValue(personnageMisAJour);
 
             // Act
-            const result = await personnageService.mettreAJour(personnageId, nouvellesDonnees);
+            const result = await testInstance.personnageService.mettreAJour(personnageId, nouvellesDonnees);
 
             // Assert
-            expect(mockPersonnageModel.obtenirParId).toHaveBeenCalledWith(personnageId);
-            expect(mockPersonnageModel.mettreAJour).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.obtenirParId, [personnageId]);
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.mettreAJour, [
                 personnageId,
                 nouvellesDonnees
-            );
-            expect(result).toEqual(personnageMisAJour);
+            ]);
+            testInstance.assertObjectStructure(result, personnageMisAJour);
         });
 
         test('devrait rejeter la mise à jour d\'un personnage inexistant', async () => {
             // Arrange
             const personnageId = 999;
-            mockPersonnageModel.obtenirParId.mockResolvedValue(null);
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue(null);
 
             // Act & Assert
-            await expect(personnageService.mettreAJour(personnageId, {}))
-                .rejects.toThrow('Personnage non trouvé');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.personnageService.mettreAJour(personnageId, {}),
+                null,
+                'Personnage non trouvé'
+            );
         });
     });
 
     describe('US008 - Duplication de personnage', () => {
         test('devrait dupliquer un personnage avec nouveau nom', async () => {
             // Arrange
-            const personnageOriginal = {
+            const personnageOriginal = testInstance.createTestData('personnage', {
                 id: 123,
                 nom: 'Original',
                 concept: 'Test Concept',
@@ -306,28 +348,28 @@ describe('PersonnageService Backend - User Stories', () => {
                 utilisateur_id: 1,
                 date_creation: new Date('2023-01-01'),
                 date_modification: new Date('2023-01-02')
-            };
+            });
             
             const nouveauNom = 'Copie de Original';
             const utilisateurId = 2;
-            const personnageDuplique = { 
+            const personnageDuplique = testInstance.createTestData('personnage', {
                 id: 456, 
                 nom: nouveauNom, 
                 concept: 'Test Concept',
                 systeme_jeu: 'monsterhearts',
                 attributs: { hot: 2, cold: 1 },
                 utilisateur_id: utilisateurId
-            };
+            });
             
-            mockPersonnageModel.obtenirParId.mockResolvedValue(personnageOriginal);
-            mockPersonnageModel.creer.mockResolvedValue(personnageDuplique);
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue(personnageOriginal);
+            testInstance.mockPersonnageModel.creer.mockResolvedValue(personnageDuplique);
 
             // Act
-            const result = await personnageService.dupliquer(123, nouveauNom, utilisateurId);
+            const result = await testInstance.personnageService.dupliquer(123, nouveauNom, utilisateurId);
 
             // Assert
-            expect(mockPersonnageModel.obtenirParId).toHaveBeenCalledWith(123);
-            expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.obtenirParId, [123]);
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.creer, [
                 expect.objectContaining({
                     nom: nouveauNom,
                     concept: 'Test Concept',
@@ -335,24 +377,27 @@ describe('PersonnageService Backend - User Stories', () => {
                     attributs: { hot: 2, cold: 1 },
                     utilisateur_id: utilisateurId
                 })
-            );
-            expect(mockPersonnageModel.creer).toHaveBeenCalledWith(
+            ]);
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.creer, [
                 expect.not.objectContaining({
                     id: expect.anything(),
                     date_creation: expect.anything(),
                     date_modification: expect.anything()
                 })
-            );
-            expect(result).toEqual(personnageDuplique);
+            ]);
+            testInstance.assertObjectStructure(result, personnageDuplique);
         });
 
         test('devrait rejeter la duplication d\'un personnage inexistant', async () => {
             // Arrange
-            mockPersonnageModel.obtenirParId.mockResolvedValue(null);
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue(null);
 
             // Act & Assert
-            await expect(personnageService.dupliquer(999, 'Nouveau Nom', 1))
-                .rejects.toThrow('Personnage original non trouvé');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.personnageService.dupliquer(999, 'Nouveau Nom', 1),
+                null,
+                'Personnage original non trouvé'
+            );
         });
     });
 
@@ -368,7 +413,7 @@ describe('PersonnageService Backend - User Stories', () => {
 
             // Act & Assert - Ne devrait pas lever d'erreur
             expect(() => {
-                personnageService.validerDonnees(donneesValides);
+                testInstance.personnageService.validerDonnees(donneesValides);
             }).not.toThrow();
         });
 
@@ -382,9 +427,10 @@ describe('PersonnageService Backend - User Stories', () => {
             };
 
             // Act & Assert
-            expect(() => {
-                personnageService.validerDonnees(donneesInvalides);
-            }).toThrow();
+            testInstance.assertThrows(
+                () => testInstance.personnageService.validerDonnees(donneesInvalides),
+                donneesInvalides
+            );
         });
 
         test('devrait accepter les brouillons avec champs manquants', () => {
@@ -398,7 +444,7 @@ describe('PersonnageService Backend - User Stories', () => {
 
             // Act & Assert - Ne devrait pas lever d'erreur
             expect(() => {
-                personnageService.validerDonnees(brouillonValide);
+                testInstance.personnageService.validerDonnees(brouillonValide);
             }).not.toThrow();
         });
     });
@@ -414,14 +460,14 @@ describe('PersonnageService Backend - User Stories', () => {
                 brouillons: 3
             };
             
-            mockPersonnageModel.obtenirStatistiques.mockResolvedValue(mockStats);
+            testInstance.mockPersonnageModel.obtenirStatistiques.mockResolvedValue(mockStats);
 
             // Act
-            const result = await personnageService.obtenirStatistiques(utilisateurId);
+            const result = await testInstance.personnageService.obtenirStatistiques(utilisateurId);
 
             // Assert
-            expect(mockPersonnageModel.obtenirStatistiques).toHaveBeenCalledWith(utilisateurId);
-            expect(result).toEqual(mockStats);
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.obtenirStatistiques, [utilisateurId]);
+            testInstance.assertObjectStructure(result, mockStats);
         });
 
         test('devrait rechercher des personnages par terme', async () => {
@@ -429,24 +475,24 @@ describe('PersonnageService Backend - User Stories', () => {
             const utilisateurId = 1;
             const terme = 'Luna';
             const mockResultats = [
-                { id: 1, nom: 'Luna Darkwood' },
-                { id: 2, nom: 'Luna Silver' }
+                testInstance.createTestData('personnage', { id: 1, nom: 'Luna Darkwood' }),
+                testInstance.createTestData('personnage', { id: 2, nom: 'Luna Silver' })
             ];
             
-            mockPersonnageModel.lister.mockResolvedValue(mockResultats);
+            testInstance.mockPersonnageModel.lister.mockResolvedValue(mockResultats);
 
             // Act
-            const result = await personnageService.rechercher(utilisateurId, terme);
+            const result = await testInstance.personnageService.rechercher(utilisateurId, terme);
 
             // Assert
-            expect(mockPersonnageModel.lister).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPersonnageModel.lister, [
                 expect.objectContaining({
                     where: expect.stringContaining('nom ILIKE ? OR description ILIKE ?'),
                     valeurs: [utilisateurId, '%Luna%', '%Luna%'],
                     limit: 10
                 })
-            );
-            expect(result).toEqual(mockResultats);
+            ]);
+            testInstance.assertObjectStructure(result, mockResultats);
         });
     });
 });

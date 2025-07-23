@@ -1,6 +1,6 @@
 const BaseController = require('./BaseController');
 const PersonnageService = require('../services/PersonnageService');
-const systemesJeu = require('../utils/systemesJeu');
+const { systemesJeu } = require('../config/systemesJeu');
 
 /**
  * Contrôleur pour la gestion des personnages

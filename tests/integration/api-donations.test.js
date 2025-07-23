@@ -1,44 +1,67 @@
+/**
+ * Tests d'intégration API - Système de dons et élévation Premium
+ * 
+ * Objectif : Tester les endpoints liés au système de dons et financement
+ * - Informations de dons (plateformes, objectifs)
+ * - URLs de redirection vers les plateformes de don
+ * - Messages de remerciement et objectifs
+ * - Statistiques de dons (si disponible)
+ * - Configuration des plateformes de paiement
+ * - Élévation de rôle Premium (codes d'accès liés aux dons)
+ * 
+ * Couverture : Système complet de collecte de dons et passage Premium
+ * Architecture : Utilise les principes SOLID avec injection de dépendances
+ */
+
 const request = require('supertest');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+class DonationsApiTest extends BaseApiTest {
+    createTestContext() {
+        return TestFactory.createAuthTestContext(this.config);
+    }
+
+    async customSetup() {
+        // Créer et connecter un utilisateur pour les tests auth
+        const result = await this.createAndLoginUser();
+        this.authenticatedAgent = result.agent;
+        this.testUser = result.user;
+    }
+}
 
 describe('API Donations', () => {
-    let app, server, agent;
-    let testUser = {
-        nom: 'Test User Donations',
-        email: `test_donations_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
+    const testInstance = new DonationsApiTest({
+        timeout: 30000,
+        cleanupUsers: true
+    });
+
+    let setupData;
 
     beforeAll(async () => {
-        app = require('../../src/app');
-        server = await setupTest(app);
-        
-        // Créer utilisateur
-        agent = request.agent(server);
-        await agent.post('/api/auth/inscription').send(testUser);
+        setupData = await testInstance.baseSetup();
     });
 
     afterAll(async () => {
-        await teardownTest(server);
+        await testInstance.baseTeardown();
     });
 
     describe('GET /api/donations/status', () => {
         test('doit retourner statut donation public', async () => {
-            const response = await request(server)
-                .get('/api/donations/status')
-                .expect(200);
+            const response = await request(testInstance.getServer())
+                .get('/api/donations/status');
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('stripe_active');
             expect(response.body.donnees).toHaveProperty('montants_disponibles');
             expect(response.body.donnees).toHaveProperty('devises_supportees');
         });
 
         test('structure attendue statut donations', async () => {
-            const response = await request(server)
-                .get('/api/donations/status')
-                .expect(200);
+            const response = await request(testInstance.getServer())
+                .get('/api/donations/status');
 
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toMatchObject({
                 stripe_active: expect.any(Boolean),
                 montants_disponibles: expect.any(Array),
@@ -53,10 +76,10 @@ describe('API Donations', () => {
         });
 
         test('doit inclure informations Premium', async () => {
-            const response = await request(server)
-                .get('/api/donations/status')
-                .expect(200);
+            const response = await request(testInstance.getServer())
+                .get('/api/donations/status');
 
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('premium_info');
             expect(response.body.donnees.premium_info).toMatchObject({
                 prix_mensuel: expect.any(Number),
@@ -78,12 +101,11 @@ describe('API Donations', () => {
                 anonyme: false
             };
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
-                .send(donationData)
-                .expect(200);
+                .send(donationData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('client_secret');
             expect(response.body.donnees).toHaveProperty('payment_intent_id');
             expect(response.body.donnees).toHaveProperty('montant');
@@ -97,12 +119,11 @@ describe('API Donations', () => {
                 utilisateur_id: null // Pour utilisateur anonyme
             };
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
-                .send(premiumData)
-                .expect(200);
+                .send(premiumData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('client_secret');
             expect(response.body.donnees).toHaveProperty('subscription_id');
         });
@@ -114,12 +135,11 @@ describe('API Donations', () => {
                 utilisateur_id: null
             };
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
-                .send(premiumData)
-                .expect(200);
+                .send(premiumData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('client_secret');
             // Vérifier prix réduit pour abonnement annuel
             expect(response.body.donnees).toHaveProperty('reduction');
@@ -131,85 +151,79 @@ describe('API Donations', () => {
                 plan: 'mensuel'
             };
 
-            const response = await agent
+            const response = await testInstance.authenticatedAgent
                 .post('/api/donations/create-payment-intent')
-                .send(premiumData)
-                .expect(200);
+                .send(premiumData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             // Doit inclure ID utilisateur dans les métadonnées
             expect(response.body.donnees).toHaveProperty('utilisateur_id');
         });
 
         test('doit valider montant minimum', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 0.50, // Trop petit
                     devise: 'EUR'
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'montant');
             expect(response.body.message).toContain('minimum');
         });
 
         test('doit valider montant maximum', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10000, // Trop grand
                     devise: 'EUR'
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'montant');
             expect(response.body.message).toContain('maximum');
         });
 
         test('doit valider devise supportée', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10.00,
                     devise: 'JPY' // Non supportée
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'devise');
             expect(response.body.message).toContain('devise');
         });
 
         test('doit valider format email donateur', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10.00,
                     devise: 'EUR',
                     email_donateur: 'email-invalide'
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'email');
             expect(response.body.message).toContain('email');
         });
 
         test('doit filtrer message inapproprié', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10.00,
                     devise: 'EUR',
                     message: 'Message avec contenu spam et liens malveillants'
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'message');
             expect(response.body.message).toContain('inapproprié');
         });
     });
@@ -231,22 +245,20 @@ describe('API Donations', () => {
             };
 
             // Ce test échouerait sans signature Stripe valide
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/webhook')
                 .set('stripe-signature', 'test-signature')
-                .send(webhookPayload)
-                .expect(400); // Attendu car signature invalide
+                .send(webhookPayload);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response); // Attendu car signature invalide
         });
 
         test('doit rejeter webhook sans signature', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/webhook')
-                .send({ test: 'data' })
-                .expect(400);
+                .send({ test: 'data' });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response);
             expect(response.body.message).toContain('signature');
         });
     });
@@ -254,53 +266,52 @@ describe('API Donations', () => {
     describe('Gestion des erreurs donations', () => {
         test('doit gérer erreur Stripe indisponible', async () => {
             // Simuler indisponibilité Stripe
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10.00,
                     devise: 'EUR'
-                })
-                .expect(200); // Ou 503 si Stripe vraiment indisponible
+                });
 
             // En cas d'erreur Stripe, doit gérer gracieusement
             if (response.status === 503) {
-                expect(response.body.succes).toBe(false);
+                testInstance.assertApiResponse(response, 503, false);
                 expect(response.body.message).toContain('indisponible');
+            } else {
+                testInstance.assertApiResponse(response, 200, true);
             }
         });
 
         test('doit valider paramètres requis', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
-                .send({}) // Paramètres manquants
-                .expect(400);
+                .send({}); // Paramètres manquants
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response);
             expect(response.body.message).toContain('requis');
         });
 
         test('doit limiter taille message donateur', async () => {
             const longMessage = 'x'.repeat(1000); // Message très long
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
                     montant: 10.00,
                     devise: 'EUR',
                     message: longMessage
-                })
-                .expect(400);
+                });
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response, 'message');
             expect(response.body.message).toContain('long');
         });
     });
 
     describe('Sécurité donations', () => {
         test('doit logger toutes les tentatives de paiement', async () => {
-            await request(server)
+            await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
                 .send({
                     type: 'donation',
@@ -316,7 +327,7 @@ describe('API Donations', () => {
         test('doit détecter tentatives de fraude', async () => {
             // Simuler comportement suspect (trop de tentatives)
             const requests = Array(10).fill().map(() =>
-                request(server)
+                request(testInstance.getServer())
                     .post('/api/donations/create-payment-intent')
                     .send({
                         type: 'donation',
@@ -335,10 +346,10 @@ describe('API Donations', () => {
         });
 
         test('ne doit pas exposer clés API dans réponses', async () => {
-            const response = await request(server)
-                .get('/api/donations/status')
-                .expect(200);
+            const response = await request(testInstance.getServer())
+                .get('/api/donations/status');
 
+            testInstance.assertApiResponse(response, 200, true);
             const responseString = JSON.stringify(response.body);
             expect(responseString).not.toContain('sk_'); // Clé secrète Stripe
             expect(responseString).not.toContain('whsec_'); // Secret webhook
@@ -355,14 +366,50 @@ describe('API Donations', () => {
                 campagne: 'noel_2024'
             };
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/donations/create-payment-intent')
-                .send(donationData)
-                .expect(200);
+                .send(donationData);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             // Doit inclure tracking dans les métadonnées
             expect(response.body.donnees).toHaveProperty('tracking_id');
+        });
+    });
+
+    describe('Role Elevation API (lié aux dons)', () => {
+        test('POST /api/auth/passer-premium should handle premium code', async () => {
+            const response = await testInstance.authenticatedAgent
+                .post('/api/auth/passer-premium')
+                .send({ code: '123456' });
+
+            testInstance.assertApiResponse(response, 200, true);
+            expect(response.body.message).toContain('Premium');
+        });
+
+        test('POST /api/auth/passer-premium should handle admin code', async () => {
+            const response = await testInstance.authenticatedAgent
+                .post('/api/auth/passer-premium')
+                .send({ code: '789012' });
+
+            testInstance.assertApiResponse(response, 200, true);
+            expect(response.body.message).toContain('Admin');
+        });
+
+        test('POST /api/auth/passer-premium should reject invalid code', async () => {
+            const response = await testInstance.authenticatedAgent
+                .post('/api/auth/passer-premium')
+                .send({ code: 'invalid' });
+
+            testInstance.assertValidationError(response);
+            expect(response.body.message).toContain('incorrect');
+        });
+
+        test('POST /api/auth/passer-premium should require authentication', async () => {
+            const response = await request(testInstance.getServer())
+                .post('/api/auth/passer-premium')
+                .send({ code: '123456' });
+
+            testInstance.assertAuthenticationRequired(response);
         });
     });
 });

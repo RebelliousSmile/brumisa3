@@ -1,8 +1,11 @@
 /**
  * Tests unitaires pour PdfService (Backend) - User Stories US004, US009, US012
  * Tests basés sur les user stories principales pour la génération PDF
+ * Utilise l'architecture SOLID pour les tests unitaires
  */
 
+const BaseUnitTest = require('../helpers/BaseUnitTest');
+const UnitTestFactory = require('../helpers/UnitTestFactory');
 const PdfService = require('../../src/services/PdfService');
 
 // Mock des dépendances
@@ -10,7 +13,16 @@ jest.mock('../../src/models/Pdf');
 jest.mock('../../src/models/Personnage');
 jest.mock('../../src/services/TemplateService');
 jest.mock('../../src/services/PdfKitService');
-jest.mock('../../src/utils/systemesJeu');
+jest.mock('../../src/config/systemesJeu');
+jest.mock('fs', () => ({
+    existsSync: jest.fn().mockReturnValue(true),
+    mkdir: jest.fn().mockResolvedValue(),
+    promises: {
+        copyFile: jest.fn(),
+        unlink: jest.fn(),
+        mkdir: jest.fn().mockResolvedValue()
+    }
+}));
 
 const Pdf = require('../../src/models/Pdf');
 const Personnage = require('../../src/models/Personnage');
@@ -18,18 +30,18 @@ const TemplateService = require('../../src/services/TemplateService');
 const PdfKitService = require('../../src/services/PdfKitService');
 const fs = require('fs');
 
-describe('PdfService Backend - User Stories', () => {
-    let pdfService;
-    let mockPdfModel;
-    let mockPersonnageModel;
-    let mockTemplateService;
-    let mockPdfKitService;
+class PdfServiceBackendTest extends BaseUnitTest {
+    constructor() {
+        super({
+            mockDatabase: true,
+            mockExternalServices: true
+        });
+        this.testContext = UnitTestFactory.createServiceTestContext('PdfService');
+    }
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        
+    async customSetup() {
         // Mock du modèle PDF
-        mockPdfModel = {
+        this.mockPdfModel = {
             creer: jest.fn(),
             obtenirParId: jest.fn(),
             obtenirParToken: jest.fn(),
@@ -43,12 +55,12 @@ describe('PdfService Backend - User Stories', () => {
         };
         
         // Mock du modèle Personnage
-        mockPersonnageModel = {
+        this.mockPersonnageModel = {
             obtenirParId: jest.fn()
         };
         
         // Mock TemplateService
-        mockTemplateService = {
+        this.mockTemplateService = {
             templateExiste: jest.fn(),
             rendreTemplate: jest.fn(),
             listerTemplates: jest.fn(),
@@ -56,16 +68,33 @@ describe('PdfService Backend - User Stories', () => {
         };
         
         // Mock PdfKitService
-        mockPdfKitService = {
+        this.mockPdfKitService = {
             generatePDF: jest.fn()
         };
         
-        Pdf.mockImplementation(() => mockPdfModel);
-        Personnage.mockImplementation(() => mockPersonnageModel);
-        TemplateService.mockImplementation(() => mockTemplateService);
-        PdfKitService.mockImplementation(() => mockPdfKitService);
+        Pdf.mockImplementation(() => this.mockPdfModel);
+        Personnage.mockImplementation(() => this.mockPersonnageModel);
+        TemplateService.mockImplementation(() => this.mockTemplateService);
+        PdfKitService.mockImplementation(() => this.mockPdfKitService);
         
-        pdfService = new PdfService();
+        this.pdfService = new PdfService();
+    }
+}
+
+describe('PdfService Backend - User Stories', () => {
+    let testInstance;
+
+    beforeAll(async () => {
+        testInstance = new PdfServiceBackendTest();
+        await testInstance.baseSetup();
+    });
+
+    afterAll(async () => {
+        await testInstance.baseTeardown();
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('US004 - Génération PDF anonyme', () => {
@@ -98,14 +127,14 @@ describe('PdfService Backend - User Stories', () => {
                 size: 1024000
             };
             
-            mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
+            testInstance.mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
 
             // Act
-            const result = await pdfService.genererPdf(inputOptions);
+            const result = await testInstance.pdfService.genererPdf(inputOptions);
 
             // Assert
-            expect(mockPdfKitService.generatePDF).toHaveBeenCalledWith(expectedOptions);
-            expect(result.success).toBe(true);
+            testInstance.assertMockCalledWith(testInstance.mockPdfKitService.generatePDF, [expectedOptions]);
+            testInstance.assertObjectStructure(result, { success: true });
             expect(result.fullPath).toContain('anonymous_fiche.pdf');
         });
 
@@ -124,32 +153,32 @@ describe('PdfService Backend - User Stories', () => {
                 est_public: false
             };
             
-            const pdfCree = {
+            const pdfCree = testInstance.createTestData('pdf', {
                 id: 456,
-                personnage_id: null, // Pas de personnage pour les anonymes
+                personnage_id: null,
                 utilisateur_id: null,
                 type_pdf: 'document-generique',
                 statut: 'EN_ATTENTE',
                 progression: 0
-            };
+            });
             
-            mockPdfModel.creer.mockResolvedValue(pdfCree);
+            testInstance.mockPdfModel.creer.mockResolvedValue(pdfCree);
 
             // Act
-            const result = await pdfService.genererDocumentGenerique(utilisateurId, options);
+            const result = await testInstance.pdfService.genererDocumentGenerique(utilisateurId, options);
 
             // Assert
-            expect(mockPdfModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.creer, [
                 expect.objectContaining({
-                    personnage_id: null, // Pas de personnage pour les anonymes
+                    personnage_id: null,
                     utilisateur_id: null,
                     type_pdf: 'document-generique',
                     statut: 'EN_ATTENTE',
                     progression: 0,
                     est_public: false
                 })
-            );
-            expect(result).toEqual(pdfCree);
+            ]);
+            testInstance.assertObjectStructure(result, pdfCree);
         });
 
         test('devrait générer un nom de fichier unique', () => {
@@ -160,20 +189,18 @@ describe('PdfService Backend - User Stories', () => {
             const typePdf = 'fiche_personnage';
 
             // Act
-            const nomFichier = pdfService.genererNomFichier(personnage, typePdf);
+            const nomFichier = testInstance.pdfService.genererNomFichier(personnage, typePdf);
 
             // Assert
             expect(nomFichier).toMatch(/^Luna___Darkwood_Test_fiche_personnage_\d+\.pdf$/);
         });
 
-        test('devrait déterminer le moteur PDF approprié', () => {
+        test('devrait utiliser le moteur PDF par défaut', () => {
             // Arrange & Act
-            const enginePDFKit = pdfService.determineEngine('monsterhearts', 'plan-classe-instructions', 'pdfkit');
-            const engineAuto = pdfService.determineEngine('monsterhearts', 'plan-classe-instructions', 'auto');
+            const defaultEngine = testInstance.pdfService.defaultEngine;
 
             // Assert
-            expect(enginePDFKit).toBe('pdfkit');
-            expect(engineAuto).toBe('pdfkit');
+            testInstance.assertFunction(() => defaultEngine, null, 'pdfkit');
         });
     });
 
@@ -182,38 +209,38 @@ describe('PdfService Backend - User Stories', () => {
             // Arrange - Seuls les utilisateurs connectés ont un historique
             const utilisateurId = 1; // Utilisateur connecté
             const mockPdfs = [
-                { 
+                testInstance.createTestData('pdf', { 
                     id: 1, 
                     nom_fichier: 'hero1.pdf', 
                     statut: 'TERMINE',
-                    personnage_id: 123, // Lié à un personnage sauvegardé
+                    personnage_id: 123,
                     date_creation: new Date()
-                },
-                { 
+                }),
+                testInstance.createTestData('pdf', { 
                     id: 2, 
                     nom_fichier: 'hero2.pdf', 
                     statut: 'EN_TRAITEMENT',
                     personnage_id: 124,
                     date_creation: new Date()
-                }
+                })
             ];
             
-            mockPdfModel.count.mockResolvedValue(15);
-            mockPdfModel.lister.mockResolvedValue(mockPdfs);
+            testInstance.mockPdfModel.count.mockResolvedValue(15);
+            testInstance.mockPdfModel.lister.mockResolvedValue(mockPdfs);
 
             // Act
-            const result = await pdfService.listerParUtilisateur(
+            const result = await testInstance.pdfService.listerParUtilisateur(
                 utilisateurId, 
                 {}, 
                 { offset: 0, limite: 20 }
             );
 
             // Assert
-            expect(mockPdfModel.count).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.count, [
                 'utilisateur_id = ?',
                 [utilisateurId]
-            );
-            expect(mockPdfModel.lister).toHaveBeenCalledWith(
+            ]);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.lister, [
                 expect.objectContaining({
                     where: 'utilisateur_id = ?',
                     valeurs: [utilisateurId],
@@ -221,8 +248,8 @@ describe('PdfService Backend - User Stories', () => {
                     limit: 20,
                     offset: 0
                 })
-            );
-            expect(result).toEqual({
+            ]);
+            testInstance.assertObjectStructure(result, {
                 pdfs: mockPdfs,
                 total: 15
             });
@@ -233,19 +260,19 @@ describe('PdfService Backend - User Stories', () => {
             const utilisateurId = 1;
             const filtres = { statut: 'TERMINE' };
             
-            mockPdfModel.count.mockResolvedValue(8);
-            mockPdfModel.lister.mockResolvedValue([]);
+            testInstance.mockPdfModel.count.mockResolvedValue(8);
+            testInstance.mockPdfModel.lister.mockResolvedValue([]);
 
             // Act
-            await pdfService.listerParUtilisateur(utilisateurId, filtres);
+            await testInstance.pdfService.listerParUtilisateur(utilisateurId, filtres);
 
             // Assert
-            expect(mockPdfModel.lister).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.lister, [
                 expect.objectContaining({
                     where: 'utilisateur_id = ? AND statut = ?',
                     valeurs: [utilisateurId, 'TERMINE']
                 })
-            );
+            ]);
         });
 
         test('devrait filtrer par type de PDF', async () => {
@@ -253,38 +280,38 @@ describe('PdfService Backend - User Stories', () => {
             const utilisateurId = 1;
             const filtres = { type_pdf: 'fiche_personnage' };
             
-            mockPdfModel.count.mockResolvedValue(5);
-            mockPdfModel.lister.mockResolvedValue([]);
+            testInstance.mockPdfModel.count.mockResolvedValue(5);
+            testInstance.mockPdfModel.lister.mockResolvedValue([]);
 
             // Act
-            await pdfService.listerParUtilisateur(utilisateurId, filtres);
+            await testInstance.pdfService.listerParUtilisateur(utilisateurId, filtres);
 
             // Assert
-            expect(mockPdfModel.lister).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.lister, [
                 expect.objectContaining({
                     where: 'utilisateur_id = ? AND type_pdf = ?',
                     valeurs: [utilisateurId, 'fiche_personnage']
                 })
-            );
+            ]);
         });
 
         test('devrait obtenir un PDF par ID', async () => {
             // Arrange
             const pdfId = 123;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 nom_fichier: 'test.pdf',
                 statut: 'TERMINE'
-            };
+            });
             
-            mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
 
             // Act
-            const result = await pdfService.obtenirParId(pdfId);
+            const result = await testInstance.pdfService.obtenirParId(pdfId);
 
             // Assert
-            expect(mockPdfModel.obtenirParId).toHaveBeenCalledWith(pdfId);
-            expect(result).toEqual(mockPdf);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.obtenirParId, [pdfId]);
+            testInstance.assertObjectStructure(result, mockPdf);
         });
 
         test('devrait marquer un téléchargement', async () => {
@@ -292,10 +319,10 @@ describe('PdfService Backend - User Stories', () => {
             const pdfId = 123;
 
             // Act
-            await pdfService.marquerTelechargement(pdfId);
+            await testInstance.pdfService.marquerTelechargement(pdfId);
 
             // Assert
-            expect(mockPdfModel.incrementerTelechargements).toHaveBeenCalledWith(pdfId);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.incrementerTelechargements, [pdfId]);
         });
     });
 
@@ -317,14 +344,14 @@ describe('PdfService Backend - User Stories', () => {
                 size: 1024000
             };
             
-            mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
+            testInstance.mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
 
             // Act
-            const result = await pdfService.genererPdf(options);
+            const result = await testInstance.pdfService.genererPdf(options);
 
             // Assert
-            expect(mockPdfKitService.generatePDF).toHaveBeenCalledWith(options);
-            expect(result).toEqual(mockResult);
+            testInstance.assertMockCalledWith(testInstance.mockPdfKitService.generatePDF, [options]);
+            testInstance.assertObjectStructure(result, mockResult);
         });
 
         test('devrait copier le fichier vers un chemin spécifique', async () => {
@@ -340,77 +367,75 @@ describe('PdfService Backend - User Stories', () => {
                 fullPath: '/temp/generated.pdf'
             };
             
-            mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
+            testInstance.mockPdfKitService.generatePDF.mockResolvedValue(mockResult);
 
             // Act
-            const result = await pdfService.genererPdf(options);
+            const result = await testInstance.pdfService.genererPdf(options);
 
             // Assert
-            expect(fs.promises.copyFile).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(fs.promises.copyFile, [
                 '/temp/generated.pdf',
                 '/custom/path/output.pdf'
-            );
+            ]);
             expect(result.fullPath).toBe('/custom/path/output.pdf');
         });
 
         test('devrait générer un lien de partage temporaire', async () => {
             // Arrange
             const pdfId = 123;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 nom_fichier: 'test.pdf',
                 statut: 'TERMINE'
-            };
+            });
             
-            mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
-            mockPdfModel.mettreAJour.mockResolvedValue();
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
+            testInstance.mockPdfModel.mettreAJour.mockResolvedValue();
 
             // Act
-            const result = await pdfService.genererLienPartage(pdfId, 48);
+            const result = await testInstance.pdfService.genererLienPartage(pdfId, 48);
 
             // Assert
-            expect(mockPdfModel.obtenirParId).toHaveBeenCalledWith(pdfId);
-            expect(mockPdfModel.mettreAJour).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.obtenirParId, [pdfId]);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.mettreAJour, [
                 pdfId,
                 expect.objectContaining({
                     url_temporaire: expect.any(String),
                     date_expiration: expect.any(Date)
                 })
-            );
-            expect(result).toEqual(
-                expect.objectContaining({
-                    token: expect.any(String),
-                    url: expect.stringContaining('/api/pdfs/partage/'),
-                    date_expiration: expect.any(Date)
-                })
-            );
+            ]);
+            testInstance.assertObjectStructure(result, {
+                token: expect.any(String),
+                url: expect.stringContaining('/api/pdfs/partage/'),
+                date_expiration: expect.any(Date)
+            });
         });
 
         test('devrait basculer la visibilité publique d\'un PDF', async () => {
             // Arrange
             const pdfId = 123;
             const utilisateurId = 1;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 utilisateur_id: utilisateurId,
                 statut: 'TERMINE',
                 est_public: false
-            };
+            });
             
             const pdfMisAJour = { ...mockPdf, est_public: true };
             
-            mockPdfModel.obtenirParId.mockResolvedValueOnce(mockPdf)
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValueOnce(mockPdf)
                 .mockResolvedValueOnce(pdfMisAJour);
-            mockPdfModel.mettreAJour.mockResolvedValue();
+            testInstance.mockPdfModel.mettreAJour.mockResolvedValue();
 
             // Act
-            const result = await pdfService.basculerVisibilitePublique(pdfId, utilisateurId);
+            const result = await testInstance.pdfService.basculerVisibilitePublique(pdfId, utilisateurId);
 
             // Assert
-            expect(mockPdfModel.mettreAJour).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.mettreAJour, [
                 pdfId,
                 { est_public: true }
-            );
+            ]);
             expect(result.est_public).toBe(true);
         });
 
@@ -419,18 +444,21 @@ describe('PdfService Backend - User Stories', () => {
             const pdfId = 123;
             const utilisateurId = 1;
             const autreUtilisateur = 2;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 utilisateur_id: autreUtilisateur,
                 statut: 'TERMINE',
                 est_public: false
-            };
+            });
             
-            mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
 
             // Act & Assert
-            await expect(pdfService.basculerVisibilitePublique(pdfId, utilisateurId))
-                .rejects.toThrow('Seul le propriétaire peut modifier la visibilité');
+            await testInstance.assertThrowsAsync(
+                () => testInstance.pdfService.basculerVisibilitePublique(pdfId, utilisateurId),
+                null,
+                'Seul le propriétaire peut modifier la visibilité'
+            );
         });
     });
 
@@ -438,84 +466,83 @@ describe('PdfService Backend - User Stories', () => {
         test('devrait supprimer un PDF et son fichier', async () => {
             // Arrange
             const pdfId = 123;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 nom_fichier: 'test.pdf',
                 chemin_fichier: '/path/to/test.pdf'
-            };
+            });
             
-            mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
-            mockPdfModel.supprimer.mockResolvedValue();
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValue(mockPdf);
+            testInstance.mockPdfModel.supprimer.mockResolvedValue();
             fs.promises.unlink.mockResolvedValue();
 
             // Act
-            const result = await pdfService.supprimer(pdfId);
+            const result = await testInstance.pdfService.supprimer(pdfId);
 
             // Assert
-            expect(fs.promises.unlink).toHaveBeenCalledWith('/path/to/test.pdf');
-            expect(mockPdfModel.supprimer).toHaveBeenCalledWith(pdfId);
-            expect(result).toBe(true);
+            testInstance.assertMockCalledWith(fs.promises.unlink, ['/path/to/test.pdf']);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.supprimer, [pdfId]);
+            testInstance.assertFunction(() => result, null, true);
         });
 
         test('devrait relancer la génération d\'un PDF en échec', async () => {
             // Arrange
             const pdfId = 123;
-            const mockPdf = {
+            const mockPdf = testInstance.createTestData('pdf', {
                 id: pdfId,
                 statut: 'ECHEC',
                 personnage_id: 456,
                 options_generation: JSON.stringify({ type: 'test' })
-            };
+            });
             
-            const mockPersonnage = {
+            const mockPersonnage = testInstance.createTestData('personnage', {
                 id: 456,
                 nom: 'Test Hero'
-            };
+            });
             
             const pdfRelance = { ...mockPdf, statut: 'EN_ATTENTE' };
             
-            mockPdfModel.obtenirParId.mockResolvedValueOnce(mockPdf)
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValueOnce(mockPdf)
                 .mockResolvedValueOnce(pdfRelance);
-            mockPersonnageModel.obtenirParId.mockResolvedValue(mockPersonnage);
-            mockPdfModel.mettreAJour.mockResolvedValue();
+            testInstance.mockPersonnageModel.obtenirParId.mockResolvedValue(mockPersonnage);
+            testInstance.mockPdfModel.mettreAJour.mockResolvedValue();
 
             // Act
-            const result = await pdfService.relancerGeneration(pdfId);
+            const result = await testInstance.pdfService.relancerGeneration(pdfId);
 
             // Assert
-            expect(mockPdfModel.mettreAJour).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.mettreAJour, [
                 pdfId,
                 expect.objectContaining({
                     statut: 'EN_ATTENTE',
                     progression: 0,
                     erreur_message: null
                 })
-            );
+            ]);
             expect(result.statut).toBe('EN_ATTENTE');
         });
 
         test('devrait nettoyer les PDFs expirés', async () => {
             // Arrange
-            const maintenant = new Date();
             const pdfsExpires = [
-                { id: 1, nom_fichier: 'expired1.pdf' },
-                { id: 2, nom_fichier: 'expired2.pdf' }
+                testInstance.createTestData('pdf', { id: 1, nom_fichier: 'expired1.pdf' }),
+                testInstance.createTestData('pdf', { id: 2, nom_fichier: 'expired2.pdf' })
             ];
             
-            mockPdfModel.lister.mockResolvedValue(pdfsExpires);
-            mockPdfModel.obtenirParId.mockResolvedValue({ chemin_fichier: '/path' });
-            mockPdfModel.supprimer.mockResolvedValue();
+            testInstance.mockPdfModel.lister.mockResolvedValue(pdfsExpires);
+            testInstance.mockPdfModel.obtenirParId.mockResolvedValue({ chemin_fichier: '/path' });
+            testInstance.mockPdfModel.supprimer.mockResolvedValue();
             fs.promises.unlink.mockResolvedValue();
 
             // Act
-            const result = await pdfService.nettoyerPdfsExpires();
+            const result = await testInstance.pdfService.nettoyerPdfsExpires();
 
             // Assert
-            expect(mockPdfModel.lister).toHaveBeenCalledWith({
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.lister, [{
                 where: 'date_expiration < ? AND statut = ?',
                 valeurs: [expect.any(Date), 'TERMINE']
-            });
-            expect(result).toBe(2);
+            }]);
+            testInstance.assertFunction(() => result, null, 2);
         });
     });
 
@@ -530,61 +557,59 @@ describe('PdfService Backend - User Stories', () => {
                 recents: []
             };
             
-            mockPdfModel.obtenirStatistiques.mockResolvedValue(mockStats);
+            testInstance.mockPdfModel.obtenirStatistiques.mockResolvedValue(mockStats);
 
             // Act
-            const result = await pdfService.obtenirStatistiques(utilisateurId);
+            const result = await testInstance.pdfService.obtenirStatistiques(utilisateurId);
 
             // Assert
-            expect(mockPdfModel.obtenirStatistiques).toHaveBeenCalledWith(utilisateurId);
-            expect(result).toEqual(mockStats);
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.obtenirStatistiques, [utilisateurId]);
+            testInstance.assertObjectStructure(result, mockStats);
         });
 
         test('devrait obtenir les types de PDF disponibles', () => {
             // Act
-            const types = pdfService.obtenirTypesPdf();
+            const types = testInstance.pdfService.obtenirTypesPdf();
 
             // Assert
-            expect(types).toEqual(
-                expect.objectContaining({
-                    fiche_personnage: 'Fiche de personnage',
-                    fiche_pnj: 'Fiche PNJ',
-                    carte_reference: 'Carte de référence'
-                })
-            );
+            testInstance.assertObjectStructure(types, {
+                fiche_personnage: 'Fiche de personnage',
+                fiche_pnj: 'Fiche PNJ',
+                carte_reference: 'Carte de référence'
+            });
         });
 
         test('devrait obtenir les PDFs publics récents', async () => {
             // Arrange
             const mockPdfsPublics = [
-                {
+                testInstance.createTestData('pdf', {
                     id: 1,
                     nom_fichier: 'public1.pdf',
                     personnage_nom: 'Hero Public',
                     auteur_nom: 'Auteur Test'
-                }
+                })
             ];
             
-            mockPdfModel.lister.mockResolvedValue(mockPdfsPublics);
+            testInstance.mockPdfModel.lister.mockResolvedValue(mockPdfsPublics);
 
             // Act
-            const result = await pdfService.obtenirPdfsPublicsRecents(6, 'UTILISATEUR');
+            const result = await testInstance.pdfService.obtenirPdfsPublicsRecents(6, 'UTILISATEUR');
 
             // Assert
-            expect(mockPdfModel.lister).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.lister, [
                 expect.objectContaining({
                     where: 'statut = ? AND est_public = ?',
                     valeurs: ['TERMINE', true],
                     limit: 6
                 })
-            );
+            ]);
             expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(
-                expect.objectContaining({
-                    id: 1,
-                    nom_fichier: 'public1.pdf'
-                })
-            );
+            testInstance.assertObjectStructure(result[0], {
+                id: 1,
+                nom_fichier: 'public1.pdf',
+                personnage_nom: 'Hero Public',
+                auteur_nom: 'Auteur Test'
+            });
         });
     });
 
@@ -599,20 +624,20 @@ describe('PdfService Backend - User Stories', () => {
                 template: 'document-generique'
             };
             
-            const pdfCree = {
+            const pdfCree = testInstance.createTestData('pdf', {
                 id: 789,
                 utilisateur_id: utilisateurId,
                 type_pdf: 'document-generique',
                 statut: 'EN_ATTENTE'
-            };
+            });
             
-            mockPdfModel.creer.mockResolvedValue(pdfCree);
+            testInstance.mockPdfModel.creer.mockResolvedValue(pdfCree);
 
             // Act
-            const result = await pdfService.genererDocumentGenerique(utilisateurId, options);
+            const result = await testInstance.pdfService.genererDocumentGenerique(utilisateurId, options);
 
             // Assert
-            expect(mockPdfModel.creer).toHaveBeenCalledWith(
+            testInstance.assertMockCalledWith(testInstance.mockPdfModel.creer, [
                 expect.objectContaining({
                     personnage_id: null,
                     utilisateur_id: utilisateurId,
@@ -620,8 +645,8 @@ describe('PdfService Backend - User Stories', () => {
                     type_pdf: 'document-generique',
                     statut: 'EN_ATTENTE'
                 })
-            );
-            expect(result).toEqual(pdfCree);
+            ]);
+            testInstance.assertObjectStructure(result, pdfCree);
         });
 
         test('devrait générer un nom de fichier pour document générique', () => {
@@ -630,7 +655,7 @@ describe('PdfService Backend - User Stories', () => {
             const systeme = 'monsterhearts';
 
             // Act
-            const nomFichier = pdfService.genererNomFichierDocumentGenerique(titre, systeme);
+            const nomFichier = testInstance.pdfService.genererNomFichierDocumentGenerique(titre, systeme);
 
             // Assert
             expect(nomFichier).toMatch(/^user-system_rights-public_template-document-generique_monsterhearts_Mon_Document_Test_id-[a-f0-9]{8}\.pdf$/);

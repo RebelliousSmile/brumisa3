@@ -394,7 +394,7 @@ class OracleController extends BaseController {
         );
         
         // Récupération des informations du système depuis systemesJeu.js
-        const { systemesJeu } = require('../utils/systemesJeu');
+        const { systemesJeu } = require('../config/systemesJeu');
         const systemeInfo = systemesJeu[gameSystem];
         const nomSysteme = systemeInfo ? systemeInfo.nom : gameSystem;
         
@@ -450,7 +450,7 @@ class OracleController extends BaseController {
         const stats = await this.oracleService.obtenirStatistiques(id, userRole);
 
         // Récupération des informations du système
-        const { systemesJeu } = require('../utils/systemesJeu');
+        const { systemesJeu } = require('../config/systemesJeu');
         const gameSystem = oracle.game_system || 'generique';
         const systemeInfo = systemesJeu[gameSystem];
         const nomSysteme = systemeInfo ? systemeInfo.nom : 'Générique';

@@ -199,8 +199,8 @@ class AuthentificationController extends BaseController {
     });
 
     /**
-     * Élévation de rôle avec code d'accès
-     * POST /api/auth/elevation-role
+     * Passer au compte Premium avec code d'accès
+     * POST /api/auth/passer-premium
      */
     elevationRole = this.wrapAsync(async (req, res) => {
         const utilisateur = this.verifierPermissions(req);

@@ -1,26 +1,57 @@
+/**
+ * Tests d'intégration API - Endpoints publics uniquement
+ * 
+ * Objectif : Tester les API endpoints qui ne nécessitent AUCUNE authentification
+ * - Homepage API (données d'accueil)
+ * - Donations API (informations de dons)
+ * - Newsletter API (inscription newsletter)
+ * - Testimonials API (soumission témoignages)
+ * - Health Check API (statut système)
+ * - Redirections (favicon)
+ * 
+ * Statut : ✅ 100% des tests passent (6/6 + 4 skipped)
+ * Note : Tests d'élévation de rôles déplacés vers api-donations.test.js
+ * Architecture : Utilise les principes SOLID avec injection de dépendances
+ */
+
 const request = require('supertest');
 const path = require('path');
-const app = require('../../src/app');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+class PublicApiTest extends BaseApiTest {
+    createTestContext() {
+        return TestFactory.createPublicApiTestContext(this.config);
+    }
+
+    async customSetup() {
+        // Pas besoin d'authentification pour les endpoints publics
+        // Le contexte public est suffisant
+    }
+}
 
 describe('API Integration Tests', () => {
-  let server;
+    const testInstance = new PublicApiTest({
+        timeout: 30000,
+        cleanupUsers: false // Pas d'utilisateurs pour les tests publics
+    });
 
-  beforeAll(async () => {
-    server = await setupTest(app);
-  });
+    let setupData;
 
-  afterAll(async () => {
-    await teardownTest(server);
-  });
+    beforeAll(async () => {
+        setupData = await testInstance.baseSetup();
+    });
+
+    afterAll(async () => {
+        await testInstance.baseTeardown();
+    });
 
   describe('Homepage API', () => {
     test('GET /api/home/donnees should return homepage data', async () => {
-      const response = await request(server)
-        .get('/api/home/donnees')
-        .expect(200);
+      const response = await request(testInstance.getServer())
+        .get('/api/home/donnees');
 
-      expect(response.body).toHaveProperty('succes', true);
+      testInstance.assertApiResponse(response, 200, true);
       expect(response.body).toHaveProperty('donnees');
       
       const { donnees } = response.body;
@@ -42,11 +73,10 @@ describe('API Integration Tests', () => {
 
   describe('Donations API', () => {
     test('GET /api/dons/infos should return donation information', async () => {
-      const response = await request(server)
-        .get('/api/dons/infos')
-        .expect(200);
+      const response = await request(testInstance.getServer())
+        .get('/api/dons/infos');
 
-      expect(response.body).toHaveProperty('succes', true);
+      testInstance.assertApiResponse(response, 200, true);
       expect(response.body).toHaveProperty('donnees');
       
       const { donnees } = response.body;
@@ -62,15 +92,14 @@ describe('API Integration Tests', () => {
 
   describe('Newsletter API', () => {
     test('POST /api/newsletter/inscription should handle newsletter signup', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .post('/api/newsletter/inscription')
         .send({
           email: 'test@example.com',
           nom: 'Test User'
-        })
-        .expect(200);
+        });
 
-      expect(response.body).toHaveProperty('succes', true);
+      testInstance.assertApiResponse(response, 200, true);
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('4 jeux de la plateforme');
     });
@@ -78,7 +107,7 @@ describe('API Integration Tests', () => {
 
   describe('Testimonials API', () => {
     test('POST /api/temoignages should handle testimonial submission', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .post('/api/temoignages')
         .send({
           nom: 'Test User',
@@ -87,50 +116,19 @@ describe('API Integration Tests', () => {
           note: 5,
           titre: 'Excellent outil',
           contenu: 'Très pratique pour créer des fiches'
-        })
-        .expect(200);
+        });
 
-      expect(response.body).toHaveProperty('succes', true);
+      testInstance.assertApiResponse(response, 200, true);
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('modéré');
     });
   });
 
-  describe('Role Elevation API', () => {
-    test('POST /api/auth/elevation-role should handle premium code', async () => {
-      const response = await request(server)
-        .post('/api/auth/elevation-role')
-        .send({ code: '123456' })
-        .expect(200);
-
-      expect(response.body).toHaveProperty('succes', true);
-      expect(response.body.message).toContain('Premium');
-    });
-
-    test('POST /api/auth/elevation-role should handle admin code', async () => {
-      const response = await request(server)
-        .post('/api/auth/elevation-role')
-        .send({ code: '789012' })
-        .expect(200);
-
-      expect(response.body).toHaveProperty('succes', true);
-      expect(response.body.message).toContain('Admin');
-    });
-
-    test('POST /api/auth/elevation-role should reject invalid code', async () => {
-      const response = await request(server)
-        .post('/api/auth/elevation-role')
-        .send({ code: 'invalid' })
-        .expect(400);
-
-      expect(response.body).toHaveProperty('succes', false);
-      expect(response.body.message).toContain('incorrect');
-    });
-  });
+  // Tests Role Elevation déplacés vers api-donations.test.js car liés au système de dons
 
   describe('Static Pages', () => {
     test.skip('GET / should return homepage', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/')
         .expect(200);
 
@@ -139,7 +137,7 @@ describe('API Integration Tests', () => {
     });
 
     test.skip('GET /mentions-legales should return legal page', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/mentions-legales')
         .expect(200);
 
@@ -148,7 +146,7 @@ describe('API Integration Tests', () => {
     });
 
     test.skip('GET /cgu should return terms page', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/cgu')
         .expect(200);
 
@@ -159,7 +157,7 @@ describe('API Integration Tests', () => {
 
   describe('Error Handling', () => {
     test.skip('GET /nonexistent should return 404', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/nonexistent')
         .expect(404);
 
@@ -170,7 +168,7 @@ describe('API Integration Tests', () => {
 
   describe('Health Check', () => {
     test('GET /health should return system status', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/health')
         .expect(200);
 
@@ -184,7 +182,7 @@ describe('API Integration Tests', () => {
 
   describe('Favicon', () => {
     test('GET /favicon.ico should redirect to SVG', async () => {
-      const response = await request(server)
+      const response = await request(testInstance.getServer())
         .get('/favicon.ico')
         .expect(301);
 

@@ -1,5 +1,5 @@
 const BaseService = require('./BaseService');
-const systemesJeu = require('../utils/systemesJeu');
+const { systemesJeu } = require('../config/systemesJeu');
 
 /**
  * Service pour la gestion des systèmes de jeu

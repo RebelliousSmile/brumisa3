@@ -350,29 +350,17 @@ class UtilisateurService extends BaseService {
     async authentifier(email, motDePasse) {
         try {
             const utilisateur = await this.obtenirParEmail(email);
-            console.log('=== DEBUG AUTHENTIFICATION ===');
-            console.log('Utilisateur trouvé:', utilisateur ? 'OUI' : 'NON');
-            if (utilisateur) {
-                console.log('ID:', utilisateur.id);
-                console.log('Email:', utilisateur.email);
-                console.log('Mot de passe hashé présent:', !!utilisateur.mot_de_passe);
-                console.log('Hash:', utilisateur.mot_de_passe ? utilisateur.mot_de_passe.substring(0, 50) + '...' : 'ABSENT');
-            }
             
             if (!utilisateur) {
-                console.log('ECHEC: Utilisateur non trouvé');
                 return null;
             }
             
             if (!utilisateur.mot_de_passe) {
-                console.log('ECHEC: Mot de passe hashé absent de la BDD');
                 return null;
             }
             
             // Vérifier le mot de passe avec le modèle
-            console.log('Vérification du mot de passe...');
             const motDePasseValide = await this.utilisateurModel.verifierMotDePasse(motDePasse, utilisateur.mot_de_passe);
-            console.log('Mot de passe valide:', motDePasseValide);
             
             if (!motDePasseValide) {
                 this.logger.warn('Tentative de connexion avec mot de passe incorrect:', { 
@@ -382,11 +370,9 @@ class UtilisateurService extends BaseService {
                 return null;
             }
             
-            console.log('SUCCES: Authentification réussie');
             return utilisateur;
             
         } catch (erreur) {
-            console.log('ERREUR:', erreur.message);
             this.logger.error('Erreur lors de l\'authentification:', erreur);
             throw erreur;
         }

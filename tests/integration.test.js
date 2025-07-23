@@ -1,4 +1,4 @@
-const { SystemeUtils } = require('../src/utils/systemesJeu');
+const { SystemeUtils } = require('../src/config/systemesJeu');
 
 describe('Tests d\'intégration - Systèmes de jeu', () => {
     describe('Flux complet de création de personnage', () => {

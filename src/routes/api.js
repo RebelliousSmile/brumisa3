@@ -63,8 +63,8 @@ router.get('/auth/statut', authController.verifierStatut);
 router.get('/auth/profil', authController.middlewareAuth, authController.obtenirProfil);
 router.put('/auth/profil', authController.middlewareAuth, authController.mettreAJourProfil);
 
-// Élévation de rôle
-router.post('/auth/elevation-role', authController.middlewareAuth, authController.elevationRole);
+// Passer Premium avec code d'accès
+router.post('/auth/passer-premium', authController.middlewareAuth, authController.elevationRole);
 
 // ===== ROUTES PERSONNAGES =====
 

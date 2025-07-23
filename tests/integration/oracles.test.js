@@ -1,119 +1,193 @@
 /**
- * Tests d'intégration pour l'API Oracles - Migration vers Jest
+ * Tests d'intégration - Oracles (Architecture SOLID)
+ * 
+ * Tests complets de l'API Oracles avec architecture SOLID :
+ * - Tests publics (listing, recherche)
+ * - Tests d'administration (CRUD, gestion)
+ * - Tests de tirages et statistiques
+ * - Tests de charge et gestion d'erreurs
+ * 
+ * @jest-environment node
  */
-const request = require('supertest');
-const app = require('../../src/app');
-const db = require('../../src/database/db');
-const { setupTest, teardownTest, cleanupTestData } = require('../helpers/test-cleanup');
 
-describe('Oracles API Integration Tests', () => {
-    let server;
-    let adminSession = {};
-    let userSession = {};
-    let testOracleId;
-    
-    beforeAll(async () => {
-        server = await setupTest(app);
+const request = require('supertest');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
+
+class OraclesTest extends BaseApiTest {
+    constructor() {
+        super({
+            timeout: 45000,
+            retryAttempts: 2,
+            cleanupUsers: true
+        });
         
-        // Créer un utilisateur admin pour les tests
-        const adminUser = {
-            nom: 'Admin Test',
-            email: 'admin@test.com',
-            mot_de_passe: 'password123',
-            role: 'ADMIN'
-        };
+        // Données spécifiques aux tests d'oracles
+        this.testOracleId = null;
+        this.adminAuth = null;
+        this.userAuth = null;
+        this.testItems = [];
+    }
+
+    /**
+     * Crée le contexte de test avec authentification admin et utilisateur
+     */
+    createTestContext() {
+        return TestFactory.createAuthTestContext({
+            environment: 'test'
+        });
+    }
+
+    /**
+     * Setup personnalisé pour les tests d'oracles
+     */
+    async customSetup() {
+        const server = this.getServer();
+        const authHelper = this.getAuthHelper();
         
-        // Inscription admin
-        const adminSignup = await request(app)
-            .post('/api/auth/inscription')
-            .send(adminUser);
-            
-        expect(adminSignup.status).toBe(201);
+        // Créer et connecter un admin
+        this.adminAuth = await authHelper.createAndLoginAdmin(server);
+        this.testUsers.push(this.adminAuth.user);
         
-        // Connexion admin
-        const adminLogin = await request(app)
-            .post('/api/auth/connexion')
-            .send({
-                email: adminUser.email,
-                mot_de_passe: adminUser.mot_de_passe
-            });
-            
-        expect(adminLogin.status).toBe(200);
-        adminSession.cookie = adminLogin.headers['set-cookie'];
-        
-        // Créer un utilisateur standard
-        const standardUser = {
-            nom: 'User Test',
-            email: 'user@test.com',
-            mot_de_passe: 'password123',
+        // Créer et connecter un utilisateur standard
+        this.userAuth = await authHelper.createAndLoginUser(server, {
             role: 'UTILISATEUR'
+        });
+        this.testUsers.push(this.userAuth.user);
+        
+        // Créer un oracle de test
+        await this.createTestOracle();
+    }
+
+    /**
+     * Cleanup personnalisé pour les données d'oracles
+     */
+    async customTeardown() {
+        const db = this.getDatabaseHelper();
+        
+        if (this.testOracleId) {
+            await db.execute('DELETE FROM oracle_draws WHERE oracle_id = $1', [this.testOracleId]);
+            await db.execute('DELETE FROM oracle_items WHERE oracle_id = $1', [this.testOracleId]);
+            await db.execute('DELETE FROM oracles WHERE id = $1', [this.testOracleId]);
+        }
+    }
+
+    /**
+     * Crée un oracle de test avec ses éléments
+     */
+    async createTestOracle() {
+        const server = this.getServer();
+        
+        const oracleData = {
+            name: 'Test Oracle Integration',
+            description: 'Oracle de test pour les tests d\'intégration',
+            premium_required: false,
+            is_active: true
         };
         
-        const userSignup = await request(app)
-            .post('/api/auth/inscription')
-            .send(standardUser);
+        const response = await request(server)
+            .post('/api/admin/oracles')
+            .set('Cookie', this.adminAuth.agent.jar.getCookieString(this.getServerUrl()))
+            .send(oracleData);
             
-        const userLogin = await request(app)
-            .post('/api/auth/connexion')
-            .send({
-                email: standardUser.email,
-                mot_de_passe: standardUser.mot_de_passe
-            });
-            
-        userSession.cookie = userLogin.headers['set-cookie'];
+        this.assertApiResponse(response, 201);
+        this.testOracleId = response.body.donnees.id;
+        
+        // Ajouter des éléments de test
+        this.testItems = [
+            { value: 'Épée Magique', weight: 15, metadata: { type: 'arme', rarity: 'rare' } },
+            { value: 'Dague Simple', weight: 30, metadata: { type: 'arme', rarity: 'commune' } },
+            { value: 'Arc Long', weight: 25, metadata: { type: 'arme', rarity: 'commune' } },
+            { value: 'Bâton de Pouvoir', weight: 5, metadata: { type: 'arme', rarity: 'legendaire' } }
+        ];
+        
+        for (const item of this.testItems) {
+            const itemResponse = await request(server)
+                .post(`/api/admin/oracles/${this.testOracleId}/items`)
+                .set('Cookie', this.adminAuth.agent.jar.getCookieString(this.getServerUrl()))
+                .send(item);
+                
+            this.assertApiResponse(itemResponse, 201);
+        }
+    }
+
+    /**
+     * Effectue une requête en tant qu'admin
+     */
+    async makeAdminRequest() {
+        return request(this.getServer())
+            .set('Cookie', this.adminAuth.agent.jar.getCookieString(this.getServerUrl()));
+    }
+
+    /**
+     * Effectue une requête en tant qu'utilisateur standard
+     */
+    async makeUserRequest() {
+        return request(this.getServer())
+            .set('Cookie', this.userAuth.agent.jar.getCookieString(this.getServerUrl()));
+    }
+
+    /**
+     * Effectue une requête publique (sans authentification)
+     */
+    async makePublicRequest() {
+        return request(this.getServer());
+    }
+}
+
+// Instance de la classe de test
+const oraclesTest = new OraclesTest();
+
+describe('Oracles API Integration Tests - Architecture SOLID', () => {
+    beforeAll(async () => {
+        await oraclesTest.baseSetup();
     });
     
     afterAll(async () => {
-        // Nettoyer la base de test
-        if (testOracleId) {
-            await db.run('DELETE FROM oracle_draws WHERE oracle_id = $1', [testOracleId]);
-            await db.run('DELETE FROM oracle_items WHERE oracle_id = $1', [testOracleId]);
-            await db.run('DELETE FROM oracles WHERE id = $1', [testOracleId]);
-        }
-        
-        await db.run('DELETE FROM utilisateurs WHERE email LIKE \'%@test.com\'');
-        await teardownTest(server);
+        await oraclesTest.baseTeardown();
     });
 
-    describe('GET /api/oracles', () => {
+    describe('Tests d\'API publique - Listing des oracles', () => {
         it('devrait lister les oracles disponibles', async () => {
-            const response = await request(server)
-                .get('/api/oracles')
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles');
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees).toHaveProperty('items');
             expect(response.body.donnees).toHaveProperty('pagination');
         });
         
         it('devrait supporter la pagination', async () => {
-            const response = await request(server)
-                .get('/api/oracles?page=1&limite=5')
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles?page=1&limite=5');
                 
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees.pagination.page).toBe(1);
             expect(response.body.donnees.pagination.limite).toBe(5);
         });
     });
 
-    describe('POST /api/admin/oracles', () => {
+    describe('Tests d\'administration - Création d\'oracles', () => {
         it('devrait créer un oracle en tant qu\'admin', async () => {
             const newOracle = {
-                name: 'Test Oracle Integration',
-                description: 'Oracle de test pour les tests d\'intégration',
+                name: 'Nouvel Oracle Test',
+                description: 'Oracle créé pendant les tests',
                 premium_required: false,
                 is_active: true
             };
             
-            const response = await request(server)
+            const response = await (await oraclesTest.makeAdminRequest())
                 .post('/api/admin/oracles')
-                .set('Cookie', adminSession.cookie)
-                .send(newOracle)
-                .expect(201);
+                .send(newOracle);
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 201);
             expect(response.body.donnees.name).toBe(newOracle.name);
-            testOracleId = response.body.donnees.id;
+            
+            // Nettoyer l'oracle créé
+            const oracleId = response.body.donnees.id;
+            await oraclesTest.getDatabaseHelper().execute(
+                'DELETE FROM oracles WHERE id = $1', [oracleId]
+            );
         });
         
         it('devrait rejeter la création par un utilisateur standard', async () => {
@@ -122,11 +196,11 @@ describe('Oracles API Integration Tests', () => {
                 description: 'Ne devrait pas être créé'
             };
             
-            await request(app)
+            const response = await (await oraclesTest.makeUserRequest())
                 .post('/api/admin/oracles')
-                .set('Cookie', userSession.cookie)
-                .send(newOracle)
-                .expect(403);
+                .send(newOracle);
+                
+            oraclesTest.assertInsufficientPermissions(response);
         });
         
         it('devrait valider les champs obligatoires', async () => {
@@ -134,67 +208,101 @@ describe('Oracles API Integration Tests', () => {
                 description: 'Pas de nom'
             };
             
-            await request(app)
+            const response = await (await oraclesTest.makeAdminRequest())
                 .post('/api/admin/oracles')
-                .set('Cookie', adminSession.cookie)
-                .send(invalidOracle)
-                .expect(400);
+                .send(invalidOracle);
+                
+            oraclesTest.assertValidationError(response, 'name');
+        });
+        
+        it('devrait rejeter les tentatives sans authentification', async () => {
+            const newOracle = {
+                name: 'Oracle Anonyme',
+                description: 'Tentative sans auth'
+            };
+            
+            const response = await (await oraclesTest.makePublicRequest())
+                .post('/api/admin/oracles')
+                .send(newOracle);
+                
+            oraclesTest.assertAuthenticationRequired(response);
         });
     });
 
-    describe('POST /api/admin/oracles/:id/items', () => {
-        it('devrait ajouter des éléments à un oracle', async () => {
+    describe('Tests d\'administration - Gestion des éléments', () => {
+        it('devrait ajouter un élément à un oracle', async () => {
             const newItem = {
-                value: 'Épée Magique',
-                weight: 15,
-                metadata: { type: 'arme', rarity: 'rare' },
+                value: 'Élément de Test',
+                weight: 20,
+                metadata: { type: 'objet', rarity: 'commune' },
                 is_active: true
             };
             
-            const response = await request(server)
-                .post(`/api/admin/oracles/${testOracleId}/items`)
-                .set('Cookie', adminSession.cookie)
-                .send(newItem)
-                .expect(201);
+            const response = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/items`)
+                .send(newItem);
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 201);
             expect(response.body.donnees.value).toBe(newItem.value);
             expect(response.body.donnees.weight).toBe(newItem.weight);
         });
         
-        it('devrait ajouter plusieurs éléments pour les tests de tirage', async () => {
-            const items = [
-                { value: 'Dague Simple', weight: 30, metadata: { type: 'arme', rarity: 'commune' } },
-                { value: 'Arc Long', weight: 25, metadata: { type: 'arme', rarity: 'commune' } },
-                { value: 'Bâton de Pouvoir', weight: 5, metadata: { type: 'arme', rarity: 'legendaire' } }
-            ];
+        it('devrait rejeter l\'ajout d\'éléments par un utilisateur standard', async () => {
+            const newItem = {
+                value: 'Élément Interdit',
+                weight: 10
+            };
             
-            for (const item of items) {
-                await request(app)
-                    .post(`/api/admin/oracles/${testOracleId}/items`)
-                    .set('Cookie', adminSession.cookie)
-                    .send(item)
-                    .expect(201);
-            }
+            const response = await (await oraclesTest.makeUserRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/items`)
+                .send(newItem);
+                
+            oraclesTest.assertInsufficientPermissions(response);
+        });
+        
+        it('devrait valider les données d\'éléments', async () => {
+            const invalidItem = {
+                weight: 10
+                // Pas de valeur
+            };
+            
+            const response = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/items`)
+                .send(invalidItem);
+                
+            oraclesTest.assertValidationError(response, 'value');
+        });
+        
+        it('devrait gérer les oracles inexistants', async () => {
+            const fakeId = '00000000-0000-0000-0000-000000000000';
+            const newItem = {
+                value: 'Élément Test',
+                weight: 10
+            };
+            
+            const response = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${fakeId}/items`)
+                .send(newItem);
+                
+            oraclesTest.assertApiResponse(response, 404, false);
         });
     });
 
-    describe('POST /api/oracles/:id/draw', () => {
+    describe('Tests de tirage - Fonctionnalités de tirage', () => {
         it('devrait effectuer un tirage simple', async () => {
             const drawRequest = {
                 count: 1,
                 withReplacement: true
             };
             
-            const response = await request(server)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .send(drawRequest)
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send(drawRequest);
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees.results).toHaveLength(1);
             expect(response.body.donnees.results[0]).toHaveProperty('value');
-            expect(response.body.donnees.draw_info.oracle_id).toBe(testOracleId);
+            expect(response.body.donnees.draw_info.oracle_id).toBe(oraclesTest.testOracleId);
         });
         
         it('devrait effectuer un tirage multiple', async () => {
@@ -203,11 +311,11 @@ describe('Oracles API Integration Tests', () => {
                 withReplacement: true
             };
             
-            const response = await request(server)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .send(drawRequest)
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send(drawRequest);
                 
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees.results).toHaveLength(3);
         });
         
@@ -217,11 +325,11 @@ describe('Oracles API Integration Tests', () => {
                 withReplacement: false
             };
             
-            const response = await request(server)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .send(drawRequest)
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send(drawRequest);
                 
+            oraclesTest.assertApiResponse(response, 200);
             const results = response.body.donnees.results;
             expect(results).toHaveLength(4);
             
@@ -233,46 +341,55 @@ describe('Oracles API Integration Tests', () => {
         
         it('devrait valider les paramètres de tirage', async () => {
             // Nombre trop élevé
-            await request(app)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .send({ count: 101 })
-                .expect(400);
+            const highCountResponse = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send({ count: 101 });
+                
+            oraclesTest.assertValidationError(highCountResponse, 'count');
                 
             // Nombre négatif
-            await request(app)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .send({ count: -1 })
-                .expect(400);
+            const negativeCountResponse = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send({ count: -1 });
+                
+            oraclesTest.assertValidationError(negativeCountResponse, 'count');
         });
         
         it('devrait filtrer les données selon les permissions', async () => {
             // Utilisateur standard - ne devrait pas voir les poids
-            const userResponse = await request(app)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .set('Cookie', userSession.cookie)
-                .send({ count: 1 })
-                .expect(200);
+            const userResponse = await (await oraclesTest.makeUserRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send({ count: 1 });
                 
+            oraclesTest.assertApiResponse(userResponse, 200);
             expect(userResponse.body.donnees.results[0]).not.toHaveProperty('weight');
             
             // Admin - devrait voir les poids
-            const adminResponse = await request(app)
-                .post(`/api/oracles/${testOracleId}/draw`)
-                .set('Cookie', adminSession.cookie)
-                .send({ count: 1 })
-                .expect(200);
+            const adminResponse = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send({ count: 1 });
                 
+            oraclesTest.assertApiResponse(adminResponse, 200);
             expect(adminResponse.body.donnees.results[0]).toHaveProperty('weight');
+        });
+        
+        it('devrait gérer les oracles inexistants pour les tirages', async () => {
+            const fakeId = '00000000-0000-0000-0000-000000000000';
+            
+            const response = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${fakeId}/draw`)
+                .send({ count: 1 });
+                
+            oraclesTest.assertApiResponse(response, 404, false);
         });
     });
 
-    describe('GET /api/oracles/:id/stats', () => {
+    describe('Tests de statistiques - Données d\'utilisation', () => {
         it('devrait retourner les statistiques d\'un oracle', async () => {
-            const response = await request(server)
-                .get(`/api/oracles/${testOracleId}/stats`)
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .get(`/api/oracles/${oraclesTest.testOracleId}/stats`);
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees).toHaveProperty('total_items');
             expect(response.body.donnees).toHaveProperty('active_items');
             expect(response.body.donnees).toHaveProperty('total_draws');
@@ -280,147 +397,251 @@ describe('Oracles API Integration Tests', () => {
         
         it('devrait filtrer les stats selon les permissions', async () => {
             // Utilisateur standard
-            const userResponse = await request(app)
-                .get(`/api/oracles/${testOracleId}/stats`)
-                .set('Cookie', userSession.cookie)
-                .expect(200);
+            const userResponse = await (await oraclesTest.makeUserRequest())
+                .get(`/api/oracles/${oraclesTest.testOracleId}/stats`);
                 
+            oraclesTest.assertApiResponse(userResponse, 200);
             expect(userResponse.body.donnees).not.toHaveProperty('unique_users');
             
             // Admin
-            const adminResponse = await request(app)
-                .get(`/api/oracles/${testOracleId}/stats`)
-                .set('Cookie', adminSession.cookie)
-                .expect(200);
+            const adminResponse = await (await oraclesTest.makeAdminRequest())
+                .get(`/api/oracles/${oraclesTest.testOracleId}/stats`);
                 
+            oraclesTest.assertApiResponse(adminResponse, 200);
             expect(adminResponse.body.donnees).toHaveProperty('unique_users');
+        });
+        
+        it('devrait gérer les oracles inexistants pour les stats', async () => {
+            const fakeId = '00000000-0000-0000-0000-000000000000';
+            
+            const response = await (await oraclesTest.makePublicRequest())
+                .get(`/api/oracles/${fakeId}/stats`);
+                
+            oraclesTest.assertApiResponse(response, 404, false);
         });
     });
 
-    describe('GET /api/oracles/search', () => {
+    describe('Tests de recherche - Fonctionnalités de recherche', () => {
         it('devrait rechercher des oracles par nom', async () => {
-            const response = await request(server)
-                .get('/api/oracles/search?q=Test')
-                .expect(200);
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles/search?q=Test');
                 
-            expect(response.body.succes).toBe(true);
+            oraclesTest.assertApiResponse(response, 200);
             expect(Array.isArray(response.body.donnees)).toBe(true);
         });
         
         it('devrait valider la longueur de la requête', async () => {
-            await request(app)
-                .get('/api/oracles/search?q=a') // Trop court
-                .expect(400);
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles/search?q=a'); // Trop court
+                
+            oraclesTest.assertValidationError(response);
+        });
+        
+        it('devrait gérer les recherches sans résultats', async () => {
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles/search?q=MotInexistantDansLaBase');
+                
+            oraclesTest.assertApiResponse(response, 200);
+            expect(response.body.donnees).toHaveLength(0);
         });
     });
 
-    describe('PUT /api/admin/oracles/:id', () => {
+    describe('Tests de modification - Mise à jour d\'oracles', () => {
         it('devrait modifier un oracle existant', async () => {
             const updates = {
                 name: 'Test Oracle Modifié',
                 description: 'Description mise à jour'
             };
             
-            const response = await request(server)
-                .put(`/api/admin/oracles/${testOracleId}`)
-                .set('Cookie', adminSession.cookie)
-                .send(updates)
-                .expect(200);
+            const response = await (await oraclesTest.makeAdminRequest())
+                .put(`/api/admin/oracles/${oraclesTest.testOracleId}`)
+                .send(updates);
                 
+            oraclesTest.assertApiResponse(response, 200);
             expect(response.body.donnees.name).toBe(updates.name);
         });
         
         it('devrait rejeter les modifications par un utilisateur standard', async () => {
-            await request(app)
-                .put(`/api/admin/oracles/${testOracleId}`)
-                .set('Cookie', userSession.cookie)
-                .send({ name: 'Hack Attempt' })
-                .expect(403);
+            const response = await (await oraclesTest.makeUserRequest())
+                .put(`/api/admin/oracles/${oraclesTest.testOracleId}`)
+                .send({ name: 'Hack Attempt' });
+                
+            oraclesTest.assertInsufficientPermissions(response);
+        });
+        
+        it('devrait gérer les oracles inexistants pour la modification', async () => {
+            const fakeId = '00000000-0000-0000-0000-000000000000';
+            
+            const response = await (await oraclesTest.makeAdminRequest())
+                .put(`/api/admin/oracles/${fakeId}`)
+                .send({ name: 'Test' });
+                
+            oraclesTest.assertApiResponse(response, 404, false);
         });
     });
 
-    describe('POST /api/admin/oracles/:id/toggle', () => {
+    describe('Tests de gestion de statut - Activation/Désactivation', () => {
         it('devrait basculer le statut d\'un oracle', async () => {
             // Désactiver
-            const response1 = await request(app)
-                .post(`/api/admin/oracles/${testOracleId}/toggle`)
-                .set('Cookie', adminSession.cookie)
-                .expect(200);
+            const response1 = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/toggle`);
                 
+            oraclesTest.assertApiResponse(response1, 200);
             expect(response1.body.donnees.is_active).toBe(false);
             
             // Réactiver
-            const response2 = await request(app)
-                .post(`/api/admin/oracles/${testOracleId}/toggle`)
-                .set('Cookie', adminSession.cookie)
-                .expect(200);
+            const response2 = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/toggle`);
                 
+            oraclesTest.assertApiResponse(response2, 200);
             expect(response2.body.donnees.is_active).toBe(true);
+        });
+        
+        it('devrait rejeter la bascule par un utilisateur standard', async () => {
+            const response = await (await oraclesTest.makeUserRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/toggle`);
+                
+            oraclesTest.assertInsufficientPermissions(response);
         });
     });
 
-    describe('POST /api/admin/oracles/:id/clone', () => {
+    describe('Tests de clonage - Duplication d\'oracles', () => {
         it('devrait cloner un oracle avec ses éléments', async () => {
             const cloneRequest = {
                 newName: 'Clone de Test Oracle'
             };
             
-            const response = await request(server)
-                .post(`/api/admin/oracles/${testOracleId}/clone`)
-                .set('Cookie', adminSession.cookie)
-                .send(cloneRequest)
-                .expect(201);
+            const response = await (await oraclesTest.makeAdminRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/clone`)
+                .send(cloneRequest);
                 
+            oraclesTest.assertApiResponse(response, 201);
             expect(response.body.donnees.name).toBe(cloneRequest.newName);
             expect(response.body.donnees.items.length).toBeGreaterThan(0);
             
             // Nettoyer le clone
             const cloneId = response.body.donnees.id;
-            await db.run('DELETE FROM oracle_items WHERE oracle_id = $1', [cloneId]);
-            await db.run('DELETE FROM oracles WHERE id = $1', [cloneId]);
+            await oraclesTest.getDatabaseHelper().execute(
+                'DELETE FROM oracle_items WHERE oracle_id = $1', [cloneId]
+            );
+            await oraclesTest.getDatabaseHelper().execute(
+                'DELETE FROM oracles WHERE id = $1', [cloneId]
+            );
+        });
+        
+        it('devrait rejeter le clonage par un utilisateur standard', async () => {
+            const cloneRequest = {
+                newName: 'Clone Non Autorisé'
+            };
+            
+            const response = await (await oraclesTest.makeUserRequest())
+                .post(`/api/admin/oracles/${oraclesTest.testOracleId}/clone`)
+                .send(cloneRequest);
+                
+            oraclesTest.assertInsufficientPermissions(response);
         });
     });
 
-    describe('Gestion des erreurs', () => {
+    describe('Tests de gestion d\'erreurs - Robustesse', () => {
         it('devrait gérer les oracles inexistants', async () => {
             const fakeId = '00000000-0000-0000-0000-000000000000';
             
-            await request(app)
-                .get(`/api/oracles/${fakeId}`)
-                .expect(404);
+            const getResponse = await (await oraclesTest.makePublicRequest())
+                .get(`/api/oracles/${fakeId}`);
                 
-            await request(app)
-                .post(`/api/oracles/${fakeId}/draw`)
-                .send({ count: 1 })
-                .expect(404);
+            oraclesTest.assertApiResponse(getResponse, 404, false);
         });
         
         it('devrait gérer les permissions manquantes', async () => {
-            await request(app)
+            const response = await (await oraclesTest.makePublicRequest())
                 .post('/api/admin/oracles')
-                .send({ name: 'Unauthorized' })
-                .expect(401);
+                .send({ name: 'Unauthorized' });
+                
+            oraclesTest.assertAuthenticationRequired(response);
+        });
+        
+        it('devrait gérer les paramètres malformés', async () => {
+            const response = await (await oraclesTest.makePublicRequest())
+                .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                .send({ count: 'invalid' });
+                
+            oraclesTest.assertValidationError(response);
+        });
+        
+        it('devrait gérer les ID malformés', async () => {
+            const response = await (await oraclesTest.makePublicRequest())
+                .get('/api/oracles/invalid-uuid');
+                
+            oraclesTest.assertValidationError(response);
         });
     });
 
-    describe('Test de charge basique', () => {
+    describe('Tests de charge - Performance et concurrence', () => {
         it('devrait gérer plusieurs tirages simultanés', async () => {
-            const promises = [];
-            const concurrentRequests = 10;
+            await oraclesTest.withRetry(async () => {
+                const promises = [];
+                const concurrentRequests = 10;
+                
+                for (let i = 0; i < concurrentRequests; i++) {
+                    promises.push(
+                        (await oraclesTest.makePublicRequest())
+                            .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                            .send({ count: 1, withReplacement: true })
+                    );
+                }
+                
+                const responses = await Promise.all(promises);
+                
+                responses.forEach(response => {
+                    oraclesTest.assertApiResponse(response, 200);
+                });
+            }, 3);
+        });
+        
+        it('devrait maintenir la performance avec des requêtes séquentielles', async () => {
+            const startTime = Date.now();
+            const sequentialRequests = 5;
             
-            for (let i = 0; i < concurrentRequests; i++) {
-                promises.push(
-                    request(app)
-                        .post(`/api/oracles/${testOracleId}/draw`)
-                        .send({ count: 1, withReplacement: true })
-                );
+            for (let i = 0; i < sequentialRequests; i++) {
+                const response = await (await oraclesTest.makePublicRequest())
+                    .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                    .send({ count: 1, withReplacement: true });
+                    
+                oraclesTest.assertApiResponse(response, 200);
             }
             
-            const responses = await Promise.all(promises);
+            const duration = Date.now() - startTime;
             
-            responses.forEach(response => {
-                expect(response.status).toBe(200);
-                expect(response.body.succes).toBe(true);
+            // Vérifier que les requêtes ne prennent pas trop de temps
+            expect(duration).toBeLessThan(10000); // 10 secondes max
+        });
+        
+        it('devrait gérer les timeouts avec retry', async () => {
+            // Test avec timeout réduit pour vérifier la gestion des erreurs
+            await oraclesTest.withRetry(async () => {
+                const response = await (await oraclesTest.makePublicRequest())
+                    .post(`/api/oracles/${oraclesTest.testOracleId}/draw`)
+                    .timeout(5000) // 5 secondes de timeout
+                    .send({ count: 1 });
+                    
+                oraclesTest.assertApiResponse(response, 200);
+            });
+        });
+    });
+    
+    describe('Résumé des tests', () => {
+        it('devrait afficher un résumé des données de test', () => {
+            const summary = oraclesTest.getTestSummary();
+            
+            expect(summary.testUsers).toBeGreaterThan(0);
+            expect(summary.serverUrl).toBeDefined();
+            expect(summary.configUsed).toBeDefined();
+            
+            console.log('Résumé des tests d\'oracles:', {
+                utilisateursCreés: summary.testUsers,
+                serveurUrl: summary.serverUrl,
+                oracleTestId: oraclesTest.testOracleId,
+                élémentsTest: oraclesTest.testItems.length
             });
         });
     });

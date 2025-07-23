@@ -2,7 +2,7 @@ const express = require('express');
 const AuthentificationController = require('../controllers/AuthentificationController');
 const DonationController = require('../controllers/DonationController');
 const OracleController = require('../controllers/OracleController');
-const systemesJeu = require('../utils/systemesJeu');
+const { systemesJeu } = require('../config/systemesJeu');
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ const oracleController = new OracleController();
 
 // Middleware pour injecter les données utilisateur dans les templates
 router.use((req, res, next) => {
-    const { SystemeUtils } = require('../utils/systemesJeu');
+    const { SystemeUtils } = require('../config/systemesJeu');
     res.locals.utilisateur = req.session?.utilisateur || null;
     res.locals.systemes = systemesJeu;
     res.locals.systemesJeu = SystemeUtils.getAllSystemes();
@@ -29,7 +29,7 @@ router.use((req, res, next) => {
 // ===== PAGE D'ACCUEIL =====
 
 router.get('/', (req, res) => {
-    const { SystemeUtils } = require('../utils/systemesJeu');
+    const { SystemeUtils } = require('../config/systemesJeu');
     res.render('index', {
         title: 'Générateur PDF JDR - Créez vos fiches de personnages',
         meta: {

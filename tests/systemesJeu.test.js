@@ -1,4 +1,4 @@
-const { systemesJeu, SystemeUtils } = require('../src/utils/systemesJeu');
+const { systemesJeu, SystemeUtils } = require('../src/config/systemesJeu');
 
 describe('Systèmes de jeu', () => {
     describe('Configuration des systèmes', () => {

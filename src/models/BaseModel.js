@@ -37,7 +37,9 @@ class BaseModel {
       const row = await db.get(sql, params);
       return row ? this.castAttributes(row) : null;
     } catch (error) {
-      logManager.logDatabaseOperation('read', this.tableName, id, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('read', this.tableName, id, false, error);
+      }
       throw error;
     }
   }
@@ -54,7 +56,9 @@ class BaseModel {
       const row = await db.get(sql, convertedParams);
       return row ? this.castAttributes(row) : null;
     } catch (error) {
-      logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      }
       throw error;
     }
   }
@@ -82,7 +86,9 @@ class BaseModel {
       const rows = await db.all(convertedSql, convertedParams);
       return rows.map(row => this.castAttributes(row));
     } catch (error) {
-      logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      }
       throw error;
     }
   }
@@ -126,12 +132,16 @@ class BaseModel {
       const result = await db.get(sql, params);
       const insertedId = result[this.primaryKey];
       
-      logManager.logDatabaseOperation('create', this.tableName, insertedId, true);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('create', this.tableName, insertedId, true);
+      }
       
       // Retourne l'enregistrement créé
       return await this.findById(insertedId);
     } catch (error) {
-      logManager.logDatabaseOperation('create', this.tableName, null, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('create', this.tableName, null, false, error);
+      }
       throw error;
     }
   }
@@ -168,11 +178,15 @@ class BaseModel {
         throw new Error(`Aucun enregistrement trouvé avec l'ID ${id}`);
       }
 
-      logManager.logDatabaseOperation('update', this.tableName, id, true);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('update', this.tableName, id, true);
+      }
       
       return await this.findById(id);
     } catch (error) {
-      logManager.logDatabaseOperation('update', this.tableName, id, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('update', this.tableName, id, false, error);
+      }
       throw error;
     }
   }
@@ -192,10 +206,14 @@ class BaseModel {
         throw new Error(`Aucun enregistrement trouvé avec l'ID ${id}`);
       }
 
-      logManager.logDatabaseOperation('delete', this.tableName, id, true);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('delete', this.tableName, id, true);
+      }
       return true;
     } catch (error) {
-      logManager.logDatabaseOperation('delete', this.tableName, id, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('delete', this.tableName, id, false, error);
+      }
       throw error;
     }
   }
@@ -212,7 +230,9 @@ class BaseModel {
       const result = await db.get(sql, convertedParams);
       return parseInt(result.count);
     } catch (error) {
-      logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      }
       throw error;
     }
   }
@@ -254,7 +274,9 @@ class BaseModel {
         }
       };
     } catch (error) {
-      logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      if (logManager.logDatabaseOperation) {
+        logManager.logDatabaseOperation('read', this.tableName, null, false, error);
+      }
       throw error;
     }
   }

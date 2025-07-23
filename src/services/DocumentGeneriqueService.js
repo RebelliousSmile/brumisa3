@@ -165,7 +165,7 @@ class DocumentGeneriqueService extends BaseService {
      * Retourne le pied de page par défaut selon le système
      */
     getPiedDePageDefaut(systeme) {
-        const { SystemeUtils } = require('../utils/systemesJeu');
+        const { SystemeUtils } = require('../config/systemesJeu');
         const systemeData = SystemeUtils.getSysteme(systeme);
         
         if (systemeData) {

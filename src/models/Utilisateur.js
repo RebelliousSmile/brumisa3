@@ -95,15 +95,8 @@ class Utilisateur extends BaseModel {
      * Hash le mot de passe avant création
      */
     async beforeCreate(data) {
-        console.log('=== DEBUG beforeCreate ===');
-        console.log('Données reçues:', Object.keys(data));
-        console.log('Mot de passe présent:', !!data.mot_de_passe);
-        console.log('Mot de passe brut:', data.mot_de_passe);
-        
         if (data.mot_de_passe) {
-            console.log('Hashage du mot de passe...');
             data.mot_de_passe = await this.hashMotDePasse(data.mot_de_passe);
-            console.log('Mot de passe hashé:', data.mot_de_passe.substring(0, 50) + '...');
         }
         
         // Rôle par défaut
@@ -116,7 +109,6 @@ class Utilisateur extends BaseModel {
             data.actif = true;
         }
 
-        console.log('Données finales:', Object.keys(data));
         return data;
     }
 
