@@ -164,6 +164,60 @@ class EmailService extends BaseService {
     }
 
     /**
+     * Obtient un email de test fiable basé sur la configuration
+     * Suit le principe de responsabilité unique (Single Responsibility)
+     * @param {string} fallbackEmail - Email de fallback optionnel
+     * @returns {string} Email de test valide
+     */
+    getTestEmail(fallbackEmail = null) {
+        const emailCandidates = this._getEmailCandidates(fallbackEmail);
+        return this._selectValidEmail(emailCandidates);
+    }
+
+    /**
+     * Récupère la liste des candidats emails par priorité
+     * @private
+     * @param {string} fallbackEmail - Email de fallback
+     * @returns {string[]} Liste d'emails candidats
+     */
+    _getEmailCandidates(fallbackEmail) {
+        return [
+            fallbackEmail,
+            process.env.ADMIN_EMAIL,
+            process.env.RESEND_FROM_EMAIL,
+            this.fromEmail,
+            'activation@brumisa3.fr' // Email de fallback final contrôlé
+        ].filter(Boolean); // Supprime les valeurs null/undefined
+    }
+
+    /**
+     * Sélectionne le premier email valide de la liste
+     * @private
+     * @param {string[]} candidates - Liste d'emails candidats
+     * @returns {string} Premier email valide trouvé
+     */
+    _selectValidEmail(candidates) {
+        for (const email of candidates) {
+            if (this._isValidEmail(email)) {
+                return email;
+            }
+        }
+        // Fallback final si aucun email valide n'est trouvé
+        return 'activation@brumisa3.fr';
+    }
+
+    /**
+     * Valide le format d'un email
+     * @private
+     * @param {string} email - Email à valider
+     * @returns {boolean} True si l'email est valide
+     */
+    _isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return typeof email === 'string' && emailRegex.test(email);
+    }
+
+    /**
      * Simule l'envoi d'un email en développement
      * @private
      */
@@ -193,7 +247,7 @@ class EmailService extends BaseService {
      * @returns {Promise<Object>} Résultat du test
      */
     async testerConfiguration(testEmail = null) {
-        const emailTest = testEmail || process.env.ADMIN_EMAIL || 'test@example.com';
+        const emailTest = this.getTestEmail(testEmail);
         
         this.log('info', 'Test de configuration email', { email_test: emailTest });
 
