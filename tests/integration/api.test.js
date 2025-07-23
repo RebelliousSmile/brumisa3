@@ -1,7 +1,5 @@
 const request = require('supertest');
 const path = require('path');
-
-// Importer l'application
 const app = require('../../src/app');
 
 describe('API Integration Tests', () => {

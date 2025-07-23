@@ -7,8 +7,11 @@
 const path = require('path');
 const fs = require('fs').promises;
 
-// Configuration de l'environnement
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
+// Configuration de l'environnement selon NODE_ENV
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env.local';
+require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
+
+console.log(`📁 Migration utilise l'environnement: ${process.env.NODE_ENV || 'development'} (${envFile})`);
 
 // Import de la base de données
 const db = require('../src/database/db');
@@ -25,7 +28,25 @@ async function executerMigration(fichierMigration) {
         const contenuSQL = await fs.readFile(cheminFichier, 'utf-8');
         
         console.log(`🔄 Exécution de la migration...`);
-        await db.run(contenuSQL);
+        
+        // Pour les migrations PostgreSQL complexes, exécuter le fichier entier
+        // car il peut contenir des fonctions avec des point-virgules internes
+        if (contenuSQL.includes('CREATE OR REPLACE FUNCTION') || contenuSQL.includes('$$')) {
+            // Exécuter le fichier complet pour les fonctions PL/pgSQL
+            await db.run(contenuSQL);
+        } else {
+            // Diviser le fichier SQL en commandes individuelles pour les commandes simples
+            const commandes = contenuSQL
+                .split(';')
+                .map(cmd => cmd.trim())
+                .filter(cmd => cmd.length > 0 && !cmd.startsWith('--'));
+            
+            for (const commande of commandes) {
+                if (commande.trim()) {
+                    await db.run(commande);
+                }
+            }
+        }
         
         console.log(`✅ Migration ${fichierMigration} exécutée avec succès`);
         return true;

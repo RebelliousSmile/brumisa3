@@ -1,40 +1,40 @@
 <!-- Page de connexion -->
-<div class="min-h-screen bg-gray-900 text-white">
+<div class="min-h-screen bg-noir text-white">
     <div class="flex items-center justify-center px-4 py-12">
         <div class="max-w-md w-full space-y-8">
             <div class="text-center">
-                <i class="ra ra-player-king text-blue-400 text-6xl mb-4 block"></i>
+                <i class="ra ra-player-king text-generique text-6xl mb-4 block"></i>
                 <h2 class="text-3xl font-bold text-white font-display">Connexion</h2>
-                <p class="mt-2 text-gray-400">Connectez-vous pour accéder à vos personnages</p>
+                <p class="mt-2 text-gris-clair">Connectez-vous pour accéder à vos personnages</p>
             </div>
             
             <form class="mt-8 space-y-6" x-data="window.AlpineComponents.AuthComponent()" @submit.prevent="connexion()">
                 <div class="space-y-4">
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
+                        <label for="email" class="block text-sm font-medium text-gris-clair">Email</label>
                         <input x-model="formulaire.email" type="email" id="email" required
-                               class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               class="mt-1 block w-full px-3 py-2 bg-noir-charbon border border-gris-fonce rounded-md text-white placeholder-gris-clair focus:outline-none focus:ring-2 focus:ring-generique focus:border-generique"
                                placeholder="votre@email.com">
                     </div>
                     
                     <div>
-                        <label for="motDePasse" class="block text-sm font-medium text-gray-300">Mot de passe</label>
+                        <label for="motDePasse" class="block text-sm font-medium text-gris-clair">Mot de passe</label>
                         <input x-model="formulaire.motDePasse" type="password" id="motDePasse" required
-                               class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               class="mt-1 block w-full px-3 py-2 bg-noir-charbon border border-gris-fonce rounded-md text-white placeholder-gris-clair focus:outline-none focus:ring-2 focus:ring-generique focus:border-generique"
                                placeholder="Mot de passe">
                     </div>
                 </div>
                 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <input id="remember" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="remember" class="ml-2 block text-sm text-gray-400">
+                        <input id="remember" type="checkbox" class="h-4 w-4 text-generique focus:ring-generique border-gris-fonce rounded bg-noir-charbon">
+                        <label for="remember" class="ml-2 block text-sm text-gris-clair">
                             Se souvenir de moi
                         </label>
                     </div>
                     
                     <div class="text-sm">
-                        <a href="/mot-de-passe-oublie" class="font-medium text-blue-400 hover:text-blue-300">
+                        <a href="/mot-de-passe-oublie" class="font-medium text-generique hover:text-blue-400">
                             Mot de passe oublié ?
                         </a>
                     </div>
@@ -42,7 +42,7 @@
                 
                 <div>
                     <button type="submit" :disabled="enTraitement"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <span x-show="!enTraitement">Se connecter</span>
                         <span x-show="enTraitement" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -55,9 +55,9 @@
                 </div>
                 
                 <div class="text-center">
-                    <p class="text-sm text-gray-400">
+                    <p class="text-sm text-gris-clair">
                         Pas encore de compte ?
-                        <a href="/inscription" class="font-medium text-blue-400 hover:text-blue-300">
+                        <a href="/inscription" class="font-medium text-generique hover:text-blue-400">
                             S'inscrire
                         </a>
                     </p>

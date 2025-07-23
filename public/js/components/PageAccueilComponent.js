@@ -94,11 +94,11 @@ window.AlpineComponents.pageAccueil = () => ({
      * Navigation vers un système de jeu
      */
     naviguerVersSysteme(systeme) {
-        // Si utilisateur connecté, aller directement à la création
-        if (this.$store.app.utilisateur) {
-            window.location.href = `/personnages/nouveau?systeme=${systeme}`;
+        // Utiliser le service de navigation centralisé
+        if (window.navigationService) {
+            window.navigationService.naviguerVersSysteme(systeme);
         } else {
-            // Sinon, aller vers la page du système ou connexion
+            // Fallback si le service n'est pas chargé
             window.location.href = `/systemes/${systeme}`;
         }
     },
@@ -279,12 +279,15 @@ window.AlpineComponents.selectionSysteme = () => ({
         this.systemeSelectionne = systeme;
         
         // Animation avant navigation
-        setTimeout(() => {
-            if (window.Alpine?.store('app')?.utilisateur) {
-                window.location.href = `/personnages/nouveau?systeme=${systeme}`;
-            } else {
-                window.location.href = `/connexion?redirect=/personnages/nouveau&systeme=${systeme}`;
-            }
-        }, 200);
+        if (window.navigationService) {
+            window.navigationService.naviguerAvecAnimation(() => {
+                window.navigationService.naviguerVersSysteme(systeme);
+            });
+        } else {
+            // Fallback si le service n'est pas chargé
+            setTimeout(() => {
+                window.location.href = `/systemes/${systeme}`;
+            }, 200);
+        }
     }
 });

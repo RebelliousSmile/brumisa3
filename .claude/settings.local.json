@@ -60,7 +60,8 @@
       "Bash(npx jsdoc:*)",
       "Bash(npx rimraf:*)",
       "Bash(pnpm list:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(set NODE_ENV=test)"
     ],
     "deny": []
   }

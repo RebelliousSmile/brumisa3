@@ -1,28 +1,28 @@
 <!-- Page de réinitialisation de mot de passe -->
-<div class="min-h-screen bg-gray-900 text-white">
+<div class="min-h-screen bg-noir text-white">
     <div class="flex items-center justify-center px-4 py-12">
         <div class="max-w-md w-full space-y-8">
             <div class="text-center">
-                <i class="ra ra-key text-green-400 text-6xl mb-4 block"></i>
+                <i class="ra ra-key text-generique text-6xl mb-4 block"></i>
                 <h2 class="text-3xl font-bold text-white font-display">Nouveau mot de passe</h2>
-                <p class="mt-2 text-gray-400">Saisissez votre nouveau mot de passe</p>
+                <p class="mt-2 text-gris-clair">Saisissez votre nouveau mot de passe</p>
             </div>
             
             <form class="mt-8 space-y-6" x-data="window.AlpineComponents.ReinitialiserMotDePasseComponent('<%= token %>')" @submit.prevent="reinitialiser()">
                 <div class="space-y-4">
                     <div>
-                        <label for="motDePasse" class="block text-sm font-medium text-gray-300">Nouveau mot de passe</label>
+                        <label for="motDePasse" class="block text-sm font-medium text-gris-clair">Nouveau mot de passe</label>
                         <input x-model="formulaire.motDePasse" type="password" id="motDePasse" required
-                               class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               class="mt-1 block w-full px-3 py-2 bg-noir-charbon border border-gris-fonce rounded-md text-white placeholder-gris-clair focus:outline-none focus:ring-2 focus:ring-generique focus:border-generique"
                                placeholder="Nouveau mot de passe (min. 8 caractères)"
                                minlength="8">
-                        <p class="mt-1 text-xs text-gray-500">Minimum 8 caractères</p>
+                        <p class="mt-1 text-xs text-gris-clair">Minimum 8 caractères</p>
                     </div>
                     
                     <div>
-                        <label for="confirmationMotDePasse" class="block text-sm font-medium text-gray-300">Confirmer le mot de passe</label>
+                        <label for="confirmationMotDePasse" class="block text-sm font-medium text-gris-clair">Confirmer le mot de passe</label>
                         <input x-model="formulaire.confirmationMotDePasse" type="password" id="confirmationMotDePasse" required
-                               class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               class="mt-1 block w-full px-3 py-2 bg-noir-charbon border border-gris-fonce rounded-md text-white placeholder-gris-clair focus:outline-none focus:ring-2 focus:ring-generique focus:border-generique"
                                placeholder="Confirmer le nouveau mot de passe"
                                minlength="8">
                     </div>
@@ -64,7 +64,7 @@
                 
                 <div>
                     <button type="submit" :disabled="enTraitement || succes"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <span x-show="!enTraitement && !succes">Mettre à jour le mot de passe</span>
                         <span x-show="enTraitement" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -78,8 +78,8 @@
                 </div>
                 
                 <div class="text-center">
-                    <p class="text-sm text-gray-400">
-                        <a href="/connexion" class="font-medium text-green-400 hover:text-green-300">
+                    <p class="text-sm text-gris-clair">
+                        <a href="/connexion" class="font-medium text-generique hover:text-blue-400">
                             Retour à la connexion
                         </a>
                     </p>

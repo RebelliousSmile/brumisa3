@@ -463,4 +463,12 @@ if (require.main === module) {
   });
 }
 
-module.exports = app;
+// Export pour les tests et l'utilisation externe
+module.exports = {
+  instance: app.instance,
+  initialize: () => app.initialize(),
+  shutdown: () => app.shutdown(),
+  get server() { return app.server; },
+  // Pour la compatibilité avec l'ancien code
+  app: app.instance
+};

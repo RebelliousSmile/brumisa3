@@ -1,15 +1,5 @@
 const request = require('supertest');
 const crypto = require('crypto');
-
-// IMPORTANT: Forcer NODE_ENV=test AVANT tous les imports
-process.env.NODE_ENV = 'test';
-require('dotenv').config({ path: '.env.test', override: true });
-
-// Vider le cache des modules pour forcer la reconfiguration
-delete require.cache[require.resolve('../../src/config')];
-delete require.cache[require.resolve('../../src/database/db')];
-
-// Importer l'application APRÈS avoir configuré l'environnement
 const app = require('../../src/app');
 const db = require('../../src/database/db');
 
@@ -30,11 +20,13 @@ describe('Authentication API Integration Tests', () => {
         const motDePasse = 'testPassword123!';
 
         // Insérer directement en base pour éviter les dépendances
+        // Utiliser un hash simple pour les tests
+        const simpleHash = require('crypto').createHash('sha256').update(motDePasse).digest('hex');
         const result = await db.get(
             `INSERT INTO utilisateurs (nom, email, mot_de_passe, role, actif) 
-             VALUES ($1, $2, crypt($3, gen_salt('bf')), 'UTILISATEUR', true) 
+             VALUES ($1, $2, $3, 'UTILISATEUR', true) 
              RETURNING id, nom, email, role, actif`,
-            [nom, email, motDePasse]
+            [nom, email, simpleHash]
         );
 
         testUser = { ...result, password: motDePasse };

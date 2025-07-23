@@ -97,6 +97,23 @@ router.get('/mistengine', (req, res) => {
     });
 });
 
+// Route de compatibilité pour /systemes/:systeme -> redirection vers /:systeme
+router.get('/systemes/:systeme', (req, res) => {
+    const systeme = req.params.systeme;
+    const routesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+    
+    if (routesValides.includes(systeme)) {
+        // Redirection permanente vers la route courte
+        return res.redirect(301, `/${systeme}`);
+    }
+    
+    // Système non supporté
+    return res.status(404).render('errors/404', {
+        title: 'Système non trouvé',
+        message: `Le système "${systeme}" n'existe pas.`
+    });
+});
+
 // ===== AUTHENTIFICATION =====
 
 // Pages de connexion/inscription
@@ -239,24 +256,6 @@ router.get('/pdfs/:id', authController.middlewareAuth, (req, res) => {
 });
 
 // ===== PAGES SYSTÈME =====
-
-// Page d'information sur un système de jeu
-router.get('/systemes/:systeme', (req, res) => {
-    const systeme = systemesJeu[req.params.systeme];
-    
-    if (!systeme) {
-        return res.status(404).render('errors/404', {
-            title: 'Système non trouvé',
-            message: 'Ce système de jeu n\'est pas supporté.'
-        });
-    }
-    
-    res.render('systemes/details', {
-        title: `${systeme.nom} - Générateur PDF JDR`,
-        systeme: systeme,
-        systemeId: req.params.systeme
-    });
-});
 
 // ===== ADMINISTRATION =====
 

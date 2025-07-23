@@ -114,7 +114,13 @@ function selectionSysteme() {
         },
         
         naviguerVersSysteme(systemeId) {
-            window.location.href = `/${systemeId}`;
+            // Utiliser le service de navigation centralisé
+            if (window.navigationService) {
+                window.navigationService.naviguerVersSysteme(systemeId);
+            } else {
+                // Fallback si le service n'est pas chargé
+                window.location.href = `/systemes/${systemeId}`;
+            }
         }
     };
 }

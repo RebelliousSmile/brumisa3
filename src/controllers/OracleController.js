@@ -373,6 +373,7 @@ class OracleController extends BaseController {
             pagination: oracles.pagination,
             gameSystem: null,
             gameSystemName: null,
+            couleurSysteme: null,
             utilisateur: req.session?.utilisateur || null
         });
     });

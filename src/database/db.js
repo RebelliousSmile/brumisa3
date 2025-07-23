@@ -96,9 +96,9 @@ class DatabaseManager {
     try {
       const result = await this.pool.query(sql, params);
       return {
-        lastID: result.rows[0]?.id || null,
-        changes: result.rowCount,
-        rows: result.rows
+        lastID: result.rows && result.rows.length > 0 ? result.rows[0]?.id || null : null,
+        changes: result.rowCount || 0,
+        rows: result.rows || []
       };
     } catch (error) {
       logManager.error('Erreur requête RUN', { sql, params, error: error.message });

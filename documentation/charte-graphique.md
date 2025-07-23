@@ -20,6 +20,21 @@
 | **Gris clair** | `#abb8c3` | rgb(171, 184, 195) | Textes secondaires, placeholders |
 | **Violet électrique** | `#9b51e0` | rgb(155, 81, 224) | Highlights, effets hover spéciaux |
 
+### Couleur principale du site
+
+| Couleur | Hex | Tailwind | Usage |
+|---------|-----|----------|-------|
+| **Brumisa Bleu** | `#3b82f6` | `blue-500` | **Couleur principale de brumisa3** - Navigation, boutons primaires, liens, authentification, contenu générique |
+
+### Couleurs de différenciation JDR
+
+| Couleur | Hex | Tailwind | Usage |
+|---------|-----|----------|-------|
+| **Monsterhearts** | `#8b5cf6` | `purple-500` | Bordures, badges, différenciation visuelle |
+| **Engrenages** | `#10b981` | `emerald-500` | Bordures, badges, différenciation visuelle |
+| **Metro 2033** | `#dc2626` | `red-600` | Bordures, badges, différenciation visuelle |
+| **Mist Engine** | `#ec4899` | `pink-500` | Bordures, badges, différenciation visuelle |
+
 ### Couleurs fonctionnelles
 
 | Couleur | Hex | Tailwind | Usage |
@@ -27,7 +42,7 @@
 | **Succès** | `#22c55e` | `green-500` | Confirmations, validations (distinct d'emerald) |
 | **Erreur** | `#f97316` | `orange-500` | Erreurs, échecs (distinct du rouge Metro) |
 | **Avertissement** | `#eab308` | `yellow-500` | Alertes, warnings |
-| **Information** | `#06b6d4` | `cyan-500` | Infos, aide (distinct du bleu générique) |
+| **Information** | `#06b6d4` | `cyan-500` | Infos, aide (distinct du bleu brumisa3) |
 
 ### Variables CSS
 ```css
@@ -44,12 +59,14 @@
   --gris-clair: #abb8c3;
   --violet-electrique: #9b51e0;
   
-  /* Couleurs système JDR */
+  /* Couleurs système JDR (uniquement pour différenciation visuelle) */
   --monsterhearts: #8b5cf6;  /* purple-500 */
   --engrenages: #10b981;     /* emerald-500 */
   --metro2033: #dc2626;      /* red-600 */
   --mistengine: #ec4899;     /* pink-500 */
-  --generique: #3b82f6;      /* blue-500 */
+  
+  /* Couleur par défaut brumisa3 (= générique) */
+  --brumisa-bleu: #3b82f6;   /* blue-500 - Couleur principale du site */
   
   /* Couleurs fonctionnelles (évitent les conflits avec systèmes JDR) */
   --succes: #22c55e;        /* green-500 (distinct d'emerald) */
@@ -436,38 +453,45 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 }
 ```
 
-## 🎮 Thématiques par système JDR
+## 🌐 Utilisation des couleurs sur le site web
 
-### 🌐 Style des Pages Web vs 📄 Style des PDFs
+### Principe général : Bleu brumisa3 par défaut
 
-#### Distinction importante
+**IMPORTANT** : Le site brumisa3 utilise le **bleu** (`#3b82f6` - `blue-500`) comme couleur principale par défaut pour :
+- ✅ **Navigation principale** (liens, boutons primaires)
+- ✅ **Pages d'authentification** (connexion, inscription, mot de passe)
+- ✅ **Contenu générique** (aide, documentation, features)
+- ✅ **Boutons d'action principaux**
+- ✅ **États focus et hover par défaut**
 
-Il existe une différence fondamentale entre le style des **pages web** et le style des **PDFs** pour chaque système :
+### Différenciation visuelle des systèmes JDR
 
-##### 🌐 Style des Pages Web
-- **Homogène** : Tous les systèmes partagent la même structure et éléments UI
-- **Fond noir** : Toujours noir (#000) ou noir charbon (#1e1e1e) 
-- **Différenciation par couleurs uniquement** : Seules les couleurs d'accent changent
-- **Polices cohérentes** : Source Serif 4 + Shackleton sur tout le site
-- **Navigation identique** : Menu, boutons, cartes gardent la même forme
-- **Objectif** : Cohérence de navigation et d'expérience utilisateur
+Les couleurs spécifiques aux systèmes ne sont utilisées que pour la **différenciation visuelle** :
+- 🎯 **Bordures de cartes** système
+- 🎯 **Badges et indicateurs** de système  
+- 🎯 **Boutons contextuels** spécifiques au système
+- 🎯 **Accents visuels** pour identifier le système
 
-##### 📄 Style des PDFs
-- **Thématique complète** : Chaque système a son propre univers visuel
-- **Immersion totale** : Design adapté à l'ambiance spécifique du jeu
-- **Liberté créative** : Polices, couleurs, layouts, effets spécialisés
-- **Identité forte** : Chaque PDF doit "respirer" l'univers du jeu
-- **Objectif** : Immersion dans l'univers du jeu de rôle
+| Système | Couleur | Hex | Usage limité |
+|---------|---------|-----|-------------|
+| **Monsterhearts** | Violet | `#8b5cf6` | Bordures, badges uniquement |
+| **Engrenages** | Vert émeraude | `#10b981` | Bordures, badges uniquement |
+| **Metro 2033** | Rouge | `#dc2626` | Bordures, badges uniquement |
+| **Mist Engine** | Rose | `#ec4899` | Bordures, badges uniquement |
 
-#### Couleurs d'accent pour les pages web
+### ❌ Ce qu'il ne faut PAS faire
 
-| Système | Couleur accent | Hex | Tailwind | Usage Web |
-|---------|---------------|-----|----------|-----------|
-| **Monsterhearts** | Violet (horreur gothique) | `#8b5cf6` | `purple-500` | Bordures, boutons, badges |
-| **Engrenages** | Vert émeraude (fantasy médiéval) | `#10b981` | `emerald-500` | Bordures, boutons, badges |
-| **Metro 2033** | Rouge (post-apocalyptique) | `#dc2626` | `red-600` | Bordures, boutons, badges |
-| **Mist Engine** | Rose (épique/poétique) | `#ec4899` | `pink-500` | Bordures, boutons, badges |
-| **Contenu générique** | Bleu (neutre) | `#3b82f6` | `blue-500` | Features, contenus non-spécifiques |
+- ❌ Utiliser le violet brand (`#7641d3`) - **cette couleur n'existe plus dans brumisa3**
+- ❌ Changer la couleur principale selon le système sur les pages communes
+- ❌ Utiliser les couleurs système pour les boutons primaires génériques
+- ❌ Modifier la navigation selon le système
+
+### ✅ Ce qu'il faut faire
+
+- ✅ Toujours utiliser le **bleu brumisa3** (`#3b82f6`) pour les éléments principaux
+- ✅ Utiliser les couleurs système uniquement pour la différenciation visuelle
+- ✅ Garder une cohérence de navigation sur tout le site
+- ✅ Réserver les couleurs système aux contextes spécifiques (badges, bordures de cartes)
 
 #### Thématiques PDF par système
 
