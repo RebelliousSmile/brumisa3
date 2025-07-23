@@ -448,10 +448,55 @@ class OracleController extends BaseController {
         const oracle = await this.oracleService.obtenirOracle(id, userRole, true);
         const stats = await this.oracleService.obtenirStatistiques(id, userRole);
 
+        // Récupération des informations du système
+        const { systemesJeu } = require('../utils/systemesJeu');
+        const gameSystem = oracle.game_system || 'generique';
+        const systemeInfo = systemesJeu[gameSystem];
+        const nomSysteme = systemeInfo ? systemeInfo.nom : 'Générique';
+        
+        // Configuration des couleurs par système
+        const couleursSystemes = {
+            'monsterhearts': {
+                primary: 'purple',
+                gradient: 'from-purple-900/20 via-purple-800/30 to-pink-900/20',
+                accent: 'purple-400',
+                icon: 'ra-heartburn'
+            },
+            'engrenages': {
+                primary: 'emerald',
+                gradient: 'from-emerald-900/20 via-emerald-800/30 to-green-900/20',
+                accent: 'emerald-400',
+                icon: 'ra-gear-hammer'
+            },
+            'metro2033': {
+                primary: 'orange',
+                gradient: 'from-orange-900/20 via-red-800/30 to-gray-900/20',
+                accent: 'orange-400',
+                icon: 'ra-radiation'
+            },
+            'mistengine': {
+                primary: 'slate',
+                gradient: 'from-slate-900/20 via-gray-800/30 to-slate-900/20',
+                accent: 'slate-400',
+                icon: 'ra-mist'
+            },
+            'generique': {
+                primary: 'blue',
+                gradient: 'from-blue-900/20 via-blue-800/30 to-gray-900/20',
+                accent: 'blue-400',
+                icon: 'ra-crystal-ball'
+            }
+        };
+        
+        const couleurSysteme = couleursSystemes[gameSystem] || couleursSystemes['generique'];
+
         res.render('oracles/detail', {
             titre: oracle.name,
             oracle,
             stats,
+            gameSystem,
+            nomSysteme,
+            couleurSysteme,
             utilisateur: req.session?.utilisateur || null
         });
     });
@@ -571,7 +616,12 @@ class OracleController extends BaseController {
             return this.repondreSucces(res, result, 'Import réussi', 201);
 
         } catch (error) {
-            this.logError(error, { context: 'import_oracle', admin_id: admin.id });
+            this.logger.error('Erreur lors de l\'import d\'oracle', { 
+                context: 'import_oracle', 
+                admin_id: admin.id,
+                error: error.message,
+                stack: error.stack
+            });
             return this.repondreErreur(res, 400, error.message, 'import_error');
         }
     });

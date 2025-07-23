@@ -152,9 +152,11 @@ class AuthentificationController extends BaseController {
             }
         } catch (error) {
             // Ne pas bloquer l'inscription si l'email échoue
-            this.logError(error, { 
+            this.logger.error('Erreur lors de l\'envoi de l\'email de bienvenue', { 
                 context: 'envoi_email_bienvenue',
-                utilisateur_id: utilisateur.id 
+                utilisateur_id: utilisateur.id,
+                error: error.message,
+                stack: error.stack
             });
         }
         
@@ -427,9 +429,11 @@ class AuthentificationController extends BaseController {
                     });
                 }
             } catch (error) {
-                this.logError(error, { 
+                this.logger.error('Erreur lors de l\'envoi de l\'email de récupération', { 
                     context: 'envoi_email_recuperation',
-                    email: email 
+                    email: email,
+                    error: error.message,
+                    stack: error.stack
                 });
             }
         }
