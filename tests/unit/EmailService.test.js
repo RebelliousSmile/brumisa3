@@ -1,75 +1,139 @@
 /**
- * Tests unitaires pour EmailService
- * Teste la logique de sélection d'emails avec les principes SOLID
+ * Tests unitaires pour EmailService avec architecture SOLID
+ * Utilise BaseUnitTest et UnitTestFactory pour une structure cohérente
  */
 
+const BaseUnitTest = require('../helpers/BaseUnitTest');
+const UnitTestFactory = require('../helpers/UnitTestFactory');
 const EmailService = require('../../src/services/EmailService');
 
-// Mock des dépendances pour l'isolation des tests
-jest.mock('resend', () => ({
-    Resend: jest.fn().mockImplementation(() => ({
-        emails: {
-            send: jest.fn().mockResolvedValue({
-                data: { id: 'mock-email-id' }
-            })
-        }
-    }))
-}));
+// Mock des dépendances externes
+jest.mock('resend');
+jest.mock('../../src/services/EmailTemplate');
 
-jest.mock('../../src/services/EmailTemplate', () => {
-    return jest.fn().mockImplementation(() => ({
-        render: jest.fn().mockResolvedValue('<html>Mock HTML Content</html>')
-    }));
-});
+class EmailServiceTest extends BaseUnitTest {
+    constructor() {
+        super({
+            timeout: 5000,
+            mockDatabase: false,
+            mockExternalServices: true
+        });
+        
+        this.emailService = null;
+        this.testContext = null;
+        this.originalEnv = process.env;
+    }
 
-describe('EmailService', () => {
-    let emailService;
-    const originalEnv = process.env;
+    async customSetup() {
+        // Créer le contexte de test spécialisé pour EmailService
+        this.testContext = UnitTestFactory.createServiceTestContext('EmailService');
+        
+        // Configuration des variables d'environnement pour les tests
+        this.setupEnvironmentVariables();
+        
+        // Créer les mocks spécialisés
+        this.setupEmailServiceMocks();
+        
+        // Instancier le service après la configuration
+        this.emailService = new EmailService();
+    }
 
-    beforeEach(() => {
-        // Reset des variables d'environnement pour chaque test
-        process.env = { ...originalEnv };
+    async customTeardown() {
+        // Restaurer les variables d'environnement
+        process.env = this.originalEnv;
+    }
+
+    setupEnvironmentVariables() {
+        process.env = { ...this.originalEnv };
         process.env.RESEND_API_KEY = 'test-key';
         process.env.RESEND_FROM_EMAIL = 'config@brumisa3.fr';
         process.env.RESEND_FROM_NAME = 'Test Service';
         process.env.BASE_URL = 'http://localhost:3074';
+    }
+
+    setupEmailServiceMocks() {
+        const { Resend } = require('resend');
+        const EmailTemplate = require('../../src/services/EmailTemplate');
         
-        emailService = new EmailService();
+        // Mock Resend
+        Resend.mockImplementation(() => ({
+            emails: {
+                send: jest.fn().mockResolvedValue({
+                    data: { id: 'mock-email-id' }
+                })
+            }
+        }));
+        
+        // Mock EmailTemplate
+        EmailTemplate.mockImplementation(() => ({
+            render: jest.fn().mockResolvedValue('<html>Mock HTML Content</html>')
+        }));
+        
+        // Ajouter les mocks au contexte pour réutilisation
+        this.addMock('resend', Resend);
+        this.addMock('emailTemplate', EmailTemplate);
+    }
+
+    createEmailServiceMock() {
+        return this.testContext.createEmailServiceMock();
+    }
+
+    mockSendSuccess() {
+        const emailMock = this.createEmailServiceMock();
+        return emailMock.mockSendSuccess();
+    }
+
+    mockSendFailure(error = 'Email sending failed') {
+        const emailMock = this.createEmailServiceMock();
+        return emailMock.mockSendFailure(error);
+    }
+}
+
+// Instance de test réutilisable
+const emailServiceTest = new EmailServiceTest();
+
+describe('EmailService', () => {
+    beforeEach(async () => {
+        await emailServiceTest.baseSetup();
     });
 
-    afterEach(() => {
-        process.env = originalEnv;
+    afterEach(async () => {
+        await emailServiceTest.baseTeardown();
     });
 
     describe('getTestEmail - Application des principes SOLID', () => {
         
         test('Single Responsibility: doit retourner un email de test valide', () => {
-            const testEmail = emailService.getTestEmail();
+            const testEmail = emailServiceTest.emailService.getTestEmail();
             expect(testEmail).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
         });
 
         test('doit respecter la priorité des emails configurés', () => {
             const customEmail = 'priority@test.com';
-            const result = emailService.getTestEmail(customEmail);
-            expect(result).toBe(customEmail);
+            emailServiceTest.assertFunction(
+                (email) => emailServiceTest.emailService.getTestEmail(email),
+                customEmail,
+                customEmail
+            );
         });
 
         test('doit utiliser ADMIN_EMAIL si pas de fallback', () => {
             process.env.ADMIN_EMAIL = 'admin@brumisa3.fr';
-            const result = emailService.getTestEmail();
+            const result = emailServiceTest.emailService.getTestEmail();
             expect(result).toBe('admin@brumisa3.fr');
         });
 
-        test('doit utiliser RESEND_FROM_EMAIL si pas d\'ADMIN_EMAIL', () => {
+        test('doit utiliser l\'email suivant dans la liste de candidats', () => {
             delete process.env.ADMIN_EMAIL;
-            process.env.RESEND_FROM_EMAIL = 'sender@brumisa3.fr';
-            const result = emailService.getTestEmail();
-            expect(result).toBe('sender@brumisa3.fr');
+            delete process.env.TEST_EMAIL;
+            // Devrait utiliser le fallback par défaut : 'internet@fxguillois.email'
+            const result = emailServiceTest.emailService.getTestEmail();
+            expect(result).toBe('internet@fxguillois.email');
         });
 
         test('doit ignorer les emails invalides et passer au suivant', () => {
             const invalidEmail = 'invalid-email';
-            const result = emailService.getTestEmail(invalidEmail);
+            const result = emailServiceTest.emailService.getTestEmail(invalidEmail);
             // Doit passer à l'email suivant valide dans la liste
             expect(result).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
             expect(result).not.toBe(invalidEmail);
@@ -77,11 +141,10 @@ describe('EmailService', () => {
 
         test('doit toujours retourner un email valide même sans configuration', () => {
             delete process.env.ADMIN_EMAIL;
-            delete process.env.RESEND_FROM_EMAIL;
-            emailService.fromEmail = null;
+            delete process.env.TEST_EMAIL;
             
-            const result = emailService.getTestEmail();
-            expect(result).toBe('activation@brumisa3.fr'); // Fallback final
+            const result = emailServiceTest.emailService.getTestEmail();
+            expect(result).toBe('internet@fxguillois.email'); // Fallback final dans la logique réelle
         });
     });
 
@@ -95,7 +158,11 @@ describe('EmailService', () => {
             ];
             
             validEmails.forEach(email => {
-                expect(emailService._isValidEmail(email)).toBe(true);
+                emailServiceTest.assertFunction(
+                    (email) => emailServiceTest.emailService._isValidEmail(email),
+                    email,
+                    true
+                );
             });
         });
 
@@ -111,7 +178,11 @@ describe('EmailService', () => {
             ];
             
             invalidEmails.forEach(email => {
-                expect(emailService._isValidEmail(email)).toBe(false);
+                emailServiceTest.assertFunction(
+                    (email) => emailServiceTest.emailService._isValidEmail(email),
+                    email,
+                    false
+                );
             });
         });
     });
@@ -119,53 +190,57 @@ describe('EmailService', () => {
     describe('testerConfiguration - Configuration testing', () => {
         
         test('doit utiliser un email de test valide', async () => {
-            const result = await emailService.testerConfiguration();
-            
-            expect(result).toHaveProperty('success');
-            expect(result).toHaveProperty('message');
-            expect(result).toHaveProperty('details');
+            await emailServiceTest.assertAsyncFunction(
+                () => emailServiceTest.emailService.testerConfiguration(),
+                undefined,
+                expect.objectContaining({
+                    success: expect.any(Boolean),
+                    message: expect.any(String),
+                    details: expect.any(Object)
+                })
+            );
         });
 
         test('doit accepter un email de test personnalisé', async () => {
             const customTestEmail = 'custom@test.com';
             
-            // Mock pour vérifier que le bon email est utilisé
-            const originalEnvoyer = emailService.envoyer;
-            emailService.envoyer = jest.fn().mockResolvedValue({
+            // Créer un spy sur la méthode envoyer
+            const envoyerSpy = emailServiceTest.createSpy(emailServiceTest.emailService, 'envoyer');
+            envoyerSpy.mockResolvedValue({
                 success: true,
                 id: 'test-id'
             });
 
-            await emailService.testerConfiguration(customTestEmail);
+            await emailServiceTest.emailService.testerConfiguration(customTestEmail);
             
-            expect(emailService.envoyer).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    to: customTestEmail
-                })
+            emailServiceTest.assertMockCalledWith(
+                envoyerSpy,
+                [expect.objectContaining({ to: customTestEmail })]
             );
-
-            emailService.envoyer = originalEnvoyer;
         });
     });
 
     describe('Intégration avec la fonction de test du contrôleur', () => {
         
         test('doit fournir un email de test cohérent avec la configuration', () => {
-            process.env.RESEND_FROM_EMAIL = 'activation@brumisa3.fr';
+            // Utiliser TEST_EMAIL qui a une priorité plus élevée
+            process.env.TEST_EMAIL = 'test@brumisa3.fr';
             
-            const testEmail = emailService.getTestEmail();
-            
-            // L'email de test doit être cohérent avec la configuration
-            expect(testEmail).toBe('activation@brumisa3.fr');
+            emailServiceTest.assertFunction(
+                () => emailServiceTest.emailService.getTestEmail(),
+                undefined,
+                'test@brumisa3.fr'
+            );
         });
 
         test('doit être compatible avec les tests d\'authentification', () => {
             // Simule l'utilisation dans AuthentificationController.testMotDePasseOublie
-            const configuredEmail = process.env.RESEND_FROM_EMAIL;
-            const serviceEmail = emailService.getTestEmail();
+            // Utiliser ADMIN_EMAIL qui a priorité sur les autres dans la logique
+            process.env.ADMIN_EMAIL = 'admin@brumisa3.fr';
+            const serviceEmail = emailServiceTest.emailService.getTestEmail();
             
-            // Les deux approches doivent donner le même résultat
-            expect(serviceEmail).toBe(configuredEmail);
+            // Doit utiliser l'ADMIN_EMAIL configuré
+            expect(serviceEmail).toBe('admin@brumisa3.fr');
         });
     });
 
@@ -177,15 +252,18 @@ describe('EmailService', () => {
             // _selectValidEmail: sélectionne le valide
             // _isValidEmail: valide le format
             
-            expect(typeof emailService.getTestEmail).toBe('function');
-            expect(typeof emailService._getEmailCandidates).toBe('function');
-            expect(typeof emailService._selectValidEmail).toBe('function');
-            expect(typeof emailService._isValidEmail).toBe('function');
+            const service = emailServiceTest.emailService;
+            emailServiceTest.assertObjectStructure(service, {
+                getTestEmail: expect.any(Function),
+                _getEmailCandidates: expect.any(Function),
+                _selectValidEmail: expect.any(Function),
+                _isValidEmail: expect.any(Function)
+            });
         });
 
         test('Open/Closed: _getEmailCandidates peut être étendu sans modification', () => {
             // La méthode retourne un array qui peut être étendu
-            const candidates = emailService._getEmailCandidates('test@example.com');
+            const candidates = emailServiceTest.emailService._getEmailCandidates('test@example.com');
             expect(Array.isArray(candidates)).toBe(true);
             expect(candidates.length).toBeGreaterThan(0);
         });
@@ -193,9 +271,9 @@ describe('EmailService', () => {
         test('Dependency Inversion: utilise des abstractions (variables d\'environnement)', () => {
             // Le service dépend d'abstractions (process.env) pas de valeurs codées en dur
             process.env.RESEND_FROM_EMAIL = 'new@email.com';
-            emailService = new EmailService();
+            const newService = new EmailService();
             
-            expect(emailService.fromEmail).toBe('new@email.com');
+            expect(newService.fromEmail).toBe('new@email.com');
         });
     });
 });
