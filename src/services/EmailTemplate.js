@@ -114,7 +114,7 @@ class EmailTemplate extends BaseService {
                 await fs.access(layoutPath);
                 return await ejs.renderFile(layoutPath, {
                     ...allVariables,
-                    body: content
+                    content: content
                 });
             } catch {
                 this.log('warn', `Layout ${layout}.ejs non trouvé, utilisation du contenu sans layout`);

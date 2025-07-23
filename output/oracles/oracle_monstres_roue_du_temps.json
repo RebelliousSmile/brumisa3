@@ -1,0 +1,190 @@
+{
+  "oracle": {
+    "name": "Monstres - Roue du Temps",
+    "description": "Créatures et monstres du monde de la Roue du Temps",
+    "premium_required": false,
+    "is_active": true
+  },
+  "items": [
+    {
+      "value": "Trolloc",
+      "weight": 25,
+      "metadata": {
+        "type": "engeance",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Myrddraal (Fondu)",
+      "weight": 15,
+      "metadata": {
+        "type": "engeance",
+        "danger": "très élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Draghkar",
+      "weight": 12,
+      "metadata": {
+        "type": "engeance",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Gholam",
+      "weight": 5,
+      "metadata": {
+        "type": "construit",
+        "danger": "extrême"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Rat Noir",
+      "weight": 18,
+      "metadata": {
+        "type": "créature-ombre",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Darkhound (Chien de l'Ombre)",
+      "weight": 10,
+      "metadata": {
+        "type": "créature-ombre",
+        "danger": "très élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Cafar gris",
+      "weight": 8,
+      "metadata": {
+        "type": "construit",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Ver sauteur",
+      "weight": 7,
+      "metadata": {
+        "type": "engeance",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Mashadar (Shadar Logoth)",
+      "weight": 3,
+      "metadata": {
+        "type": "corruption",
+        "danger": "mortel"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Machin Shin (Vent Noir)",
+      "weight": 4,
+      "metadata": {
+        "type": "anomalie",
+        "danger": "mortel"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Gars",
+      "weight": 20,
+      "metadata": {
+        "type": "naturel",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Torm",
+      "weight": 6,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Raken",
+      "weight": 9,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "To'raken",
+      "weight": 7,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Corlm",
+      "weight": 8,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "modéré"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Lopar",
+      "weight": 11,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "faible"
+      },
+      "is_active": true
+    },
+    {
+      "value": "S'redit",
+      "weight": 5,
+      "metadata": {
+        "type": "seanchan",
+        "danger": "élevé"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Mordeth (entité)",
+      "weight": 2,
+      "metadata": {
+        "type": "esprit",
+        "danger": "extrême"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Bubble of Evil",
+      "weight": 6,
+      "metadata": {
+        "type": "anomalie",
+        "danger": "variable"
+      },
+      "is_active": true
+    },
+    {
+      "value": "Créature du Monde des Rêves",
+      "weight": 4,
+      "metadata": {
+        "type": "rêve",
+        "danger": "variable"
+      },
+      "is_active": true
+    }
+  ]
+}
