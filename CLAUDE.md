@@ -51,6 +51,7 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
   - Les calculs et transformations de données
   - Les services critiques (PDF, authentification)
 - Utiliser les patterns décrits dans `documentation/testing.md`
+- ne crée des mocks que si tu ne peux pas tester dans des conditions réelles (altération des données en production)
 
 ## Structure du projet
 - le répertoire scripts ne doit pas avoir de sous-répertoire

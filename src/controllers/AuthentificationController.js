@@ -490,7 +490,7 @@ class AuthentificationController extends BaseController {
             return this.repondreErreur(res, 404, 'Endpoint non disponible en production');
         }
 
-        const emailTest = process.env.RESEND_FROM_EMAIL || 'activation@brumisa3.fr';
+        const emailTest = process.env.TEST_EMAIL || process.env.ADMIN_EMAIL || 'internet@fxguillois.email';
         
         try {
             // Simuler une requête POST vers motDePasseOublie

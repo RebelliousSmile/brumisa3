@@ -4,14 +4,18 @@ const fs = require('fs');
 // Charger les variables d'environnement avec priorité
 const envPath = path.join(__dirname, '..', '.env');
 const envLocalPath = path.join(__dirname, '..', '.env.local');
+const envTestPath = path.join(__dirname, '..', '.env.test');
 
 // Charger .env d'abord
 if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
 
-// Puis charger .env.local qui écrasera les valeurs de .env
-if (fs.existsSync(envLocalPath)) {
+// Choix du fichier d'environnement selon NODE_ENV
+if (process.env.NODE_ENV === 'test' && fs.existsSync(envTestPath)) {
+  require('dotenv').config({ path: envTestPath, override: true });
+  console.log('📁 Chargement de .env.test');
+} else if (fs.existsSync(envLocalPath)) {
   require('dotenv').config({ path: envLocalPath, override: true });
   console.log('📁 Chargement de .env.local');
 } else {

@@ -2,276 +2,139 @@
 
 ## Vue d'ensemble
 
-Ce document détaille les différents éléments à tester dans l'application brumisater, les méthodes de test et les outils recommandés.
+Ce document détaille la stratégie de tests de l'application brumisater et les commandes pour les exécuter.
 
-## Types de Tests
+## Tests Actuellement Implémentés
 
 ### 1. Tests Unitaires
 
-#### Frontend (JavaScript/Alpine.js)
+#### Frontend
+- ✅ `tests/unit/PageAccueilComponent.test.js` - Composant page d'accueil
+- ✅ `tests/unit/PersonnageService.test.js` - Service de gestion des personnages  
+- ✅ `tests/unit/functions.test.js` - Fonctions utilitaires
 
-**Services à tester :**
-- `PersonnageService.js` - Toutes les méthodes CRUD
-- `PdfService.js` - Génération, téléchargement, statuts
-- Stores Alpine (`app`, `navigation`, `creation`, `partage`)
+#### Backend  
+- ✅ `tests/unit/UtilisateurService.backend.test.js` - Service utilisateur avec mocks
+- ✅ `tests/unit/PersonnageService.backend.test.js` - Service personnage avec mocks
+- ✅ `tests/unit/EmailService.test.js` - Service d'envoi d'emails
+- ✅ `tests/unit/SystemService.test.js` - Service de gestion des systèmes JDR
+- ✅ `tests/unit/fillable-regression.test.js` - Tests de régression pour les champs fillable
 
-**Composants à tester :**
-- `PageAccueilComponent.js` - Chargement données, newsletter, témoignages
-- `PersonnageComponent.js` - CRUD personnages
-- `AuthComponent.js` - Connexion, déconnexion, élévation rôle
-- `TableauBordComponent.js` - Navigation, stats
-
-**Exemple de test (Jest) :**
-```javascript
-// tests/frontend/PersonnageService.test.js
-describe('PersonnageService', () => {
-  beforeEach(() => {
-    // Mock Alpine store
-    global.Alpine = {
-      store: jest.fn(() => ({
-        requeteApi: jest.fn(),
-        ajouterMessage: jest.fn()
-      }))
-    };
-  });
-
-  test('devrait lister les personnages', async () => {
-    const service = new PersonnageService();
-    const mockData = { donnees: [{ id: 1, nom: 'Test' }] };
-    
-    service.initStore().requeteApi.mockResolvedValue(mockData);
-    
-    const result = await service.lister();
-    expect(result).toEqual(mockData.donnees);
-  });
-});
-```
-
-#### Backend (Node.js/Express)
-
-**Services à tester :**
-- `UtilisateurService.js` - Authentification, rôles
-- `PersonnageService.js` - CRUD, validation
-- `PdfService.js` - Génération PDF
-- `NewsletterService.js` - Inscription, désinscription
-- `TemoignageService.js` - Modération, affichage
-
-**Modèles à tester :**
-- `Utilisateur.js` - Validation, hachage mots de passe
-- `Personnage.js` - Validation données par système
-- `Pdf.js` - États, transitions
-
-**Exemple de test (Jest) :**
-```javascript
-// tests/backend/PersonnageService.test.js
-const PersonnageService = require('../../src/services/PersonnageService');
-
-describe('PersonnageService', () => {
-  test('devrait créer un personnage valide', async () => {
-    const service = new PersonnageService();
-    const donnees = {
-      nom: 'Test Héros',
-      systeme_jeu: 'monsterhearts',
-      // ... autres données
-    };
-    
-    const result = await service.creer(donnees);
-    expect(result).toHaveProperty('id');
-    expect(result.nom).toBe('Test Héros');
-  });
-});
-```
+#### Services PDF et Documents
+- ✅ `tests/unit/PdfService.backend.test.js` - Génération PDF
+- ✅ `tests/unit/BasePdfKitService.test.js` - Service PDF de base
+- ✅ `tests/unit/DocumentGeneriqueService.test.js` - Documents génériques
+- ✅ `tests/unit/GenericDocument.test.js` - Templates de documents
+- ✅ `tests/unit/ClassPlanDocument.test.js` - Documents de plan de classe
 
 ### 2. Tests d'Intégration
 
-#### API Routes
+#### API
+- ✅ `tests/integration/api.test.js` - Endpoints principaux
+- ✅ `tests/integration/simple-api.test.js` - Tests API simplifiés  
+- ✅ `tests/integration/oracles.test.js` - API des oracles
+- ⚠️ `tests/integration/auth.test.js` - Authentification (problème de configuration DB)
 
-**Endpoints à tester :**
-```javascript
-// tests/integration/api.test.js
-describe('API Endpoints', () => {
-  test('POST /api/personnages', async () => {
-    const response = await request(app)
-      .post('/api/personnages')
-      .send({
-        nom: 'Test',
-        systeme_jeu: 'monsterhearts'
-      })
-      .expect(201);
-    
-    expect(response.body.succes).toBe(true);
-  });
-  
-  test('GET /api/home/donnees', async () => {
-    const response = await request(app)
-      .get('/api/home/donnees')
-      .expect(200);
-    
-    expect(response.body.donnees).toHaveProperty('pdfs_recents');
-  });
-});
-```
+#### Services avec Base de Données
+- ⚠️ `tests/unit/UtilisateurService.integration.test.js` - Service utilisateur avec vraie DB (problème singleton)
 
-#### Base de Données
+### 3. Tests de Régression
 
-**Intégration PostgreSQL :**
-```javascript
-// tests/integration/database.test.js
-describe('Database Integration', () => {
-  beforeEach(async () => {
-    // Setup test database
-    await db.query('BEGIN');
-  });
-  
-  afterEach(async () => {
-    // Rollback changes
-    await db.query('ROLLBACK');
-  });
-  
-  test('devrait sauvegarder un personnage', async () => {
-    const personnage = new Personnage({
-      nom: 'Test',
-      systeme_jeu: 'monsterhearts'
-    });
-    
-    await personnage.save();
-    expect(personnage.id).toBeDefined();
-  });
-});
-```
+- ✅ `tests/regression/token-fillable-bug.test.js` - Prévention de la régression du bug des champs fillable
 
-### 3. Tests End-to-End (E2E)
+## Commandes pour Lancer les Tests
 
-#### Playwright/Cypress
-
-**Scénarios à tester :**
-
-1. **Parcours utilisateur complet**
-```javascript
-// tests/e2e/user-journey.spec.js
-test('Création personnage et génération PDF', async ({ page }) => {
-  // 1. Aller sur la page d'accueil
-  await page.goto('/');
-  
-  // 2. Se connecter
-  await page.click('[data-testid="login-button"]');
-  await page.fill('#email', 'test@example.com');
-  await page.fill('#password', 'password');
-  await page.click('[data-testid="submit-login"]');
-  
-  // 3. Créer un personnage
-  await page.click('[data-testid="create-character"]');
-  await page.selectOption('#systeme', 'monsterhearts');
-  await page.fill('#nom', 'Mon Héros');
-  await page.click('[data-testid="save-character"]');
-  
-  // 4. Générer PDF
-  await page.click('[data-testid="generate-pdf"]');
-  await page.waitForSelector('[data-testid="pdf-ready"]');
-  
-  // 5. Télécharger
-  const downloadPromise = page.waitForEvent('download');
-  await page.click('[data-testid="download-pdf"]');
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toContain('personnage-');
-});
-```
-
-2. **Navigation et responsive**
-```javascript
-test('Navigation mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 667 });
-  await page.goto('/');
-  
-  // Test menu burger
-  await page.click('[data-testid="mobile-menu-toggle"]');
-  await page.waitForSelector('[data-testid="mobile-menu"]');
-  
-  // Test navigation
-  await page.click('[data-testid="nav-characters"]');
-  await expect(page).toHaveURL('/personnages');
-});
-```
-
-### 4. Tests de Performance
-
-#### Lighthouse
-
-**Métriques à surveiller :**
-- Performance : > 90
-- Accessibilité : > 95
-- Bonnes pratiques : > 90
-- SEO : > 90
+### Tests Unitaires (Fonctionnent)
 
 ```bash
-# Script de test Lighthouse
-lighthouse http://localhost:3076 --output json --output-path ./tests/performance/lighthouse-report.json
+# Tous les tests unitaires
+npx jest tests/unit/ --verbose --no-coverage
+
+# Tests de régression spécifiques
+npx jest tests/unit/fillable-regression.test.js --verbose
+
+# Tests frontend
+npx jest tests/unit/PageAccueilComponent.test.js --verbose
+npx jest tests/unit/PersonnageService.test.js --verbose
+
+# Tests backend
+npx jest tests/unit/UtilisateurService.backend.test.js --verbose
+npx jest tests/unit/EmailService.test.js --verbose
+
+# Tests services PDF
+npx jest tests/unit/PdfService.backend.test.js --verbose
+npx jest tests/unit/DocumentGeneriqueService.test.js --verbose
 ```
 
-#### Tests de charge
+### Tests d'Intégration (Certains fonctionnent)
 
-```javascript
-// tests/performance/load.test.js
-import { check } from 'k6';
-import http from 'k6/http';
+```bash
+# Tests d'intégration API (fonctionnent)
+npx jest tests/integration/api.test.js --verbose --no-coverage
+npx jest tests/integration/simple-api.test.js --verbose --no-coverage
 
-export const options = {
-  vus: 50, // 50 utilisateurs virtuels
-  duration: '1m',
-};
-
-export default function () {
-  const response = http.get('http://localhost:3076/api/home/donnees');
-  check(response, {
-    'status is 200': (r) => r.status === 200,
-    'response time < 500ms': (r) => r.timings.duration < 500,
-  });
-}
+# Tests auth (ne fonctionnent pas - problème singleton DB)
+npx jest tests/integration/auth.test.js --runInBand --forceExit --testTimeout=60000
 ```
 
-### 5. Tests Visuels
+### Tests de Régression (Fonctionnent parfaitement)
 
-#### Regression Testing
-
-```javascript
-// tests/visual/visual-regression.spec.js
-test('Page d\'accueil - Screenshots', async ({ page }) => {
-  await page.goto('/');
-  
-  // Desktop
-  await page.setViewportSize({ width: 1920, height: 1080 });
-  await expect(page).toHaveScreenshot('homepage-desktop.png');
-  
-  // Mobile
-  await page.setViewportSize({ width: 375, height: 667 });
-  await expect(page).toHaveScreenshot('homepage-mobile.png');
-  
-  // Dark mode
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await expect(page).toHaveScreenshot('homepage-dark.png');
-});
+```bash
+# Test pour prévenir le bug des champs fillable
+npx jest tests/regression/token-fillable-bug.test.js --verbose
 ```
+
+### Commandes Générales
+
+```bash
+# Tous les tests (via npm)
+npm test
+
+# Tests avec couverture
+npm run test:coverage
+
+# Tests en mode watch
+npm run test:watch
+
+# Tests spécifiques par pattern
+npx jest --testPathPattern="auth" --verbose
+npx jest --testNamePattern="fillable" --verbose
+```
+
+## Problèmes Connus
+
+### 1. Tests d'Intégration avec Base de Données
+
+**Problème** : Les tests `auth.test.js` et `UtilisateurService.integration.test.js` ne peuvent pas se connecter à la base de données définie dans `.env.test`.
+
+**Cause** : Le `DatabaseManager` utilise un pattern singleton qui met en cache la configuration au premier import, empêchant le rechargement avec la configuration de test.
+
+**Solution temporaire** : Utiliser les tests de régression qui fonctionnent parfaitement et détectent les mêmes problèmes.
+
+**Solution long terme** : Refactoriser `src/database/db.js` pour permettre l'injection de configuration.
+
+### 2. Configuration d'Environnement
+
+**Pour que les tests d'intégration fonctionnent** :
+1. Créer un fichier `.env.test` avec les paramètres de base de données de test
+2. Utiliser les variables `POSTGRES_*` (pas `DATABASE_*`)
+3. S'assurer que `NODE_ENV=test` est défini avant l'import des modules
 
 ## Configuration des Tests
 
-### package.json Scripts
+### Scripts package.json Actuels
 
 ```json
 {
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:e2e": "playwright test",
-    "test:visual": "playwright test --grep visual",
-    "test:performance": "lighthouse-ci autorun",
-    "test:all": "npm run test && npm run test:integration && npm run test:e2e"
+    "test:coverage": "jest --coverage"
   }
 }
 ```
 
-### Jest Configuration
+### Configuration Jest Actuelle
 
 ```javascript
 // jest.config.js
@@ -286,201 +149,89 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
+      branches: 10,
+      functions: 10,
+      lines: 10,
+      statements: 10
     }
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
-  }
+  },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/e2e/'
+  ]
 };
 ```
 
-### Playwright Configuration
-
-```javascript
-// playwright.config.js
-module.exports = {
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:3076',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure'
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-  ],
-  webServer: {
-    command: 'npm run dev',
-    port: 3076,
-    reuseExistingServer: !process.env.CI,
-  },
-};
-```
-
-## Données de Test
-
-### Fixtures
-
-```javascript
-// tests/fixtures/personnages.js
-export const personnagesTest = {
-  monsterhearts: {
-    nom: 'Luna Darkwood',
-    concept: 'Vampire rebelle',
-    stats: {
-      hot: 2,
-      cold: 1,
-      volatile: -1,
-      dark: 3
-    }
-  },
-  engrenages: {
-    nom: 'Marcus Steel',
-    profession: 'Mécanicien',
-    competences: {
-      technique: 4,
-      combat: 2,
-      social: 1
-    }
-  }
-};
-```
-
-### Database Seeders
-
-```javascript
-// tests/seeders/test-data.js
-async function seedTestData() {
-  // Utilisateurs de test
-  await db.query(`
-    INSERT INTO utilisateurs (nom, email, mot_de_passe, role)
-    VALUES 
-      ('Test User', 'test@example.com', '$2b$10$hashedpassword', 'UTILISATEUR'),
-      ('Admin User', 'admin@example.com', '$2b$10$hashedpassword', 'ADMIN')
-  `);
-  
-  // Personnages de test
-  await db.query(`
-    INSERT INTO personnages (nom, systeme_jeu, donnees, utilisateur_id)
-    VALUES ($1, $2, $3, $4)
-  `, ['Test Hero', 'monsterhearts', JSON.stringify({}), 1]);
-}
-```
-
-## CI/CD Integration
-
-### GitHub Actions
-
-```yaml
-# .github/workflows/test.yml
-name: Tests
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm install
-      - run: npm run test:coverage
-      - run: npm run test:e2e
-      - uses: codecov/codecov-action@v3
-```
-
-## Tests de Sécurité
-
-### OWASP Testing
-
-```javascript
-// tests/security/security.test.js
-describe('Security Tests', () => {
-  test('devrait rejeter les injections SQL', async () => {
-    const response = await request(app)
-      .get('/api/personnages?nom=\'; DROP TABLE utilisateurs; --')
-      .expect(400);
-  });
-  
-  test('devrait valider les entrées XSS', async () => {
-    const response = await request(app)
-      .post('/api/personnages')
-      .send({
-        nom: '<script>alert("xss")</script>'
-      })
-      .expect(400);
-  });
-  
-  test('devrait respecter les limites de rate limiting', async () => {
-    // 100 requêtes rapides
-    const promises = Array(100).fill().map(() => 
-      request(app).get('/api/home/donnees')
-    );
-    
-    const responses = await Promise.all(promises);
-    const rateLimited = responses.filter(r => r.status === 429);
-    expect(rateLimited.length).toBeGreaterThan(0);
-  });
-});
-```
-
-## Métriques et Monitoring
-
-### Coverage Reports
+### Configuration des Tests d'Environnement
 
 ```bash
-# Générer le rapport de couverture
-npm run test:coverage
-
-# Voir le rapport HTML
-open coverage/lcov-report/index.html
+# tests/setup.js - Configuration globale
+# Force NODE_ENV=test AVANT de charger la config
+process.env.NODE_ENV = 'test';
+require('dotenv').config({ path: '.env.test', override: true });
 ```
 
-### Performance Monitoring
+## Tests Implémentés - Détails
 
-```javascript
-// tests/performance/monitoring.js
-const { performance } = require('perf_hooks');
+### Tests de Régression pour l'Authentification
 
-function measureApiResponse(endpoint) {
-  const start = performance.now();
-  
-  return fetch(endpoint)
-    .then(response => {
-      const end = performance.now();
-      console.log(`${endpoint}: ${end - start}ms`);
-      return response;
-    });
-}
+Le fichier `tests/unit/fillable-regression.test.js` a été créé suite à un bug critique où les champs `token_recuperation` et `token_expiration` n'étaient pas dans le tableau `fillable` du modèle `Utilisateur`. Ce bug empêchait la sauvegarde des tokens de récupération de mot de passe.
+
+**Ce que ce test vérifie** :
+- Les champs `token_recuperation` et `token_expiration` sont présents dans `fillable`
+- La configuration du modèle est cohérente (pas de conflit fillable/guarded)
+- Protection contre la régression si quelqu'un retire ces champs par erreur
+
+**Exemple de résultat** :
+```bash
+# Si les champs sont manquants (bug)
+❌ expect(received).toContain(expected)
+    Expected value: "token_recuperation"
+    Received array: ["nom", "email", "mot_de_passe", ...]
+
+# Si les champs sont présents (correct)
+✅ should include token_recuperation in fillable array
+✅ should include token_expiration in fillable array
 ```
+
+### Tests d'Intégration API
+
+Les tests dans `tests/integration/api.test.js` vérifient le bon fonctionnement des endpoints principaux :
+- `GET /api/home/donnees` - Données de la page d'accueil
+- `POST /api/auth/elevation-role` - Élévation de rôles utilisateur
+- Endpoints de donations
+
+### Tests de Services Métier
+
+Les tests unitaires couvrent les services critiques :
+- **UtilisateurService** : Authentification, gestion des rôles, tokens de récupération
+- **PersonnageService** : CRUD des personnages, validation par système de jeu
+- **EmailService** : Envoi d'emails, templates, configuration
+- **PdfService** : Génération de PDFs, gestion des templates
+
+## Scripts Utilitaires
+
+### Organisation des Scripts
+
+Tous les scripts créés durant le développement et les tests sont placés dans le répertoire `scripts/` à la racine du projet :
+
+```
+scripts/
+├── debug-email-sending.js      # Diagnostic envoi emails
+├── debug-token-expiration.js   # Diagnostic tokens de récupération
+├── debug-env-test.js          # Diagnostic configuration de test
+├── test-*.js                  # Scripts de test manuels
+└── README.md                  # Documentation des scripts
+```
+
+**Conventions pour les scripts** :
+- Noms explicites en kebab-case
+- Documentation en en-tête avec usage et paramètres
+- Gestion d'erreurs robuste
+- Logs informatifs
 
 ## Bonnes Pratiques
 
@@ -494,19 +245,10 @@ function measureApiResponse(endpoint) {
 - Utilisez des données déterministes
 - Évitez les appels réseau en test unitaire
 
-### 3. Tests Data-Driven
-```javascript
-describe.each([
-  ['monsterhearts', { hot: 2, cold: 1 }],
-  ['engrenages', { technique: 4, social: 2 }],
-  ['metro2033', { force: 3, agilite: 2 }]
-])('Validation système %s', (systeme, stats) => {
-  test(`devrait valider les stats pour ${systeme}`, () => {
-    const result = validateSystemStats(systeme, stats);
-    expect(result.valid).toBe(true);
-  });
-});
-```
+### 3. Tests de Régression
+- Créez des tests spécifiques pour chaque bug critique détecté
+- Documentez le contexte du bug dans les commentaires
+- Vérifiez que le test échoue sans la correction
 
 ### 4. Debugging Tests
 ```javascript
@@ -518,123 +260,15 @@ test('génération PDF', async () => {
 
 // Logs détaillés en cas d'échec
 afterEach(() => {
-  if (global.currentTest.errors.length > 0) {
+  if (global.currentTest?.errors?.length > 0) {
     console.log('Test failed. Current state:', JSON.stringify(state, null, 2));
   }
 });
 ```
 
-## Commandes Rapides
-
-```bash
-# Tests rapides (unitaires seulement)
-npm test
-
-# Tests complets
-npm run test:all
-
-# Tests en mode watch
-npm run test:watch
-
-# Tests avec couverture
-npm run test:coverage
-
-# Tests E2E uniquement
-npm run test:e2e
-
-# Tests visuels
-npm run test:visual
-
-# Tests de performance
-npm run test:performance
-```
-
-## Scripts Utilitaires
-
-### Organisation des Scripts
-
-Tous les scripts créés durant le développement et les tests doivent être placés dans le répertoire `scripts/` à la racine du projet. Ces scripts sont considérés comme des outils de développement réutilisables et peuvent être améliorés au même titre que les tests.
-
-**Structure recommandée :**
-```
-scripts/
-├── generate/
-│   ├── pdf-examples.js          # Génération d'exemples PDF
-│   ├── sample-data.js           # Création de données de test
-│   └── documentation.js         # Génération auto de docs
-├── database/
-│   ├── migrate.js               # Scripts de migration
-│   ├── seed.js                  # Peuplement base de données
-│   └── backup.js                # Sauvegardes automatisées
-├── testing/
-│   ├── setup-test-env.js        # Configuration environnement test
-│   ├── performance-test.js      # Tests de performance
-│   └── visual-regression.js     # Tests de régression visuelle
-└── maintenance/
-    ├── cleanup.js               # Nettoyage fichiers temporaires
-    ├── health-check.js          # Vérifications système
-    └── update-dependencies.js   # Mise à jour dépendances
-```
-
-**Conventions pour les scripts :**
-- Noms explicites en kebab-case
-- Documentation en en-tête avec usage et paramètres
-- Gestion d'erreurs robuste
-- Logs informatifs
-- Configuration via variables d'environnement quand possible
-
-**Exemple de script bien structuré :**
-```javascript
-// scripts/generate/pdf-examples.js
-/**
- * Génère des PDFs d'exemple pour tous les systèmes de jeu
- * Usage: node scripts/generate/pdf-examples.js [--system=nom] [--output=dossier]
- */
-
-const PDFDocument = require('pdfkit');
-const fs = require('fs').promises;
-const path = require('path');
-
-async function generateExamples(options = {}) {
-  const { system = 'all', output = 'public/exemples' } = options;
-  
-  console.log(`🎲 Génération des exemples PDF pour: ${system}`);
-  
-  try {
-    // Logique de génération...
-    console.log('✅ Génération terminée avec succès');
-  } catch (error) {
-    console.error('❌ Erreur lors de la génération:', error.message);
-    process.exit(1);
-  }
-}
-
-// Exécution si appelé directement
-if (require.main === module) {
-  const args = process.argv.slice(2);
-  const options = {};
-  
-  args.forEach(arg => {
-    if (arg.startsWith('--system=')) options.system = arg.split('=')[1];
-    if (arg.startsWith('--output=')) options.output = arg.split('=')[1];
-  });
-  
-  generateExamples(options);
-}
-
-module.exports = { generateExamples };
-```
-
-Ces scripts peuvent être :
-- Réutilisés par l'équipe de développement
-- Intégrés dans les workflows CI/CD
-- Améliorés et optimisés au fil du temps
-- Documentés et versionnés comme le reste du code
-
 ## Ressources
 
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
-- [Playwright Testing](https://playwright.dev/docs/intro)
+- [Supertest pour les API](https://github.com/visionmedia/supertest)
 - [Testing Library](https://testing-library.com/docs/)
-- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
-- [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
+- [Documentation interne sur les tests de régression](../tests/regression/token-fillable-bug.test.js)

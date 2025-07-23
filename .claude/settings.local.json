@@ -59,7 +59,8 @@
       "Bash(mv:*)",
       "Bash(npx jsdoc:*)",
       "Bash(npx rimraf:*)",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(pnpm dev:*)"
     ],
     "deny": []
   }

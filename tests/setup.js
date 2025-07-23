@@ -1,5 +1,7 @@
 // Configuration globale pour Jest
-require('dotenv').config({ path: '.env.test' });
+// Forcer NODE_ENV=test AVANT de charger la config
+process.env.NODE_ENV = 'test';
+require('dotenv').config({ path: '.env.test', override: true });
 
 // Polyfills pour Node.js
 const { TextEncoder, TextDecoder } = require('util');

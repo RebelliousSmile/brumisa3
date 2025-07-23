@@ -11,7 +11,8 @@ class Utilisateur extends BaseModel {
         // Champs autorisés pour mass assignment
         this.fillable = [
             'nom', 'email', 'mot_de_passe', 'role', 'avatar', 
-            'preferences', 'derniere_connexion', 'statut'
+            'preferences', 'derniere_connexion', 'statut',
+            'token_recuperation', 'token_expiration'
         ];
         
         // Champs protégés

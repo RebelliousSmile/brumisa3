@@ -183,10 +183,10 @@ class EmailService extends BaseService {
     _getEmailCandidates(fallbackEmail) {
         return [
             fallbackEmail,
-            process.env.ADMIN_EMAIL,
-            process.env.RESEND_FROM_EMAIL,
-            this.fromEmail,
-            'activation@brumisa3.fr' // Email de fallback final contrôlé
+            process.env.TEST_EMAIL,        // Email de test dédié
+            process.env.ADMIN_EMAIL,       // Admin email (utilisateur réel)
+            'internet@fxguillois.email',   // Email admin connu et valide
+            process.env.RESEND_FROM_EMAIL  // En dernier recours (mais peut ne pas être utilisateur)
         ].filter(Boolean); // Supprime les valeurs null/undefined
     }
 

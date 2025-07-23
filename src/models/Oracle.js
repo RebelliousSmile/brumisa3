@@ -11,7 +11,7 @@ class Oracle extends BaseModel {
         // Champs autorisés pour mass assignment
         this.fillable = [
             'name', 'description', 'premium_required', 'filters', 
-            'is_active', 'created_by'
+            'is_active', 'created_by', 'game_system'
         ];
         
         // Champs protégés
