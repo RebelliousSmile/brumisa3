@@ -1,42 +1,81 @@
+/**
+ * Tests d'intégration API - Page d'accueil
+ * 
+ * Objectif : Tester les endpoints spécifiques à la page d'accueil
+ * - Données d'accueil (statistiques, actualités)
+ * - PDFs récents publics
+ * - Témoignages approuvés
+ * - Statistiques globales de la plateforme
+ * - Actualités et nouveautés
+ * - Systèmes de jeu disponibles
+ * 
+ * Couverture : Tous les contenus affichés sur la homepage principale
+ */
+
 const request = require('supertest');
-const { setupTest, teardownTest } = require('../helpers/test-cleanup');
+const BaseApiTest = require('../helpers/BaseApiTest');
+const TestFactory = require('../helpers/TestFactory');
 
-describe('API Home et contenu public', () => {
-    let app, server, agent, adminAgent;
-    let testUser = {
-        nom: 'Test User Home',
-        email: `test_home_${Date.now()}@example.com`,
-        motDePasse: 'motdepasse123'
-    };
+/**
+ * Classe de test pour les APIs de la page d'accueil
+ * Principe SOLID : Single Responsibility - Tests spécifiques à l'accueil
+ */
+class HomeApiTest extends BaseApiTest {
+    constructor() {
+        super({
+            timeout: 30000,
+            cleanupUsers: true
+        });
+    }
 
-    beforeAll(async () => {
-        app = require('../../src/app');
-        server = await setupTest(app);
-        
+    /**
+     * Crée le contexte de test approprié (mix public/auth)
+     */
+    createTestContext() {
+        return TestFactory.createTestContext(this.config);
+    }
+
+    /**
+     * Setup personnalisé pour créer les utilisateurs de test
+     */
+    async customSetup() {
         // Créer utilisateur normal
-        agent = request.agent(server);
-        await agent.post('/api/auth/inscription').send(testUser);
-        
+        this.testUser = await this.createAndLoginUser({
+            nom: 'Test User Home',
+            email: `test_home_${Date.now()}@example.com`,
+            motDePasse: 'motdepasse123'
+        });
+
         // Créer admin simulé
-        adminAgent = request.agent(server);
-        await adminAgent.post('/api/auth/inscription').send({
+        this.adminUser = await this.createAndLoginUser({
             nom: 'Admin Home',
             email: `admin_home_${Date.now()}@example.com`,
             motDePasse: 'motdepasse123'
         });
+    }
+}
+
+describe('API Home et contenu public', () => {
+    let testInstance;
+
+    beforeAll(async () => {
+        testInstance = new HomeApiTest();
+        await testInstance.baseSetup();
     });
 
     afterAll(async () => {
-        await teardownTest(server);
+        if (testInstance) {
+            await testInstance.baseTeardown();
+        }
     });
 
     describe('GET /api/home/donnees', () => {
         test('doit retourner données page d\'accueil (public)', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get('/api/home/donnees')
                 .expect(200);
 
-            expect(response.body.succes).toBe(true);
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('statistiques');
             expect(response.body.donnees).toHaveProperty('actualites');
             expect(response.body.donnees).toHaveProperty('temoignages');
@@ -44,10 +83,11 @@ describe('API Home et contenu public', () => {
         });
 
         test('structure attendue données accueil', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get('/api/home/donnees')
                 .expect(200);
 
+            testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees.statistiques).toMatchObject({
                 total_utilisateurs: expect.any(Number),
                 total_pdfs_generes: expect.any(Number),
@@ -70,17 +110,17 @@ describe('API Home et contenu public', () => {
                     }
                 };
 
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/newsletter/inscription')
                     .send(inscriptionData)
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.message).toContain('newsletter');
             });
 
             test('doit valider format email', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/newsletter/inscription')
                     .send({
                         email: 'email-invalide',
@@ -88,26 +128,25 @@ describe('API Home et contenu public', () => {
                     })
                     .expect(400);
 
-                expect(response.body.succes).toBe(false);
-                expect(response.body.message).toContain('email');
+                testInstance.assertValidationError(response, 'email');
             });
 
             test('doit refuser double inscription', async () => {
                 const email = `double_${Date.now()}@example.com`;
                 
                 // Première inscription
-                await request(server)
+                await request(testInstance.getServer())
                     .post('/api/newsletter/inscription')
                     .send({ email, nom: 'Test' })
                     .expect(200);
 
                 // Seconde inscription
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/newsletter/inscription')
                     .send({ email, nom: 'Test' })
                     .expect(409);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertApiResponse(response, 409, false);
                 expect(response.body.message).toContain('déjà inscrit');
             });
         });
@@ -117,20 +156,20 @@ describe('API Home et contenu public', () => {
                 // En réalité nécessiterait un vrai token généré
                 const fakeToken = 'token-test-desinscription';
                 
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post(`/api/newsletter/desinscription/${fakeToken}`)
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.message).toContain('désinscrit');
             });
 
             test('doit refuser token invalide', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/newsletter/desinscription/token-invalide')
                     .expect(404);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertApiResponse(response, 404, false);
             });
         });
     });
@@ -138,29 +177,30 @@ describe('API Home et contenu public', () => {
     describe('Actualités', () => {
         describe('GET /api/actualites', () => {
             test('doit lister actualités publiques', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/actualites')
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(Array.isArray(response.body.donnees)).toBe(true);
             });
 
             test('doit supporter pagination', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/actualites')
                     .query({ page: 1, limit: 5 })
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.donnees.length).toBeLessThanOrEqual(5);
             });
 
             test('structure attendue actualités', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/actualites')
                     .expect(200);
 
+                testInstance.assertApiResponse(response, 200, true);
                 if (response.body.donnees.length > 0) {
                     expect(response.body.donnees[0]).toMatchObject({
                         id: expect.any(Number),
@@ -175,7 +215,7 @@ describe('API Home et contenu public', () => {
 
         describe('GET /api/actualites/rss', () => {
             test('doit retourner flux RSS', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/actualites/rss')
                     .expect(200);
 
@@ -187,7 +227,7 @@ describe('API Home et contenu public', () => {
 
         describe('POST /api/actualites', () => {
             test('doit refuser création par utilisateur normal', async () => {
-                const response = await agent
+                const response = await testInstance.testUser.agent
                     .post('/api/actualites')
                     .send({
                         titre: 'Test Actualité',
@@ -195,7 +235,7 @@ describe('API Home et contenu public', () => {
                     })
                     .expect(403);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertInsufficientPermissions(response);
             });
         });
     });
@@ -203,19 +243,20 @@ describe('API Home et contenu public', () => {
     describe('Témoignages', () => {
         describe('GET /api/temoignages', () => {
             test('doit lister témoignages approuvés', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/temoignages')
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(Array.isArray(response.body.donnees)).toBe(true);
             });
 
             test('structure attendue témoignages', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/temoignages')
                     .expect(200);
 
+                testInstance.assertApiResponse(response, 200, true);
                 if (response.body.donnees.length > 0) {
                     expect(response.body.donnees[0]).toMatchObject({
                         id: expect.any(Number),
@@ -240,17 +281,17 @@ describe('API Home et contenu public', () => {
                     note: 5
                 };
 
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/temoignages')
                     .send(temoignageData)
                     .expect(201);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 201, true);
                 expect(response.body.message).toContain('modération');
             });
 
             test('doit valider données témoignage', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/temoignages')
                     .send({
                         nom: '', // Nom vide
@@ -258,11 +299,11 @@ describe('API Home et contenu public', () => {
                     })
                     .expect(400);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertValidationError(response);
             });
 
             test('doit valider note entre 1 et 5', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/temoignages')
                     .send({
                         nom: 'Test',
@@ -272,12 +313,11 @@ describe('API Home et contenu public', () => {
                     })
                     .expect(400);
 
-                expect(response.body.succes).toBe(false);
-                expect(response.body.message).toContain('note');
+                testInstance.assertValidationError(response, 'note');
             });
 
             test('doit filtrer contenu inapproprié', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/temoignages')
                     .send({
                         nom: 'Test',
@@ -287,7 +327,7 @@ describe('API Home et contenu public', () => {
                     })
                     .expect(400);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertValidationError(response);
                 expect(response.body.message).toContain('inapproprié');
             });
         });
@@ -296,21 +336,22 @@ describe('API Home et contenu public', () => {
     describe('Informations dons', () => {
         describe('GET /api/dons/infos', () => {
             test('doit retourner informations dons publiques', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/dons/infos')
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.donnees).toHaveProperty('objectifs');
                 expect(response.body.donnees).toHaveProperty('paliers');
                 expect(response.body.donnees).toHaveProperty('donateurs_recents');
             });
 
             test('structure attendue informations dons', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/dons/infos')
                     .expect(200);
 
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.donnees.objectifs).toMatchObject({
                     montant_cible: expect.any(Number),
                     montant_actuel: expect.any(Number),
@@ -322,10 +363,11 @@ describe('API Home et contenu public', () => {
             });
 
             test('ne doit pas exposer informations sensibles donateurs', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get('/api/dons/infos')
                     .expect(200);
 
+                testInstance.assertApiResponse(response, 200, true);
                 const donateurs = response.body.donnees.donateurs_recents;
                 if (donateurs.length > 0) {
                     // Doit masquer emails et montants exacts
@@ -344,35 +386,34 @@ describe('API Home et contenu public', () => {
                 // Nécessiterait d'abord créer un PDF
                 const pdfId = 1; // Simulé
 
-                const response = await agent
+                const response = await testInstance.testUser.agent
                     .post(`/api/pdfs/${pdfId}/basculer-visibilite`)
                     .expect(200);
 
-                expect(response.body.succes).toBe(true);
+                testInstance.assertApiResponse(response, 200, true);
                 expect(response.body.message).toContain('visibilité');
             });
 
             test('doit refuser modification par autre utilisateur', async () => {
-                const autreAgent = request.agent(server);
-                await autreAgent.post('/api/auth/inscription').send({
+                const autreUser = await testInstance.createAndLoginUser({
                     nom: 'Autre User',
                     email: `autre_${Date.now()}@example.com`,
                     motDePasse: 'motdepasse123'
                 });
 
-                const response = await autreAgent
+                const response = await autreUser.agent
                     .post('/api/pdfs/1/basculer-visibilite')
                     .expect(404);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertApiResponse(response, 404, false);
             });
 
             test('doit refuser accès sans authentification', async () => {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .post('/api/pdfs/1/basculer-visibilite')
                     .expect(401);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertAuthenticationRequired(response);
             });
         });
     });
@@ -385,28 +426,28 @@ describe('API Home et contenu public', () => {
             ];
 
             for (const route of routes) {
-                const response = await request(server)
+                const response = await request(testInstance.getServer())
                     .get(route)
                     .expect(404);
 
-                expect(response.body.succes).toBe(false);
+                testInstance.assertApiResponse(response, 404, false);
             }
         });
 
         test('doit valider paramètres de pagination', async () => {
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .get('/api/actualites')
                 .query({ page: -1, limit: 1000 })
                 .expect(400);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response);
             expect(response.body.message).toContain('pagination');
         });
 
         test('doit limiter taille des requêtes', async () => {
             const longMessage = 'x'.repeat(10000); // Message très long
 
-            const response = await request(server)
+            const response = await request(testInstance.getServer())
                 .post('/api/temoignages')
                 .send({
                     nom: 'Test',
@@ -416,7 +457,7 @@ describe('API Home et contenu public', () => {
                 })
                 .expect(400);
 
-            expect(response.body.succes).toBe(false);
+            testInstance.assertValidationError(response);
             expect(response.body.message).toContain('trop long');
         });
     });
