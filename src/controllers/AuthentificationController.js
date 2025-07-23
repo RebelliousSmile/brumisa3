@@ -478,6 +478,40 @@ class AuthentificationController extends BaseController {
         
         return this.repondreSucces(res, null, 'Mot de passe mis à jour avec succès');
     });
+
+    /**
+     * Test de l'endpoint mot de passe oublié avec l'email de configuration
+     * GET /api/auth/test-mot-de-passe-oublie
+     * Endpoint de développement uniquement
+     */
+    testMotDePasseOublie = this.wrapAsync(async (req, res) => {
+        // Seulement en développement
+        if (process.env.NODE_ENV === 'production') {
+            return this.repondreErreur(res, 404, 'Endpoint non disponible en production');
+        }
+
+        const emailTest = process.env.RESEND_FROM_EMAIL || 'activation@brumisa3.fr';
+        
+        try {
+            // Simuler une requête POST vers motDePasseOublie
+            const fakeReq = {
+                ...req,
+                body: { email: emailTest },
+                method: 'POST'
+            };
+
+            // Appeler la méthode motDePasseOublie
+            await this.motDePasseOublie(fakeReq, res);
+            
+        } catch (error) {
+            this.logger.error('Erreur lors du test mot de passe oublié', {
+                error: error.message,
+                stack: error.stack,
+                email_test: emailTest
+            });
+            return this.repondreErreur(res, 500, 'Erreur lors du test');
+        }
+    });
 }
 
 module.exports = AuthentificationController;

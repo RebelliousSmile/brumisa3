@@ -55,6 +55,9 @@ router.post('/auth/deconnexion', authController.deconnexion);
 router.post('/auth/mot-de-passe-oublie', authController.motDePasseOublie);
 router.post('/auth/reinitialiser-mot-de-passe', authController.reinitialiserMotDePasse);
 
+// Route de test (développement uniquement)
+router.get('/auth/test-mot-de-passe-oublie', authController.testMotDePasseOublie);
+
 // Gestion du profil
 router.get('/auth/statut', authController.verifierStatut);
 router.get('/auth/profil', authController.middlewareAuth, authController.obtenirProfil);
