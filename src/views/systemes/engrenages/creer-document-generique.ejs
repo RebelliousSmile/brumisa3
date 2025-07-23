@@ -1,0 +1,333 @@
+<div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900 text-white min-h-screen"
+     x-data="window.AlpineComponents.documentGeneriqueEngrenages()">
+    
+    <!-- Header -->
+    <div class="relative py-12 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <i class="ra ra-scroll-unfurled text-6xl text-emerald-300 mb-4 block"></i>
+                <h1 class="text-4xl font-bold mb-2 font-display">
+                    Créer un Document Engrenages
+                </h1>
+                <p class="text-xl text-emerald-200">
+                    Générez un document PDF personnalisé avec le style authentique de la Roue du Temps
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="max-w-4xl mx-auto px-4 pb-16">
+        <form @submit.prevent="genererPdf()" class="space-y-8">
+            
+            <!-- Section Informations de base -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-emerald-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-quill-ink mr-3 text-emerald-400"></i>
+                    Informations du document
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Titre du document -->
+                    <div>
+                        <label for="titre" class="block text-sm font-medium text-emerald-300 mb-2">
+                            Titre du document *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="titre"
+                            x-model="formData.titre"
+                            required
+                            placeholder="Ex: Guide des Voies du Pouvoir"
+                            class="w-full px-4 py-3 bg-gray-800 border border-emerald-500/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
+                        <p class="mt-1 text-xs text-gray-400">Ce titre apparaîtra en grand format en haut du document</p>
+                    </div>
+
+                    <!-- Citation introductive -->
+                    <div>
+                        <label for="introduction" class="block text-sm font-medium text-emerald-300 mb-2">
+                            Citation introductive (optionnel)
+                        </label>
+                        <textarea 
+                            id="introduction"
+                            x-model="formData.introduction"
+                            rows="3"
+                            placeholder="Ex: La Roue tisse selon ses desseins, et les voies du Pouvoir sont nombreuses..."
+                            class="w-full px-4 py-3 bg-gray-800 border border-emerald-500/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20 resize-none"></textarea>
+                        <p class="mt-1 text-xs text-gray-400">Cette citation apparaîtra en italique sous le titre</p>
+                    </div>
+
+                    <!-- Type de document (bande latérale) -->
+                    <div>
+                        <label for="typeDocument" class="block text-sm font-medium text-emerald-300 mb-2">
+                            Type de document
+                        </label>
+                        <input 
+                            type="text" 
+                            id="typeDocument"
+                            x-model="formData.typeDocument"
+                            placeholder="Ex: GUIDE DES VOIES"
+                            class="w-full px-4 py-3 bg-gray-800 border border-emerald-500/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
+                        <p class="mt-1 text-xs text-gray-400">Apparaît dans la bande latérale brun doré (en petites capitales)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Contenu -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-emerald-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-manuscript mr-3 text-emerald-400"></i>
+                    Contenu du document
+                </h2>
+
+                <!-- Liste des sections -->
+                <div class="space-y-4">
+                    <template x-for="(section, index) in formData.sections" :key="section.id">
+                        <div class="bg-gray-800/50 rounded-lg p-4 border border-emerald-500/20">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="text-lg font-semibold" x-text="`Section ${index + 1}`"></h3>
+                                <button 
+                                    @click="supprimerSection(index)"
+                                    type="button"
+                                    class="text-red-400 hover:text-red-300 transition-colors">
+                                    <i class="ra ra-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Niveau de la section -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-emerald-300 mb-1">
+                                        Niveau de titre
+                                    </label>
+                                    <select 
+                                        x-model="section.niveau"
+                                        class="w-full px-3 py-2 bg-gray-700 border border-emerald-500/30 rounded-lg text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
+                                        <option value="1">Titre Principal (H1)</option>
+                                        <option value="2">Sous-titre (H2 - Petites Capitales)</option>
+                                        <option value="3">Titre de Section (H3)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-emerald-300 mb-1">
+                                        Type de contenu
+                                    </label>
+                                    <select 
+                                        x-model="section.type"
+                                        class="w-full px-3 py-2 bg-gray-700 border border-emerald-500/30 rounded-lg text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
+                                        <option value="texte">Texte justifié</option>
+                                        <option value="liste">Liste à puces</option>
+                                        <option value="encadre">Encadré informatif</option>
+                                        <option value="regle">Encadré de règle</option>
+                                        <option value="citation">Citation</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Titre de la section -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-emerald-300 mb-1">
+                                    Titre de la section
+                                </label>
+                                <input 
+                                    type="text" 
+                                    x-model="section.titre"
+                                    placeholder="Ex: Les Voies du Feu"
+                                    class="w-full px-3 py-2 bg-gray-700 border border-emerald-500/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
+                            </div>
+
+                            <!-- Contenu de la section -->
+                            <div>
+                                <label class="block text-sm font-medium text-emerald-300 mb-1">
+                                    Contenu
+                                </label>
+                                <textarea 
+                                    x-model="section.contenu"
+                                    rows="6"
+                                    placeholder="Rédigez le contenu de cette section..."
+                                    class="w-full px-3 py-2 bg-gray-700 border border-emerald-500/30 rounded-lg text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20 resize-none"></textarea>
+                                <p class="mt-1 text-xs text-gray-400">
+                                    <span x-show="section.type === 'texte'">Le texte sera automatiquement justifié avec un interligne de 1.5</span>
+                                    <span x-show="section.type === 'liste'">Séparez chaque élément de liste par un retour à la ligne</span>
+                                    <span x-show="section.type === 'encadre'">Ce contenu apparaîtra dans un encadré avec fond beige</span>
+                                    <span x-show="section.type === 'regle'">Ce contenu apparaîtra dans un encadré de règle avec bordure rouge</span>
+                                    <span x-show="section.type === 'citation'">Le texte apparaîtra en italique avec une barre latérale</span>
+                                </p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Bouton ajouter section -->
+                <button 
+                    @click="ajouterSection()"
+                    type="button" 
+                    class="w-full mt-4 px-4 py-3 bg-emerald-600/20 border-2 border-dashed border-emerald-500 rounded-lg text-emerald-300 hover:bg-emerald-600/30 hover:border-emerald-400 transition-colors">
+                    <i class="ra ra-plus mr-2"></i>
+                    Ajouter une section
+                </button>
+            </div>
+
+            <!-- Section Aperçu -->
+            <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-emerald-500/20">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="ra ra-eye mr-3 text-emerald-400"></i>
+                    Aperçu du style
+                </h2>
+                
+                <div class="bg-amber-50 p-6 rounded-lg text-gray-800 font-serif" style="background-color: #F5F2E8;">
+                    <div class="border-l-4 border-yellow-600 pl-4 mb-4" style="border-color: #8B7355;">
+                        <p class="text-xs text-gray-600 mb-2" style="color: #8B7355;">APERÇU DU STYLE ENGRENAGES</p>
+                    </div>
+                    
+                    <h1 class="text-xl font-bold text-center mb-4" style="color: #2B2B2B; font-family: 'EB Garamond', serif;">
+                        TITRE PRINCIPAL
+                    </h1>
+                    
+                    <h2 class="text-lg font-semibold mb-3 tracking-wider" style="color: #8B7355; font-variant: small-caps;">
+                        SOUS-TITRE EN PETITES CAPITALES
+                    </h2>
+                    
+                    <p class="text-justify mb-3 leading-relaxed" style="color: #2B2B2B;">
+                        Ce paragraphe montre le style du corps de texte avec la police EB Garamond, 
+                        justifié avec un interligne généreux pour une lisibilité optimale sur parchemin.
+                    </p>
+                    
+                    <div class="bg-yellow-100 border border-yellow-600 p-3 mb-3 rounded" style="background-color: #E8E2D5; border-color: #8B7355;">
+                        <p class="text-sm" style="font-family: Helvetica, Arial, sans-serif; color: #2B2B2B;">
+                            <strong>Encadré informatif</strong> : Utilise une police sans-serif pour contraster avec le corps de texte.
+                        </p>
+                    </div>
+                    
+                    <ul class="mb-3">
+                        <li style="color: #2B2B2B;">• Premier élément de liste</li>
+                        <li style="color: #2B2B2B;">• Deuxième élément</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                    type="submit" 
+                    :disabled="chargement"
+                    class="flex items-center justify-center px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
+                    <i class="ra ra-scroll mr-2" x-show="!chargement"></i>
+                    <i class="ra ra-spinner-third animate-spin mr-2" x-show="chargement"></i>
+                    <span x-show="!chargement">Générer le PDF</span>
+                    <span x-show="chargement">Génération en cours...</span>
+                </button>
+                
+                <button 
+                    type="button" 
+                    @click="viderFormulaire()"
+                    class="px-8 py-4 border-2 border-emerald-500 text-emerald-300 hover:bg-emerald-500 hover:text-white font-semibold rounded-lg transition-colors">
+                    <i class="ra ra-trash mr-2"></i>
+                    Vider le formulaire
+                </button>
+            </div>
+        </form>
+
+        <!-- Messages d'état -->
+        <div x-show="message" class="mt-6">
+            <div :class="{
+                'bg-green-900/50 border-green-500 text-green-200': messageType === 'success',
+                'bg-red-900/50 border-red-500 text-red-200': messageType === 'error'
+            }" class="border rounded-lg p-4">
+                <p x-text="message"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Composant Alpine.js pour le formulaire Engrenages
+window.AlpineComponents = window.AlpineComponents || {};
+window.AlpineComponents.documentGeneriqueEngrenages = () => ({
+    formData: {
+        titre: '',
+        introduction: '',
+        typeDocument: '',
+        sections: []
+    },
+    chargement: false,
+    message: '',
+    messageType: '',
+
+    init() {
+        // Ajouter une section par défaut
+        this.ajouterSection();
+    },
+
+    ajouterSection() {
+        this.formData.sections.push({
+            id: Date.now(),
+            niveau: '2',
+            type: 'texte',
+            titre: '',
+            contenu: ''
+        });
+    },
+
+    supprimerSection(index) {
+        this.formData.sections.splice(index, 1);
+    },
+
+    viderFormulaire() {
+        this.formData = {
+            titre: '',
+            introduction: '',
+            typeDocument: '',
+            sections: []
+        };
+        this.ajouterSection();
+        this.message = '';
+    },
+
+    async genererPdf() {
+        if (!this.formData.titre.trim()) {
+            this.afficherMessage('Veuillez saisir un titre pour le document', 'error');
+            return;
+        }
+
+        this.chargement = true;
+        this.message = '';
+
+        try {
+            const response = await fetch('/api/pdfs/document-generique-anonyme/engrenages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(this.formData)
+            });
+
+            const result = await response.json();
+
+            if (result.succes) {
+                this.afficherMessage('PDF généré avec succès !', 'success');
+                // Télécharger le PDF
+                if (result.data?.lien_telechargement) {
+                    window.open(result.data.lien_telechargement, '_blank');
+                }
+            } else {
+                this.afficherMessage(result.message || 'Erreur lors de la génération du PDF', 'error');
+            }
+        } catch (error) {
+            console.error('Erreur génération PDF:', error);
+            this.afficherMessage('Erreur de connexion lors de la génération', 'error');
+        } finally {
+            this.chargement = false;
+        }
+    },
+
+    afficherMessage(msg, type) {
+        this.message = msg;
+        this.messageType = type;
+        setTimeout(() => {
+            this.message = '';
+        }, 5000);
+    }
+});
+</script>

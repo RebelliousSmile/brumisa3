@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{titre}}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+        
+        /* Reset et base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Variables CSS - Thème Engrenages (Roue du Temps) */
+        :root {
+            --eng-parchemin: #F5F2E8;          /* Fond parchemin */
+            --eng-texte: #2B2B2B;              /* Texte principal */
+            --eng-brun-dore: #8B7355;          /* Ornements brun doré */
+            --eng-beige-encadre: #E8E2D5;      /* Fond encadrés */
+            --eng-rouge-accent: #8B0000;       /* Rouge d'accentuation */
+            --eng-gris-doux: #A0937D;          /* Variations subtiles */
+            --eng-marges: 72pt;                /* 2,5 cm selon spécifications */
+        }
+        
+        body {
+            font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.5;              /* Interligne 1.5x selon spécifications */
+            color: var(--eng-texte);
+            background: var(--eng-parchemin);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Configuration pour impression A4 */
+        @page {
+            size: A4;
+            margin: var(--eng-marges);      /* 2,5 cm sur tous côtés */
+            background: var(--eng-parchemin);
+            
+            @bottom-center {
+                content: counter(page);
+                font-family: 'EB Garamond', serif;
+                font-size: 10pt;
+                color: var(--eng-texte);
+                margin-bottom: 36pt;        /* 1,25 cm du bord */
+            }
+        }
+        
+        /* Container du document */
+        .document {
+            background: var(--eng-parchemin);
+            position: relative;
+            max-width: 100%;
+        }
+        
+        /* Bande latérale brun doré - style noble */
+        .page-header {
+            position: fixed;
+            top: 0;
+            right: calc(var(--eng-marges) * -1);
+            width: 20mm;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--eng-brun-dore) 0%, var(--eng-gris-doux) 100%);
+            color: var(--eng-parchemin);
+            z-index: 100;
+            border-left: 2px solid var(--eng-rouge-accent);
+        }
+        
+        @media print {
+            .page-header {
+                position: fixed;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* Texte vertical dans la bande - style élégant */
+        .sidebar-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            position: absolute;
+            bottom: 40mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'EB Garamond', serif;
+            font-size: 12pt;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-variant: small-caps;       /* Petites capitales selon spécifications */
+        }
+        
+        /* Compteur de pages CSS */
+        body {
+            counter-reset: page;
+        }
+        
+        /* Zone de contenu principal */
+        .content {
+            margin: 0;
+            padding: 0;
+            text-align: justify;            /* Justification complète selon spécifications */
+            hyphens: auto;                  /* Césure automatique */
+        }
+        
+        /* Hiérarchie typographique - 3 niveaux selon spécifications */
+        h1 {
+            font-family: 'EB Garamond', serif;
+            font-size: 24pt;
+            font-weight: 600;
+            color: var(--eng-texte);
+            text-align: center;
+            margin: 0 0 18pt 0;             /* 12-18pt après titres */
+            letter-spacing: 0.05em;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            font-family: 'EB Garamond', serif;
+            font-size: 18pt;
+            font-weight: 500;
+            color: var(--eng-brun-dore);
+            margin: 15pt 0 12pt 0;
+            text-transform: uppercase;
+            font-variant: small-caps;       /* Petites capitales pour sous-titres */
+            letter-spacing: 0.1em;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            font-family: 'EB Garamond', serif;
+            font-size: 14pt;
+            font-weight: 500;
+            color: var(--eng-brun-dore);
+            margin: 12pt 0 8pt 0;
+            text-transform: uppercase;
+            font-variant: small-caps;
+            letter-spacing: 0.1em;
+            page-break-after: avoid;
+        }
+        
+        /* Paragraphes - espacement selon spécifications */
+        p {
+            margin: 0 0 7pt 0;              /* 6-8pt entre paragraphes */
+            text-align: justify;
+            orphans: 2;                     /* Éviter lignes orphelines */
+            widows: 2;                      /* Éviter lignes veuves */
+        }
+        
+        /* Listes - style élégant */
+        ul, ol {
+            margin: 7pt 0 7pt 20pt;
+            padding: 0;
+        }
+        
+        ul li {
+            list-style: none;
+            position: relative;
+            margin-bottom: 4pt;
+        }
+        
+        ul li::before {
+            content: '•';
+            color: var(--eng-brun-dore);
+            font-size: 1.2em;
+            position: absolute;
+            left: -15pt;
+        }
+        
+        ol li {
+            margin-bottom: 4pt;
+            color: var(--eng-texte);
+        }
+        
+        ol li::marker {
+            color: var(--eng-brun-dore);
+            font-weight: 500;
+        }
+        
+        /* Emphases */
+        em, i {
+            font-style: italic;
+            color: var(--eng-brun-dore);
+        }
+        
+        strong, b {
+            font-weight: 600;
+            color: var(--eng-texte);
+        }
+        
+        /* Encadrés - sans-serif pour contraster selon spécifications */
+        .encadre, .info-box, .rule-box {
+            background: var(--eng-beige-encadre);
+            border: 1px solid var(--eng-brun-dore);
+            border-radius: 4pt;
+            padding: 12pt;
+            margin: 15pt 0;
+            font-family: 'Helvetica', 'Arial', sans-serif;  /* Sans-serif pour contraster */
+            font-size: 11pt;
+            line-height: 1.4;
+            page-break-inside: avoid;
+        }
+        
+        .rule-box {
+            border: 2px solid var(--eng-rouge-accent);
+            border-left: 6pt solid var(--eng-rouge-accent);
+        }
+        
+        .rule-box h4 {
+            color: var(--eng-rouge-accent);
+            font-family: 'EB Garamond', serif;
+            font-size: 12pt;
+            font-weight: 600;
+            margin: 0 0 8pt 0;
+            text-transform: uppercase;
+            font-variant: small-caps;
+        }
+        
+        /* Citations */
+        blockquote {
+            border-left: 4pt solid var(--eng-brun-dore);
+            padding-left: 12pt;
+            margin: 12pt 0;
+            font-style: italic;
+            color: var(--eng-gris-doux);
+            background: transparent;
+        }
+        
+        /* Lignes de séparation simples */
+        hr {
+            border: none;
+            border-top: 1px solid var(--eng-brun-dore);
+            margin: 15pt 0;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Tables - style élégant */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0;
+            font-size: 11pt;
+        }
+        
+        th, td {
+            border: 1px solid var(--eng-brun-dore);
+            padding: 6pt 8pt;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--eng-beige-encadre);
+            font-weight: 600;
+            color: var(--eng-brun-dore);
+            text-transform: uppercase;
+            font-variant: small-caps;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Classes utilitaires */
+        .center { text-align: center; }
+        .right { text-align: right; }
+        .small-caps { font-variant: small-caps; text-transform: uppercase; letter-spacing: 0.1em; }
+        .accent-color { color: var(--eng-brun-dore); }
+        .danger-color { color: var(--eng-rouge-accent); }
+        
+        /* Éviter les éléments complexes selon recommandations PDFKit */
+        .avoid-complex {
+            /* Pas de bordures celtiques complexes */
+            /* Pas de textures */
+            /* Pas de multi-colonnes */
+            /* Pas de lettrines */
+        }
+        
+        /* Gestion des sauts de page */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .no-break {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <!-- Bande latérale avec texte de l'univers -->
+        <div class="page-header">
+            <div class="sidebar-text">{{titre || 'LA ROUE DU TEMPS'}}</div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="content">
+            <!-- Titre principal -->
+            <h1>{{titre}}</h1>
+            
+            <!-- Contenu dynamique -->
+            {{{contenu}}}
+            
+            <!-- Footer discret -->
+            <div style="margin-top: 40pt; padding-top: 12pt; border-top: 1px solid var(--eng-gris-doux); text-align: center; font-size: 9pt; color: var(--eng-gris-doux);">
+                <p>Document généré par Brumisa3 - Générateur PDF JDR</p>
+                <p style="font-variant: small-caps; letter-spacing: 0.1em;">« La Roue tisse selon ses desseins »</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

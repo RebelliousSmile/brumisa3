@@ -60,14 +60,24 @@ router.get('/monsterhearts/document-generique', (req, res) => {
     });
 });
 
-// Page Engrenages
+// Page Engrenages (Roue du Temps)
 router.get('/engrenages', (req, res) => {
     res.render('systemes/engrenages', {
-        title: 'Engrenages & Sortilèges - Générateur PDF JDR',
-        description: 'Créez des fiches de personnages pour Engrenages & Sortilèges',
+        title: 'Engrenages (Roue du Temps) - Générateur PDF JDR',
+        description: 'Créez des aides de jeu pour la Roue du Temps',
         systeme: 'engrenages'
     });
 });
+
+// Formulaire document générique Engrenages
+router.get('/engrenages/document-generique', (req, res) => {
+    res.render('systemes/engrenages/creer-document-generique', {
+        title: 'Créer un Document Engrenages',
+        description: 'Créez un document PDF personnalisé avec le style Roue du Temps',
+        systeme: 'engrenages'
+    });
+});
+
 
 // Page Metro 2033
 router.get('/metro2033', (req, res) => {
