@@ -3,6 +3,7 @@ const ClassPlanDocument = require('./documents/ClassPlanDocument');
 const CharacterSheetDocument = require('./documents/CharacterSheetDocument');
 
 const MonsterheartsTheme = require('./themes/MonsterheartsTheme');
+const ZombiologyTheme = require('./themes/ZombiologyTheme');
 
 /**
  * Factory pour créer les documents PDF avec la bonne architecture
@@ -13,7 +14,7 @@ class DocumentFactory {
     /**
      * Crée un document selon le type et le système
      * @param {string} documentType - Type de document ('generic', 'class-plan', 'character-sheet')
-     * @param {string} system - Système de jeu ('monsterhearts', 'engrenages', 'metro2033', 'mistengine')
+     * @param {string} system - Système de jeu ('monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology')
      * @param {Object} options - Options supplémentaires
      * @returns {Object} Instance du document
      */
@@ -81,6 +82,9 @@ class DocumentFactory {
                 console.warn('⚠️ MistTheme pas encore implémenté');
                 return null;
                 
+            case 'zombiology':
+                return new ZombiologyTheme();
+                
             case null:
             case undefined:
                 // Document générique sans thème spécifique
@@ -118,6 +122,10 @@ class DocumentFactory {
             mistengine: {
                 'document-generique': { documentType: 'generic' },
                 'feuille-personnage': { documentType: 'character-sheet' }
+            },
+            zombiology: {
+                'document-generique': { documentType: 'generic' },
+                'feuille-personnage': { documentType: 'character-sheet' }
             }
         };
         
@@ -147,7 +155,7 @@ class DocumentFactory {
      * @returns {Array} Liste des systèmes
      */
     static getSupportedSystems() {
-        return ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+        return ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
     }
     
     /**
@@ -196,6 +204,12 @@ class DocumentFactory {
             mistengine: {
                 name: 'Mist Engine',
                 hasTheme: false, // TODO: Implémenter
+                supportedDocuments: ['generic', 'character-sheet'],
+                templateMappings: ['document-generique', 'feuille-personnage']
+            },
+            zombiology: {
+                name: 'Zombiology',
+                hasTheme: true,
                 supportedDocuments: ['generic', 'character-sheet'],
                 templateMappings: ['document-generique', 'feuille-personnage']
             }

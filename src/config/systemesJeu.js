@@ -196,6 +196,115 @@ const systemesJeu = {
       icone: 'ra-crystal-ball', // boule de cristal pour mystique
       iconographie: ['brouillard', 'runes', 'cristaux', 'spirales', 'étoiles']
     }
+  },
+
+  // Zombiology - Survival d100
+  zombiology: {
+    nom: 'Zombiology',
+    code: 'zombiology',
+    description: 'JdR de survie zombie avec système d100',
+    version: '2e édition',
+    
+    attributs: {
+      // Physiques
+      for: { nom: 'Force', min: 10, max: 80, description: 'Puissance physique' },
+      con: { nom: 'Constitution', min: 10, max: 80, description: 'Résistance et santé' },
+      dex: { nom: 'Dextérité', min: 10, max: 80, description: 'Agilité et précision' },
+      rap: { nom: 'Rapidité', min: 10, max: 80, description: 'Vitesse et réflexes' },
+      // Mentales
+      log: { nom: 'Logique', min: 10, max: 80, description: 'Intelligence et raisonnement' },
+      vol: { nom: 'Volonté', min: 10, max: 80, description: 'Détermination et résistance mentale' },
+      per: { nom: 'Perception', min: 10, max: 80, description: 'Sens et intuition' },
+      cha: { nom: 'Charisme', min: 10, max: 80, description: 'Présence et influence sociale' }
+    },
+
+    competences: {
+      formations: ['Classe sociale', 'Professionnelle', 'Personnelle/Loisirs'],
+      categories: [
+        'Arme sociale', 'Conduite', 'Sport', 'Survie', 
+        'Art', 'Combat', 'Gestion de ressources', 'Bricolage',
+        'Culture générale', 'Langue'
+      ],
+      specialisations: true // Les compétences peuvent avoir des spécialisations
+    },
+
+    traits: {
+      caractere: {
+        ambitieux: { localisations: ['impuissance', 'peur', 'culpabilite'] },
+        arrogant: { localisations: ['tristesse', 'culpabilite', 'peur'] },
+        autoritaire: { localisations: ['anxiete', 'impuissance', 'culpabilite'] },
+        calme: { localisations: ['anxiete', 'colere', 'peur'] },
+        colerique: { localisations: ['anxiete', 'tristesse', 'culpabilite'] },
+        courageux: { localisations: ['colere', 'tristesse', 'peur'] },
+        credule: { localisations: ['colere', 'tristesse', 'culpabilite'] },
+        excessif: { localisations: ['anxiete', 'impuissance', 'peur'] },
+        faineant: { localisations: ['anxiete', 'colere', 'culpabilite'] },
+        fier: { localisations: ['anxiete', 'tristesse', 'peur'] },
+        negatif: { localisations: ['anxiete', 'impuissance', 'tristesse'] },
+        patient: { localisations: ['anxiete', 'impuissance', 'colere'] },
+        perseverant: { localisations: ['impuissance', 'colere', 'tristesse'] },
+        prudent: { localisations: ['anxiete', 'colere', 'tristesse'] },
+        solitaire: { localisations: ['anxiete', 'peur', 'culpabilite'] },
+        tetu: { localisations: ['impuissance', 'colere', 'peur'] },
+        timide: { localisations: ['anxiete', 'colere', 'culpabilite'] },
+        violent: { localisations: ['impuissance', 'tristesse', 'culpabilite'] }
+      }
+    },
+
+    mechanics: {
+      resolution: {
+        type: 'd100',
+        succes: 'Jet ≤ Compétence% + Caractéristique%',
+        critique: 'Doubles (11, 22, 33...)',
+        qualiteReussite: 'Dizaine du résultat (0-9)'
+      },
+      
+      sante: {
+        seuils: ['Superficiel', 'Léger', 'Grave', 'Profond'],
+        physique: { 
+          calcul: 'Base + PP',
+          pp: '4 + 1 par carac physique ≥ 40% (max 8)'
+        },
+        mentale: { 
+          calcul: 'Base + PM',
+          pm: '4 + 1 par carac mentale ≥ 40% (max 8)',
+          caractere: 'PM +2 sur 3 localisations'
+        },
+        localisations: {
+          physiques: ['Tête', 'Torse', 'Bras', 'Jambes'],
+          mentales: ['Anxiété', 'Colère', 'Culpabilité', 'Impuissance', 'Peur', 'Tristesse']
+        }
+      },
+
+      stress: {
+        types: ['Adrénaline', 'Panique'],
+        effet: '+1d100 favorable ou défavorable',
+        usage: 'Limité par scène'
+      },
+
+      infection: {
+        test: 'CON% vs Virus%',
+        etapes: ['Infection', 'Mort clinique', 'Rigidité cadavérique', 'Réanimation'],
+        panique: 'Attaque psychologique lors de morsure'
+      },
+
+      phases: {
+        aventure: 'Exploration et investigation',
+        role: 'Interactions sociales',
+        combat: 'Affrontements tactiques',
+        gestion: 'Ressources et survie'
+      }
+    },
+
+    themes: {
+      couleurPrimaire: '#7f1d1d', // rouge très foncé (red-900)
+      couleurSecondaire: '#991b1b', // rouge foncé (red-800)
+      couleurAccent: '#dc2626', // rouge vif (red-600)
+      couleurTailwind: 'red',
+      police: 'survival',
+      icone: 'ra-biohazard', // symbole biohazard
+      iconographie: ['zombies', 'barricades', 'armes', 'virus', 'survie']
+    }
   }
 };
 

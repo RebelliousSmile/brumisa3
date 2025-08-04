@@ -100,12 +100,13 @@ par la communauté ce mois-ci.</div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <% 
-                        const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+                        const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
                         const icones = {
                             'monsterhearts': 'ra-heartburn',
                             'engrenages': 'ra-candle', 
                             'metro2033': 'ra-pills',
-                            'mistengine': 'ra-ocarina'
+                            'mistengine': 'ra-ocarina',
+                            'zombiology': 'ra-biohazard'
                         };
                         
                         // Temporary mock data until systemesJeu is properly passed
@@ -113,7 +114,8 @@ par la communauté ce mois-ci.</div>
                             { code: 'monsterhearts', nom: 'Monsterhearts', themes: { couleurTailwind: 'purple' } },
                             { code: 'engrenages', nom: 'Roue du Temps', themes: { couleurTailwind: 'emerald' } },
                             { code: 'metro2033', nom: 'Metro 2033', themes: { couleurTailwind: 'red' } },
-                            { code: 'mistengine', nom: 'Mist Engine', themes: { couleurTailwind: 'pink' } }
+                            { code: 'mistengine', nom: 'Mist Engine', themes: { couleurTailwind: 'pink' } },
+                            { code: 'zombiology', nom: 'Zombiology', themes: { couleurTailwind: 'red' } }
                         ];
                         
                         const systemesData = (typeof systemesJeu !== 'undefined' && systemesJeu) ? systemesJeu : mockSystemes;
@@ -239,7 +241,7 @@ par la communauté ce mois-ci.</div>
                         Restez informé
                     </h3>
                     <p class="text-gray-300 mb-6 font-serif">
-                        Soyez averti des nouvelles fonctionnalités pour les 4 jeux de la plateforme : Monsterhearts, Engrenages, Metro 2033 et Mist Engine.
+                        Soyez averti des nouvelles fonctionnalités pour les 5 jeux de la plateforme : Monsterhearts, Engrenages, Metro 2033, Mist Engine et Zombiology.
                     </p>
                     
                     <form @submit.prevent="inscrireNewsletter()" x-show="!newsletterInscrit">
@@ -390,6 +392,7 @@ par la communauté ce mois-ci.</div>
                             <option value="engrenages">Engrenages & Sortilèges</option>
                             <option value="metro2033">Metro 2033</option>
                             <option value="mistengine">Mist Engine</option>
+                            <option value="zombiology">Zombiology</option>
                         </select>
                         <select x-model="nouveauTemoignage.note" required class="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none">
                             <option value="">Note *</option>

@@ -27,7 +27,7 @@ class DatabaseTestHelper {
         
         try {
             // Supprimer l'utilisateur de test et toutes ses données liées (CASCADE)
-            await db.query(
+            await db.run(
                 'DELETE FROM utilisateurs WHERE email = $1',
                 [email]
             );
@@ -56,7 +56,11 @@ class DatabaseTestHelper {
      */
     async isAvailable() {
         try {
-            await db.query('SELECT 1');
+            // Initialiser le gestionnaire de DB si pas encore fait
+            if (!db.isConnected) {
+                await db.init();
+            }
+            await db.get('SELECT 1 as test');
             return true;
         } catch (error) {
             return false;

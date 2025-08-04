@@ -35,7 +35,15 @@ class TestFactory {
             getApp() {
                 if (!app) {
                     // Chargement dynamique pour éviter les imports prématurés
-                    return require('../../src/app');
+                    const appModule = require('../../src/app');
+                    // Vérifier si c'est l'ancienne structure avec .app ou .instance
+                    if (appModule.app) {
+                        return appModule.app;
+                    } else if (appModule.instance) {
+                        return appModule.instance;
+                    }
+                    // Si c'est directement l'app Express
+                    return appModule;
                 }
                 return app;
             },
@@ -43,7 +51,32 @@ class TestFactory {
             // Méthodes de commodité
             async setup() {
                 const dbInit = await database.initialize();
-                const appInstance = this.getApp();
+                
+                // Pour les tests, utiliser une app simplifiée
+                let appInstance;
+                if (environment === 'test') {
+                    // Utiliser l'app de test qui ne nécessite pas de DB
+                    const createTestApp = require('./createTestApp');
+                    appInstance = createTestApp();
+                } else {
+                    // Charger et initialiser l'application normale
+                    const appModule = require('../../src/app');
+                    
+                    // Si c'est le nouveau format avec initialize()
+                    if (appModule.initialize && typeof appModule.initialize === 'function') {
+                        await appModule.initialize();
+                    }
+                    
+                    // Récupérer l'instance Express
+                    if (appModule.instance) {
+                        appInstance = appModule.instance;
+                    } else if (appModule.app) {
+                        appInstance = appModule.app;
+                    } else {
+                        appInstance = appModule;
+                    }
+                }
+                
                 const { server: serverInstance, port, url } = await server.createTestServer(appInstance);
                 
                 return {
@@ -58,7 +91,9 @@ class TestFactory {
             },
             
             async teardown(context) {
-                await auth.cleanup();
+                if (auth && auth.cleanup) {
+                    await auth.cleanup();
+                }
                 await server.stopAllServers();
                 await database.closeConnections();
             }
