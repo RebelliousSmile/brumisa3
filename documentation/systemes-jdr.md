@@ -91,6 +91,31 @@ Moteur narratif mystique pour des histoires atmosphériques où le brouillard ca
 
 ---
 
+## ☣️ Zombiology (d100)
+
+### Vue d'ensemble
+JDR de survie zombie avec système d100, où les joueurs incarnent des survivants dans un monde post-apocalyptique face à une épidémie zombie.
+
+### Mécaniques de jeu
+- **Attributs** : 8 caractéristiques (10-80)
+  - Physiques : Force, Constitution, Dextérité, Rapidité
+  - Mentales : Logique, Volonté, Perception, Charisme
+- **Système** : d100 sous compétence% + caractéristique%
+- **Concepts clés** :
+  - Compétences avec spécialisations
+  - Traits de caractère et localisations émotionnelles
+  - Santé physique et mentale séparées
+  - Stress (Adrénaline/Panique)
+  - Infection virale progressive
+
+### Style visuel PDF
+- **Thème** : Survival horror biologique
+- **Couleurs** : Rouges profonds, verts toxiques, noirs
+- **Éléments** : Biohazard, zombies, barricades, virus
+- **Typographie** : Sans-serif technique/militaire
+
+---
+
 ## Extensions Futures Prévues
 
 ### 🗡️ 7ème Mer (2e édition)

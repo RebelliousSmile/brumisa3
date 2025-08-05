@@ -3,6 +3,7 @@ const AuthentificationController = require('../controllers/AuthentificationContr
 const DonationController = require('../controllers/DonationController');
 const OracleController = require('../controllers/OracleController');
 const { systemesJeu } = require('../config/systemesJeu');
+const SystemeUtils = require('../utils/SystemeUtils');
 
 const router = express.Router();
 
@@ -15,7 +16,6 @@ const oracleController = new OracleController();
 
 // Middleware pour injecter les données utilisateur dans les templates
 router.use((req, res, next) => {
-    const { SystemeUtils } = require('../config/systemesJeu');
     res.locals.utilisateur = req.session?.utilisateur || null;
     res.locals.systemes = systemesJeu;
     res.locals.systemesJeu = SystemeUtils.getAllSystemes();
@@ -29,14 +29,28 @@ router.use((req, res, next) => {
 // ===== PAGE D'ACCUEIL =====
 
 router.get('/', (req, res) => {
-    const { SystemeUtils } = require('../config/systemesJeu');
+    const SystemThemeService = require('../services/SystemThemeService');
+    const SystemCardViewModel = require('../viewModels/SystemCardViewModel');
+    
+    // Injection de dépendances
+    const viewModel = new SystemCardViewModel(SystemThemeService);
+    
+    // Configuration des colonnes
+    const mainColumnCodes = ['monsterhearts', 'metro2033', 'zombiology'];
+    const secondColumnCodes = ['engrenages', 'mistengine'];
+    
+    // Préparation des données via le ViewModel
+    const allSystems = SystemeUtils.getAllSystemes();
+    const systemCards = viewModel.groupByColumns(mainColumnCodes, secondColumnCodes, allSystems);
+    
     res.render('index', {
         title: 'Générateur PDF JDR - Créez vos fiches de personnages',
         meta: {
             description: 'Créez et partagez des fiches de personnages pour Monsterhearts, Engrenages & Sortilèges, Metro 2033 et Mist Engine',
             keywords: 'jdr, jeu de rôle, pdf, fiche personnage, monsterhearts, engrenages, metro 2033'
         },
-        systemesJeu: SystemeUtils.getAllSystemes()
+        systemesJeu: SystemeUtils.getAllSystemes(),
+        systemCards: systemCards
     });
 });
 
@@ -97,10 +111,19 @@ router.get('/mistengine', (req, res) => {
     });
 });
 
+// Page Zombiology
+router.get('/zombiology', (req, res) => {
+    res.render('systemes/zombiology', {
+        title: 'Zombiology - Générateur PDF JDR',
+        description: 'Créez des fiches de personnages pour Zombiology',
+        systeme: 'zombiology'
+    });
+});
+
 // Route de compatibilité pour /systemes/:systeme -> redirection vers /:systeme
 router.get('/systemes/:systeme', (req, res) => {
     const systeme = req.params.systeme;
-    const routesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+    const routesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
     
     if (routesValides.includes(systeme)) {
         // Redirection permanente vers la route courte

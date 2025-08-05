@@ -28,6 +28,7 @@ module.exports = {
         'engrenages': '#3b82f6', // Bleu
         'metro2033': '#dc2626', // Rouge
         'mistengine': '#ec4899', // Rose
+        'zombiology': '#d4af37', // Or métallique
         
         // Monsterhearts - Gothic Romance (conservé pour compatibilité)
         'monster': {
@@ -80,6 +81,19 @@ module.exports = {
           700: '#6d28d9',
           800: '#5b21b6',
           900: '#4c1d95',
+        },
+        // Zombiology - Survival Horror (conservé pour compatibilité)
+        'zombie': {
+          50: '#fefaf0',
+          100: '#fdf4d9',
+          200: '#f9e4a1',
+          300: '#f5d066',
+          400: '#edb637',
+          500: '#d4af37',
+          600: '#b8941f',
+          700: '#9a7a17',
+          800: '#7d6119',
+          900: '#684f18',
         }
       },
       fontFamily: {
@@ -91,7 +105,8 @@ module.exports = {
         'gothic': ['Crimson Text', 'serif'],
         'steampunk': ['Playfair Display', 'serif'],
         'dystopian': ['Roboto Condensed', 'sans-serif'],
-        'mystical': ['Spectral', 'serif']
+        'mystical': ['Spectral', 'serif'],
+        'survival': ['Bebas Neue', 'Impact', 'Arial Black', 'sans-serif']
       },
       fontSize: {
         // Tailles personnalisées selon la charte

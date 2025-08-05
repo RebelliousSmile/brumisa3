@@ -34,6 +34,7 @@
 | **Engrenages** | `#10b981` | `emerald-500` | Bordures, badges, différenciation visuelle |
 | **Metro 2033** | `#dc2626` | `red-600` | Bordures, badges, différenciation visuelle |
 | **Mist Engine** | `#ec4899` | `pink-500` | Bordures, badges, différenciation visuelle |
+| **Zombiology** | `#d4af37` | Or métallique | Bordures, badges, différenciation visuelle |
 
 ### Couleurs fonctionnelles
 
@@ -64,6 +65,7 @@
   --engrenages: #10b981;     /* emerald-500 */
   --metro2033: #dc2626;      /* red-600 */
   --mistengine: #ec4899;     /* pink-500 */
+  --zombiology: #d4af37;     /* or métallique */
   
   /* Couleur par défaut brumisa3 (= générique) */
   --brumisa-bleu: #3b82f6;   /* blue-500 - Couleur principale du site */
@@ -292,6 +294,18 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
   @apply text-pink-400 border-pink-500
          hover:bg-pink-600 hover:text-white hover:border-pink-600;
 }
+
+/* Zombiology - Or métallique */
+.btn-zombiology {
+  @apply bg-zombie-500 text-gray-900 border-zombie-500
+         hover:bg-zombie-600 hover:border-zombie-600
+         focus:ring-zombie-400;
+}
+
+.btn-outline.btn-zombiology {
+  @apply text-zombie-400 border-zombie-500
+         hover:bg-zombie-500 hover:text-gray-900 hover:border-zombie-500;
+}
 ```
 
 #### Exemples d'utilisation
@@ -478,6 +492,7 @@ Les couleurs spécifiques aux systèmes ne sont utilisées que pour la **différ
 | **Engrenages** | Vert émeraude | `#10b981` | Bordures, badges uniquement |
 | **Metro 2033** | Rouge | `#dc2626` | Bordures, badges uniquement |
 | **Mist Engine** | Rose | `#ec4899` | Bordures, badges uniquement |
+| **Zombiology** | Or métallique | `#d4af37` | Bordures, badges uniquement |
 
 ### ❌ Ce qu'il ne faut PAS faire
 
@@ -563,6 +578,24 @@ font-family: 'Dancing Script', 'Kalam', cursive; /* Poétique, manuscrit */
 /* Décorations : nuages, brumes, calligraphies */
 /* Ambiance : Douce, onirique, poétique */
 /* Effets : flou artistique, aquarelle */
+```
+
+##### ☣️ Zombiology - Survival Horror
+```css
+/* Style PDF Zombiology */
+:root {
+  --zombie-primary: #7f1d1d;    /* Rouge très foncé (red-900) */
+  --zombie-secondary: #991b1b;  /* Rouge foncé (red-800) */
+  --zombie-accent: #22c55e;     /* Vert infection (green-500) */
+  --zombie-danger: #dc2626;     /* Rouge vif (red-600) */
+  --zombie-bg: linear-gradient(135deg, #0f0f0f 0%, #1a0a0a 50%, #450a0a 100%);
+}
+
+/* Polices thématiques */
+font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
+/* Décorations : biohazard, sang, barricades */
+/* Ambiance : Survie, horreur, urgence médicale */
+/* Effets : éclaboussures, distorsion, contamination */
 ```
 
 ### Principe d'application
@@ -671,6 +704,13 @@ font-family: 'Dancing Script', 'Kalam', cursive; /* Poétique, manuscrit */
 - **Décorations** : Nuages, brumes, calligraphies
 - **Ambiance** : Douce, onirique, artistique  
 - **Éviter** : Polices rigides, couleurs agressives, angles durs
+
+##### ☣️ Zombiology - Survival Horror
+- **Polices** : Bebas Neue, Impact (urgence, lisibilité)
+- **Couleurs** : Rouges sang, verts toxiques, noirs profonds
+- **Décorations** : Symboles biohazard, éclaboussures, barricades
+- **Ambiance** : Urgence médicale, survie, contamination
+- **Éviter** : Polices élégantes, couleurs vives, décorations propres
 
 #### Checklist qualité PDF
 
@@ -1006,6 +1046,7 @@ module.exports = {
         'engrenages': '#10b981',
         'metro2033': '#dc2626',
         'mistengine': '#ec4899',
+        'zombiology': '#d4af37',
         'generique': '#3b82f6',
       },
       fontFamily: {

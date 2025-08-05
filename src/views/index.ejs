@@ -98,50 +98,56 @@ par la communauté ce mois-ci.</div>
                         </p>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <% 
-                        const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
-                        const icones = {
-                            'monsterhearts': 'ra-heartburn',
-                            'engrenages': 'ra-candle', 
-                            'metro2033': 'ra-pills',
-                            'mistengine': 'ra-ocarina',
-                            'zombiology': 'ra-biohazard'
-                        };
-                        
-                        // Temporary mock data until systemesJeu is properly passed
-                        const mockSystemes = [
-                            { code: 'monsterhearts', nom: 'Monsterhearts', themes: { couleurTailwind: 'purple' } },
-                            { code: 'engrenages', nom: 'Roue du Temps', themes: { couleurTailwind: 'emerald' } },
-                            { code: 'metro2033', nom: 'Metro 2033', themes: { couleurTailwind: 'red' } },
-                            { code: 'mistengine', nom: 'Mist Engine', themes: { couleurTailwind: 'pink' } },
-                            { code: 'zombiology', nom: 'Zombiology', themes: { couleurTailwind: 'red' } }
-                        ];
-                        
-                        const systemesData = (typeof systemesJeu !== 'undefined' && systemesJeu) ? systemesJeu : mockSystemes;
-                        
-                        systemesOrdered.forEach(codeSysteme => {
-                            const systeme = systemesData.find(s => s.code === codeSysteme);
-                            if (!systeme) return;
-                            
-                            const couleur = systeme.themes.couleurTailwind;
-                            const icone = icones[codeSysteme];
-                        %>
-                        <div data-carte-systeme 
-                             @click="naviguerVersSysteme('<%= systeme.code %>')" 
-                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
-                            <div class="text-center">
-                                <div class="w-16 h-16 bg-<%= couleur %>-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-<%= couleur %>-500/30">
-                                    <i class="ra <%= icone %> text-<%= couleur %>-400 text-2xl"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-2"><%= systeme.nom %></h3>
-                                <p class="text-sm text-gray-400 mb-4">
-                                    <%= systeme.description %>
-                                </p>
-                                <span class="inline-block text-xs bg-<%= couleur %>-500/20 text-<%= couleur %>-400 px-3 py-1 rounded-full border border-<%= couleur %>-500/30 font-display"><%= systeme.version %></span>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Colonne principale (2/3) -->
+                        <div class="lg:col-span-2">
+                            <div class="grid grid-cols-1 gap-6">
+                                <% if (locals.systemCards && locals.systemCards.mainColumn) { %>
+                                    <% systemCards.mainColumn.forEach(card => { %>
+                                        <div data-carte-systeme 
+                                             @click="naviguerVersSysteme('<%= card.code %>')" 
+                                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
+                                            <div class="flex items-center">
+                                                <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center flex-shrink-0 <%= card.classes.border %> mr-4">
+                                                    <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
+                                                </div>
+                                                <div class="flex-grow">
+                                                    <h3 class="text-lg font-bold text-white mb-1"><%= card.nom %></h3>
+                                                    <p class="text-sm text-gray-400 mb-2">
+                                                        <%= card.description %>
+                                                    </p>
+                                                    <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } %>
                             </div>
                         </div>
-                        <% }); %>
+                        
+                        <!-- Colonne secondaire (1/3) -->
+                        <div class="lg:col-span-1">
+                            <div class="grid grid-cols-1 gap-6">
+                                <% if (locals.systemCards && locals.systemCards.secondColumn) { %>
+                                    <% systemCards.secondColumn.forEach(card => { %>
+                                        <div data-carte-systeme 
+                                             @click="naviguerVersSysteme('<%= card.code %>')" 
+                                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
+                                            <div class="text-center">
+                                                <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center mx-auto mb-4 <%= card.classes.border %>">
+                                                    <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
+                                                </div>
+                                                <h3 class="text-lg font-bold text-white mb-2"><%= card.nom %></h3>
+                                                <p class="text-sm text-gray-400 mb-4">
+                                                    <%= card.description %>
+                                                </p>
+                                                <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
