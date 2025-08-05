@@ -207,10 +207,37 @@ router.get('/parametres', authController.middlewareAuth, (req, res) => {
 // ===== MES DOCUMENTS =====
 
 // Page "Mes documents" - Liste personnages et PDFs
-router.get('/mes-documents', authController.middlewareAuth, (req, res) => {
-    res.render('mes-documents', {
-        title: 'Mes Documents - Générateur PDF JDR'
-    });
+router.get('/mes-documents', authController.middlewareAuth, async (req, res) => {
+    try {
+        const utilisateurId = req.session.utilisateur.id;
+        
+        // Récupérer les données via les services
+        const PersonnageService = require('../services/PersonnageService');
+        const PdfService = require('../services/PdfService');
+        
+        const personnageService = new PersonnageService();
+        const pdfService = new PdfService();
+        
+        // Récupérer personnages et PDFs en parallèle
+        const [personnages, pdfs] = await Promise.all([
+            personnageService.obtenirParUtilisateur(utilisateurId),
+            pdfService.obtenirParUtilisateur(utilisateurId)
+        ]);
+        
+        res.render('mes-documents', {
+            title: 'Mes Documents - Générateur PDF JDR',
+            personnages: personnages || [],
+            pdfs: pdfs || []
+        });
+    } catch (error) {
+        console.error('Erreur lors du chargement des documents:', error);
+        res.render('mes-documents', {
+            title: 'Mes Documents - Générateur PDF JDR',
+            personnages: [],
+            pdfs: [],
+            erreur: 'Erreur lors du chargement des données'
+        });
+    }
 });
 
 // ===== GESTION PERSONNAGES =====

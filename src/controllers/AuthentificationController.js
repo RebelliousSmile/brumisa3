@@ -367,7 +367,17 @@ class AuthentificationController extends BaseController {
      */
     middlewareAuth = (req, res, next) => {
         if (!req.session || !req.session.utilisateur) {
-            return this.repondreErreur(res, 401, 'Authentification requise');
+            // Différencier les requêtes API des requêtes web
+            const isApiRequest = req.path.startsWith('/api/') || 
+                                req.headers['content-type']?.includes('application/json') ||
+                                req.headers['accept']?.includes('application/json');
+            
+            if (isApiRequest) {
+                return this.repondreErreur(res, 401, 'Authentification requise');
+            } else {
+                // Pour les pages web, rediriger vers la connexion
+                return res.redirect('/connexion?redirect=' + encodeURIComponent(req.originalUrl));
+            }
         }
         next();
     };
@@ -381,7 +391,26 @@ class AuthentificationController extends BaseController {
                 this.verifierPermissions(req, roleRequis);
                 next();
             } catch (erreur) {
-                this.gererErreur(res, erreur);
+                // Différencier les requêtes API des requêtes web
+                const isApiRequest = req.path.startsWith('/api/') || 
+                                    req.headers['content-type']?.includes('application/json') ||
+                                    req.headers['accept']?.includes('application/json');
+                
+                if (isApiRequest) {
+                    this.gererErreur(res, erreur);
+                } else {
+                    // Pour les pages web, rediriger selon le type d'erreur
+                    if (erreur.code === 'UNAUTHORIZED') {
+                        return res.redirect('/connexion?redirect=' + encodeURIComponent(req.originalUrl));
+                    } else if (erreur.code === 'FORBIDDEN') {
+                        return res.status(403).render('errors/403', {
+                            title: 'Accès interdit',
+                            message: 'Vous n\'avez pas les permissions nécessaires pour accéder à cette page.'
+                        });
+                    } else {
+                        this.gererErreur(res, erreur);
+                    }
+                }
             }
         };
     };

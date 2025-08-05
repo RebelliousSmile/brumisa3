@@ -61,8 +61,17 @@ function AuthComponent() {
                     return;
                 }
                 
+                // Récupérer l'URL de redirection depuis les paramètres
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                
                 // Redirection après connexion réussie
-                window.location.href = '/mes-documents';
+                if (redirectUrl && redirectUrl.startsWith('/')) {
+                    // S'assurer que la redirection est vers une URL interne
+                    window.location.href = decodeURIComponent(redirectUrl);
+                } else {
+                    window.location.href = '/mes-documents';
+                }
                 
             } catch (erreur) {
                 console.error('Erreur connexion:', erreur);

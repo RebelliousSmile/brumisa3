@@ -17,17 +17,20 @@ module.exports = {
         'gris-clair': '#abb8c3',
         'violet-electrique': '#9b51e0',
         
-        // Couleurs fonctionnelles
-        'succes': '#10b981',
-        'erreur': '#ef4444',
-        'avertissement': '#f59e0b',
-        'info': '#3b82f6',
+        // Couleur principale brumisa3
+        'generique': '#3b82f6', // Bleu brumisa3 - couleur principale du site
         
-        // Thématiques par système JDR
-        'monsterhearts': '#dc2626', // Rouge sang
-        'engrenages': '#3b82f6', // Bleu
-        'metro2033': '#dc2626', // Rouge
-        'mistengine': '#ec4899', // Rose
+        // Couleurs fonctionnelles
+        'succes': '#22c55e', // green-500 (distinct d'emerald)
+        'erreur': '#f97316', // orange-500 (distinct du rouge Metro)
+        'avertissement': '#eab308', // yellow-500
+        'info': '#06b6d4', // cyan-500 (distinct du bleu générique)
+        
+        // Thématiques par système JDR (uniquement pour différenciation visuelle)
+        'monsterhearts': '#8b5cf6', // purple-500 - Violet gothique
+        'engrenages': '#10b981', // emerald-500 - Vert émeraude
+        'metro2033': '#dc2626', // red-600 - Rouge post-apo
+        'mistengine': '#ec4899', // pink-500 - Rose mystique
         'zombiology': '#d4af37', // Or métallique
         
         // Monsterhearts - Gothic Romance (conservé pour compatibilité)
