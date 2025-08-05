@@ -409,11 +409,14 @@ class AuthentificationController extends BaseController {
                 ip: req.ip
             });
             
+            // Récupérer l'utilisateur pour obtenir son nom
+            const utilisateur = await this.utilisateurService.obtenirParEmail(email);
+            
             // Envoyer l'email avec le lien de récupération
             try {
                 const emailResult = await this.emailService.envoyerMotDePasseOublie(
                     email,
-                    resultat.utilisateur.nom,
+                    utilisateur.nom,
                     resultat.token
                 );
                 

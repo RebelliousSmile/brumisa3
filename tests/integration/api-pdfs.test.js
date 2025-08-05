@@ -73,7 +73,7 @@ describe('API PDFs', () => {
 
             testInstance.assertApiResponse(response, 200, true);
             expect(response.body.donnees).toHaveProperty('token');
-            expect(response.body.donnees).toHaveProperty('expires_at');
+            expect(response.body.donnees).toHaveProperty('expiresIn');
             
             testInstance.tokenAnonyme = response.body.donnees.token;
         });

@@ -25,6 +25,14 @@ class BaseController {
             return this.repondreErreur(res, 400, erreur.message, 'validation', erreur.details);
         }
         
+        if (erreur.code === 'UNAUTHORIZED') {
+            return this.repondreErreur(res, 401, erreur.message, 'authentification');
+        }
+        
+        if (erreur.code === 'FORBIDDEN') {
+            return this.repondreErreur(res, 403, erreur.message, 'permission');
+        }
+        
         if (erreur.code === 'ENOTFOUND' || erreur.code === 'ECONNREFUSED') {
             return this.repondreErreur(res, 503, 'Service temporairement indisponible', 'service');
         }

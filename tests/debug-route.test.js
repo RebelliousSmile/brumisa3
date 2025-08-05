@@ -5,7 +5,7 @@ const path = require('path');
 describe('Debug - Route principale', () => {
     test('vérifier que le middleware fonctionne', () => {
         const app = express();
-        const { SystemeUtils } = require('../src/config/systemesJeu');
+        const SystemeUtils = require('../src/utils/SystemeUtils');
         
         // Simuler le middleware exact
         app.use((req, res, next) => {
@@ -39,18 +39,11 @@ describe('Debug - Route principale', () => {
             });
     });
     
-    test('vérifier la route index avec données explicites', () => {
+    test('vérifier la route index avec ViewModel et ThemeService', () => {
         const app = express();
-        const { SystemeUtils } = require('../src/config/systemesJeu');
+        const SystemeUtils = require('../src/utils/SystemeUtils');
         
-        app.set('view engine', 'ejs');
-        app.set('views', path.join(__dirname, '../src/views'));
-        
-        // Middleware de session mock
-        app.use((req, res, next) => {
-            req.session = {};
-            next();
-        });
+        app.use(express.json());
         
         app.get('/', (req, res) => {
             const systemesData = SystemeUtils.getAllSystemes();
@@ -60,10 +53,22 @@ describe('Debug - Route principale', () => {
                 firstCode: systemesData[0]?.code
             });
             
-            res.render('index', {
-                title: 'Test',
-                systemesJeu: systemesData,
-                meta: { description: 'test', keywords: 'test' }
+            // Tester l'intégration avec la nouvelle architecture
+            const SystemThemeService = require('../src/services/SystemThemeService');
+            const SystemCardViewModel = require('../src/viewModels/SystemCardViewModel');
+            
+            const viewModel = new SystemCardViewModel(SystemThemeService);
+            const mainColumnCodes = ['monsterhearts', 'metro2033', 'zombiology'];
+            const secondColumnCodes = ['engrenages', 'mistengine'];
+            const systemCards = viewModel.groupByColumns(mainColumnCodes, secondColumnCodes, systemesData);
+            
+            res.json({
+                success: true,
+                systemesCount: systemesData.length,
+                mainColumnCount: systemCards.mainColumn.length,
+                secondColumnCount: systemCards.secondColumn.length,
+                firstMainSystem: systemCards.mainColumn[0]?.code,
+                firstSecondSystem: systemCards.secondColumn[0]?.code
             });
         });
         
@@ -71,7 +76,13 @@ describe('Debug - Route principale', () => {
             .get('/')
             .expect(200)
             .then(response => {
-                console.log('Route index response status:', response.status);
+                console.log('Route index response data:', response.body);
+                expect(response.body.success).toBe(true);
+                expect(response.body.systemesCount).toBe(5);
+                expect(response.body.mainColumnCount).toBe(3);
+                expect(response.body.secondColumnCount).toBe(2);
+                expect(response.body.firstMainSystem).toBe('monsterhearts');
+                expect(response.body.firstSecondSystem).toBe('engrenages');
             });
     });
 });

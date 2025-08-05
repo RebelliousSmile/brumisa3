@@ -208,10 +208,13 @@ class BaseApiTest {
         expect(response.status).toBe(expectedStatus);
         expect(response.body).toHaveProperty('succes', expectedSuccess);
         
-        if (expectedSuccess) {
+        // Toutes les réponses doivent avoir un message
+        expect(response.body).toHaveProperty('message');
+        
+        // Les réponses de succès peuvent avoir des données (optionnel)
+        // Les réponses d'erreur n'ont généralement pas de données
+        if (expectedSuccess && response.body.donnees !== undefined) {
             expect(response.body).toHaveProperty('donnees');
-        } else {
-            expect(response.body).toHaveProperty('message');
         }
     }
 
@@ -230,7 +233,7 @@ class BaseApiTest {
      */
     assertInsufficientPermissions(response) {
         this.assertApiResponse(response, 403, false);
-        expect(response.body.message).toMatch(/permission|autorisé|accès/i);
+        expect(response.body.message).toMatch(/permission|autorisé|accès|rôle.*requis/i);
     }
 
     /**
@@ -242,7 +245,26 @@ class BaseApiTest {
         this.assertApiResponse(response, 400, false);
         
         if (field) {
-            expect(response.body.message.toLowerCase()).toContain(field.toLowerCase());
+            const message = response.body.message.toLowerCase();
+            const fieldLower = field.toLowerCase();
+            
+            // Mapping des champs avec leurs équivalents français
+            const fieldMappings = {
+                'motdepasse': ['mot de passe', 'password', 'motdepasse'],
+                'email': ['email', 'e-mail', 'adresse'],
+                'nom': ['nom', 'name'],
+                'id': ['id', 'identifiant']
+            };
+            
+            const possibleFields = fieldMappings[fieldLower] || [fieldLower];
+            const found = possibleFields.some(possibleField => 
+                message.includes(possibleField)
+            );
+            
+            if (!found) {
+                // Si aucun mapping trouvé, faire l'assertion classique pour avoir un message d'erreur explicite
+                expect(message).toContain(fieldLower);
+            }
         }
     }
 

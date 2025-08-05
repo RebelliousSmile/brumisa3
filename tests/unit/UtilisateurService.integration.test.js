@@ -110,6 +110,10 @@ describe('UtilisateurService Integration Tests', () => {
         test('should return null for inactive user', async () => {
             // Arrange: Désactiver l'utilisateur
             await testInstance.utilisateurService.mettreAJour(testInstance.testUser.id, { actif: false });
+            
+            // Vérifier que l'utilisateur est bien désactivé
+            const utilisateurDesactive = await testInstance.utilisateurService.obtenirParId(testInstance.testUser.id);
+            expect(utilisateurDesactive.actif).toBe(false);
 
             // Act & Assert
             await testInstance.assertAsyncFunction(

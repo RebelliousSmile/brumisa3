@@ -74,12 +74,15 @@ if (!window.location || !window.location.origin) {
 // Mock fetch global
 global.fetch = jest.fn();
 
-// Mock Navigator API
-Object.defineProperty(navigator, 'clipboard', {
-  value: {
-    writeText: jest.fn()
-  }
-});
+// Mock Navigator API (seulement si pas déjà défini)
+if (!navigator.clipboard) {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: jest.fn()
+    },
+    configurable: true
+  });
+}
 
 // Variables globales pour les tests
 global.APP_DATA = {
@@ -95,4 +98,25 @@ global.APP_DATA = {
 // Reset des mocks après chaque test
 afterEach(() => {
   jest.clearAllMocks();
+});
+
+// Fermeture propre des connexions après tous les tests
+afterAll(async () => {
+  try {
+    // Fermer la connexion à la base de données si elle existe
+    const dbManager = require('../src/database/db');
+    if (dbManager && dbManager.connected) {
+      await dbManager.close();
+    }
+    
+    // Arrêter les services qui pourraient avoir des timers
+    const AnonymousTokenService = require('../src/services/AnonymousTokenService');
+    if (AnonymousTokenService.prototype.stopCleanup) {
+      const tokenService = new AnonymousTokenService();
+      tokenService.stopCleanup();
+    }
+  } catch (error) {
+    // Ignorer les erreurs de fermeture pour ne pas faire échouer les tests
+    console.warn('Attention lors de la fermeture des ressources:', error.message);
+  }
 });

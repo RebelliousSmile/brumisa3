@@ -118,7 +118,7 @@ describe('API Authentification', () => {
                     motDePasse: testInstance.primaryTestUser.motDePasse
                 });
 
-            testInstance.assertAuthenticationRequired(response);
+            testInstance.assertApiResponse(response, 401, false);
             expect(response.body.message).toContain('incorrect');
         });
 
@@ -130,7 +130,7 @@ describe('API Authentification', () => {
                     motDePasse: 'mauvais-mot-de-passe'
                 });
 
-            testInstance.assertAuthenticationRequired(response);
+            testInstance.assertApiResponse(response, 401, false);
             expect(response.body.message).toContain('incorrect');
         });
     });

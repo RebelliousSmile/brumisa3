@@ -1,4 +1,4 @@
-const { SystemeUtils } = require('../src/config/systemesJeu');
+const SystemeUtils = require('../src/utils/SystemeUtils');
 
 describe('Tests d\'intégration - Systèmes de jeu', () => {
     describe('Flux complet de création de personnage', () => {
@@ -10,7 +10,7 @@ describe('Tests d\'intégration - Systèmes de jeu', () => {
             // 2. Valider un personnage complet
             const personnage = {
                 nom: 'Test Vampire',
-                skin: 'The Vampire',
+                skin: 'vampire',
                 attributs: {
                     hot: 2,
                     cold: 1,
@@ -35,7 +35,7 @@ describe('Tests d\'intégration - Systèmes de jeu', () => {
             
             // 6. Récupérer le thème pour l'affichage
             const theme = SystemeUtils.getTheme('monsterhearts');
-            expect(theme.couleurTailwind).toBe('purple');
+            expect(theme.icon).toBe('ra-heartburn');
         });
 
         test('création d\'un personnage Metro 2033 complet', () => {
@@ -65,48 +65,40 @@ describe('Tests d\'intégration - Systèmes de jeu', () => {
         test('les données sont formatées correctement pour les templates', () => {
             const systemes = SystemeUtils.getAllSystemes();
             
-            // Simule le code du template
-            const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
-            const icones = {
-                'monsterhearts': 'ra-heartburn',
-                'engrenages': 'ra-candle',
-                'metro2033': 'ra-pills',
-                'mistengine': 'ra-ocarina'
-            };
+            // Simule le code du template avec la nouvelle architecture
+            const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
             
             const cartes = [];
             systemesOrdered.forEach(codeSysteme => {
                 const systeme = systemes.find(s => s.code === codeSysteme);
                 if (systeme) {
+                    const theme = SystemeUtils.getTheme(codeSysteme);
                     cartes.push({
                         code: systeme.code,
                         nom: systeme.nom,
-                        couleur: systeme.themes.couleurTailwind,
-                        icone: icones[codeSysteme]
+                        icon: theme.icon,
+                        classes: theme.classes
                     });
                 }
             });
             
-            expect(cartes).toHaveLength(4);
+            expect(cartes).toHaveLength(5);
             expect(cartes[0].code).toBe('monsterhearts');
-            expect(cartes[0].couleur).toBe('purple');
+            expect(cartes[0].icon).toBe('ra-heartburn');
             expect(cartes[1].code).toBe('engrenages');
-            expect(cartes[1].couleur).toBe('emerald');
+            expect(cartes[1].icon).toBe('ra-gear');
         });
     });
 
     describe('Validation des données critiques', () => {
-        test('tous les systèmes ont des couleurs Tailwind valides', () => {
+        test('tous les systèmes ont des thèmes valides', () => {
             const systemes = SystemeUtils.getAllSystemes();
-            const couleursValides = [
-                'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald',
-                'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
-                'fuchsia', 'pink', 'rose', 'slate', 'gray', 'zinc', 'neutral',
-                'stone'
-            ];
             
             systemes.forEach(systeme => {
-                expect(couleursValides).toContain(systeme.themes.couleurTailwind);
+                const theme = SystemeUtils.getTheme(systeme.code);
+                expect(theme).toBeDefined();
+                expect(theme).toHaveProperty('classes');
+                expect(theme).toHaveProperty('icon');
             });
         });
 
@@ -114,11 +106,12 @@ describe('Tests d\'intégration - Systèmes de jeu', () => {
             const systemes = SystemeUtils.getAllSystemes();
             
             systemes.forEach(systeme => {
-                expect(systeme.themes.icone).toBeDefined();
-                expect(typeof systeme.themes.icone).toBe('string');
-                expect(systeme.themes.icone.length).toBeGreaterThan(0);
+                const theme = SystemeUtils.getTheme(systeme.code);
+                expect(theme.icon).toBeDefined();
+                expect(typeof theme.icon).toBe('string');
+                expect(theme.icon.length).toBeGreaterThan(0);
                 // Les icônes RPG Awesome commencent par 'ra-'
-                expect(systeme.themes.icone.startsWith('ra-')).toBe(true);
+                expect(theme.icon.startsWith('ra-')).toBe(true);
             });
         });
 

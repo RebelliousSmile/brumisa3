@@ -1,4 +1,5 @@
-const { systemesJeu, SystemeUtils } = require('../src/config/systemesJeu');
+const { systemesJeu } = require('../src/config/systemesJeu');
+const SystemeUtils = require('../src/utils/SystemeUtils');
 
 describe('Systèmes de jeu', () => {
     describe('Configuration des systèmes', () => {
@@ -8,21 +9,22 @@ describe('Systèmes de jeu', () => {
                 expect(systeme).toHaveProperty('code');
                 expect(systeme).toHaveProperty('description');
                 expect(systeme).toHaveProperty('attributs');
-                expect(systeme).toHaveProperty('themes');
+                // Note: les thèmes sont maintenant gérés par SystemThemeService
                 expect(systeme.code).toBe(code);
             });
         });
 
-        test('tous les systèmes ont des thèmes valides', () => {
+        test('tous les systèmes ont des thèmes valides via SystemThemeService', () => {
             Object.values(systemesJeu).forEach(systeme => {
-                expect(systeme.themes).toHaveProperty('couleurPrimaire');
-                expect(systeme.themes).toHaveProperty('couleurSecondaire');
-                expect(systeme.themes).toHaveProperty('couleurTailwind');
-                expect(systeme.themes).toHaveProperty('icone');
+                const theme = SystemeUtils.getTheme(systeme.code);
+                expect(theme).toBeDefined();
+                expect(theme).toHaveProperty('classes');
+                expect(theme).toHaveProperty('icon');
                 
-                // Vérifier que les couleurs sont des codes hexadécimaux valides
-                expect(systeme.themes.couleurPrimaire).toMatch(/^#[0-9a-fA-F]{6}$/);
-                expect(systeme.themes.couleurSecondaire).toMatch(/^#[0-9a-fA-F]{6}$/);
+                // Vérifier la structure des classes CSS
+                expect(theme.classes).toHaveProperty('bg');
+                expect(theme.classes).toHaveProperty('text');
+                expect(theme.classes).toHaveProperty('border');
             });
         });
 
@@ -106,13 +108,13 @@ describe('Systèmes de jeu', () => {
         test('getTheme retourne le thème correct', () => {
             const theme = SystemeUtils.getTheme('monsterhearts');
             expect(theme).toBeDefined();
-            expect(theme).toHaveProperty('couleurPrimaire');
-            expect(theme).toHaveProperty('couleurTailwind');
+            expect(theme).toHaveProperty('classes');
+            expect(theme).toHaveProperty('icon');
         });
 
         test('validerSkin fonctionne pour Monsterhearts', () => {
-            expect(SystemeUtils.validerSkin('monsterhearts', 'The Vampire')).toBe(true);
-            expect(SystemeUtils.validerSkin('monsterhearts', 'Skin Inexistant')).toBe(false);
+            expect(SystemeUtils.validerSkin('monsterhearts', 'vampire')).toBe(true);
+            expect(SystemeUtils.validerSkin('monsterhearts', 'skin-inexistant')).toBe(false);
         });
 
         test('getMecaniques retourne les mécaniques', () => {
@@ -125,35 +127,47 @@ describe('Systèmes de jeu', () => {
     describe('Systèmes spécifiques', () => {
         test('Monsterhearts a la configuration correcte', () => {
             const mh = systemesJeu.monsterhearts;
-            expect(mh.themes.couleurTailwind).toBe('purple');
-            expect(mh.skins).toContain('The Vampire');
+            expect(mh.skins).toHaveProperty('vampire');
             expect(mh.attributs).toHaveProperty('hot');
             expect(mh.attributs.hot.min).toBe(-1);
             expect(mh.attributs.hot.max).toBe(3);
+            
+            // Vérifier le thème via SystemThemeService
+            const theme = SystemeUtils.getTheme('monsterhearts');
+            expect(theme.icon).toBe('ra-heartburn');
         });
 
         test('Engrenages a la configuration correcte', () => {
             const eng = systemesJeu.engrenages;
-            expect(eng.themes.couleurTailwind).toBe('emerald');
             expect(eng.attributs).toHaveProperty('corps');
             expect(eng.attributs.corps.min).toBe(1);
             expect(eng.attributs.corps.max).toBe(5);
+            
+            // Vérifier le thème via SystemThemeService
+            const theme = SystemeUtils.getTheme('engrenages');
+            expect(theme.icon).toBe('ra-gear');
         });
 
         test('Metro 2033 a la configuration correcte', () => {
             const metro = systemesJeu.metro2033;
-            expect(metro.themes.couleurTailwind).toBe('red');
             expect(metro.attributs).toHaveProperty('might');
             expect(metro.attributs.might.min).toBe(3);
             expect(metro.attributs.might.max).toBe(18);
+            
+            // Vérifier le thème via SystemThemeService
+            const theme = SystemeUtils.getTheme('metro2033');
+            expect(theme.icon).toBe('ra-radiation');
         });
 
         test('Mist Engine a la configuration correcte', () => {
             const mist = systemesJeu.mistengine;
-            expect(mist.themes.couleurTailwind).toBe('pink');
             expect(mist.attributs).toHaveProperty('edge');
             expect(mist.attributs.edge.min).toBe(1);
             expect(mist.attributs.edge.max).toBe(4);
+            
+            // Vérifier le thème via SystemThemeService
+            const theme = SystemeUtils.getTheme('mistengine');
+            expect(theme.icon).toBe('ra-crystal-ball');
         });
     });
 
@@ -162,12 +176,16 @@ describe('Systèmes de jeu', () => {
             const systemes = SystemeUtils.getAllSystemes();
             
             // Simule ce que fait le template
-            const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine'];
+            const systemesOrdered = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
             
             systemesOrdered.forEach(codeSysteme => {
                 const systeme = systemes.find(s => s.code === codeSysteme);
                 expect(systeme).toBeDefined();
-                expect(systeme.themes).toHaveProperty('couleurTailwind');
+                
+                // Vérifier que le thème est accessible via SystemThemeService
+                const theme = SystemeUtils.getTheme(codeSysteme);
+                expect(theme).toBeDefined();
+                expect(theme).toHaveProperty('classes');
             });
         });
     });

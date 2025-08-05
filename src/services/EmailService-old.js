@@ -358,7 +358,7 @@ ${JSON.stringify(variables.metadata, null, 2)}
      * @returns {Promise<Object>} Résultat du test
      */
     async testerConfiguration(testEmail = null) {
-        const emailTest = testEmail || process.env.ADMIN_EMAIL || 'test@example.com';
+        const emailTest = testEmail || process.env.ADMIN_EMAIL || process.env.TEST_EMAIL;
         
         this.log('info', 'Test de configuration email', { email_test: emailTest });
 

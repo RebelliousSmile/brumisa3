@@ -6,8 +6,9 @@
 
 const SystemService = require('../../src/services/SystemService');
 
-// Mock des utils/systemesJeu
-jest.mock('../../src/utils/systemesJeu', () => ({
+// Mock de config/systemesJeu
+jest.mock('../../src/config/systemesJeu', () => ({
+    systemesJeu: {
     monsterhearts: {
         nom: 'Monsterhearts',
         description: 'JDR sur les adolescents monstrueux',
@@ -48,6 +49,7 @@ jest.mock('../../src/utils/systemesJeu', () => ({
         nom: 'Système Inactif',
         actif: false,
         version: '0.9.0'
+    }
     }
 }));
 
@@ -413,7 +415,7 @@ describe('SystemService - User Stories US001, US016', () => {
 
         test('devrait détecter les erreurs de configuration', async () => {
             // Arrange - Simuler un système avec des erreurs
-            const systemesJeu = require('../../src/utils/systemesJeu');
+            const { systemesJeu } = require('../../src/config/systemesJeu');
             systemesJeu.systeme_erreur = {
                 // Nom manquant
                 attributs: {

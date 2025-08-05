@@ -4,6 +4,7 @@
  */
 
 const express = require('express');
+const session = require('express-session');
 
 function createTestApp() {
     const app = express();
@@ -12,11 +13,20 @@ function createTestApp() {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     
-    // Pas besoin de cookies ni de sessions pour les tests d'API publiques
+    // Configuration des sessions pour les tests
+    app.use(session({
+        secret: 'test-secret-key-for-testing-only',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false, // HTTP pour les tests
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000 // 24 heures
+        }
+    }));
     
-    // Middleware pour simuler l'utilisateur connecté si nécessaire
+    // Middleware pour l'utilisateur connecté
     app.use((req, res, next) => {
-        // Pour les tests, on peut injecter un utilisateur ici
         req.utilisateur = req.session?.utilisateur || null;
         next();
     });
@@ -24,6 +34,9 @@ function createTestApp() {
     // Charger les routes API
     try {
         app.use('/api', require('../../src/routes/api'));
+        
+        // Stocker les services pour pouvoir les nettoyer
+        app._testServices = [];
     } catch (error) {
         console.warn('Impossible de charger les routes API:', error.message);
         // Routes API minimales pour les tests

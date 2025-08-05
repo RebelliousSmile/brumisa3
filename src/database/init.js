@@ -205,11 +205,10 @@ const insertDefaultData = [
     sql: `INSERT INTO parametres (cle, valeur, type, description) VALUES ($1, $2, $3, $4) ON CONFLICT (cle) DO NOTHING`,
     params: ['max_pdfs_simultanes', '5', 'number', 'Nombre maximum de PDFs en génération simultanée']
   },
-
-  // Utilisateur admin par défaut (dev uniquement)
+  // Compte admin par défaut depuis les variables d'environnement
   {
     sql: `INSERT INTO utilisateurs (nom, email, role) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING`,
-    params: ['Administrateur', 'admin@localhost', 'ADMIN']
+    params: ['Administrateur', process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'admin@localhost', 'ADMIN']
   }
 ];
 

@@ -9,7 +9,11 @@ class AnonymousTokenService {
         // Cache en mémoire des tokens (en production, utiliser Redis)
         this.tokens = new Map();
         this.cleanupInterval = null;
-        this.startCleanup();
+        
+        // Ne pas démarrer le cleanup automatiquement dans les tests
+        if (process.env.NODE_ENV !== 'test') {
+            this.startCleanup();
+        }
     }
 
     /**
@@ -192,10 +196,25 @@ class AnonymousTokenService {
      * Nettoie automatiquement les tokens expirés
      */
     startCleanup() {
+        // Ne pas démarrer plusieurs timers
+        if (this.cleanupInterval) {
+            return;
+        }
+        
         // Nettoyer toutes les 5 minutes
         this.cleanupInterval = setInterval(() => {
             this.cleanupExpiredTokens();
         }, 5 * 60 * 1000);
+    }
+
+    /**
+     * Arrête le nettoyage automatique (pour les tests)
+     */
+    stopCleanup() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
     }
 
     /**
