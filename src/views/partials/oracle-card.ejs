@@ -1,15 +1,57 @@
-<!-- Carte Oracle -->
-<div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105 <%= oracle.game_system || 'generique' %>">
+<%
+/*
+ * Carte Oracle v2.0
+ * Usage: <%- include('partials/oracle-card', { 
+ *   oracle: oracleObject,
+ *   couleurSysteme: systemColors,
+ *   utilisateur: currentUser
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    oracle = {},
+    couleurSysteme = null,
+    utilisateur = null
+} = locals;
+
+// Déterminer les couleurs du système
+const systemClass = oracle.game_system || 'generique';
+const gradientFrom = couleurSysteme ? `from-${couleurSysteme.primary}-900` : 'from-purple-900';
+const gradientTo = couleurSysteme ? `to-${couleurSysteme.primary}-800` : 'to-blue-900';
+const gradientHeader = `bg-gradient-to-r ${gradientFrom} ${gradientTo}`;
+
+// Déterminer si l'utilisateur peut accéder à l'oracle
+const isPremiumRequired = oracle.premium_required && (!utilisateur || (utilisateur.role !== 'PREMIUM' && utilisateur.role !== 'ADMIN'));
+
+// Déterminer le créateur
+let creatorContent = '';
+if (oracle.created_by !== null) {
+    if (oracle.creator_name && ['ADMIN'].includes(oracle.creator_role)) {
+        creatorContent = 'Brumisater';
+    } else if (oracle.creator_name && oracle.creator_id) {
+        creatorContent = `<a href="/profil/${oracle.creator_id}" class="text-generique hover:text-generique-dark transition-colors">${oracle.creator_name}</a>`;
+    }
+} else {
+    creatorContent = 'Brumisater';
+}
+%>
+
+<!-- Carte Oracle v2.0 -->
+<div class="bg-gray-800 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 overflow-hidden hover:scale-105 <%= systemClass %>">
     <!-- En-tête de carte -->
-    <div class="p-6 bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary + '-900/30' : 'purple-900/30' %> to-<%= couleurSysteme ? couleurSysteme.primary + '-800/30' : 'blue-900/30' %>">
+    <div class="p-6 <%= gradientHeader %>">
         <div class="flex items-start justify-between">
             <h3 class="text-xl font-bold text-white mb-2">
                 <%= oracle.name %>
             </h3>
             <div class="flex space-x-2">
-                <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full border border-blue-500/30">
-                    <%= oracle.total_items || 0 %>
-                </span>
+                <%- include('../components/ui-badge', {
+                    text: (oracle.total_items || 0).toString(),
+                    variant: 'outline-primary',
+                    size: 'xs',
+                    customClass: 'bg-gray-800'
+                }) %>
             </div>
         </div>
         
@@ -21,41 +63,61 @@
     </div>
 
     <!-- Statistiques -->
-    <div class="px-6 py-4 bg-gray-900/50">
+    <div class="px-6 py-4 bg-gray-900">
         <div class="flex justify-between text-sm text-gray-400">
-            <span>
+            <span class="flex items-center">
                 <i class="fas fa-dice mr-1"></i>
                 <%= oracle.total_draws || 0 %> tirages
             </span>
-            <span>
-                <% if (oracle.created_by !== null) { %>
-                    <% if (oracle.creator_name && ['ADMIN'].includes(oracle.creator_role)) { %>
-                        <span class="text-<%= couleurSysteme ? couleurSysteme.accent : 'purple-400' %>">Brumisater</span>
-                    <% } else if (oracle.creator_name && oracle.creator_id) { %>
-                        <a href="/profil/<%= oracle.creator_id %>" class="text-<%= couleurSysteme ? couleurSysteme.accent : 'purple-400' %> hover:text-<%= couleurSysteme ? couleurSysteme.accent.replace('400', '300') : 'purple-300' %> transition-colors"><%= oracle.creator_name %></a>
-                    <% } %>
-                <% } else { %>
-                    <span class="text-<%= couleurSysteme ? couleurSysteme.accent : 'purple-400' %>">Brumisater</span>
-                <% } %>
+            <span class="text-generique">
+                <%- creatorContent %>
             </span>
         </div>
     </div>
 
     <!-- Actions -->
-    <div class="p-4 bg-gray-900/30 flex gap-2">
-        <% if (oracle.premium_required && (!utilisateur || (utilisateur.role !== 'PREMIUM' && utilisateur.role !== 'ADMIN'))) { %>
-            <button 
-                disabled
-                class="flex-1 bg-gray-600 text-gray-400 text-center py-2 px-4 rounded-lg cursor-not-allowed">
-                <i class="fas fa-lock mr-2"></i>
-                Consulter (Premium)
-            </button>
+    <div class="p-4 bg-gray-900 flex gap-2">
+        <% if (isPremiumRequired) { %>
+            <%- include('../components/ui-button', {
+                text: 'Consulter (Premium)',
+                variant: 'secondary',
+                size: 'md',
+                disabled: true,
+                icon: 'fas fa-lock',
+                additionalClasses: 'flex-1 justify-center'
+            }) %>
         <% } else { %>
-            <a href="/oracles/<%= oracle.id %>" 
-               class="flex-1 bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary + '-600' : 'purple-600' %> to-<%= couleurSysteme ? couleurSysteme.primary + '-700' : 'purple-700' %> text-white text-center py-2 px-4 rounded-lg hover:from-<%= couleurSysteme ? couleurSysteme.primary + '-700' : 'purple-700' %> hover:to-<%= couleurSysteme ? couleurSysteme.primary + '-800' : 'purple-800' %> transition-all">
-                <i class="ra ra-crystal-ball mr-2"></i>
-                Consulter
-            </a>
+            <%- include('../components/ui-button', {
+                text: 'Consulter',
+                href: `/oracles/${oracle.id}`,
+                variant: 'primary',
+                size: 'md',
+                icon: 'ra ra-crystal-ball',
+                additionalClasses: 'flex-1 justify-center'
+            }) %>
+        <% } %>
+        
+        <% if (oracle.can_quick_draw !== false) { %>
+            <%- include('../components/ui-button', {
+                text: '',
+                variant: 'outline',
+                size: 'md',
+                icon: 'fas fa-bolt',
+                iconOnly: true,
+                action: `quickDraw(${oracle.id})`,
+                ariaLabel: 'Tirage rapide'
+            }) %>
         <% } %>
     </div>
 </div>
+
+<script>
+// Fonction pour tirage rapide (si elle n'existe pas déjà)
+if (typeof quickDraw === 'undefined') {
+    function quickDraw(oracleId) {
+        // Implementation du tirage rapide
+        console.log('Tirage rapide pour oracle:', oracleId);
+        // Ici on pourrait faire un appel AJAX pour le tirage rapide
+    }
+}
+</script>

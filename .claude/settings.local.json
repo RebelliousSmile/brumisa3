@@ -62,7 +62,10 @@
       "Bash(pnpm dev:*)",
       "Bash(set NODE_ENV=test)",
       "Bash(NODE_ENV=test pnpm test -- tests/integration/api-admin.test.js --detectOpenHandles)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "WebFetch(domain:nagoshiashumari.github.io)",
+      "WebFetch(domain:cdnjs.cloudflare.com)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

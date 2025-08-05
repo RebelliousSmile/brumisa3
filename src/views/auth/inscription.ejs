@@ -47,13 +47,13 @@
                     <input x-model="formulaire.accepteCGU" id="accepteCGU" type="checkbox" required
                            class="h-4 w-4 text-generique focus:ring-generique border-gris-fonce rounded bg-noir-charbon">
                     <label for="accepteCGU" class="ml-2 block text-sm text-gris-clair">
-                        J'accepte les <a href="/cgu" target="_blank" class="text-generique hover:text-blue-400">conditions générales d'utilisation</a>
-                        et la <a href="/confidentialite" target="_blank" class="text-generique hover:text-blue-400">politique de confidentialité</a>
+                        J'accepte les <a href="/cgu" target="_blank" class="text-generique hover:text-generique">conditions générales d'utilisation</a>
+                        et la <a href="/confidentialite" target="_blank" class="text-generique hover:text-generique">politique de confidentialité</a>
                     </label>
                 </div>
                 
                 <!-- Affichage des erreurs -->
-                <div x-show="erreurs.length > 0" class="bg-red-900/50 border border-red-500 rounded-md p-3">
+                <div x-show="erreurs.length > 0" class="bg-red-900 border border-red-500 rounded-md p-3">
                     <div class="flex">
                         <div class="flex-shrink-0">
                             <i class="ra ra-skull text-red-400"></i>
@@ -72,7 +72,7 @@
                 </div>
                 
                 <!-- Message de succès -->
-                <div x-show="succes" class="bg-green-900/50 border border-green-500 rounded-md p-3">
+                <div x-show="succes" class="bg-green-900 border border-green-500 rounded-md p-3">
                     <div class="flex">
                         <div class="flex-shrink-0">
                             <i class="ra ra-player-king text-green-400"></i>
@@ -85,7 +85,7 @@
                 
                 <div>
                     <button type="submit" :disabled="enTraitement || !formulaire.accepteCGU"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-generique focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors">
                         <span x-show="!enTraitement">Créer mon compte</span>
                         <span x-show="enTraitement" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@
                 <div class="text-center">
                     <p class="text-sm text-gris-clair">
                         Déjà un compte ?
-                        <a href="/connexion" class="font-medium text-generique hover:text-blue-400">
+                        <a href="/connexion" class="font-medium text-generique hover:text-generique">
                             Se connecter
                         </a>
                     </p>

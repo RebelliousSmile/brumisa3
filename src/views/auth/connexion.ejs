@@ -34,7 +34,7 @@
                     </div>
                     
                     <div class="text-sm">
-                        <a href="/mot-de-passe-oublie" class="font-medium text-generique hover:text-blue-400">
+                        <a href="/mot-de-passe-oublie" class="font-medium text-generique hover:text-generique">
                             Mot de passe oublié ?
                         </a>
                     </div>
@@ -42,7 +42,7 @@
                 
                 <div>
                     <button type="submit" :disabled="enTraitement"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-generique hover:bg-generique focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-generique focus:ring-offset-noir disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors">
                         <span x-show="!enTraitement">Se connecter</span>
                         <span x-show="enTraitement" class="flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@
                 <div class="text-center">
                     <p class="text-sm text-gris-clair">
                         Pas encore de compte ?
-                        <a href="/inscription" class="font-medium text-generique hover:text-blue-400">
+                        <a href="/inscription" class="font-medium text-generique hover:text-generique">
                             S'inscrire
                         </a>
                     </p>

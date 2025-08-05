@@ -212,7 +212,7 @@
                 <button 
                     type="submit" 
                     :disabled="chargement"
-                    class="flex items-center justify-center px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
+                    class="flex items-center justify-center px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
                     <i class="ra ra-scroll mr-2" x-show="!chargement"></i>
                     <i class="ra ra-spinner-third animate-spin mr-2" x-show="chargement"></i>
                     <span x-show="!chargement">Générer le PDF</span>

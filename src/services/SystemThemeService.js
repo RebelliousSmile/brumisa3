@@ -17,7 +17,7 @@ class SystemThemeService {
                 }
             },
             engrenages: {
-                icon: 'ra-gear',
+                icon: 'ra-candle',
                 classes: {
                     bg: 'bg-emerald-600/20',
                     border: 'border-emerald-500/30',
@@ -27,7 +27,7 @@ class SystemThemeService {
                 }
             },
             metro2033: {
-                icon: 'ra-radiation',
+                icon: 'ra-nuclear',
                 classes: {
                     bg: 'bg-red-600/20',
                     border: 'border-red-500/30',
@@ -37,7 +37,7 @@ class SystemThemeService {
                 }
             },
             mistengine: {
-                icon: 'ra-crystal-ball',
+                icon: 'ra-ocarina',
                 classes: {
                     bg: 'bg-pink-600/20',
                     border: 'border-pink-500/30',

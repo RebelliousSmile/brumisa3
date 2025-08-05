@@ -1,0 +1,126 @@
+<%
+/*
+ * Composant Input Universel
+ * Usage: <%- include('components/ui-input', { 
+ *   type: 'text|email|password|number|tel|url|search|textarea',
+ *   name: 'fieldName',
+ *   label: 'Libellé du champ',
+ *   placeholder: 'Texte d\'exemple',
+ *   value: '',
+ *   required: false,
+ *   disabled: false,
+ *   error: '',
+ *   helpText: 'Texte d\'aide',
+ *   icon: 'fa-solid fa-user',
+ *   rows: 4 (pour textarea),
+ *   additionalClasses: '',
+ *   id: '',
+ *   maxlength: '',
+ *   pattern: ''
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    type = 'text',
+    name = '',
+    label = '',
+    placeholder = '',
+    value = '',
+    required = false,
+    disabled = false,
+    error = '',
+    helpText = '',
+    icon = '',
+    rows = 4,
+    additionalClasses = '',
+    id = name || '',
+    maxlength = '',
+    pattern = '',
+    autocomplete = ''
+} = locals;
+
+// Classes de base
+const baseClasses = 'block w-full transition-colors duration-200 focus:outline-none';
+const inputClasses = 'px-4 py-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400';
+const focusClasses = 'focus:border-generique focus:bg-gray-600';
+const errorClasses = error ? 'border-erreur focus:border-erreur' : '';
+const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed bg-gray-800' : '';
+
+// Classes finales
+const finalClasses = [
+    baseClasses,
+    inputClasses,
+    focusClasses,
+    errorClasses,
+    disabledClasses,
+    additionalClasses
+].filter(Boolean).join(' ');
+
+// Attributs dynamiques
+const attributes = [];
+if (id) attributes.push(`id="${id}"`);
+if (name) attributes.push(`name="${name}"`);
+if (placeholder) attributes.push(`placeholder="${placeholder}"`);
+if (value) attributes.push(`value="${value}"`);
+if (required) attributes.push('required');
+if (disabled) attributes.push('disabled');
+if (maxlength) attributes.push(`maxlength="${maxlength}"`);
+if (pattern) attributes.push(`pattern="${pattern}"`);
+if (autocomplete) attributes.push(`autocomplete="${autocomplete}"`);
+
+// ID unique pour l'association label-input
+const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
+%>
+
+<div class="space-y-2">
+    <% if (label) { %>
+        <label for="<%= fieldId %>" class="block text-sm font-medium text-gray-300">
+            <%= label %>
+            <% if (required) { %>
+                <span class="text-erreur">*</span>
+            <% } %>
+        </label>
+    <% } %>
+    
+    <div class="relative">
+        <% if (icon) { %>
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="<%= icon %> text-gray-400"></i>
+            </div>
+        <% } %>
+        
+        <% if (type === 'textarea') { %>
+            <textarea 
+                id="<%= fieldId %>"
+                class="<%= finalClasses %> <%= icon ? 'pl-10' : '' %>" 
+                rows="<%= rows %>"
+                <%= attributes.join(' ') %>
+            ><%= value %></textarea>
+        <% } else { %>
+            <input 
+                type="<%= type %>"
+                id="<%= fieldId %>"
+                class="<%= finalClasses %> <%= icon ? 'pl-10' : '' %>" 
+                <%= attributes.join(' ') %>
+            />
+        <% } %>
+        
+        <% if (error) { %>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-exclamation-circle text-erreur"></i>
+            </div>
+        <% } %>
+    </div>
+    
+    <% if (error) { %>
+        <p class="text-sm text-erreur flex items-center mt-1">
+            <i class="fa-solid fa-exclamation-triangle mr-1"></i>
+            <%= error %>
+        </p>
+    <% } else if (helpText) { %>
+        <p class="text-sm text-gray-400 mt-1">
+            <%= helpText %>
+        </p>
+    <% } %>
+</div>

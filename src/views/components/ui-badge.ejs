@@ -1,0 +1,154 @@
+<%
+/*
+ * Composant Badge Universel
+ * Usage: <%- include('components/ui-badge', { 
+ *   text: 'Nouveau',
+ *   variant: 'primary|secondary|success|warning|danger|info|dark',
+ *   size: 'xs|sm|md|lg',
+ *   rounded: true,
+ *   icon: 'fa-solid fa-star',
+ *   iconPosition: 'left|right',
+ *   removable: false,
+ *   onRemove: 'functionName',
+ *   href: '',
+ *   customClass: '',
+ *   pulse: false
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    text = '',
+    variant = 'primary',
+    size = 'sm',
+    rounded = true,
+    icon = '',
+    iconPosition = 'left',
+    removable = false,
+    onRemove = '',
+    href = '',
+    gameSystem = '', // Système de jeu pour thématisation
+    customClass = '',
+    pulse = false
+} = locals;
+
+// Intégration du SystemThemeService côté serveur
+const SystemThemeService = require('../../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+
+// Classes de base par variant
+const baseVariantClasses = {
+    'primary': 'bg-generique text-white',
+    'secondary': 'bg-gray-600 text-white',
+    'success': 'bg-succes text-white',
+    'warning': 'bg-orange-500 text-white',
+    'danger': 'bg-erreur text-white',
+    'info': 'bg-blue-500 text-white',
+    'dark': 'bg-gray-800 text-white',
+    'light': 'bg-gray-200 text-gray-800',
+    'outline-primary': 'border border-generique text-generique bg-transparent',
+    'outline-secondary': 'border border-gray-600 text-gray-600 bg-transparent',
+    'outline-success': 'border border-succes text-succes bg-transparent',
+    'outline-warning': 'border border-orange-500 text-orange-500 bg-transparent',
+    'outline-danger': 'border border-erreur text-erreur bg-transparent'
+};
+
+// Classes système-spécifiques si un thème est fourni
+const getSystemVariantClasses = (variant, systemTheme) => {
+    if (!systemTheme) return baseVariantClasses[variant];
+    
+    const systemColorMap = {
+        monsterhearts: 'purple',
+        engrenages: 'emerald',
+        metro2033: 'red',
+        mistengine: 'pink',
+        zombiology: 'yellow'
+    };
+    
+    const systemColor = systemColorMap[gameSystem] || 'generique';
+    
+    switch (variant) {
+        case 'primary':
+            return `bg-${systemColor}-600 text-white`;
+        case 'outline-primary':
+            return `border border-${systemColor}-500 text-${systemColor}-500 bg-transparent`;
+        default:
+            return baseVariantClasses[variant];
+    }
+};
+
+const variantClasses = getSystemVariantClasses(variant, systemTheme);
+
+// Classes de tailles
+const sizeClasses = {
+    'xs': 'px-1.5 py-0.5 text-xs',
+    'sm': 'px-2 py-1 text-xs',
+    'md': 'px-2.5 py-1 text-sm',
+    'lg': 'px-3 py-1.5 text-sm'
+};
+
+// Classes de base
+const baseClasses = [
+    'inline-flex items-center font-medium transition-colors duration-200',
+    rounded ? 'rounded-full' : 'rounded',
+    variantClasses,
+    sizeClasses[size] || sizeClasses.sm,
+    pulse ? 'animate-pulse' : '',
+    href ? 'hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2' : '',
+    customClass
+].filter(Boolean).join(' ');
+
+// Element à utiliser (a ou span)
+const element = href ? 'a' : 'span';
+
+// Attributs pour les liens
+const linkAttributes = href ? `href="${href}"` : '';
+
+// ID unique pour les événements
+const badgeId = `badge-${Math.random().toString(36).substr(2, 9)}`;
+%>
+
+<<%= element %> 
+    class="<%= baseClasses %>"
+    <% if (href) { %>href="<%= href %>"<% } %>
+    <% if (removable && onRemove) { %>id="<%= badgeId %>"<% } %>
+>
+    <% if (icon && iconPosition === 'left') { %>
+        <i class="<%= icon %> <%= text ? 'mr-1' : '' %>"></i>
+    <% } %>
+    
+    <% if (text) { %>
+        <span><%= text %></span>
+    <% } %>
+    
+    <% if (icon && iconPosition === 'right') { %>
+        <i class="<%= icon %> <%= text ? 'ml-1' : '' %>"></i>
+    <% } %>
+    
+    <% if (removable) { %>
+        <button 
+            type="button"
+            class="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center hover:bg-black hover:bg-opacity-20 focus:outline-none focus:bg-black focus:bg-opacity-20 transition-colors duration-200"
+            <% if (onRemove) { %>
+                onclick="<%= onRemove %>('<%= badgeId %>')"
+            <% } else { %>
+                onclick="this.parentElement.remove()"
+            <% } %>
+            aria-label="Supprimer"
+        >
+            <i class="fa-solid fa-times text-xs"></i>
+        </button>
+    <% } %>
+</<%= element %>>
+
+<% if (removable && !onRemove) { %>
+<script>
+// Fonction par défaut pour supprimer un badge
+function removeBadge(badgeId) {
+    const badge = document.getElementById(badgeId);
+    if (badge) {
+        badge.remove();
+    }
+}
+</script>
+<% } %>

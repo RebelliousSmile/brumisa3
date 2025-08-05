@@ -45,6 +45,35 @@
 | **Avertissement** | `#eab308` | `yellow-500` | Alertes, warnings |
 | **Information** | `#06b6d4` | `cyan-500` | Infos, aide (distinct du bleu brumisa3) |
 
+### Principes d'opacité simplifiés
+
+**IMPORTANT** : Pour éviter la confusion visuelle, limiter les variations d'opacité :
+
+| Usage | Opacité | Exemple |
+|-------|---------|---------|
+| **Éléments principaux** | 100% | `text-generique`, `bg-generique` |
+| **Fonds subtils** | Couleur grise | `bg-gray-800` au lieu de `bg-generique/20` |
+| **Dégradés hero** | Pleine couleur | `from-generique to-blue-600` |
+| **Effets de glow** | 20-30% max | `bg-generique/20` (uniquement pour effets spéciaux) |
+
+**Éviter** : `/10`, `/40`, `/50`, `/60`, `/70`, `/80`, `/90` - trop de nuances créent de la confusion.
+
+### Utilisation des dégradés
+
+Les dégradés sont réservés aux **zones d'impact visuel** :
+
+| Zone | Type de dégradé | Exemple |
+|------|----------------|---------|
+| **Hero sections** | Fond immersif | `bg-gradient-to-br from-gray-900 via-blue-900 to-generique` |
+| **Boutons CTA principaux** | Action impactante | `bg-gradient-to-r from-generique to-blue-600` |
+| **Sections importantes** | Mise en valeur | `bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900` |
+
+**Zones sobres** (pas de dégradés) :
+- Cartes de contenu
+- Listes d'éléments  
+- Formulaires
+- Navigation secondaire
+
 ### Variables CSS
 ```css
 :root {
@@ -189,9 +218,9 @@
 
 /* Types */
 .btn-primary {
-  @apply bg-blue-600 text-white border-blue-600
-         hover:bg-blue-700 hover:border-blue-700
-         focus:ring-blue-500;
+  @apply bg-generique text-white border-generique
+         hover:bg-generique/90 hover:border-generique
+         focus:ring-generique;
 }
 
 .btn-secondary {
@@ -214,8 +243,8 @@
 
 /* États */
 .btn:disabled {
-  @apply opacity-50 cursor-not-allowed
-         hover:bg-current hover:border-current;
+  @apply bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed
+         hover:bg-gray-600 hover:text-gray-400 hover:border-gray-600;
 }
 
 /* Variantes */
@@ -224,8 +253,8 @@
 }
 
 .btn-outline.btn-primary {
-  @apply text-blue-400 border-blue-400
-         hover:bg-blue-600 hover:text-white hover:border-blue-600;
+  @apply text-generique border-generique
+         hover:bg-generique hover:text-white hover:border-generique;
 }
 
 .btn-outline.btn-secondary {
@@ -393,10 +422,9 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 #### Guidelines d'usage
 
 1. **Un seul CTA primaire** par section/écran
-2. **Hiérarchie claire** : primaire > secondaire > tertiaire
-3. **Icônes cohérentes** : utiliser RPG Awesome pour l'ambiance JDR
-4. **Espacement** : minimum 8px entre boutons groupés
-5. **Mobile** : taille minimum 44x44px pour les zones tactiles
+2. **Icônes cohérentes** : utiliser RPG Awesome pour l'ambiance JDR
+3. **Espacement** : minimum 8px entre boutons groupés
+4. **Mobile** : taille minimum 44x44px pour les zones tactiles
 
 ### Cartes et conteneurs
 ```css
@@ -407,7 +435,7 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 }
 
 .card-hover:hover {
-  border-color: var(--brand-violet);
+  border-color: var(--brumisa-bleu);
   box-shadow: 0 0 20px rgba(118, 65, 211, 0.3);
 }
 ```
@@ -422,7 +450,7 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 }
 
 .input:focus {
-  border-color: var(--brand-violet);
+  border-color: var(--brumisa-bleu);
   outline: none;
   box-shadow: 0 0 0 3px rgba(118, 65, 211, 0.2);
 }
@@ -478,35 +506,36 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 - ✅ **Boutons d'action principaux**
 - ✅ **États focus et hover par défaut**
 
-### Différenciation visuelle des systèmes JDR
+### Utilisation contextuelle des systèmes JDR
 
-Les couleurs spécifiques aux systèmes ne sont utilisées que pour la **différenciation visuelle** :
-- 🎯 **Bordures de cartes** système
+Les couleurs spécifiques aux systèmes sont utilisées dans leur **contexte approprié** :
+- 🎯 **Pages dédiées** au système (hero, navigation secondaire)
+- 🎯 **Bordures de cartes** et conteneurs système
 - 🎯 **Badges et indicateurs** de système  
 - 🎯 **Boutons contextuels** spécifiques au système
-- 🎯 **Accents visuels** pour identifier le système
+- 🎯 **Dégradés hero** sur les pages système
 
 | Système | Couleur | Hex | Usage limité |
 |---------|---------|-----|-------------|
-| **Monsterhearts** | Violet | `#8b5cf6` | Bordures, badges uniquement |
-| **Engrenages** | Vert émeraude | `#10b981` | Bordures, badges uniquement |
-| **Metro 2033** | Rouge | `#dc2626` | Bordures, badges uniquement |
-| **Mist Engine** | Rose | `#ec4899` | Bordures, badges uniquement |
-| **Zombiology** | Or métallique | `#d4af37` | Bordures, badges uniquement |
+| **Monsterhearts** | Violet | `#8b5cf6` | Pages système, bordures, badges, dégradés hero |
+| **Engrenages** | Vert émeraude | `#10b981` | Pages système, bordures, badges, dégradés hero |
+| **Metro 2033** | Rouge | `#dc2626` | Pages système, bordures, badges, dégradés hero |
+| **Mist Engine** | Rose | `#ec4899` | Pages système, bordures, badges, dégradés hero |
+| **Zombiology** | Or métallique | `#d4af37` | Pages système, bordures, badges, dégradés hero |
 
 ### ❌ Ce qu'il ne faut PAS faire
 
-- ❌ Utiliser le violet brand (`#7641d3`) - **cette couleur n'existe plus dans brumisa3**
 - ❌ Changer la couleur principale selon le système sur les pages communes
-- ❌ Utiliser les couleurs système pour les boutons primaires génériques
-- ❌ Modifier la navigation selon le système
+- ❌ Utiliser les couleurs de système de jeu pour les boutons primaires génériques
+- ❌ Modifier la navigation selon le système de jeu
 
 ### ✅ Ce qu'il faut faire
 
-- ✅ Toujours utiliser le **bleu brumisa3** (`#3b82f6`) pour les éléments principaux
-- ✅ Utiliser les couleurs système uniquement pour la différenciation visuelle
+- ✅ Utiliser le **bleu brumisa3** (`#est `) pour le contenu générique et la navigation principale
+- ✅ Utiliser les couleurs système dans leur contexte (pages dédiées, hero sections)
 - ✅ Garder une cohérence de navigation sur tout le site
-- ✅ Réserver les couleurs système aux contextes spécifiques (badges, bordures de cartes)
+- ✅ Éviter les variations d'opacité excessives (maximum 2-3 niveaux)
+- ✅ Privilégier les dégradés sur les hero sections et zones CTA importantes
 
 #### Thématiques PDF par système
 
@@ -605,7 +634,7 @@ font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
 - **Accent système** : Couleur spécifique au système pour bordures, hovers, badges
 - **Contenu générique** : Bleu pour features, sections d'aide, contenus transversaux
 - **Texte** : Blanc pour le contraste maximal
-- **Cohérence** : Le violet reste la couleur principale du site, les accents sont contextuels
+- **Cohérence** : Le bleu brumisa3 est la couleur principale du site, les accents sont contextuels
 
 #### PDFs (Immersion thématique)
 - **Liberté totale** : Chaque système peut avoir son propre fond, polices, décorations
@@ -614,10 +643,10 @@ font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
 - **Fonctionnalité** : Reste lisible et utilisable en jeu
 
 ### Utilisation des couleurs
-- **Violet brand** : Navigation, CTAs principaux, branding (pages web uniquement)
-- **Couleurs système (web)** : Uniquement pour différencier les systèmes de jeu sur les pages
+- **Bleu brumisa3** : Navigation, CTAs principaux, branding, contenu générique (couleur principale)
+- **Couleurs système (web)** : Dans leur contexte spécifique (pages système, badges, bordures)
 - **Couleurs système (PDF)** : Palette complète thématique pour l'immersion
-- **Bleu générique** : Pour tous les contenus non liés à un système spécifique
+- **Violet brand (legacy)** : Conservé pour certains éléments historiques
 - **Exemples** : 
   - Page d'accueil avec features → bleu
   - Carte Monsterhearts sur le site → bordure violette
@@ -786,7 +815,7 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
   left: 0;
   width: 4px;
   height: 100%;
-  background: var(--brand-violet);
+  background: var(--brumisa-bleu);
   opacity: 0;
   transition: opacity 200ms ease-in-out;
 }
@@ -823,8 +852,8 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
   align-items: center;
   padding: 0.25rem 0.75rem;
   background: rgba(118, 65, 211, 0.2);
-  color: var(--brand-violet);
-  border: 1px solid var(--brand-violet);
+  color: var(--brumisa-bleu);
+  border: 1px solid var(--brumisa-bleu);
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -873,8 +902,8 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
   right: 2rem;
   width: 3rem;
   height: 3rem;
-  background: var(--brand-violet);
-  border: 2px solid var(--brand-violet);
+  background: var(--brumisa-bleu);
+  border: 2px solid var(--brumisa-bleu);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -892,9 +921,10 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
 }
 
 .back-to-top:hover {
-  background: var(--brand-violet-dark);
-  border-color: var(--brand-violet-dark);
+  background: var(--brumisa-bleu);
+  border-color: var(--brumisa-bleu);
   transform: translateY(-2px);
+  opacity: 0.9;
 }
 ```
 
@@ -925,13 +955,13 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
 }
 
 .floating-menu-item:hover {
-  border-color: var(--brand-violet);
+  border-color: var(--brumisa-bleu);
   transform: translateX(4px);
 }
 
 .floating-menu-item.active {
-  background: var(--brand-violet);
-  border-color: var(--brand-violet);
+  background: var(--brumisa-bleu);
+  border-color: var(--brumisa-bleu);
 }
 ```
 
@@ -985,7 +1015,7 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
 }
 
 .feature-card:hover {
-  border-color: var(--brand-violet);
+  border-color: var(--brumisa-bleu);
   transform: translateY(-4px);
 }
 
@@ -998,7 +1028,7 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
   justify-content: center;
   background: rgba(118, 65, 211, 0.1);
   border-radius: 1rem;
-  color: var(--brand-violet);
+  color: var(--brumisa-bleu);
   font-size: 2rem;
 }
 ```

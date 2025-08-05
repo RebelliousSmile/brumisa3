@@ -50,11 +50,14 @@
     <script src="/js/components/MesDocumentsComponent.js"></script>
     <script src="/js/components/MenuUtilisateur.js"></script>
     <script src="/js/components/NavigationMobile.js"></script>
+    <script src="/js/alpine-component-system.js"></script>
+    <script src="/js/components/ButtonComponent.js"></script>
+    <script src="/js/helpers/ButtonHelpers.js"></script>
 </head>
 <body class="bg-gray-900 min-h-screen">
     <!-- Telex Topline -->
-    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-4 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-black/10"></div>
+    <div class="bg-gradient-to-r from-purple-600 to-generique text-white py-2 px-4 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gray-800"></div>
         <div class="relative z-10 flex items-center justify-center space-x-2 text-sm font-display">
             <i class="ra ra-lightning-bolt text-yellow-300 animate-pulse"></i>
             <span class="hidden sm:inline">📢</span>
@@ -70,8 +73,8 @@
                 <!-- Logo -->
                 <div class="flex items-center">
                     <a href="/" class="text-xl font-bold flex items-center font-display">
-                        <i class="ra ra-brain-freeze text-blue-400 text-2xl mr-2"></i>
-                        <span class="hidden sm:inline text-blue-400">brumisater</span>
+                        <i class="ra ra-brain-freeze text-generique text-2xl mr-2"></i>
+                        <span class="hidden sm:inline text-generique">brumisater</span>
                     </a>
                 </div>
                 
@@ -105,11 +108,11 @@
                         
                         <!-- User Icon -->
                         <div class="relative" x-data="window.AlpineComponents.menuUtilisateur()">
-                            <button @click="basculer()" class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center border border-blue-500/30 hover:border-blue-400 transition-colors">
+                            <button @click="basculer()" class="w-10 h-10 bg-generique rounded-full flex items-center justify-center border border-generique hover:border-generique transition-colors">
                                 <% if (locals.utilisateur.avatar_url) { %>
                                     <img src="<%= locals.utilisateur.avatar_url %>" alt="Avatar" class="w-full h-full rounded-full object-cover">
                                 <% } else { %>
-                                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-generique rounded-full flex items-center justify-center">
                                         <span class="text-white font-semibold text-sm">
                                             <%= (locals.utilisateur.nom || 'U').charAt(0).toUpperCase() %>
                                         </span>
@@ -141,8 +144,8 @@
                             </div>
                         </div>
                     <% } else { %>
-                        <a href="/connexion" class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center border border-blue-500/30 hover:border-blue-400 transition-colors">
-                            <i class="ra ra-player-king text-blue-400 text-lg"></i>
+                        <a href="/connexion" class="w-10 h-10 bg-generique rounded-full flex items-center justify-center border border-generique hover:border-generique transition-colors">
+                            <i class="ra ra-player-king text-white text-lg"></i>
                         </a>
                     <% } %>
                 </div>
@@ -211,7 +214,7 @@
                     </button>
                 <% } else { %>
                     <a @click="naviguer('/connexion')" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Connexion</a>
-                    <a @click="naviguer('/inscription')" class="block px-4 py-2 text-blue-600 hover:bg-blue-50">Créer un compte</a>
+                    <a @click="naviguer('/inscription')" class="block px-4 py-2 text-generique hover:bg-generique">Créer un compte</a>
                 <% } %>
             </div>
         </div>
@@ -225,7 +228,7 @@
     
     <!-- Indicateur changements non sauvegardés -->
     <div x-data="window.AlpineComponents.indicateurHorsLigne()" x-show="hasUnsavedChanges" 
-         class="bg-blue-500 text-white text-center py-1 text-xs">
+         class="bg-generique text-white text-center py-1 text-xs">
         <span>💾 Changements non sauvegardés</span>
     </div>
     
@@ -237,7 +240,7 @@
                      'border-l-4 border-green-500': message.type === 'succes',
                      'border-l-4 border-red-500': message.type === 'erreur',
                      'border-l-4 border-yellow-500': message.type === 'avertissement',
-                     'border-l-4 border-blue-500': message.type === 'info'
+                     'border-l-4 border-generique': message.type === 'info'
                  }"
                  x-transition:enter="transform ease-out duration-300 transition"
                  x-transition:enter-start="translate-x-full opacity-0"

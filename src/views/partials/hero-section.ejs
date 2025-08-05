@@ -1,51 +1,133 @@
-<!-- Hero Section Réutilisable -->
-<section class="min-h-screen bg-noir relative overflow-hidden flex items-center">
+<%
+/*
+ * Hero Section Réutilisable v2.1 - Avec Support Thèmes Système
+ * Usage: <%- include('partials/hero-section', { 
+ *   heroTitle: 'Titre principal',
+ *   heroSubtitle: 'Sous-titre optionnel',
+ *   heroBadge: { text: 'Nouveau', variant: 'primary' },
+ *   heroImage: '/images/bg.jpg',
+ *   heroSideImage: '/images/side.png',
+ *   heroCTA: [
+ *     { text: 'Commencer', href: '/start', variant: 'primary', size: 'lg' },
+ *     { text: 'En savoir plus', href: '/about', variant: 'outline', size: 'lg' }
+ *   ],
+ *   showScrollIndicator: true,
+ *   theme: 'dark',
+ *   gameSystem: 'monsterhearts', // Nouveau : système de jeu
+ *   customClass: ''
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    heroTitle = 'Titre par défaut',
+    heroSubtitle = '',
+    heroBadge = null,
+    heroImage = '',
+    heroSideImage = '',
+    heroCTA = [],
+    showScrollIndicator = false,
+    theme = 'dark',
+    gameSystem = '', // Système de jeu pour thématisation
+    customClass = ''
+} = locals;
+
+// Intégration du SystemThemeService côté serveur
+const SystemThemeService = require('../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+
+// Classes de thème de base
+const baseThemeClasses = {
+    'dark': 'bg-gray-900 text-white',
+    'light': 'bg-gray-50 text-gray-900',
+    'gradient': 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white'
+};
+
+// Classes système-spécifiques pour les gradients
+const getSystemThemeClasses = (theme, systemTheme) => {
+    if (!systemTheme || theme !== 'gradient') {
+        return baseThemeClasses[theme] || baseThemeClasses.dark;
+    }
+    
+    const systemGradientMap = {
+        monsterhearts: 'bg-gradient-to-br from-purple-900 via-purple-800 to-gray-900 text-white',
+        engrenages: 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-gray-900 text-white',
+        metro2033: 'bg-gradient-to-br from-red-900 via-red-800 to-gray-900 text-white',
+        mistengine: 'bg-gradient-to-br from-pink-900 via-pink-800 to-gray-900 text-white',
+        zombiology: 'bg-gradient-to-br from-yellow-900 via-yellow-800 to-gray-900 text-white'
+    };
+    
+    return systemGradientMap[gameSystem] || baseThemeClasses.gradient;
+};
+
+const finalThemeClasses = getSystemThemeClasses(theme, systemTheme);
+
+// Classes finales
+const sectionClasses = [
+    'min-h-screen relative overflow-hidden flex items-center',
+    finalThemeClasses,
+    customClass
+].filter(Boolean).join(' ');
+%>
+
+<!-- Hero Section Réutilisable v2.0 -->
+<section class="<%= sectionClasses %>">
     <!-- Image de fond (optionnelle) -->
-    <% if (locals.heroImage) { %>
+    <% if (heroImage) { %>
     <div class="absolute inset-0 opacity-20">
         <img src="<%= heroImage %>" alt="" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-t from-noir via-noir/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
     </div>
     <% } %>
     
     <!-- Contenu -->
     <div class="relative z-10 max-w-4xl mx-auto px-4 py-20 text-center">
         <!-- Badge (optionnel) -->
-        <% if (locals.heroBadge) { %>
-        <span class="inline-flex items-center px-4 py-1 bg-brand-violet/20 text-brand-violet border border-brand-violet rounded-full text-sm font-medium tracking-wider uppercase mb-6">
-            <%= heroBadge %>
-        </span>
+        <% if (heroBadge) { %>
+        <div class="mb-6 animate-fade-in-up">
+            <%- include('../components/ui-badge', {
+                text: heroBadge.text || heroBadge,
+                variant: heroBadge.variant || 'outline-primary',
+                size: heroBadge.size || 'md',
+                gameSystem: gameSystem,
+                customClass: 'tracking-wider uppercase'
+            }) %>
+        </div>
         <% } %>
         
         <!-- Titre principal -->
-        <h1 class="font-display text-h1 text-white mb-6 animate-fade-in-up">
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in-up">
             <%= heroTitle %>
         </h1>
         
         <!-- Sous-titre -->
-        <% if (locals.heroSubtitle) { %>
-        <p class="font-serif text-xl text-gris-clair mb-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
+        <% if (heroSubtitle) { %>
+        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
             <%= heroSubtitle %>
         </p>
         <% } %>
         
         <!-- Boutons CTA -->
-        <% if (locals.heroCTA) { %>
+        <% if (heroCTA && heroCTA.length > 0) { %>
         <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-400">
             <% heroCTA.forEach(cta => { %>
-                <a href="<%= cta.href %>" 
-                   class="<%= cta.primary ? 'bg-brand-violet hover:bg-brand-violet-dark border-brand-violet hover:border-brand-violet-dark' : 'bg-transparent hover:bg-white/10 border-gris-fonce hover:border-gris-clair' %> 
-                          border-2 text-white px-6 py-3 rounded-lg font-display text-button tracking-button uppercase transition-all duration-standard">
-                    <%= cta.text %>
-                </a>
+                <%- include('../components/ui-button', {
+                    text: cta.text,
+                    href: cta.href,
+                    variant: cta.variant || (cta.primary ? 'primary' : 'outline'),
+                    size: cta.size || 'lg',
+                    icon: cta.icon || '',
+                    gameSystem: gameSystem,
+                    additionalClasses: 'uppercase tracking-wide'
+                }) %>
             <% }); %>
         </div>
         <% } %>
         
         <!-- Indicateur de défilement -->
-        <% if (locals.showScrollIndicator) { %>
+        <% if (showScrollIndicator) { %>
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-            <svg class="w-6 h-6 text-gris-clair" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>
         </div>
@@ -53,13 +135,14 @@
     </div>
     
     <!-- Image latérale (optionnelle) -->
-    <% if (locals.heroSideImage) { %>
+    <% if (heroSideImage) { %>
     <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-3/4 hidden lg:block">
         <img src="<%= heroSideImage %>" alt="" class="w-full h-full object-contain opacity-80 filter contrast-125">
     </div>
     <% } %>
 </section>
 
+<!-- Styles pour les animations (sera migré vers Tailwind plus tard) -->
 <style>
 @keyframes fade-in-up {
     from {

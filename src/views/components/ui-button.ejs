@@ -1,0 +1,136 @@
+<%
+/*
+ * Composant Bouton Universel v2.1 - Avec Support Thèmes Système
+ * Usage: <%- include('components/ui-button', { 
+ *   text: 'Mon bouton', 
+ *   variant: 'primary|secondary|success|danger|outline|ghost', 
+ *   size: 'sm|md|lg|xl',
+ *   type: 'button|submit|reset',
+ *   action: 'naviguer("/page")',
+ *   href: '/lien' (crée un lien au lieu d'un bouton),
+ *   icon: 'fa-solid fa-download',
+ *   iconOnly: false,
+ *   disabled: false,
+ *   loading: false,
+ *   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
+ *   additionalClasses: 'w-full',
+ *   id: '',
+ *   ariaLabel: ''
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    text = 'Bouton',
+    variant = 'primary',
+    size = 'md', 
+    type = 'button',
+    action = '',
+    href = '',
+    icon = '',
+    iconOnly = false,
+    disabled = false,
+    loading = false,
+    gameSystem = '', // Système de jeu pour thématisation
+    additionalClasses = '',
+    id = '',
+    ariaLabel = ''
+} = locals;
+
+// Intégration du SystemThemeService côté serveur
+const SystemThemeService = require('../../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+
+// Détermine si c'est un lien ou un bouton
+const isLink = !!href;
+
+// Construction des classes
+const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+// Classes de base par variant
+const baseVariantClasses = {
+    primary: 'bg-generique hover:bg-generique-dark text-white focus:ring-generique',
+    secondary: 'bg-gray-700 hover:bg-gray-600 text-white focus:ring-gray-500',
+    success: 'bg-succes hover:bg-green-600 text-white focus:ring-green-500',
+    danger: 'bg-erreur hover:bg-red-600 text-white focus:ring-red-500',
+    outline: 'border-2 border-generique text-generique hover:bg-generique hover:text-white bg-transparent',
+    ghost: 'text-generique hover:bg-generique/10 bg-transparent'
+};
+
+// Classes système-spécifiques si un thème est fourni
+const getSystemVariantClasses = (variant, systemTheme) => {
+    if (!systemTheme) return baseVariantClasses[variant];
+    
+    const systemColorMap = {
+        monsterhearts: 'purple',
+        engrenages: 'emerald',
+        metro2033: 'red',
+        mistengine: 'pink',
+        zombiology: 'yellow'
+    };
+    
+    const systemColor = systemColorMap[gameSystem] || 'generique';
+    
+    switch (variant) {
+        case 'primary':
+            return `bg-${systemColor}-600 hover:bg-${systemColor}-700 text-white focus:ring-${systemColor}-500`;
+        case 'outline':
+            return `border-2 border-${systemColor}-500 text-${systemColor}-500 hover:bg-${systemColor}-500 hover:text-white bg-transparent`;
+        case 'ghost':
+            return `text-${systemColor}-500 hover:bg-${systemColor}-500/10 bg-transparent`;
+        default:
+            return baseVariantClasses[variant];
+    }
+};
+
+const variantClasses = getSystemVariantClasses(variant, systemTheme);
+
+const sizeClasses = {
+    sm: iconOnly ? 'p-2 text-sm rounded-md' : 'px-3 py-1.5 text-sm rounded-md',
+    md: iconOnly ? 'p-2.5 text-base rounded-lg' : 'px-4 py-2 text-base rounded-lg', 
+    lg: iconOnly ? 'p-3 text-lg rounded-lg' : 'px-6 py-3 text-lg rounded-lg',
+    xl: iconOnly ? 'p-4 text-xl rounded-xl' : 'px-8 py-4 text-xl rounded-xl'
+};
+
+const finalClasses = [
+    baseClasses,
+    variantClasses,
+    sizeClasses[size] || sizeClasses.md,
+    additionalClasses
+].join(' ');
+
+// Attributs dynamiques
+const attributes = [];
+if (id) attributes.push(`id="${id}"`);
+if (ariaLabel) attributes.push(`aria-label="${ariaLabel}"`);
+if (disabled || loading) attributes.push(isLink ? '' : 'disabled');
+if (action && !isLink) attributes.push(`@click="${action}"`);
+
+// Gestion du texte avec loading
+const displayText = loading ? 'Chargement...' : text;
+const displayIcon = loading ? 'fa-solid fa-spinner fa-spin' : icon;
+%>
+
+<% if (isLink) { %>
+    <a href="<%= href %>" class="<%= finalClasses %>" <%= attributes.join(' ') %>>
+        <% if (displayIcon && !iconOnly) { %>
+            <i class="<%= displayIcon %> <%= displayText ? 'mr-2' : '' %>"></i>
+        <% } %>
+        <% if (displayIcon && iconOnly) { %>
+            <i class="<%= displayIcon %>"></i>
+        <% } else if (displayText) { %>
+            <span><%= displayText %></span>
+        <% } %>
+    </a>
+<% } else { %>
+    <button type="<%= type %>" class="<%= finalClasses %>" <%= attributes.join(' ') %>>
+        <% if (displayIcon && !iconOnly) { %>
+            <i class="<%= displayIcon %> <%= displayText ? 'mr-2' : '' %>"></i>
+        <% } %>
+        <% if (displayIcon && iconOnly) { %>
+            <i class="<%= displayIcon %>"></i>
+        <% } else if (displayText) { %>
+            <span><%= displayText %></span>
+        <% } %>
+    </button>
+<% } %>

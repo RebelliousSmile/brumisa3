@@ -4,8 +4,8 @@
     <div class="relative">
         <a href="#" @click="$dispatch('toggleDonation')"
            @mouseenter="showTooltip = true" @mouseleave="showTooltip = false"
-           class="w-10 h-10 bg-blue-600/20 border border-blue-500/30 rounded-full flex items-center justify-center hover:border-blue-500 transition-all duration-standard">
-            <i class="ra ra-crowned-heart text-blue-400 text-xl"></i>
+           class="w-10 h-10 bg-generique/20 border border-generique/30 rounded-full flex items-center justify-center hover:border-generique transition-all duration-standard">
+            <i class="ra ra-crowned-heart text-generique text-xl"></i>
         </a>
         <div x-show="showTooltip"
              x-transition:enter="transition ease-out duration-200"
@@ -21,7 +21,7 @@
 <!-- Version mobile en bas -->
 <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-row gap-3 z-40 md:hidden bg-noir-charbon/70 backdrop-blur-sm px-4 py-3 rounded-full border border-gris-fonce">
     <a href="#" @click="$dispatch('toggleDonation')"
-       class="w-10 h-10 bg-blue-600/20 border border-blue-500/30 rounded-full flex items-center justify-center hover:border-blue-500 transition-all duration-standard">
-        <i class="ra ra-crowned-heart text-blue-400 text-xl"></i>
+       class="w-10 h-10 bg-generique/20 border border-generique/30 rounded-full flex items-center justify-center hover:border-generique transition-all duration-standard">
+        <i class="ra ra-crowned-heart text-generique text-xl"></i>
     </a>
 </div>

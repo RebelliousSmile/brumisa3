@@ -256,7 +256,7 @@
                 <button 
                     type="submit"
                     :disabled="!peutGenerer || enTraitement"
-                    class="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-4 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    class="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center">
                     <i class="ra ra-scroll mr-2" x-show="!enTraitement"></i>
                     <i class="ra ra-spinning-swords animate-spin mr-2" x-show="enTraitement"></i>
                     <span x-text="enTraitement ? 'Génération en cours...' : 'Générer le PDF'"></span>

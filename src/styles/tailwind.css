@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import des composants legacy pour compatibilité */
+@import 'components-legacy.css';
+
+/* Fix pour les variables CSS Tailwind pour les dégradés - ordre important ! */
+* {
+  --tw-gradient-to-position: 100% !important;
+  --tw-gradient-from-position: 0% !important;
+  --tw-gradient-via-position: 50% !important;
+}
+
+/* Fix spécifique pour les classes de gradient qui utilisent generique */
+.to-generique {
+  --tw-gradient-to: #3b82f6 !important;
+}
+
+.from-generique {
+  --tw-gradient-from: #3b82f6 !important;
+}
+
+.via-generique {
+  --tw-gradient-via: #3b82f6 !important;
+}
+
 /* Styles personnalisés pour les systèmes JDR */
 
 /* Monsterhearts - Gothic Romance */
@@ -66,11 +89,27 @@
 }
 
 .btn-primary {
-  @apply bg-generique hover:bg-blue-700 text-white focus:ring-generique;
+  @apply bg-generique hover:bg-generique/80 text-white focus:ring-generique;
+}
+
+.btn-primary:disabled {
+  @apply bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed;
+}
+
+.btn-primary:disabled:hover {
+  @apply bg-gray-600 text-gray-400 border-gray-600;
 }
 
 .btn-secondary {
   @apply bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-500;
+}
+
+.btn-secondary:disabled {
+  @apply bg-gray-700 text-gray-500 border-gray-700 cursor-not-allowed;
+}
+
+.btn-secondary:disabled:hover {
+  @apply bg-gray-700 text-gray-500 border-gray-700;
 }
 
 .input {

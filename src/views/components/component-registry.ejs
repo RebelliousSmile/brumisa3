@@ -1,0 +1,55 @@
+<%
+/*
+ * Registre Central des Composants
+ * Définit la structure standard des composants réutilisables
+ */
+
+// Configuration globale des composants
+const componentConfig = {
+    // Préfixes de classes par défaut
+    defaultClasses: {
+        button: 'px-4 py-2 rounded-lg font-medium transition-colors',
+        card: 'bg-gray-900 rounded-lg border border-gray-700',
+        input: 'px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white',
+        badge: 'px-2 py-1 rounded-full text-xs font-medium'
+    },
+    
+    // Variants de couleurs
+    variants: {
+        primary: 'bg-generique hover:bg-generique-dark text-white',
+        secondary: 'bg-gray-700 hover:bg-gray-600 text-white',
+        success: 'bg-succes hover:bg-green-600 text-white',
+        danger: 'bg-erreur hover:bg-red-600 text-white'
+    },
+    
+    // Tailles
+    sizes: {
+        sm: 'text-sm px-3 py-1.5',
+        md: 'text-base px-4 py-2',
+        lg: 'text-lg px-6 py-3'
+    }
+};
+
+// Helper pour construire les classes
+function buildClasses(base, variant = '', size = '', additional = '') {
+    const classes = [
+        componentConfig.defaultClasses[base] || '',
+        componentConfig.variants[variant] || '',
+        componentConfig.sizes[size] || '',
+        additional
+    ].filter(Boolean);
+    
+    return classes.join(' ');
+}
+
+// Exporter la configuration
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { componentConfig, buildClasses };
+}
+%>
+
+<!-- 
+Usage dans les templates :
+<%- include('components/component-registry') %>
+<% const buttonClasses = buildClasses('button', 'primary', 'md', 'w-full') %>
+-->

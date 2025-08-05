@@ -1,10 +1,10 @@
 <!-- Page détail d'un oracle -->
 <div class="min-h-screen bg-gray-900 relative overflow-hidden">
     <!-- Background Effects -->
-    <div class="absolute inset-0 bg-gradient-to-br <%= couleurSysteme ? couleurSysteme.gradient : 'from-blue-900/20 via-blue-800/30 to-gray-900' %>"></div>
+    <div class="absolute inset-0 bg-gradient-to-br <%= couleurSysteme ? couleurSysteme.gradient : 'from-blue-900 via-blue-800 to-gray-900' %>"></div>
     <div class="absolute inset-0">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-500/10 rounded-full filter blur-3xl"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-500/10 rounded-full filter blur-3xl"></div>
+        <div class="absolute top-20 left-10 w-72 h-72 bg-gray-800 rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-gray-800 rounded-full filter blur-3xl"></div>
     </div>
 
     <!-- Fil d'Ariane -->
@@ -23,7 +23,7 @@
                 <% if (utilisateur && utilisateur.role === 'ADMIN') { %>
                     <div class="ml-4">
                         <a href="/admin/oracles/<%= oracle.id %>/edit" 
-                           class="text-blue-400 hover:text-blue-300 text-sm">
+                           class="text-generique hover:text-blue-300 text-sm">
                             <i class="fas fa-edit mr-1"></i>
                             Éditer
                         </a>
@@ -36,7 +36,7 @@
     <!-- Contenu principal -->
     <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- En-tête de l'oracle -->
-        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-8 mb-8">
+        <div class="bg-gray-800 backdrop-blur-sm rounded-xl border border-gray-700 p-8 mb-8">
             <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
                     <h1 class="text-3xl font-bold text-white mb-4 font-display">
@@ -73,7 +73,7 @@
             </div>
 
             <!-- Interface de tirage centrée et immersive -->
-            <div class="bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-50/90 to-white/90 backdrop-blur-sm rounded-xl p-8 text-center" 
+            <div class="bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-50 to-white backdrop-blur-sm rounded-xl p-8 text-center" 
                  x-data="oraclePage()">
                 
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">
@@ -86,7 +86,7 @@
                     <% if (!oracle.premium_required || (utilisateur && (utilisateur.role === 'PREMIUM' || utilisateur.role === 'ADMIN'))) { %>
                         <button @click="effectuerTirage()" 
                                 :disabled="loading"
-                                class="bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-600 to-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-700 text-white px-12 py-4 rounded-xl text-xl font-bold hover:from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-700 hover:to-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-800 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                                class="bg-gradient-to-r from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-600 to-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-700 text-white px-12 py-4 rounded-xl text-xl font-bold hover:from-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-700 hover:to-<%= couleurSysteme ? couleurSysteme.primary : 'blue' %>-800 transition-all transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed disabled:transform-none">
                             <span x-show="!loading" class="flex items-center justify-center">
                                 <i class="<%= couleurSysteme ? couleurSysteme.icon : 'ra-crystal-ball' %> ra mr-3 text-2xl"></i>
                                 Révéler le Mystère
@@ -113,7 +113,7 @@
                         <i class="fas fa-chevron-down ml-2 transition-transform" :class="{ 'rotate-180': showAdvanced }"></i>
                     </button>
                     
-                    <div x-show="showAdvanced" x-transition class="mt-4 bg-white/50 rounded-lg p-4">
+                    <div x-show="showAdvanced" x-transition class="mt-4 bg-white rounded-lg p-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">

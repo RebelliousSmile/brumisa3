@@ -1,23 +1,22 @@
 <!-- Landing Page - Dark Gaming Theme -->
-<div class="min-h-screen bg-gray-900 relative overflow-hidden" 
+<div class="min-h-screen bg-black relative overflow-hidden" 
      x-data="window.AlpineComponents.pageAccueil()">
     
-    <!-- Background Effects -->
-    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/30 to-gray-900"></div>
-    <div class="absolute inset-0">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full filter blur-3xl"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl"></div>
-    </div>
-    
     <!-- Hero Section -->
-    <header class="relative z-10 pt-20 pb-16 px-4">
+    <header class="relative pt-20 pb-16 px-4 overflow-hidden">
+        <!-- Background Effects - Hero gradient limité à la hero section -->
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-generique"></div>
+        <div class="absolute inset-0">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-generique/20 rounded-full filter blur-3xl"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl"></div>
+        </div>
         <div class="max-w-7xl mx-auto">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <!-- Character Image - À gauche -->
                 <div class="relative lg:order-first order-first">
                     <div class="relative max-w-md mx-auto lg:ml-0">
-                        <!-- Glow Effect -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full filter blur-3xl"></div>
+                        <!-- Hero Glow Effect -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-generique/30 to-purple-500/30 rounded-full filter blur-3xl"></div>
                         
                         <!-- Character -->
                         <img src="/images/transhumans-bueno.png" 
@@ -27,10 +26,10 @@
                 </div>
                 
                 <!-- Content - À droite -->
-                <div class="text-center lg:text-left lg:order-last">
+                <div class="text-center lg:text-left lg:order-last relative z-10">
                     <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight font-display">
                         N'EMBARQUEZ PAS DANS LA BRUME
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                        <span class="text-generique">
                             LES MAINS VIDES
                         </span>
                     </h1>
@@ -44,38 +43,38 @@
     </header>
 
     <!-- Stats Section -->
-    <section class="relative z-10 px-4 mb-16">
+    <section class="relative z-10 px-4 my-16">
         <div class="max-w-6xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Stat 1 - Utilisateurs inscrits -->
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
-                        <i class="ra ra-player-king text-blue-400 text-2xl"></i>
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+                        <i class="ra ra-player-king text-generique text-2xl"></i>
                     </div>
                     <div class="text-3xl md:text-4xl font-bold text-white mb-2" x-text="formaterNombre(statistiques?.nb_utilisateurs_inscrits) || '...'"></div>
-                    <div class="text-blue-400 font-medium font-display">UTILISATEURS</div>
+                    <div class="text-generique font-medium font-display">UTILISATEURS</div>
                     <div class="text-gray-400 text-sm mt-1">Joueuses inscrites créant des personnages 
 épiques et partageant leurs aventures.</div>
                 </div>
                 
                 <!-- Stat 2 - Contenus ouverts ce mois -->
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
-                        <i class="fa-solid fa-eye text-blue-400 text-2xl"></i>
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+                        <i class="fa-solid fa-eye text-generique text-2xl"></i>
                     </div>
                     <div class="text-3xl md:text-4xl font-bold text-white mb-2" x-text="formaterNombre(statistiques?.nb_contenus_ouverts_mois) || '...'"></div>
-                    <div class="text-blue-400 font-medium font-display">VUES CE MOIS</div>
+                    <div class="text-generique font-medium font-display">VUES CE MOIS</div>
                     <div class="text-gray-400 text-sm mt-1">PDFs consultés et téléchargés 
 par la communauté ce mois-ci.</div>
                 </div>
                 
                 <!-- Stat 3 - PDFs stockés -->
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
-                        <i class="fa-solid fa-scroll text-blue-400 text-2xl"></i>
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+                        <i class="fa-solid fa-scroll text-generique text-2xl"></i>
                     </div>
                     <div class="text-3xl md:text-4xl font-bold text-white mb-2" x-text="formaterNombre(statistiques?.nb_pdfs_stockes) || '...'"></div>
-                    <div class="text-blue-400 font-medium font-display">PDFS STOCKÉS</div>
+                    <div class="text-generique font-medium font-display">PDFS STOCKÉS</div>
                     <div class="text-gray-400 text-sm mt-1">Fiches de personnages et aides de jeu sauvegardées .</div>
                 </div>
             </div>
@@ -86,8 +85,7 @@ par la communauté ce mois-ci.</div>
     <section class="relative z-10 px-4 mb-16">
         <div class="max-w-6xl mx-auto">
             <!-- Game World Background -->
-            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 p-8 mb-12">
-                <div class="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-blue-900/30"></div>
+            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-600 p-8 mb-12">
                 <div class="relative z-10">
                     <div class="text-center mb-8">
                         <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 font-display">
@@ -106,7 +104,7 @@ par la communauté ce mois-ci.</div>
                                     <% systemCards.mainColumn.forEach(card => { %>
                                         <div data-carte-systeme 
                                              @click="naviguerVersSysteme('<%= card.code %>')" 
-                                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
+                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all hover:border-gray-600">
                                             <div class="flex items-center">
                                                 <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center flex-shrink-0 <%= card.classes.border %> mr-4">
                                                     <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
@@ -132,7 +130,7 @@ par la communauté ce mois-ci.</div>
                                     <% systemCards.secondColumn.forEach(card => { %>
                                         <div data-carte-systeme 
                                              @click="naviguerVersSysteme('<%= card.code %>')" 
-                                             class="group bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 cursor-pointer transition-all duration-300 hover:border-gray-600 hover:bg-gray-700/30 hover:scale-105">
+                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all hover:border-gray-600">
                                             <div class="text-center">
                                                 <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center mx-auto mb-4 <%= card.classes.border %>">
                                                     <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
@@ -165,10 +163,10 @@ par la communauté ce mois-ci.</div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <template x-for="pdf in pdfsRecents" :key="pdf.id">
-                    <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:scale-105">
+                    <div class="bg-gray-900  rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all ">
                         <div class="flex items-start justify-between mb-3">
                             <h3 class="font-semibold text-white text-sm font-serif" x-text="pdf.personnage_nom"></h3>
-                            <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30 font-display" x-text="pdf.systeme_jeu"></span>
+                            <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full border border-gray-600 font-display" x-text="pdf.systeme_jeu"></span>
                         </div>
                         <p class="text-xs text-gray-400 mb-3 font-serif">
                             par <span x-text="pdf.auteur_nom"></span>
@@ -187,10 +185,10 @@ par la communauté ce mois-ci.</div>
                 <div x-show="!pdfsRecents || pdfsRecents.length === 0" class="col-span-full">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <!-- PDF exemple 1 -->
-                        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:scale-105">
+                        <div class="bg-gray-900  rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all ">
                             <div class="flex items-start justify-between mb-3">
                                 <h3 class="font-semibold text-white text-sm font-serif">Véra Blackthorne</h3>
-                                <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30 font-display">Monsterhearts</span>
+                                <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full border border-gray-600 font-display">Monsterhearts</span>
                             </div>
                             <p class="text-xs text-gray-400 mb-3 font-serif">
                                 par <span>Alex M.</span>
@@ -202,10 +200,10 @@ par la communauté ce mois-ci.</div>
                         </div>
                         
                         <!-- PDF exemple 2 -->
-                        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:scale-105">
+                        <div class="bg-gray-900  rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all ">
                             <div class="flex items-start justify-between mb-3">
                                 <h3 class="font-semibold text-white text-sm font-serif">Capitaine Hartwell</h3>
-                                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-display">Engrenages</span>
+                                <span class="text-xs bg-emerald-500 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500 font-display">Engrenages</span>
                             </div>
                             <p class="text-xs text-gray-400 mb-3 font-serif">
                                 par <span>Marie L.</span>
@@ -217,10 +215,10 @@ par la communauté ce mois-ci.</div>
                         </div>
                         
                         <!-- PDF exemple 3 -->
-                        <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:scale-105">
+                        <div class="bg-gray-900  rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all ">
                             <div class="flex items-start justify-between mb-3">
                                 <h3 class="font-semibold text-white text-sm font-serif">Dmitri Volkov</h3>
-                                <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full border border-red-500/30 font-display">Metro 2033</span>
+                                <span class="text-xs bg-red-500 text-red-400 px-2 py-1 rounded-full border border-red-500 font-display">Metro 2033</span>
                             </div>
                             <p class="text-xs text-gray-400 mb-3 font-serif">
                                 par <span>Pierre K.</span>
@@ -242,7 +240,7 @@ par la communauté ce mois-ci.</div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
                 <!-- Newsletter -->
-                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                <div class="bg-gray-900  rounded-lg p-6 border border-gray-700">
                     <h3 class="text-xl font-bold text-white mb-4 font-display">
                         Restez informé
                     </h3>
@@ -257,16 +255,16 @@ par la communauté ce mois-ci.</div>
                                 x-model="emailNewsletter"
                                 placeholder="votre@email.com"
                                 required
-                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none font-serif">
+                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-generique focus:outline-none font-serif">
                             <input 
                                 type="text" 
                                 x-model="nomNewsletter"
                                 placeholder="Votre nom (optionnel)"
-                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none font-serif">
+                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-generique focus:outline-none font-serif">
                             <button 
                                 type="submit"
                                 :disabled="chargementNewsletter"
-                                class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 transition-all font-display">
+                                class="w-full bg-gradient-to-r from-generique to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-generique disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all font-display">
                                 <span x-show="!chargementNewsletter">S'inscrire à la newsletter</span>
                                 <span x-show="chargementNewsletter">Inscription...</span>
                             </button>
@@ -291,7 +289,7 @@ par la communauté ce mois-ci.</div>
                 </div>
 
                 <!-- Rejoignez l'aventure -->
-                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+                <div class="bg-gray-900  rounded-lg p-6 border border-gray-700">
                     <h3 class="text-xl font-bold text-white mb-4 font-display">
                         Rejoignez l'aventure
                     </h3>
@@ -317,14 +315,22 @@ par la communauté ce mois-ci.</div>
                     
                     <% if (!locals.utilisateur) { %>
                     <div class="text-center">
-                        <a href="/inscription" class="inline-block w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 font-display">
+                        <a href="/inscription" class="inline-block w-full bg-gradient-to-r from-generique to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-generique transition-all font-display">
                             Créer un compte gratuit
                         </a>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-700">
+                        <p class="text-gray-400 text-center font-serif">
+                            <a href="/connexion" class="text-generique hover:text-blue-600 transition-colors">
+                                J'ai déjà un compte
+                            </a>
+                        </p>
                     </div>
                     <% } else { %>
                     <div class="text-center">
                         <p class="text-green-400 mb-4 font-serif">Vous êtes déjà connecté !</p>
-                        <a href="/personnages" class="inline-block w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 font-display">
+                        <a href="/personnages" class="inline-block w-full bg-gray-700 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-600 transition-all font-display">
                             Créer un personnage
                         </a>
                     </div>
@@ -334,45 +340,11 @@ par la communauté ce mois-ci.</div>
         </div>
     </section>
 
-    <!-- Témoignages -->
-    <section class="relative z-10 px-4 mb-16">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center font-display">
-                Ce que disent nos utilisateurs
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <template x-for="temoignage in temoignages.slice(0, 3)" :key="temoignage.id">
-                    <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-                        <div class="flex items-center mb-4">
-                            <div class="flex text-yellow-400" x-html="'★'.repeat(temoignage.note) + '☆'.repeat(5-temoignage.note)"></div>
-                            <span class="ml-2 text-sm text-gray-400" x-text="temoignage.note + '/5'"></span>
-                        </div>
-                        
-                        <h4 class="font-semibold text-white mb-3" x-text="temoignage.titre" x-show="temoignage.titre"></h4>
-                        <p class="text-gray-300 mb-4" x-text="temoignage.contenu"></p>
-                        
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-400" x-text="temoignage.nom"></span>
-                            <span x-text="temoignage.systeme_utilise" x-show="temoignage.systeme_utilise" class="bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30"></span>
-                        </div>
-                    </div>
-                </template>
-            </div>
-            
-            <!-- Lien pour ajouter un témoignage -->
-            <div class="text-center mt-8">
-                <button @click="afficherFormulaireTemoignage = !afficherFormulaireTemoignage"
-                        class="px-5 py-2 border border-brand-violet text-brand-violet bg-transparent rounded-full font-display text-sm hover:bg-brand-violet hover:text-white transition-colors duration-200">
-                    Laisser un témoignage
-                </button>
-            </div>
-        </div>
-    </section>
+    <%- include('partials/testimonials-cta') %>
 
     <!-- Formulaire de témoignage -->
     <section class="relative z-10 px-4 mb-16" x-show="afficherFormulaireTemoignage">
-        <div class="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
+        <div class="max-w-2xl mx-auto bg-gray-900  rounded-lg p-8 border border-gray-700">
             <h3 class="text-xl font-bold text-white mb-6">Partagez votre expérience</h3>
             
             <form @submit.prevent="ajouterTemoignage()">
@@ -433,7 +405,7 @@ par la communauté ce mois-ci.</div>
                         <button 
                             type="submit"
                             :disabled="chargementTemoignage"
-                            class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 transition-all">
+                            class="bg-gradient-to-r from-generique to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-generique disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all">
                             <span x-show="!chargementTemoignage">Envoyer</span>
                             <span x-show="chargementTemoignage">Envoi...</span>
                         </button>
@@ -456,9 +428,9 @@ par la communauté ce mois-ci.</div>
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center bg-gray-800/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
-                        <i class="fa-solid fa-mobile-alt text-blue-400 text-2xl"></i>
+                <div class="text-center bg-gray-900  rounded-lg p-8 border border-gray-700">
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 border border-generique">
+                        <i class="fa-solid fa-mobile-alt text-generique text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white mb-4">Mobile-First</h3>
                     <p class="text-gray-300">
@@ -466,9 +438,9 @@ par la communauté ce mois-ci.</div>
                     </p>
                 </div>
                 
-                <div class="text-center bg-gray-800/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
-                        <i class="fa-solid fa-palette text-blue-400 text-2xl"></i>
+                <div class="text-center bg-gray-900  rounded-lg p-8 border border-gray-700">
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 border border-generique">
+                        <i class="fa-solid fa-palette text-generique text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white mb-4">Thèmes Uniques</h3>
                     <p class="text-gray-300">
@@ -476,9 +448,9 @@ par la communauté ce mois-ci.</div>
                     </p>
                 </div>
                 
-                <div class="text-center bg-gray-800/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
-                        <i class="fa-solid fa-bolt text-blue-400 text-2xl"></i>
+                <div class="text-center bg-gray-900  rounded-lg p-8 border border-gray-700">
+                    <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 border border-generique">
+                        <i class="fa-solid fa-bolt text-generique text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white mb-4">Partage Facile</h3>
                     <p class="text-gray-300">

@@ -1,0 +1,85 @@
+<%
+/*
+ * Composant Card Universel
+ * Usage: <%- include('components/ui-card', { 
+ *   title: 'Titre de la carte',
+ *   subtitle: 'Sous-titre',
+ *   variant: 'default',
+ *   padding: 'md',
+ *   hover: true,
+ *   clickAction: 'naviguer("/page")'
+ * }) %>
+ * Contenu à mettre dans le body via le paramètre 'content' ou en wrappant
+ */
+
+const {
+    title = '',
+    subtitle = '',
+    variant = 'default',
+    padding = 'md',
+    hover = false,
+    clickAction = '',
+    additionalClasses = '',
+    content = '',
+    headerContent = '',
+    footerContent = ''
+} = locals;
+
+const baseClasses = 'bg-gray-900 rounded-lg border transition-all duration-200';
+
+const variantClasses = {
+    default: 'border-gray-700',
+    primary: 'border-generique/30 bg-generique/5',
+    success: 'border-succes/30 bg-succes/5',
+    warning: 'border-avertissement/30 bg-avertissement/5',
+    danger: 'border-erreur/30 bg-erreur/5'
+};
+
+const paddingClasses = {
+    none: '',
+    sm: 'p-4',
+    md: 'p-6', 
+    lg: 'p-8'
+};
+
+const hoverClasses = hover ? 'hover:border-gray-600 hover:shadow-lg cursor-pointer' : '';
+
+const finalClasses = [
+    baseClasses,
+    variantClasses[variant] || variantClasses.default,
+    paddingClasses[padding] || paddingClasses.md,
+    hoverClasses,
+    additionalClasses
+].join(' ');
+
+const attributes = [];
+if (clickAction) attributes.push(`@click="${clickAction}"`);
+%>
+
+<div class="<%= finalClasses %>" <%= attributes.join(' ') %>>
+    <% if (title || subtitle || headerContent) { %>
+        <div class="<%= padding !== 'none' ? 'mb-4' : '' %>">
+            <% if (title) { %>
+                <h3 class="text-lg font-semibold text-white mb-1"><%= title %></h3>
+            <% } %>
+            <% if (subtitle) { %>
+                <p class="text-gray-400 text-sm"><%= subtitle %></p>
+            <% } %>
+            <% if (headerContent) { %>
+                <%- headerContent %>
+            <% } %>
+        </div>
+    <% } %>
+    
+    <% if (content) { %>
+        <div class="text-gray-300">
+            <%- content %>
+        </div>
+    <% } %>
+    
+    <% if (footerContent) { %>
+        <div class="<%= padding !== 'none' ? 'mt-4 pt-4 border-t border-gray-700' : '' %>">
+            <%- footerContent %>
+        </div>
+    <% } %>
+</div>

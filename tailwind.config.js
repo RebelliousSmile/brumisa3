@@ -5,6 +5,20 @@ module.exports = {
     "./public/**/*.{js,html}",
     "./src/views/**/*.ejs"
   ],
+  safelist: [
+    'from-generique',
+    'to-generique', 
+    'via-generique',
+    'bg-gradient-to-r',
+    'bg-gradient-to-br',
+    'bg-gradient-to-l',
+    'bg-gradient-to-t',
+    'bg-gradient-to-b'
+  ],
+  corePlugins: {
+    // Forcer la génération des gradients
+    gradientColorStops: true,
+  },
   theme: {
     extend: {
       colors: {
@@ -19,6 +33,7 @@ module.exports = {
         
         // Couleur principale brumisa3
         'generique': '#3b82f6', // Bleu brumisa3 - couleur principale du site
+        'generique-dark':'#2563eb',
         
         // Couleurs fonctionnelles
         'succes': '#22c55e', // green-500 (distinct d'emerald)

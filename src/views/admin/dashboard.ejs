@@ -26,9 +26,9 @@
         <!-- Vue d'ensemble - Cards de statistiques -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Utilisateurs -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-blue-500/20">
+            <div class="bg-gray-800 rounded-lg p-6 border border-generique">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="text-blue-400">
+                    <div class="text-generique">
                         <i class="ra ra-player text-2xl"></i>
                     </div>
                     <span class="text-xs text-gray-400">Utilisateurs</span>
@@ -40,7 +40,7 @@
             </div>
 
             <!-- PDFs générés -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-green-500/20">
+            <div class="bg-gray-800 rounded-lg p-6 border border-green-500">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-green-400">
                         <i class="ra ra-scroll text-2xl"></i>
@@ -54,7 +54,7 @@
             </div>
 
             <!-- Dons reçus -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-yellow-500/20">
+            <div class="bg-gray-800 rounded-lg p-6 border border-yellow-500">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-yellow-400">
                         <i class="ra ra-gem text-2xl"></i>
@@ -68,7 +68,7 @@
             </div>
 
             <!-- Système -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-purple-500/20">
+            <div class="bg-gray-800 rounded-lg p-6 border border-purple-500">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-purple-400">
                         <i class="ra ra-server text-2xl"></i>
@@ -89,7 +89,7 @@
             <!-- Utilisateurs par rôle -->
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 class="text-xl font-bold mb-4 flex items-center">
-                    <i class="ra ra-player-king text-blue-400 mr-3"></i>
+                    <i class="ra ra-player-king text-generique mr-3"></i>
                     Utilisateurs par rôle
                 </h3>
                 <div class="space-y-4">
@@ -144,9 +144,9 @@
                         <div class="flex items-center">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3"
                                  :class="{
-                                     'bg-blue-500/20 text-blue-400': activite.type === 'user',
-                                     'bg-green-500/20 text-green-400': activite.type === 'pdf',
-                                     'bg-yellow-500/20 text-yellow-400': activite.type === 'donation'
+                                     'bg-gray-800 text-generique': activite.type === 'user',
+                                     'bg-gray-800 text-green-400': activite.type === 'pdf',
+                                     'bg-gray-800 text-yellow-400': activite.type === 'donation'
                                  }">
                                 <i class="text-sm" 
                                    :class="{
@@ -169,7 +169,7 @@
         <!-- Actions rapides -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button @click="actionRapide('cleanup-tokens')" 
-                    class="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg transition-colors flex items-center justify-center">
+                    class="bg-generique hover:bg-generique p-4 rounded-lg transition-colors flex items-center justify-center">
                 <i class="ra ra-broom mr-2"></i>
                 Nettoyer tokens
             </button>
@@ -224,9 +224,9 @@
             <!-- Liste utilisateurs -->
             <div class="space-y-2 max-h-96 overflow-y-auto">
                 <template x-for="user in utilisateursAffiches || []" :key="user.id">
-                    <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600/50">
+                    <div class="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600">
                         <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                            <div class="w-8 h-8 rounded-full bg-generique flex items-center justify-center mr-3">
                                 <span class="text-xs font-bold text-white" x-text="user.nom?.charAt(0)?.toUpperCase() || 'U'"></span>
                             </div>
                             <div>
@@ -247,7 +247,7 @@
                             
                             <div class="flex space-x-1">
                                 <button @click="modifierUtilisateur(user)" 
-                                        class="text-blue-400 hover:text-blue-300 p-1"
+                                        class="text-generique hover:text-blue-300 p-1"
                                         aria-label="Modifier l'utilisateur">
                                     <i class="ra ra-gear text-sm"></i>
                                 </button>
