@@ -179,6 +179,7 @@
 - **Changements de pseudo** : < 20% des utilisateurs/an (stabilité identitaire)
 - **Modifications email** : < 10% des utilisateurs/an (sécurité maintenue)
 - **Suppressions de compte** : < 5% des utilisateurs/an (rétention élevée)
+- **Désabonnements newsletter** : < 30% des utilisateurs (engagement communications)
 
 ### Métriques de Qualité
 - **Conservation communautaire** : > 70% choisissent la préservation des contenus
