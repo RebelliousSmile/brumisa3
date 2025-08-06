@@ -47,7 +47,27 @@
 4. **Activation** → Clic sur le lien pour finaliser le changement
 5. **Notification** → Confirmation envoyée aux deux adresses
 
-### 3. Suppression de Compte
+### 3. Gestion des Communications
+
+**Newsletter et Notifications :**
+- **Abonnement par défaut** : Inscription automatique lors de la création de compte
+- **Désabonnement libre** : Option disponible dans les paramètres à tout moment
+- **Lien direct** : Désabonnement possible via lien en bas de chaque newsletter
+- **Granularité** : Choix des types de communications (updates produit, communauté, maintenance)
+
+**Types de communications :**
+- **Newsletter produit** : Nouvelles fonctionnalités, améliorations
+- **Actualités communauté** : Contenus populaires, événements
+- **Notifications système** : Maintenance programmée, incidents
+- **Communications premium** : Rappels d'expiration, nouvelles fonctionnalités premium
+
+**Critères d'acceptation :**
+- Cases à cocher dans les paramètres pour chaque type
+- Application immédiate des changements de préférences
+- Respect du choix même après modifications de compte
+- Possibilité de se réabonner facilement
+
+### 4. Suppression de Compte
 
 **Vision :** Permettre un départ propre avec préservation optionnelle des contributions communautaires.
 
@@ -91,7 +111,17 @@
 - Mon nouveau pseudo apparaît sur tous mes contenus existants
 - L'historique de mes contributions reste intact
 
-### US2 : Changer mon Email
+### US2 : Gérer mes Communications
+**En tant qu'utilisateur respectueux de ma vie privée**, je veux contrôler les communications que je reçois de brumisater.
+
+**Critères d'acceptation :**
+- J'ai des options granulaires pour chaque type de communication
+- Je peux me désabonner facilement via les paramètres ou lien direct
+- Mes préférences sont respectées immédiatement
+- Je peux modifier mes choix à tout moment
+- Les communications essentielles (sécurité, compte) restent actives
+
+### US3 : Changer mon Email
 **En tant qu'utilisateur soucieux de sa sécurité**, je veux pouvoir modifier mon email de connexion tout en gardant la sécurité du compte.
 
 **Critères d'acceptation :**
