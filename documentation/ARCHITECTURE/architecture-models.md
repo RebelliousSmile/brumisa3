@@ -4,17 +4,21 @@
 
 Le projet utilise une architecture de modèles basée sur le pattern **Active Record** avec une classe de base `BaseModel` qui fournit les opérations CRUD communes et les fonctionnalités avancées.
 
+Cette architecture supporte le workflow central de brumisater : **mode "sur le pouce" (anonyme) + gestion à moyen terme (avec compte)** avec 5 types de documents JDR.
+
 ## Structure générale
 
 ```
 src/models/
-├── BaseModel.js      # Classe de base avec toutes les opérations communes
-├── Utilisateur.js    # Gestion des utilisateurs et authentification
-├── Personnage.js     # Données de personnages sauvegardées par les utilisateurs
-├── Document.js       # Documents générés (character, town, group, etc.)
-├── Pdf.js           # Gestion des PDFs générés
-├── Temoignage.js    # Témoignages et avis utilisateurs
-└── Newsletter.js    # Newsletter et actualités
+├── BaseModel.js         # Classe de base avec toutes les opérations communes
+├── Utilisateur.js       # Gestion des utilisateurs et authentification
+├── Document.js          # Documents JDR (CHARACTER, TOWN, GROUP, ORGANIZATION, DANGER)
+├── Personnage.js        # Données de personnages sauvegardées par les utilisateurs
+├── DocumentSystemeJeu.js# Configuration des types de documents par système JDR
+├── Pdf.js              # Gestion des PDFs générés
+├── Temoignage.js       # Témoignages et avis utilisateurs
+├── Newsletter.js       # Abonnés newsletter
+└── Actualite.js        # Newsletter et actualités
 ```
 
 ## BaseModel
@@ -61,20 +65,30 @@ La classe `BaseModel` fournit :
 - `nom`, `email`, `mot_de_passe`
 - `role` : UTILISATEUR, PREMIUM, ADMIN
 - `avatar`, `preferences` (JSON)
-- `derniere_connexion`, `statut`
+- `derniere_connexion`, `statut` : ACTIF, SUSPENDU, BANNI
+- `type_premium`, `premium_expire_le` (gestion premium temporel 1€ = 1 mois)
+- `newsletter_abonne` (boolean), `communication_preferences` (JSON)
+- `est_anonyme` (boolean) - Utilisateur anonyme ID=0
+- `pseudo_public` (nom d'affichage modifiable)
 
 **Fonctionnalités** :
-- Hachage automatique des mots de passe (PBKDF2)
-- Authentification sécurisée
-- Gestion des rôles et élévations
-- Bannissement/débannissement
-- Statistiques par rôle
+- Hachage automatique des mots de passe (PBKDF2)  
+- Authentification sécurisée avec gestion des tokens
+- Gestion premium temporel avec décompte automatique
+- Bannissement/débannissement avec préservation des contenus
+- Gestion des préférences de communication et newsletter
+- Support utilisateur anonyme (guest) pour mode "sur le pouce"
+- Pseudo modifiable distinct de l'email technique
 
 **Méthodes spéciales** :
 - `authentifier(email, motDePasse)`
 - `elevationRole(id, nouveauRole)`
 - `findByEmail(email)`
 - `mettreAJourPreferences(id, preferences)`
+- `activerPremium(id, dureeEnMois)` - Active statut premium
+- `verifierStatutPremium(id)` - Contrôle expiration premium
+- `changerPseudo(id, nouveauPseudo)` - Modification identité publique
+- `gererCommunications(id, preferences)` - Newsletter et notifications
 
 ### Document.js
 
@@ -82,87 +96,122 @@ La classe `BaseModel` fournit :
 
 **Champs principaux** :
 - `type` : GENERIQUE, CHARACTER, TOWN, GROUP, ORGANIZATION, DANGER
-- `titre`, `systeme_jeu`, `utilisateur_id`
+- `titre`, `systeme_jeu`, `utilisateur_id` (nullable pour guests)
 - `donnees` (JSON) - Données dynamiques selon le type et le système
 - `statut` : BROUILLON, ACTIF, ARCHIVE, SUPPRIME
 - `visible_admin_only` (boolean) - Pour les documents créés par des guests
 - `personnage_id` (nullable) - Lien vers un personnage sauvegardé si applicable
+- `visibilite` : PRIVE, PUBLIC (pour partage communautaire)
+- `est_mis_en_avant` (boolean) - Document mis en avant par l'administration
+- `date_mise_en_avant`, `moderateur_id` - Traçabilité des mises en avant
+- `statut_moderation` : EN_ATTENTE, APPROUVE, REJETE, SIGNALE
+- `date_moderation`, `motif_rejet` - Suivi de la modération
+- `notes_creation`, `contexte_utilisation` (métadonnées utilisateur)
 
 **Types de documents** :
-- `GENERIQUE` : Document non typé, structure libre
-- `CHARACTER` : Fiche de personnage (remplaçant l'ancien modèle Personnage)
+- `GENERIQUE` : Document non typé, structure libre (journaux joueur solo)
+- `CHARACTER` : Fiche de personnage (tous systèmes JDR)
 - `TOWN` : Cadre de ville (spécifique à Monsterhearts)
 - `GROUP` : Plan de classe/groupe (spécifique à Monsterhearts)  
-- `ORGANIZATION` : Liste de PNJs, sans feuille individuelle
+- `ORGANIZATION` : Liste de PNJs (crucial pour MJs - tous systèmes)
 - `DANGER` : Fronts et dangers (spécifique à Mist Engine)
 
 **Fonctionnalités** :
-- Structure de données adaptée au type et au système
-- Création anonyme avec `visible_admin_only = true`
-- Génération PDF selon templates spécifiques
-- Historique des modifications
-- Duplication de documents
+- **Support mode "sur le pouce"** : Création anonyme immédiate
+- **Workflow Document vs Personnage** : Documents peuvent être générés depuis personnages sauvegardés
+- Structure de données adaptée au type et au système JDR
+- Génération PDF selon templates spécifiques par système
+- **Partage communautaire** : Documents publics avec système de votes
+- **Modération a posteriori** : Publication immédiate puis validation admin
+- **Mise en avant administrative** : Documents de référence promus par les modérateurs
+- **Système de priorité d'affichage** : Mis en avant > Votés > Récents
+- Historique des modifications et traçabilité complète
 
 **Méthodes spéciales** :
 - `findByType(type, systeme, filtres)`
-- `findVisibleBy(utilisateurId)` - Respecte visible_admin_only
+- `findVisibleBy(utilisateurId)` - Respecte visible_admin_only et visibilité
 - `findAdminOnly()` - Documents guests pour les admins
+- `findPublicsBySystem(systeme)` - Documents publics par système JDR
+- `findMisEnAvant(systeme, type)` - Documents mis en avant par priorité
 - `createFromPersonnage(personnageId)` - Crée un document depuis un personnage
-- `getTypesForSysteme(systeme)` - Types disponibles pour un système
+- `createAnonymous(data)` - Création rapide anonyme
+- `changerVisibilite(id, nouvelleVisibilite)` - Gestion partage communauté
+- `mettreEnAvant(id, moderateurId, motif)` - Mise en avant administrative
+- `retirerMiseEnAvant(id, moderateurId)` - Retirer la mise en avant
+- `findEnAttenteModeration()` - Documents à modérer
+- `moderer(id, statut, moderateurId, motif)` - Actions de modération
 
 ### Personnage.js
 
 **Table** : `personnages`
 
 **Champs principaux** :
-- `nom`, `systeme_jeu`, `utilisateur_id`
-- `donnees` (JSON) - Données du personnage selon le système
-- `description`, `notes`
-- `tags` (JSON)
+- `nom`, `systeme_jeu`, `utilisateur_id` (requis - uniquement utilisateurs connectés)
+- `donnees` (JSON) - Données complètes du personnage selon le système
+- `description`, `notes` (texte libre utilisateur)
+- `tags` (JSON) - Organisation personnelle
 - `derniere_utilisation` (timestamp)
+- `nombre_modifications` (compteur d'éditions)
+- `date_creation`, `date_modification` (traçabilité basique MVP)
 
 **Fonctionnalités** :
-- Stockage permanent des données de personnage
-- Lié à un utilisateur connecté
-- Sert de base pour générer des documents CHARACTER
-- Gestion des favoris
-- Statistiques d'utilisation
+- **Stockage permanent** des données de personnage (utilisateurs connectés uniquement)
+- **Réutilisation** : Base pour générer plusieurs documents CHARACTER
+- **Évolution** : Modification après sessions JDR avec traçabilité basique
+- **Dashboard utilisateur** : Gestion centralisée des personnages sauvegardés
+- **Transition mode anonyme** : Utilisateurs peuvent sauvegarder leurs créations
 
 **Méthodes spéciales** :
 - `findByUtilisateur(utilisateurId, filtres)`
-- `genererDocument(personnageId)` - Crée un document CHARACTER
+- `genererDocument(personnageId)` - Crée un document CHARACTER depuis personnage
 - `mettreAJourDernièreUtilisation(id)`
-- `marquerFavori(id, utilisateurId)`
+- `modifierPersonnage(id, nouvellesDonnees)` - Édition avec traçabilité
+- `dupliquerPersonnage(id, nouveauNom)` - Copie pour variation
+- `convertirDepuisDocument(documentId, utilisateurId)` - Sauvegarde depuis document anonyme
 
 ### Pdf.js
 
 **Table** : `pdfs`
 
 **Champs principaux** :
-- `titre`, `nom_fichier`, `utilisateur_id`, `personnage_id`
+- `titre`, `nom_fichier`, `utilisateur_id` (nullable pour guests)
+- `document_id` (lien vers table documents) 
+- `personnage_id` (nullable - si généré depuis personnage sauvegardé)
 - `systeme_jeu`, `type_export`
 - `options_export` (JSON) - Configuration de génération
 - `statut` : EN_COURS, TERMINE, ERREUR, SUPPRIME
+- `statut_visibilite` : PRIVE, PUBLIC, ADMIN_ONLY
 - `chemin_fichier`, `taille_fichier`, `hash_fichier`
+- `date_creation`, `date_expiration` (nettoyage automatique)
+- `nombre_telechargements`, `partage_token` (URLs temporaires)
 
 **Types d'export** :
 - `FICHE_COMPLETE` : Toutes les informations
 - `FICHE_SIMPLE` : Version simplifiée
 - `RESUME` : Résumé une page
 - `CARTE_REFERENCE` : Carte de référence
+- `ORGANISATION_LIST` : Liste structurée de PNJs
+- `DOCUMENT_GENERIQUE` : Format libre
 
 **Fonctionnalités** :
-- Options par défaut selon le type de document
-- URLs de partage temporaires avec tokens
-- Nettoyage automatique des anciens PDFs
-- Statistiques de génération
-- Support des différents types de documents
+- **Mode "sur le pouce"** : Génération instantanée pour utilisateurs anonymes
+- **Gestion à moyen terme** : Sauvegarde et réutilisation pour utilisateurs connectés
+- **Statuts de visibilité** : Privé/public selon utilisateur, admin_only pour documents anonymes
+- Options par défaut selon le type de document et système JDR
+- URLs de partage temporaires avec tokens sécurisés
+- Nettoyage automatique des anciens PDFs (configurable)
+- **Documents anonymes** : Stockage avec visibilité admin uniquement
+- **Système de votes** : Gestion des votes sur documents publics
 
 **Méthodes spéciales** :
+- `genererDepuisDocument(documentId)` - PDF depuis document
+- `genererDepuisPersonnage(personnageId)` - PDF depuis personnage sauvegardé
 - `genererUrlPartage(id, utilisateurId, dureeHeures)`
 - `verifierTokenPartage(token)`
+- `changerStatutVisibilite(id, nouveauStatut, moderateurId)` - Gestion visibilité
+- `findByStatutVisibilite(statut)` - PDFs par statut de visibilité
+- `findAdminOnly()` - PDFs des utilisateurs anonymes (admin uniquement)
 - `statistiquesGeneration(utilisateurId)`
-- `utilisationEspace(utilisateurId)`
 - `findByDocumentType(type)` - PDFs par type de document
 
 #### Statuts de visibilité des PDFs
@@ -171,7 +220,7 @@ Chaque PDF peut avoir un **statut de visibilité** qui détermine qui peut y acc
 
 **Statuts disponibles** :
 
-- **`PRIVE`** (par défaut) :
+- **`PRIVE`** (par défaut pour utilisateurs connectés) :
   - Le PDF n'est visible que par son créateur
   - Apparaît uniquement dans "Mes documents" de l'utilisateur
   - Aucun partage public possible
@@ -181,50 +230,56 @@ Chaque PDF peut avoir un **statut de visibilité** qui détermine qui peut y acc
   - Visible par tous les utilisateurs du site
   - Peut être consulté et téléchargé par la communauté
   - Le créateur reste identifié
+  - Peut recevoir des votes de la communauté
 
-- **`COMMUNAUTAIRE`** :
-  - Le PDF devient une ressource globale de la plateforme
-  - Apparaît dans la section "Téléchargements" des pages systèmes
-  - Considéré comme une contribution communautaire
-  - Peut être mis en avant par les modérateurs
-  - Le créateur est crédité comme contributeur
+- **`ADMIN_ONLY`** (par défaut pour utilisateurs anonymes) :
+  - Le PDF n'est visible que par les administrateurs
+  - Documents créés "sur le pouce" par des utilisateurs non connectés
+  - Stockés en base mais non accessibles publiquement
+  - Permet la modération et le suivi des créations anonymes
 
 **Gestion des statuts** :
 ```javascript
-// Promotion d'un PDF en ressource communautaire
-await pdf.changerStatutVisibilite(pdfId, 'COMMUNAUTAIRE', moderateurId);
+// Passage d'un PDF privé en public
+await pdf.changerStatutVisibilite(pdfId, 'PUBLIC', utilisateurId);
 
 // Recherche des PDFs par statut
 const pdfsPublics = await pdf.findByStatutVisibilite('PUBLIC');
-const ressourcesCommunautaires = await pdf.findByStatutVisibilite('COMMUNAUTAIRE');
+const pdfsAnonymesAdmin = await pdf.findAdminOnly();
 ```
 
 **Permissions** :
-- Utilisateurs : peuvent passer de PRIVE → PUBLIC
-- Modérateurs/Admins : peuvent promouvoir PUBLIC → COMMUNAUTAIRE
-- Système de validation pour les ressources communautaires
+- Utilisateurs connectés : peuvent passer de PRIVE → PUBLIC
+- Utilisateurs anonymes : créent automatiquement en ADMIN_ONLY
+- Administrateurs : accès complet à tous les statuts
 
 ### Temoignage.js
 
 **Table** : `temoignages`
 
 **Champs principaux** :
-- `auteur_nom`, `auteur_email`, `contenu`
-- `note` (1-5), `systeme_jeu`
+- `auteur_nom`, `auteur_email`, `contenu` (témoignage libre)
+- `note` (1-5 étoiles), `systeme_jeu`
+- `lien_contact` (URL optionnelle vers profil/site auteur)
 - `statut` : EN_ATTENTE, APPROUVE, REJETE, MASQUE
-- `ip_adresse`, `user_agent` (pour la modération)
+- `ip_adresse`, `user_agent` (pour la modération anti-spam)
+- `date_creation`, `date_moderation`
 
 **Fonctionnalités** :
-- Modération des témoignages
-- Limitation par IP/email
-- Nettoyage automatique des anciens rejetés
-- Calcul de notes moyennes
+- **Preuve sociale** : Témoignages authentiques pour orienter nouveaux utilisateurs
+- **Modération a posteriori** : Validation par Félix sous 48h
+- Limitation anti-spam par IP/email (1 par jour/IP, 1 par semaine/email)
+- **Affichage aléatoire** : Rotation des témoignages sur les pages
+- Calcul de notes moyennes par système JDR
 
 **Méthodes spéciales** :
-- `findApprouves(systeme, limite)`
-- `approuver(id, moderateurId)`
-- `noteMoyenne(systeme)`
-- `peutPoster(ipAdresse, email)`
+- `findApprouves(systeme, limite)` - Témoignages validés pour affichage
+- `findAleatoires(nombre)` - Sélection aléatoire pour rotation
+- `approuver(id, moderateurId)` - Validation administrative
+- `rejeter(id, moderateurId, motif)` - Rejet avec justification
+- `noteMoyenne(systeme)` - Score de satisfaction par système
+- `peutPoster(ipAdresse, email)` - Contrôle anti-spam
+- `statistiquesModeration()` - Metrics pour dashboard admin
 
 ### DocumentSystemeJeu.js
 
@@ -280,28 +335,46 @@ Utilisateur (1) ──── (N) Personnage
      │                      │
      │                      │ génère
      │                      ↓
-     (N)                 Document
-     │                   (CHARACTER)
-     │                      │
-    Pdf ─────────────────── │
-     │                      │
-     │                      │
-Temoignage                  │
-                           │
-Newsletter ← (indépendant)  │
-Actualite  ← (indépendant)  │
-                           │
-                   DocumentSystemeJeu
-                  (relation N:M avec
-                   statut actif/inactif)
+     (N)                 Document ──── (N) Pdf
+     │               (5 types: CHARACTER,   │
+     │                TOWN, GROUP,          │
+     │               ORGANIZATION,          │  
+     │                DANGER, GENERIQUE)    │
+     │                      │               │
+     │                      │               │
+    Temoignage              │               │
+                           │               │
+Newsletter_Abonnes ←─ (indépendant)         │
+Actualites         ←─ (indépendant)         │
+                           │               │
+                   DocumentSystemeJeu ──────┘
+                  (configuration types
+                   actifs par système)
+```
+
+### Workflow Central : Mode Anonyme + Gestion à Moyen Terme
+
+```
+MODE "SUR LE POUCE" (Anonyme)
+Casey crée document → PDF généré → Téléchargement → Départ
+│
+└─── (optionnel) ───→ Création compte → Sauvegarde posteriori
+
+MODE "GESTION À MOYEN TERME" (Connecté)  
+Sam crée personnage sauvegardé → Génère documents → Évolution après sessions
+                 ↑                      ↓
+         Tableau de bord ←── Réutilisation ── Modification
 ```
 
 ### Clés étrangères
-- `personnages.utilisateur_id` → `utilisateurs.id`
-- `documents.utilisateur_id` → `utilisateurs.id` (nullable pour guests)
-- `documents.personnage_id` → `personnages.id` (nullable)
-- `pdfs.utilisateur_id` → `utilisateurs.id`  
-- `pdfs.document_id` → `documents.id`
+- `personnages.utilisateur_id` → `utilisateurs.id` (NOT NULL - personnages uniquement pour connectés)
+- `documents.utilisateur_id` → `utilisateurs.id` (NULL pour guests anonymes)
+- `documents.personnage_id` → `personnages.id` (NULL si document indépendant)
+- `pdfs.utilisateur_id` → `utilisateurs.id` (NULL pour guests)
+- `pdfs.document_id` → `documents.id` (NOT NULL - PDF toujours lié à un document)
+- `pdfs.personnage_id` → `personnages.id` (NULL si PDF direct depuis document)
+- `temoignages.systeme_jeu` → Configuration système (pas FK, validation applicative)
+- `actualites.auteur_id` → `utilisateurs.id` (auteur admin)
 - `document_systeme_jeu.document_type` + `systeme_jeu` (clé composite)
 
 ## Migration et évolution

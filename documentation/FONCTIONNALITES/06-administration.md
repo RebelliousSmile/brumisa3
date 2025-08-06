@@ -97,11 +97,16 @@
 - Recevoir des notifications discrètes des nouveaux contenus à modérer
 - Prévisualiser rapidement un document avant de décider
 - Approuver en un clic les contenus conformes
+- **Mettre en avant les documents de référence** pour guider la communauté
+- **Organiser l'affichage par priorité** : Mis en avant > Votés > Récents
 - Expliquer clairement les rejets pour aider les créateurs
 - Suivre l'évolution de la qualité communautaire
 
 **Critères d'acceptation :**
 - Traitement de modération en moins de 2 minutes par document
+- **Fonction "Mettre en avant"** accessible depuis l'interface de modération
+- **Gestion des documents mis en avant** : activation/désactivation, traçabilité
+- **Affichage prioritaire** : Documents mis en avant apparaissent en premier
 - Communication automatique des décisions aux créateurs
 - Historique des décisions pour cohérence
 - Métriques de qualité communautaire (taux d'approbation, récidive)

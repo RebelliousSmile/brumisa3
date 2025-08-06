@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Script d'exécution des migrations de base de données
+ * Script de migration optimisé - Exécute uniquement les migrations fonctionnelles
  */
 
 const path = require('path');
 const fs = require('fs').promises;
 
-// Configuration de l'environnement selon NODE_ENV
+// Configuration de l'environnement
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env.local';
 require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 
@@ -15,6 +15,21 @@ console.log(`📁 Migration utilise l'environnement: ${process.env.NODE_ENV || '
 
 // Import de la base de données
 const db = require('../src/database/db');
+
+/**
+ * Liste des migrations dans l'ordre optimisé
+ */
+const MIGRATIONS_OPTIMISEES = [
+    '000_add_auth_fields.sql',
+    '001_add_system_rights_and_anonymous_users.sql', 
+    '001b_finalize_anonymous_user.sql',
+    '003_add_game_system_to_oracles.sql',
+    '004_create_documents_system.sql',
+    '005_update_tables.sql',
+    '006_add_config_data.sql',
+    '007_create_voting_and_moderation.sql',
+    '008_insert_document_configuration.sql'
+];
 
 /**
  * Exécuter une migration SQL
@@ -29,22 +44,33 @@ async function executerMigration(fichierMigration) {
         
         console.log(`🔄 Exécution de la migration...`);
         
-        // Pour les migrations PostgreSQL complexes, exécuter le fichier entier
-        // car il peut contenir des fonctions avec des point-virgules internes
-        if (contenuSQL.includes('CREATE OR REPLACE FUNCTION') || contenuSQL.includes('$$')) {
-            // Exécuter le fichier complet pour les fonctions PL/pgSQL
-            await db.run(contenuSQL);
-        } else {
-            // Diviser le fichier SQL en commandes individuelles pour les commandes simples
-            const commandes = contenuSQL
-                .split(';')
-                .map(cmd => cmd.trim())
-                .filter(cmd => cmd.length > 0 && !cmd.startsWith('--'));
-            
-            for (const commande of commandes) {
-                if (commande.trim()) {
-                    await db.run(commande);
-                }
+        // Initialiser la base de données si nécessaire
+        if (!db.isConnected) {
+            await db.init();
+        }
+
+        // Diviser le fichier SQL en commandes individuelles
+        const commandesBrutes = contenuSQL.split(';');
+        console.log(`  📋 ${commandesBrutes.length} commandes trouvées`);
+        
+        const commandes = commandesBrutes
+            .map(cmd => cmd.trim())
+            .map(cmd => {
+                // Enlever les commentaires de ligne mais garder la commande
+                const lignes = cmd.split('\n');
+                const lignesFiltrées = lignes.filter(ligne => !ligne.trim().startsWith('--') && ligne.trim() !== '');
+                return lignesFiltrées.join('\n').trim();
+            })
+            .filter(cmd => cmd.length > 0 && cmd !== '');
+        
+        console.log(`  📋 ${commandes.length} commandes valides après filtrage`);
+        
+        // Exécuter chaque commande séparément
+        for (let i = 0; i < commandes.length; i++) {
+            const commande = commandes[i];
+            if (commande.trim()) {
+                console.log(`  ${i + 1}/${commandes.length} > ${commande.substring(0, 80)}...`);
+                await db.run(commande);
             }
         }
         
@@ -63,39 +89,14 @@ async function executerMigration(fichierMigration) {
 }
 
 /**
- * Lister les migrations disponibles
+ * Vérifier qu'une migration existe
  */
-async function listerMigrations() {
-    const dossierMigrations = path.join(__dirname, '..', 'src', 'database', 'migrations');
-    
+async function verifierMigration(fichierMigration) {
+    const cheminFichier = path.join(__dirname, '..', 'src', 'database', 'migrations', fichierMigration);
     try {
-        const fichiers = await fs.readdir(dossierMigrations);
-        const migrations = fichiers
-            .filter(f => f.endsWith('.sql'))
-            .sort();
-        
-        return migrations;
-    } catch (error) {
-        console.log('❌ Impossible de lire le dossier migrations');
-        return [];
-    }
-}
-
-/**
- * Vérifier l'état des tables oracles
- */
-async function verifierTablesOracles() {
-    try {
-        const result = await db.get(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'oracles'
-            ) as table_exists
-        `);
-        
-        return result.table_exists;
-    } catch (error) {
+        await fs.access(cheminFichier);
+        return true;
+    } catch {
         return false;
     }
 }
@@ -104,54 +105,24 @@ async function verifierTablesOracles() {
  * Fonction principale
  */
 async function main() {
-    console.log('🗄️  Gestionnaire de migrations de base de données');
-    console.log('================================================\n');
+    console.log('🗄️  Gestionnaire de migrations optimisé');
+    console.log('=========================================\n');
     
-    const args = process.argv.slice(2);
-    const commande = args[0];
+    console.log('🎯 Exécution des migrations dans l\'ordre optimisé...\n');
     
-    if (commande === 'list') {
-        console.log('📋 Migrations disponibles:');
-        const migrations = await listerMigrations();
-        migrations.forEach((migration, index) => {
-            console.log(`   ${index + 1}. ${migration}`);
-        });
-        return;
-    }
-    
-    if (commande === 'check') {
-        console.log('🔍 Vérification de l\'état des tables...');
-        const tablesOracles = await verifierTablesOracles();
-        console.log(`   Tables oracles: ${tablesOracles ? '✅ Créées' : '❌ Manquantes'}`);
-        return;
-    }
-    
-    if (commande === 'oracles') {
-        console.log('🎲 Migration spécifique pour les oracles...');
-        const success = await executerMigration('002_add_oracles_system.sql');
-        
-        if (success) {
-            console.log('\n🎉 Tables d\'oracles créées !');
-            console.log('💡 Vous pouvez maintenant utiliser:');
-            console.log('   node scripts/injecter-oracle.js --fichier=oracle.json');
-        }
-        return;
-    }
-    
-    if (commande && commande.endsWith('.sql')) {
-        console.log(`🎯 Exécution de la migration spécifique: ${commande}`);
-        await executerMigration(commande);
-        return;
-    }
-    
-    // Mode auto : exécuter toutes les migrations
-    console.log('🚀 Exécution de toutes les migrations...\n');
-    
-    const migrations = await listerMigrations();
     let success = 0;
     let errors = 0;
+    let skipped = 0;
     
-    for (const migration of migrations) {
+    for (const migration of MIGRATIONS_OPTIMISEES) {
+        const exists = await verifierMigration(migration);
+        
+        if (!exists) {
+            console.log(`⏭️  Migration ${migration} ignorée (fichier non trouvé)`);
+            skipped++;
+            continue;
+        }
+        
         const result = await executerMigration(migration);
         if (result) {
             success++;
@@ -161,53 +132,21 @@ async function main() {
         console.log(''); // Ligne vide entre les migrations
     }
     
-    console.log('📊 Résultats des migrations:');
-    console.log(`   ✅ Réussies: ${success}/${migrations.length}`);
-    console.log(`   ❌ Erreurs: ${errors}/${migrations.length}`);
+    console.log('📊 Résultats des migrations optimisées:');
+    console.log(`   ✅ Réussies: ${success}/${MIGRATIONS_OPTIMISEES.length}`);
+    console.log(`   ❌ Erreurs: ${errors}/${MIGRATIONS_OPTIMISEES.length}`);
+    console.log(`   ⏭️  Ignorées: ${skipped}/${MIGRATIONS_OPTIMISEES.length}`);
     
     if (success > 0) {
-        console.log('\n🎉 Migrations terminées !');
+        console.log('\n🎉 Migrations optimisées terminées !');
+        console.log('\n📋 État du système après migration:');
+        console.log('   • Tables utilisateurs, personnages, pdfs étendues');
+        console.log('   • Tables documents, témoignages, newsletter créées');
+        console.log('   • Système de votes sur documents opérationnel');
+        console.log('   • Système de modération et mise en avant activé');
+        console.log('   • Configuration des types de documents par système JDR');
+        console.log('   • Utilisateur anonyme (ID=0) configuré');
     }
-}
-
-/**
- * Afficher l'aide
- */
-function afficherAide() {
-    console.log(`
-🗄️  Gestionnaire de migrations de base de données
-================================================
-
-Usage:
-  node scripts/migrate-db.js [commande]
-
-Commandes:
-  (aucune)           Exécuter toutes les migrations
-  oracles            Créer uniquement les tables d'oracles  
-  list               Lister les migrations disponibles
-  check              Vérifier l'état des tables
-  [fichier.sql]      Exécuter une migration spécifique
-  help               Afficher cette aide
-
-Exemples:
-  # Exécuter toutes les migrations
-  node scripts/migrate-db.js
-  
-  # Créer les tables d'oracles uniquement
-  node scripts/migrate-db.js oracles
-  
-  # Vérifier l'état des tables
-  node scripts/migrate-db.js check
-  
-  # Lister les migrations
-  node scripts/migrate-db.js list
-`);
-}
-
-// Gestion des arguments d'aide
-if (process.argv.includes('--help') || process.argv.includes('help')) {
-    afficherAide();
-    process.exit(0);
 }
 
 // Lancement

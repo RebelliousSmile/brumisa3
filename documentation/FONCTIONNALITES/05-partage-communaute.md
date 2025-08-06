@@ -97,7 +97,7 @@ Profil de [Pseudo]
 ### Système de Votes
 
 #### Mécanique de Vote Uniforme (Documents ET Oracles)
-- **Formulaire identique** : Même système pour documents et oracles (v1.2)
+- **Formulaire identique** : Même système pour documents et oracles
 - **3 Questions standardisées** :
   1. **Qualité générale** (1-5 étoiles)
   2. **Utilité pratique** (1-5 étoiles) 
@@ -105,6 +105,11 @@ Profil de [Pseudo]
 - **Utilisateurs connectés uniquement** : Pas de vote anonyme
 - **Un vote par création** : Document ou oracle
 - **Score global** : Moyenne des 3 critères, calculé identiquement partout
+
+#### Système de Priorité d'Affichage 
+1. **Documents mis en avant** : Sélectionnés par les administrateurs
+2. **Documents populaires** : Triés par score de vote
+3. **Documents récents** : Ordre chronologique de publication
 
 #### Calcul du Score de Classement
 - **Moyenne des 3 critères** : Poids principal du calcul (sur 5 étoiles)
