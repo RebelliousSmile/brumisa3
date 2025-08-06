@@ -92,7 +92,38 @@ Casey crée un document → Sam sauvegarde comme personnage
 - **État vide géré** : Message d'encouragement si aucun personnage sauvegardé
 - **Activité récente** : Historique des derniers documents générés
 
-### 4. Génération et Gestion depuis Personnage
+### 4. Édition et Évolution des Personnages
+
+#### Workflow d'Édition (MVP - Sans Versioning)
+
+**Principe :** Édition simple avec traçabilité basique pour l'évolution des personnages.
+
+**Fonctionnalités d'édition :**
+1. **Accès modification** : Bouton "Modifier" dans le tableau de bord utilisateur
+2. **Formulaire pré-rempli** : Toutes les données actuelles du personnage chargées
+3. **Édition directe** : Modification des champs souhaités
+4. **Sauvegarde** : Écrasement des données existantes (pas d'historique des versions)
+5. **Suivi basique** : Compteur de modifications + date de dernière modification
+
+**Données de traçabilité :**
+- **Nombre de modifications** : Compteur incrémental pour chaque sauvegarde
+- **Date dernière modification** : Horodatage de la dernière édition
+- **Date création originale** : Conservée pour historique de base
+
+**Critères d'acceptation :**
+- Interface d'édition identique au formulaire de création
+- Pré-remplissage automatique de tous les champs
+- Sauvegarde avec mise à jour des métadonnées de suivi
+- Génération PDF possible immédiatement après modification
+- Compteur visible dans tableau de bord (ex: "Modifié 3 fois")
+
+#### Important : Édition Destructive
+- **Une seule version** : Les modifications écrasent définitivement les données précédentes
+- **Pas de récupération** : Impossible de revenir aux versions antérieures
+- **Simplicité MVP** : Focus sur l'usage principal (évolution après sessions)
+- **Alternative manuelle** : Duplication du personnage avant modification majeure
+
+### 5. Génération et Gestion depuis Personnage
 
 #### Fonctionnalités Disponibles
 - **Génération PDF instantanée** : Bouton "Générer PDF" sur chaque personnage sauvegardé
@@ -125,8 +156,8 @@ Casey crée un document → Sam sauvegarde comme personnage
 ```
 1. Sam se connecte à brumisater
 2. Va sur son tableau de bord
-3. Voit ses 5 personnages sauvegardés
-4. Clique "Générer PDF" sur "Luna la Reine"
+3. Voit ses 5 personnages sauvegardés avec compteur modifications
+4. Clique "Générer PDF" sur "Luna la Reine (Modifiée 2 fois)"
 5. → Nouveau document généré depuis Luna + PDF téléchargé
 6. Utilise le PDF pour sa partie du soir
 ```
@@ -135,9 +166,10 @@ Casey crée un document → Sam sauvegarde comme personnage
 ```
 1. Sam veut faire évoluer Luna après une session
 2. Clique "Modifier" sur Luna dans son tableau de bord
-3. Met à jour les stats et l'histoire
-4. Sauvegarde les modifications
-5. Génère un nouveau PDF avec les données mises à jour
+3. Met à jour les stats et l'histoire dans le formulaire pré-rempli
+4. Sauvegarde les modifications (compteur passe à 3, date mise à jour)
+5. Génère un nouveau PDF avec les données évoluées
+6. Tableau de bord affiche "Luna la Reine (Modifiée 3 fois)"
 ```
 
 ### Métriques de Succès - Gestion Personnages

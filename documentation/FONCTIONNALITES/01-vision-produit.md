@@ -171,14 +171,16 @@
 - Système de votes sur oracles
 - Système premium temporel (1€ = 1 mois)
 
-### 💎 **v2.0 - Écosystème Complet**
+### 💎 **v2.0 - Écosystème Complet et API Publique**
 
-**Objectif :** Hub central pour les communautés JDR brumisa3
+**Objectif :** Hub central avec API pour intégrations externes
 
 **Fonctionnalités :**
 - Support multi-systèmes complet (5 systèmes finalisés)
-- Outils de collaboration entre joueurs
-- API pour intégrations externes
+- **API publique RESTful** : Accès oracles et documents via API
+- **SDK intégrations** : Outils pour développeurs tiers
+- **Bot Discord** : Dépôt séparé utilisant l'API pour oracles
+- **Webhooks** : Notifications pour applications externes
 - Monétisation et partenariats éditeurs
 
 ## Métriques de Succès
