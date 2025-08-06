@@ -29,7 +29,8 @@ const MIGRATIONS_OPTIMISEES = [
     '006_add_config_data.sql',
     '007_create_voting_and_moderation.sql',
     '008_insert_document_configuration.sql',
-    '009_complete_feature_support.sql'
+    '009_complete_feature_support.sql',
+    '010_add_game_systems_table.sql'
 ];
 
 /**

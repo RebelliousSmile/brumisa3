@@ -13,9 +13,15 @@ src/models/
 ├── BaseModel.js         # Classe de base avec toutes les opérations communes
 ├── Utilisateur.js       # Gestion des utilisateurs et authentification
 ├── Document.js          # Documents JDR (CHARACTER, TOWN, GROUP, ORGANIZATION, DANGER)
+├── DocumentVote.js      # Système de votes 3 critères sur documents publics
+├── DocumentModerationHistorique.js # Historique des actions de modération
 ├── Personnage.js        # Données de personnages sauvegardées par les utilisateurs
 ├── DocumentSystemeJeu.js# Configuration des types de documents par système JDR
+├── SystemeJeu.js        # Table des systèmes JDR avec statut maintenance
 ├── Pdf.js              # Gestion des PDFs générés
+├── OraclePersonnalise.js# Oracles personnalisés premium
+├── RgpdConsentement.js  # Conformité RGPD et consentements
+├── DemandeChangementEmail.js # Gestion changement email sécurisé
 ├── Temoignage.js       # Témoignages et avis utilisateurs
 ├── Newsletter.js       # Abonnés newsletter
 └── Actualite.js        # Newsletter et actualités
@@ -281,13 +287,227 @@ const pdfsAnonymesAdmin = await pdf.findAdminOnly();
 - `peutPoster(ipAdresse, email)` - Contrôle anti-spam
 - `statistiquesModeration()` - Metrics pour dashboard admin
 
+### DocumentVote.js
+
+**Table** : `document_votes`
+
+**Champs principaux** :
+- `document_id`, `utilisateur_id` (clé composite unique)
+- `qualite_generale` : Note 1-5 (qualité générale du contenu)
+- `utilite_pratique` : Note 1-5 (utilité pour les parties)
+- `respect_gamme` : Note 1-5 (respect de l'univers du jeu)
+- `commentaire` (texte libre optionnel)
+- `date_creation`
+
+**Fonctionnalités** :
+- **Système de votes à 3 critères** pour évaluation nuancée
+- **Un vote unique par utilisateur/document** (contrainte UNIQUE)
+- **Calcul automatique des moyennes** pour classement communautaire
+- **Commentaires optionnels** pour feedback constructif
+- **Historique complet** des votes avec traçabilité
+
+**Méthodes spéciales** :
+- `voterDocument(documentId, utilisateurId, votes)` - Enregistrer un vote
+- `modifierVote(documentId, utilisateurId, nouveauxVotes)` - Modifier vote existant
+- `calculerMoyennes(documentId)` - Moyennes par critère
+- `getVotesUtilisateur(utilisateurId, documentId)` - Vote utilisateur sur document
+- `classementDocuments(systeme, critere)` - Classement par critère
+- `statistiquesVotes(documentId)` - Stats complètes d'un document
+
+### DocumentModerationHistorique.js
+
+**Table** : `document_moderation_historique`
+
+**Champs principaux** :
+- `document_id`, `moderateur_id`
+- `action` : Type d'action effectuée
+- `ancien_statut`, `nouveau_statut`
+- `motif` (justification de l'action)
+- `date_action`
+
+**Actions de modération** :
+- `MISE_EN_AVANT` : Document promu par modérateur
+- `RETRAIT_MISE_EN_AVANT` : Retrait de la promotion
+- `APPROBATION` : Validation du contenu
+- `REJET` : Rejet avec motif
+- `SIGNALEMENT` : Marquage pour vérification
+
+**Fonctionnalités** :
+- **Traçabilité complète** des actions de modération
+- **Historique immuable** pour audit et transparence
+- **Justifications obligatoires** pour actions importantes
+- **Suivi des modérateurs** et leurs interventions
+
+**Méthodes spéciales** :
+- `enregistrerAction(documentId, moderateurId, action, motif)`
+- `getHistoriqueDocument(documentId)` - Historique complet
+- `getActionsModerateur(moderateurId)` - Actions d'un modérateur
+- `statistiquesModeration()` - Métriques pour dashboard admin
+
+### SystemeJeu.js
+
+**Table** : `systemes_jeu`
+
+**Champs principaux** :
+- `id` (VARCHAR PRIMARY KEY) : monsterhearts, engrenages, metro2033, mistengine, zombiology
+- `nom_complet`, `description`, `site_officiel`
+- `version_supportee` : Version du système prise en charge
+- `structure_donnees` (JSONB) : Définition des champs de données par type
+- `statut` : ACTIF, MAINTENANCE, DEPRECIE, BETA
+- `message_maintenance` : Message affiché pendant maintenance générale
+- `ordre_affichage`, `couleur_theme`, `icone`
+- `date_derniere_maj_structure` : Suivi des évolutions
+
+**Fonctionnalités** :
+- **Gestion centralisée** des systèmes JDR supportés
+- **Mode maintenance système complet** (désactive tout le système)
+- **Structure de données flexible** via JSONB pour chaque type de document
+- **Interface visuelle personnalisée** (couleur, icône)
+- **Versioning** pour compatibilité avec évolutions des systèmes
+- **Référentiel central** pour validation des types de documents
+
+**Méthodes spéciales** :
+- `getSystemesActifs()` - Systèmes disponibles (statut ACTIF uniquement)
+- `mettreEnMaintenance(id, message)` - Maintenance complète du système
+- `sortirMaintenance(id)` - Réactiver système complet
+- `mettreAJourStructure(id, nouvelleStructure)` - Evolution des données
+- `getSystemeInfo(id)` - Informations complètes d'un système
+
+### OraclePersonnalise.js
+
+**Table** : `oracles_personnalises`
+
+**Champs principaux** :
+- `id` (UUID), `utilisateur_id`
+- `nom`, `description`
+- `donnees_oracle` (JSONB) : Structure complète de l'oracle
+- `statut` : PRIVE, PARTAGE, PUBLIC
+- `systeme_jeu` (optionnel)
+- `base_sur_oracle_id` : Oracle original si dérivé
+- `date_creation`, `date_modification`
+
+**Fonctionnalités** :
+- **Oracles premium personnalisés** pour utilisateurs avancés
+- **Dérivation d'oracles existants** avec modifications
+- **Partage communautaire** avec gestion de visibilité
+- **Structure JSONB flexible** pour types d'oracles variés
+- **Historique et traçabilité** des modifications
+
+**Méthodes spéciales** :
+- `creerOracle(utilisateurId, donnees)` - Nouvel oracle personnalisé
+- `deriverOracle(oracleBaseId, utilisateurId, modifications)` - Dérivation
+- `changerVisibilite(id, nouveauStatut)` - Gestion partage
+- `getOraclesUtilisateur(userId, statut)` - Oracles d'un utilisateur
+- `getOraclesPublics(systeme)` - Oracles partagés par système
+
+### RgpdConsentement.js
+
+**Table** : `rgpd_consentements`
+
+**Champs principaux** :
+- `utilisateur_id`, `type_consentement`
+- `consentement_donne` (boolean)
+- `date_consentement`, `ip_adresse`, `user_agent`
+
+**Types de consentement** :
+- `NEWSLETTER` : Abonnement newsletter
+- `COOKIES_ANALYTIQUES` : Cookies de mesure d'audience
+- `PARTAGE_DONNEES` : Partage avec partenaires
+- `COMMUNICATION_MARKETING` : Communications commerciales
+
+**Fonctionnalités** :
+- **Conformité RGPD complète** avec traçabilité
+- **Historique immuable** des consentements
+- **Granularité fine** par type de traitement
+- **Métadonnées techniques** pour audit légal
+
+**Méthodes spéciales** :
+- `enregistrerConsentement(userId, type, consenti, metadata)`
+- `verifierConsentement(userId, type)` - Statut actuel
+- `retirerConsentement(userId, type)` - Révocation
+- `exporterDonnees(userId)` - Export RGPD utilisateur
+
+### DemandeChangementEmail.js
+
+**Table** : `demandes_changement_email`
+
+**Champs principaux** :
+- `utilisateur_id`, `ancien_email`, `nouvel_email`
+- `token_validation` (unique)
+- `statut` : EN_ATTENTE, VALIDE, EXPIRE, ANNULE
+- `date_demande`, `date_expiration` (15 jours)
+- `date_validation`, `ip_demande`
+
+**Fonctionnalités** :
+- **Changement d'email sécurisé** avec double validation
+- **Tokens temporaires** avec expiration automatique
+- **Historique complet** des changements demandés
+- **Sécurité renforcée** avec IP tracking
+
+**Méthodes spéciales** :
+- `demanderChangement(userId, nouvelEmail, ip)`
+- `validerChangement(token)` - Validation par email
+- `annulerDemande(userId)` - Annulation utilisateur
+- `nettoyer()` - Purge des demandes expirées
+
 ### DocumentSystemeJeu.js
 
 **Table** : `document_systeme_jeu`
 
-Cette table de relation gère les types de documents disponibles pour chaque système de jeu, avec la possibilité d'activer/désactiver temporairement certains types.
+**Clé primaire composite** : `(document_type, systeme_jeu)`
 
-**Champs principaux** :\n- `document_type` : CHARACTER, TOWN, GROUP, ORGANIZATION, DANGER\n- `systeme_jeu` : monsterhearts, engrenages, metro2033, mistengine, zombiology\n- `actif` (boolean) : Active/désactive ce type pour ce système\n- `ordre_affichage` : Ordre dans l'interface utilisateur\n- `configuration` (JSON) : Configuration spécifique (champs requis, template, etc.)\n- `date_ajout`, `date_modification`\n\n**Configuration par système** :\n```javascript\n{\n  \"monsterhearts\": {\n    \"CHARACTER\": { actif: true, ordre: 1 },\n    \"TOWN\": { actif: true, ordre: 2 },\n    \"GROUP\": { actif: true, ordre: 3 },\n    \"ORGANIZATION\": { actif: true, ordre: 4 },\n    \"DANGER\": { actif: false, ordre: null }\n  },\n  \"mistengine\": {\n    \"CHARACTER\": { actif: true, ordre: 1 },\n    \"DANGER\": { actif: true, ordre: 2 },\n    \"ORGANIZATION\": { actif: true, ordre: 3 },\n    \"TOWN\": { actif: false, ordre: null },\n    \"GROUP\": { actif: false, ordre: null }\n  }\n}\n```\n\n**Fonctionnalités** :\n- Gestion granulaire de la disponibilité des types\n- Possibilité de désactiver temporairement pour maintenance\n- Configuration spécifique par combinaison type/système\n- Historique des modifications\n\n**Méthodes spéciales** :\n- `getTypesActifs(systeme)` - Types disponibles pour un système\n- `activerType(type, systeme, actif)` - Active/désactive un type\n- `getConfiguration(type, systeme)` - Configuration spécifique\n- `mettreAJourOrdre(systeme, ordres)` - Met à jour l'ordre d'affichage\n\n### Newsletter.js\n\n**Deux modèles** : `Newsletter` (abonnés) et `Actualite`
+Cette table gère la **maintenance granulaire par type de document** pour chaque système JDR. Elle permet de désactiver/activer des types spécifiques sans affecter tout le système.
+
+**Champs principaux** :
+- `document_type` : CHARACTER, TOWN, GROUP, ORGANIZATION, DANGER (CHECK constraint)
+- `systeme_jeu` : Référence vers systemes_jeu.id 
+- `actif` (boolean) : **Active/désactive ce TYPE spécifique pour ce système**
+- `ordre_affichage` : Ordre dans l'interface utilisateur
+- `configuration` (JSONB) : Configuration spécifique du type
+- `date_ajout`, `date_modification`
+
+**Exemple de maintenance granulaire** :
+```javascript
+// Monsterhearts : DANGER désactivé (pas adapté au système)
+{ document_type: 'DANGER', systeme_jeu: 'monsterhearts', actif: false }
+
+// MistEngine : TOWN et GROUP désactivés (système centré sur CHARACTER/DANGER)  
+{ document_type: 'TOWN', systeme_jeu: 'mistengine', actif: false }
+{ document_type: 'GROUP', systeme_jeu: 'mistengine', actif: false }
+
+// Metro2033 : Tous types actifs
+{ document_type: 'CHARACTER', systeme_jeu: 'metro2033', actif: true }
+{ document_type: 'ORGANIZATION', systeme_jeu: 'metro2033', actif: true }
+```
+
+**Configuration JSONB par type** :
+```javascript
+{
+  "champs_requis": ["skin", "hot", "cold"], // Pour CHARACTER + monsterhearts
+  "template_pdf": "monsterhearts_character",
+  "validation_custom": ["skin_valide", "stats_equilibrees"],
+  "couleur_theme": "#8B0000"
+}
+```
+
+**Fonctionnalités** :
+- **Maintenance granulaire TYPE par TYPE** : Désactiver uniquement TOWN pour Monsterhearts
+- **Ordre d'affichage personnalisé** : CHARACTER > ORGANIZATION > TOWN pour chaque système
+- **Configuration JSONB flexible** : Champs requis, templates, validations par combinaison
+- **Double validation** : Système actif (systemes_jeu) ET type actif (document_systeme_jeu)
+
+**Workflow de vérification** :
+1. Système JDR disponible ? (`systemes_jeu.statut = 'ACTIF'`)
+2. Type de document activé pour ce système ? (`document_systeme_jeu.actif = true`)
+3. Configuration spécifique disponible ? (`document_systeme_jeu.configuration`)
+
+**Méthodes spéciales** :
+- `getTypesActifs(systeme)` - Types disponibles ET actifs pour un système
+- `getTypesDisponibles(systeme)` - Tous types configurés (actifs + inactifs) 
+- `activerType(type, systeme, actif)` - Maintenance spécifique d'un type
+- `getConfiguration(type, systeme)` - Config JSONB d'une combinaison
+- `verifierDisponibilite(type, systeme)` - Double validation système + type
+- `mettreAJourOrdre(systeme, ordres)` - Réorganiser affichage par système\n\n### Newsletter.js\n\n**Deux modèles** : `Newsletter` (abonnés) et `Actualite`
 
 #### Newsletter (Table : `newsletter_abonnes`)
 - `email`, `nom`, `preferences` (JSON)
@@ -331,25 +551,34 @@ Cette table de relation gère les types de documents disponibles pour chaque sys
 ## Relations entre modèles
 
 ```
-Utilisateur (1) ──── (N) Personnage
-     │                      │
-     │                      │ génère
-     │                      ↓
-     (N)                 Document ──── (N) Pdf
-     │               (5 types: CHARACTER,   │
-     │                TOWN, GROUP,          │
-     │               ORGANIZATION,          │  
-     │                DANGER, GENERIQUE)    │
-     │                      │               │
-     │                      │               │
-    Temoignage              │               │
-                           │               │
-Newsletter_Abonnes ←─ (indépendant)         │
-Actualites         ←─ (indépendant)         │
-                           │               │
-                   DocumentSystemeJeu ──────┘
-                  (configuration types
-                   actifs par système)
+                    SystemeJeu (1) ──── (N) DocumentSystemeJeu
+                    (Gestion              (Configuration types
+                   centralisée)           actifs par système)
+                         │                       │
+                         │                       ↓
+Utilisateur (1) ──── (N) Personnage        Document ──── (N) Pdf
+     │                      │          (5 types: CHARACTER,   │
+     │                      │ génère    TOWN, GROUP,          │
+     │                      ↓          ORGANIZATION,          │  
+     (N)                 Document       DANGER, GENERIQUE)    │
+     │                      │                                │
+     │ vote                 │                                │
+     ↓                      ↓                                │
+DocumentVote            DocumentModerationHistorique        │
+(3 critères)            (Traçabilité admin)                 │
+     │                      │                                │
+     │                      │                                │
+    Temoignage          OraclePersonnalise                   │
+     │                  (Premium JSONB)                      │
+     │                      │                                │
+RgpdConsentement           │                                │
+DemandeChangementEmail     │                                │
+(Extensions RGPD)          │                                │
+     │                      │                                │
+Newsletter_Abonnes ←─ (indépendant)                         │
+Actualites         ←─ (indépendant)                         │
+                                                            │
+                                        ────────────────────┘
 ```
 
 ### Workflow Central : Mode Anonyme + Gestion à Moyen Terme
@@ -367,15 +596,34 @@ Sam crée personnage sauvegardé → Génère documents → Évolution après se
 ```
 
 ### Clés étrangères
+
+**Relations principales** :
 - `personnages.utilisateur_id` → `utilisateurs.id` (NOT NULL - personnages uniquement pour connectés)
 - `documents.utilisateur_id` → `utilisateurs.id` (NULL pour guests anonymes)
 - `documents.personnage_id` → `personnages.id` (NULL si document indépendant)
+- `documents.moderateur_id` → `utilisateurs.id` (modérateur ayant traité le document)
 - `pdfs.utilisateur_id` → `utilisateurs.id` (NULL pour guests)
 - `pdfs.document_id` → `documents.id` (NOT NULL - PDF toujours lié à un document)
 - `pdfs.personnage_id` → `personnages.id` (NULL si PDF direct depuis document)
-- `temoignages.systeme_jeu` → Configuration système (pas FK, validation applicative)
+
+**Nouvelles relations (migrations 007-010)** :
+- `document_votes.document_id` → `documents.id` (CASCADE)
+- `document_votes.utilisateur_id` → `utilisateurs.id` (CASCADE)
+- `document_moderation_historique.document_id` → `documents.id` (CASCADE)
+- `document_moderation_historique.moderateur_id` → `utilisateurs.id`
+- `oracles_personnalises.utilisateur_id` → `utilisateurs.id` (CASCADE)
+- `oracles_personnalises.base_sur_oracle_id` → `oracles.id` (dérivation)
+- `rgpd_consentements.utilisateur_id` → `utilisateurs.id` (CASCADE)
+- `demandes_changement_email.utilisateur_id` → `utilisateurs.id` (CASCADE)
+
+**Relations système** :
+- `document_systeme_jeu.systeme_jeu` → `systemes_jeu.id` (référentiel centralisé)
+- `documents.systeme_jeu` → `systemes_jeu.id` (validation contre référentiel)
+- `oracles.systeme_jeu` → `systemes_jeu.id` (optionnel)
+- `temoignages.systeme_jeu` → `systemes_jeu.id` (validation applicative)
+
+**Autres relations** :
 - `actualites.auteur_id` → `utilisateurs.id` (auteur admin)
-- `document_systeme_jeu.document_type` + `systeme_jeu` (clé composite)
 
 ## Migration et évolution
 

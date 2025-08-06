@@ -95,6 +95,8 @@ public/js/
 
 ## 🛠️ Scripts disponibles
 
+### Scripts NPM
+
 ```bash
 npm run dev         # Mode développement (nodemon + CSS watch)
 npm run build:css   # Compile Tailwind CSS
@@ -102,6 +104,104 @@ npm start          # Production
 npm test           # Tests Jest
 npm run lint       # ESLint
 npm run db:seed    # Remplir avec données d'exemple
+```
+
+### Scripts de maintenance (dossier `scripts/`)
+
+#### 🗄️ **Base de données**
+
+```bash
+# Migration complète de la base de données (11 migrations)
+node scripts/migrate-db.js
+
+# Debug et vérification
+node scripts/debug-db.js                    # Vérifier état général de la DB
+node scripts/check-table-structure.js       # Vérifier structure des tables
+node scripts/check-users.js                # Vérifier utilisateurs et authentification
+node scripts/test-db-connection.js         # Tester connexion à la base
+
+# Base de données de test
+node scripts/init-test-db.js               # Initialiser base de test
+```
+
+#### 🎲 **Oracles et contenus**
+
+```bash
+# Injection d'oracles
+node scripts/injecter-oracle.js [fichier.json] [--jeu=nom] [--admin-id=123]
+node scripts/inject-monsterhearts.js       # Injecter oracles Monsterhearts
+node scripts/inject-all-monsterhearts.js   # Injecter tous les oracles MH
+
+# Debug oracles
+node scripts/debug-oracles.js              # Vérifier oracles en base
+node scripts/check-oracles-db.js           # État complet des oracles
+node scripts/test-oracle-query.js          # Tester requêtes oracles
+```
+
+#### 🔐 **Authentification et utilisateurs**
+
+```bash
+# Tests d'authentification
+node scripts/test-auth-manual.js           # Test auth manuel
+node scripts/debug-user-exists.js          # Vérifier existence utilisateur
+node scripts/test-reset-password.js        # Tester reset mot de passe
+node scripts/test-reset-admin.js           # Reset admin
+
+# Gestion mots de passe
+node scripts/debug-password-reset.js       # Debug reset password
+node scripts/debug-token-expiration.js     # Debug expiration tokens
+```
+
+#### 📧 **Emails et notifications**
+
+```bash
+# Tests d'envoi d'emails
+node scripts/test-email.js                 # Test email basique
+node scripts/test-email-simple.js          # Test email simplifié  
+node scripts/debug-email-sending.js        # Debug envoi emails
+node scripts/test-password-reset-email.js  # Test email reset password
+node scripts/test-with-real-user-email.js  # Test avec vrai utilisateur
+
+# Services emails
+node scripts/debug-resend.js               # Debug service Resend
+node scripts/test-email-service-improved.js # Test service email amélioré
+```
+
+#### 📄 **PDFs et génération**
+
+```bash
+# Tests génération PDF
+node scripts/test-base-pdfkit.js           # Test PDFKit de base
+node scripts/test-pdf-model.js             # Test modèle PDF
+node scripts/test-monsterhearts-generique-pdfkit.js # Test PDF Monsterhearts
+node scripts/test-long-document-pdfkit.js  # Test document long
+```
+
+#### 🧪 **Tests et debug**
+
+```bash
+# Tests endpoints
+node scripts/test-endpoints-real.js        # Test endpoints réels
+node scripts/test-route-oracles.js         # Test routes oracles
+node scripts/test-session-expiration.js    # Test expiration sessions
+
+# Debug divers
+node scripts/debug-env-test.js             # Debug variables environnement
+node scripts/test-templates-helpers.js     # Test helpers templates
+node scripts/load-env.js                   # Charger variables env
+```
+
+#### 🔧 **Migration et développement**
+
+```bash
+# Migration de projet
+node scripts/migrate-chai-to-jest.js       # Migration Chai vers Jest
+node scripts/migrate-existing-oracles.js   # Migration oracles existants
+node scripts/add-game-system-column.js     # Ajouter colonne système jeu
+
+# Utilitaires développement  
+node scripts/migrate-db-functions.js       # Fonctions de migration
+node scripts/test-db-helper.js             # Helper de test DB
 ```
 
 ## 🧪 Tests

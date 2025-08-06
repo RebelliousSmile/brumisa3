@@ -20,11 +20,11 @@ SET row_security = off;
 -- Data for Name: utilisateurs; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
 --
 
-COPY public.utilisateurs (id, nom, email, role, code_acces, session_id, derniere_connexion, date_creation, date_modification, actif, mot_de_passe, token_recuperation, token_expiration, type_compte, est_anonyme, avatar, preferences, statut, type_premium, premium_expire_le, newsletter_abonne, communication_preferences, pseudo_public) FROM stdin;
-3	tnn	internet@fxguillois.email	UTILISATEUR	\N	\N	2025-08-05 16:03:20.129	2025-07-20 12:36:07.18	2025-08-05 14:03:20.142	t	32176198d15c3999b53b73565b6f61b0:24f3aff1e33c5d20d2893a45ba2378d8b1fbd5a4385d035091351c90c3ac67389db935df9cecd0c0dc8bbf6e005996efaeb22f82331a7ed2d4d065521c4e9024	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N
-0	Utilisateur Anonyme	\N	UTILISATEUR	\N	\N	\N	2025-07-22 10:24:02.416545	2025-07-22 10:24:02.416545	t	\N	\N	\N	STANDARD	t	\N	{}	ACTIF	\N	\N	f	{}	\N
-4	Test User	test@example.com	UTILISATEUR	\N	\N	2025-07-20 15:13:56.592	2025-07-20 13:13:56.694	2025-07-23 08:33:31.491	t	548156a29f04eb18b31dd0baf5904ad4:890f13e5f5d98a63c3bf7610f4a3f94cbb5edb158be697553c88d99a01c168f69a38785fe87142c68153dc8ac7fa5840fb89c0e521ac84a80ff947c04da716b1	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N
-1	Administrateur	activation@brumisa3.fr	ADMIN	\N	\N	2025-08-05 11:27:51.647	2025-07-19 16:03:27.583722	2025-08-05 09:29:02.736	t	a4c6a2842a11aedf3ff36895b1c90455:9a23058759dd61fb1ad03c7df2511b04f2a5599a8053d5410d7b7978f3d7c70143939c906bc42ad289a55d11c439bd72b4380dcdd09c7350bdfe1a0285dfb555	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N
+COPY public.utilisateurs (id, nom, email, role, code_acces, session_id, derniere_connexion, date_creation, date_modification, actif, mot_de_passe, token_recuperation, token_expiration, type_compte, est_anonyme, avatar, preferences, statut, type_premium, premium_expire_le, newsletter_abonne, communication_preferences, pseudo_public, email_precedent, email_validation_token, email_changement_expire_le, derniere_modification_email, token_changement_email, date_demande_changement_email, historique_emails) FROM stdin;
+3	tnn	internet@fxguillois.email	UTILISATEUR	\N	\N	2025-08-05 16:03:20.129	2025-07-20 12:36:07.18	2025-08-05 14:03:20.142	t	32176198d15c3999b53b73565b6f61b0:24f3aff1e33c5d20d2893a45ba2378d8b1fbd5a4385d035091351c90c3ac67389db935df9cecd0c0dc8bbf6e005996efaeb22f82331a7ed2d4d065521c4e9024	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N	\N	\N	\N	\N	\N	\N	[]
+0	Utilisateur Anonyme	\N	UTILISATEUR	\N	\N	\N	2025-07-22 10:24:02.416545	2025-07-22 10:24:02.416545	t	\N	\N	\N	STANDARD	t	\N	{}	ACTIF	\N	\N	f	{}	\N	\N	\N	\N	\N	\N	\N	[]
+4	Test User	test@example.com	UTILISATEUR	\N	\N	2025-07-20 15:13:56.592	2025-07-20 13:13:56.694	2025-07-23 08:33:31.491	t	548156a29f04eb18b31dd0baf5904ad4:890f13e5f5d98a63c3bf7610f4a3f94cbb5edb158be697553c88d99a01c168f69a38785fe87142c68153dc8ac7fa5840fb89c0e521ac84a80ff947c04da716b1	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N	\N	\N	\N	\N	\N	\N	[]
+1	Administrateur	activation@brumisa3.fr	ADMIN	\N	\N	2025-08-05 11:27:51.647	2025-07-19 16:03:27.583722	2025-08-05 09:29:02.736	t	a4c6a2842a11aedf3ff36895b1c90455:9a23058759dd61fb1ad03c7df2511b04f2a5599a8053d5410d7b7978f3d7c70143939c906bc42ad289a55d11c439bd72b4380dcdd09c7350bdfe1a0285dfb555	\N	\N	STANDARD	f	\N	{}	ACTIF	\N	\N	f	{}	\N	\N	\N	\N	\N	\N	\N	[]
 \.
 
 
@@ -33,6 +33,14 @@ COPY public.utilisateurs (id, nom, email, role, code_acces, session_id, derniere
 --
 
 COPY public.actualites (id, titre, resume, contenu_html, auteur_id, systemes_concernes, type, statut, date_publication, date_envoi, date_creation, date_modification) FROM stdin;
+\.
+
+
+--
+-- Data for Name: demandes_changement_email; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.demandes_changement_email (id, utilisateur_id, ancien_email, nouvel_email, token_validation, statut, date_demande, date_expiration, date_validation, ip_demande) FROM stdin;
 \.
 
 
@@ -117,6 +125,22 @@ COPY public.newsletter_abonnes (id, email, nom, preferences, statut, token_confi
 
 
 --
+-- Data for Name: oracles_personnalises; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.oracles_personnalises (id, nom, description, systeme_jeu, utilisateur_id, oracle_parent_id, donnees, statut, nombre_utilisations, date_creation, date_modification) FROM stdin;
+\.
+
+
+--
+-- Data for Name: oracle_cascades; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.oracle_cascades (id, oracle_parent_id, oracle_enfant_id, parametre_liaison, utilisateur_id, ordre_execution, date_creation) FROM stdin;
+\.
+
+
+--
 -- Data for Name: oracle_categories; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
 --
 
@@ -129,6 +153,7 @@ COPY public.oracle_categories (id, name, description, parent_id, sort_order, cre
 --
 
 COPY public.oracles (id, name, description, premium_required, total_weight, filters, is_active, created_at, updated_at, created_by, game_system) FROM stdin;
+dd2ac6b7-c529-41ea-8a29-09d41bb2096b	Révélations - Monsterhearts	Secrets qui éclatent au grand jour dans l'univers torturé des adolescents monstres	f	170	\N	t	2025-07-22 08:04:03.015475	2025-08-06 20:38:13.082562	1	monsterhearts
 11111111-1111-1111-1111-111111111111	Armes médiévales	Collection d'armes pour jeux médiévaux fantastiques	f	500	\N	t	2025-07-22 08:01:05.063873	2025-07-23 15:24:08.352457	\N	\N
 22222222-2222-2222-2222-222222222222	Sorts de magie	Grimoire de sorts variés (Premium)	t	500	\N	t	2025-07-22 08:01:05.063873	2025-07-23 15:24:08.352457	\N	\N
 33333333-3333-3333-3333-333333333333	Événements aléatoires	Événements pour pimenter vos aventures	f	500	\N	t	2025-07-22 08:01:05.063873	2025-07-23 15:24:08.352457	\N	\N
@@ -136,7 +161,6 @@ COPY public.oracles (id, name, description, premium_required, total_weight, filt
 78e8a092-b04d-475c-864a-d76e225a6cdc	Événements - Monsterhearts	Incidents au lycée et en ville qui bouleversent le quotidien des adolescents monstres	f	243	\N	t	2025-07-22 08:05:50.562843	2025-07-23 15:24:08.352457	1	monsterhearts
 9733827e-93d2-4f37-b6fe-4a76ef5977bb	Monstruosités - Monsterhearts	Manifestations de votre nature monstrueuse et surnaturelle	f	237	\N	t	2025-07-22 08:05:19.963196	2025-07-23 15:24:08.352457	1	monsterhearts
 63bea9fd-b95b-4d9b-abc9-f4d137466d67	Monstres - Roue du Temps	Créatures et monstres du monde de la Roue du Temps	f	185	\N	t	2025-07-23 07:20:56.783039	2025-07-23 15:24:08.352457	1	engrenages
-dd2ac6b7-c529-41ea-8a29-09d41bb2096b	Révélations - Monsterhearts	Secrets qui éclatent au grand jour dans l'univers torturé des adolescents monstres	f	170	\N	t	2025-07-22 08:04:03.015475	2025-08-06 20:24:31.40266	1	monsterhearts
 ef230508-a4c9-433b-ab42-02c15b4af97b	PNJ Connus - Roue du Temps	Personnages notables du monde de la Roue du Temps	f	271	\N	t	2025-07-23 07:22:05.519495	2025-07-23 15:24:08.352457	1	engrenages
 0016cb30-f280-4190-85d2-5aa4a7e51a06	Nations - Roue du Temps	Sélection aléatoire d'une nation du monde de la Roue du Temps	f	227	\N	t	2025-07-23 07:21:31.242382	2025-07-23 15:24:08.352457	1	engrenages
 \.
@@ -425,6 +449,22 @@ c137f5e3-d862-470d-9482-216f03aecb28	33333333-3333-3333-3333-333333333333	Votre 
 
 
 --
+-- Data for Name: oracle_propositions; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.oracle_propositions (id, oracle_id, utilisateur_id, option_proposee, statut, motif_rejet, date_proposition, date_traitement) FROM stdin;
+\.
+
+
+--
+-- Data for Name: oracle_votes; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.oracle_votes (id, oracle_id, utilisateur_id, qualite_generale, utilite_pratique, respect_gamme, commentaire, date_creation) FROM stdin;
+\.
+
+
+--
 -- Data for Name: parametres; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
 --
 
@@ -443,10 +483,26 @@ duree_conservation_pdfs_anonymes	7	number	Durée en jours de conservation des PD
 
 
 --
+-- Data for Name: pdf_templates_premium; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.pdf_templates_premium (id, nom, systeme_jeu, type_document, configuration_template, disponible_premium_seulement, date_creation) FROM stdin;
+\.
+
+
+--
 -- Data for Name: pdfs; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
 --
 
-COPY public.pdfs (id, personnage_id, utilisateur_id, type_pdf, statut, progression, nom_fichier, chemin_fichier, taille_fichier, url_temporaire, options_generation, template_utilise, temps_generation, erreur_message, date_creation, date_expiration, telecharge, nombre_telechargements, system_rights, titre, date_fin_generation, document_id, systeme_jeu, statut_visibilite, options_export, partage_token, hash_fichier) FROM stdin;
+COPY public.pdfs (id, personnage_id, utilisateur_id, type_pdf, statut, progression, nom_fichier, chemin_fichier, taille_fichier, url_temporaire, options_generation, template_utilise, temps_generation, erreur_message, date_creation, date_expiration, telecharge, nombre_telechargements, system_rights, titre, date_fin_generation, document_id, systeme_jeu, statut_visibilite, options_export, partage_token, hash_fichier, type_export, template_premium, personnalisation, date_expiration_partage) FROM stdin;
+\.
+
+
+--
+-- Data for Name: rgpd_consentements; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.rgpd_consentements (id, utilisateur_id, type_consentement, consentement_donne, date_consentement, ip_adresse, user_agent) FROM stdin;
 \.
 
 
@@ -455,6 +511,19 @@ COPY public.pdfs (id, personnage_id, utilisateur_id, type_pdf, statut, progressi
 --
 
 COPY public.sessions (id, utilisateur_id, donnees, adresse_ip, user_agent, actif, date_creation, date_expiration, donnees_supplementaires) FROM stdin;
+\.
+
+
+--
+-- Data for Name: systemes_jeu; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.systemes_jeu (id, nom_complet, description, site_officiel, version_supportee, structure_donnees, statut, message_maintenance, ordre_affichage, couleur_theme, icone, date_ajout, date_modification, date_derniere_maj_structure) FROM stdin;
+monsterhearts	Monsterhearts 2	Jeu de rôle sur les adolescents monstres	\N	\N	{}	ACTIF	\N	1	#8B0000	\N	2025-08-06 20:38:14.125924	2025-08-06 20:38:14.125924	\N
+engrenages	Engrenages et Sortilèges	Jeu de rôle steampunk fantasy	\N	\N	{}	ACTIF	\N	2	#8B4513	\N	2025-08-06 20:38:14.138512	2025-08-06 20:38:14.138512	\N
+metro2033	Métro 2033	Jeu de rôle post-apocalyptique	\N	\N	{}	ACTIF	\N	3	#4F4F4F	\N	2025-08-06 20:38:14.150113	2025-08-06 20:38:14.150113	\N
+mistengine	Mist Engine	Système générique narratif	\N	\N	{}	ACTIF	\N	4	#2F4F4F	\N	2025-08-06 20:38:14.161847	2025-08-06 20:38:14.161847	\N
+zombiology	Zombiology	Jeu de rôle de survie zombie	\N	\N	{}	ACTIF	\N	5	#8B008B	\N	2025-08-06 20:38:14.17351	2025-08-06 20:38:14.17351	\N
 \.
 
 
@@ -484,10 +553,25 @@ COPY public.test_migration (id, name) FROM stdin;
 
 
 --
+-- Data for Name: utilisateur_email_historique; Type: TABLE DATA; Schema: public; Owner: jdrspace_pg
+--
+
+COPY public.utilisateur_email_historique (id, utilisateur_id, ancien_email, nouvel_email, date_changement, ip_changement, statut) FROM stdin;
+\.
+
+
+--
 -- Name: actualites_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
 --
 
 SELECT pg_catalog.setval('public.actualites_id_seq', 1, false);
+
+
+--
+-- Name: demandes_changement_email_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.demandes_changement_email_id_seq', 1, false);
 
 
 --
@@ -533,6 +617,41 @@ SELECT pg_catalog.setval('public.newsletter_abonnes_id_seq', 1, false);
 
 
 --
+-- Name: oracle_cascades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.oracle_cascades_id_seq', 1, false);
+
+
+--
+-- Name: oracle_propositions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.oracle_propositions_id_seq', 1, false);
+
+
+--
+-- Name: oracle_votes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.oracle_votes_id_seq', 1, false);
+
+
+--
+-- Name: oracles_personnalises_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.oracles_personnalises_id_seq', 1, false);
+
+
+--
+-- Name: pdf_templates_premium_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.pdf_templates_premium_id_seq', 1, false);
+
+
+--
 -- Name: pdfs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
 --
 
@@ -544,6 +663,13 @@ SELECT pg_catalog.setval('public.pdfs_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.personnages_id_seq', 1, false);
+
+
+--
+-- Name: rgpd_consentements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.rgpd_consentements_id_seq', 1, false);
 
 
 --
@@ -565,6 +691,13 @@ SELECT pg_catalog.setval('public.templates_pdf_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.test_migration_id_seq', 1, true);
+
+
+--
+-- Name: utilisateur_email_historique_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdrspace_pg
+--
+
+SELECT pg_catalog.setval('public.utilisateur_email_historique_id_seq', 1, false);
 
 
 --
