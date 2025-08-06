@@ -83,8 +83,31 @@
 ### Types d'Utilisateurs
 - **Guest/Anonyme** : Mode "sur le pouce" exclusivement
 - **Utilisateur connecté** : Gestion à moyen terme + partage communautaire
-- **Premium** : Fonctionnalités avancées (codes d'accès)
+- **Premium** : Statut temporel (1€ = 1 mois) - création d'oracles et personnalisation PDF
 - **Admin** : Gestion site + modération communauté
+
+## Modèle Économique
+
+### Philosophie : Contribution Équitable et Transparente
+
+**Principe fondamental :** Un modèle freemium temporel où **1€ = 1 mois de premium**.
+
+**Accès Gratuit :**
+- Création illimitée de documents PDF
+- Utilisation des oracles officiels
+- Mode anonyme complet
+- Sauvegarde et gestion des personnages
+
+**Premium Temporel :**
+- **Activation** : 1€ donné = 1 mois premium
+- **Cumul** : Les dons s'additionnent (ex: 12€ = 1 an)
+- **Avantages** :
+  - Création d'oracles personnalisés
+  - Personnalisation PDF (polices, couleurs, logos)
+  - Templates exclusifs
+  - Statistiques avancées
+
+*Voir documentation complète : 08-systeme-premium.md*
 
 ## Roadmap par Release
 
@@ -146,7 +169,7 @@
 - Personnalisation d'oracles existants (fork comme Chartopia)
 - Partage des oracles personnalisés
 - Système de votes sur oracles
-- Fonctionnalités premium (codes d'accès)
+- Système premium temporel (1€ = 1 mois)
 
 ### 💎 **v2.0 - Écosystème Complet**
 
@@ -182,6 +205,8 @@
 - **Utilisateurs actifs mensuels** : Croissance constante
 - **Ratio anonyme/connecté** : Équilibre sain (ex: 60/40)
 - **Engagement communautaire** : Mesure vitalité par système JDR
+- **Conversion premium** : > 5% des membres actifs
+- **Durée moyenne premium** : 4-6 mois par utilisateur
 
 ## Définition de Done - MVP
 
