@@ -115,7 +115,7 @@
 ## Métriques de Succès
 
 ### Métriques d'Adoption
-- **Taux de conversion gratuit → premium** : > 5%
+- **Taux de conversion gratuit → premium** : > 5% des membres actifs
 - **Don moyen** : 3-6€ (3-6 mois)
 - **Taux de renouvellement** : > 40% avant expiration
 

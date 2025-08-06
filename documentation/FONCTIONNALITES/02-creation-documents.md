@@ -39,7 +39,7 @@
 
 #### Utilisateurs Cibles
 - **Alex** (MJ) : Prépare sa galerie de PNJs pour une séance
-- **Jordan** (MJ expert) : Organise ses campagnes avec des listes structurées
+- **Alex** (MJ expérimenté) : Organise ses campagnes avec des listes structurées
 
 #### Fonctionnalités ORGANIZATION
 - **Liste structurée de PNJs** : Nom, rôle, caractéristiques selon système
@@ -80,7 +80,7 @@
 **Spécifique :** Mist Engine uniquement
 
 #### Utilisateur Cible
-- **Jordan** (MJ expert Mist Engine) : Structure ses campagnes avec des fronts
+- **Alex** (MJ expert Mist Engine) : Structure ses campagnes avec des fronts
 
 #### Fonctionnalités DANGER
 - **Anatomie du Front** : Impulsion sombre, menaces, countdown clock

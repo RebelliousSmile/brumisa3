@@ -140,6 +140,7 @@
    - Inscription simple pour sauvegarde
    - Tableau de bord personnel
    - Réutilisation des créations
+   - Système premium temporel (1€ = 1 mois)
    - Base pour fonctionnalités communautaires
 
 #### Critères de Succès MVP :
@@ -169,7 +170,6 @@
 - Personnalisation d'oracles existants (fork comme Chartopia)
 - Partage des oracles personnalisés
 - Système de votes sur oracles
-- Système premium temporel (1€ = 1 mois)
 
 ### 💎 **v2.0 - Écosystème Complet et API Publique**
 
