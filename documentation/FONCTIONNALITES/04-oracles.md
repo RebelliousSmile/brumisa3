@@ -130,19 +130,71 @@ Les tirages retournent des résultats structurés avec :
 - `mistengine` : Oracles génériques (à venir)
 - `NULL` : Oracles non classés
 
-## Permissions et sécurité
+## Permissions et Système Collaboratif
 
-### 👤 Niveaux d'accès
-- **Visiteur** : Oracles gratuits uniquement, tirages limités
-- **Utilisateur connecté** : Oracles gratuits, historique personnel
-- **Premium** : Tous les oracles, fonctionnalités avancées
-- **Admin** : Gestion complète, statistiques, création d'oracles
+### 👤 Hiérarchie des Permissions
 
-### 🔒 Contrôles
-- Validation des paramètres de tirage (1-10 éléments)
-- Vérification des permissions par oracle
-- Limitation du taux de requêtes (à implémenter)
-- Historique des tirages pour audit
+**Guests (Non connectés) :**
+- ✅ Utiliser les oracles officiels gratuits
+- ✅ Effectuer des tirages anonymes
+- ❌ Proposer des modifications
+- ❌ Voter sur les oracles
+
+**Membres (Connectés gratuits) :**
+- ✅ Utiliser tous les oracles officiels
+- ✅ Proposer des options aux créateurs d'oracles
+- ✅ Voter sur les oracles publics personnalisés
+- ✅ Historique personnel des tirages
+- ❌ Créer des oracles personnalisés
+
+**Membres Premium :**
+- ✅ Toutes les permissions membres
+- ✅ Voir la liste complète des options proposées
+- ✅ Créer des oracles personnalisés (privés par défaut)
+- ✅ Rendre leurs oracles publics
+- ✅ Accès aux statistiques avancées
+
+**Administrateurs :**
+- ✅ Toutes les permissions premium
+- ✅ Gestion des oracles officiels
+- ✅ Modération des oracles publics
+- ✅ Analytics et métriques globales
+
+### 💡 Système de Propositions d'Options
+
+**Concept :** Les membres peuvent enrichir les oracles en proposant de nouvelles options aux créateurs.
+
+**Workflow de Proposition :**
+1. **Membre propose** → Nouvelle option sur un oracle (officiel ou personnalisé public)
+2. **Notification créateur** → Le créateur reçoit la suggestion
+3. **Validation/Rejet** → Le créateur décide d'intégrer ou non l'option
+4. **Attribution** → Si acceptée, l'option mentionne le contributeur
+
+**Critères d'acceptation :**
+- Interface simple de proposition dans la page oracle
+- Système de notifications pour les créateurs
+- Historique des propositions acceptées/refusées
+- Reconnaissance des contributeurs actifs
+
+### 🏆 Système de Vote et Classement
+
+**Oracles Personnalisés Publics :**
+- **Privés par défaut** : Les oracles créés restent personnels
+- **Publication volontaire** : Le créateur peut rendre son oracle public
+- **Votes communautaires** : Les membres votent sur les oracles publics
+- **Classement par plébiscite** : Les plus appréciés sont mis en avant
+
+**Mécanisme de Classement :**
+- Vote simple (upvote/downvote) par membre
+- Un vote par oracle et par utilisateur
+- Classement par système JDR et par catégorie
+- Section "Oracles les plus plébiscités" par communauté
+
+### 🔒 Contrôles et Sécurité
+- Validation des permissions selon le niveau utilisateur
+- Limitation du taux de requêtes par niveau
+- Modération a posteriori des oracles publics
+- Protection contre le spam de propositions
 
 ## Roadmap des Oracles
 
@@ -203,10 +255,11 @@ Tables brumisater → Modification joueur → Votes & popularité
 - **Test de fonctionnement** : Vérification par tirages d'essai
 
 #### 4. **Intégration avec Système de Votes (v1.2)**
-- **Même système que documents** : 3 critères (qualité, utilité, respect gameE)
-- **Classement par système JDR** : `/communaute/monsterhearts/oracles/`
+- **Vote simple** : Upvote/downvote par les membres connectés
+- **Classement par plébiscite** : Les oracles les plus votés sont mis en avant
 - **Attribution créateur** : Nom visible + lien profil
-- **Modération a posteriori** : Contrôle par Félix
+- **Visibilité contrôlée** : Privé par défaut, public sur choix du créateur
+- **Modération a posteriori** : Contrôle par Félix des oracles publics
 
 #### 5. **Types d'Oracles Personnalisés**
 ```
@@ -424,9 +477,11 @@ Les oracles en cascade s'intègrent naturellement avec le système de fork v1.2 
 
 ### 📈 Métriques Communauté (v1.2)
 - **Oracles personnalisés créés** : > 100 oracles/mois
-- **Taux de partage public** : > 20% des oracles forkés
-- **Votes communautaires oracles** : > 500 votes/mois
-- **Usage oracles communauté** : > 40% des tirages sur oracles personnalisés
+- **Taux de partage public** : > 20% des oracles créés rendus publics
+- **Propositions d'options** : > 200 suggestions/mois avec taux acceptation > 30%
+- **Votes communautaires** : > 500 votes/mois sur oracles publics
+- **Classement par plébiscite** : Top 10 oracles par système génèrent > 60% des tirages
+- **Engagement membres** : > 40% des membres proposent au moins une option
 
 ---
 

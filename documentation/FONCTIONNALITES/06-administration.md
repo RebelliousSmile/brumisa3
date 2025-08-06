@@ -108,25 +108,34 @@
 
 ### 5. Validation des Témoignages Utilisateurs
 
-**Objectif produit :** Construire la confiance et la crédibilité par des témoignages authentiques et engageants.
+**Objectif produit :** Construire la confiance et la crédibilité par des témoignages authentiques qui orientent les nouveaux utilisateurs.
 
-**Enjeux métier :**
-- Renforcer la preuve sociale pour l'acquisition utilisateurs
-- Identifier les cas d'usage réels pour orienter le produit
-- Maintenir la qualité et l'authenticité des retours
-- Valoriser les utilisateurs les plus engagés
+**Structure des témoignages :**
+- **Système JDR** : Association à un système spécifique
+- **Note** : Évaluation 1-5 étoiles
+- **Description** : Retour d'expérience détaillé
+- **Auteur** : Nom et lien de contact optionnel
+- **Affichage** : Rotation aléatoire sur le site
 
 **Process de validation :**
-- Réception des témoignages spontanés ou sollicités
-- Évaluation de l'authenticité et de la pertinence
-- Sélection pour mise en avant selon l'impact potentiel
-- Utilisation pour orienter les décisions produit
+- Réception automatique des soumissions
+- Modération sous 48h par Félix
+- Décision : Approuver (visible) ou Rejeter (avec motif)
+- Témoignages approuvés entrent dans la rotation aléatoire
 
-**Critères de sélection des témoignages :**
-- Authenticité et spécificité du retour
-- Diversité des profils utilisateurs représentés
-- Impact potentiel sur la conversion de nouveaux utilisateurs
-- Valeur informative pour l'évolution produit
+**Critères de modération :**
+- Authenticité du retour d'expérience
+- Pertinence par rapport au système JDR indiqué
+- Constructivité du feedback (positif ou négatif accepté)
+- Absence de contenu inapproprié
+
+**Impact métier :**
+- Preuve sociale pour acquisition utilisateurs
+- Orientation vers le bon système JDR
+- Feedback qualitatif sur l'expérience produit
+- Indicateurs de satisfaction par système
+
+*Voir documentation complète : 07-temoignages.md*
 
 ### 6. Analytics et Décisions Produit
 
