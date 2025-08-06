@@ -61,51 +61,6 @@ Le système d'oracles permet de créer des tables de tirages aléatoires pondér
 - Édition des oracles existants
 - Statistiques d'usage
 
-## Structure des données
-
-### Table `oracles`
-```sql
-CREATE TABLE oracles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  game_system VARCHAR(50), -- Code du système de jeu
-  premium_required BOOLEAN DEFAULT FALSE,
-  total_weight INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES utilisateurs(id)
-);
-```
-
-### Table `oracle_items`
-```sql
-CREATE TABLE oracle_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  oracle_id UUID NOT NULL REFERENCES oracles(id) ON DELETE CASCADE,
-  value TEXT NOT NULL,
-  weight INTEGER NOT NULL DEFAULT 1 CHECK (weight >= 0),
-  metadata JSONB,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Table `oracle_draws` (historique)
-```sql
-CREATE TABLE oracle_draws (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  oracle_id UUID NOT NULL REFERENCES oracles(id),
-  user_id INTEGER REFERENCES utilisateurs(id),
-  session_id VARCHAR(255),
-  results JSONB NOT NULL,
-  draw_count INTEGER NOT NULL DEFAULT 1,
-  ip_address INET,
-  user_agent TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
 
 ## Oracles disponibles
 
@@ -140,77 +95,13 @@ CREATE TABLE oracle_draws (
 3. **Tirage** : Clic sur "Tirer au Sort"
 4. **Résultats** : Affichage avec métadonnées et possibilité de refaire
 
-### 📊 Exemple de réponse API
-```json
-{
-  "succes": true,
-  "donnees": {
-    "results": [
-      {
-        "id": "uuid",
-        "value": "Triangle amoureux inattendu se forme",
-        "weight": 18,
-        "metadata": {
-          "type": "triangle",
-          "intensité": "forte"
-        }
-      }
-    ]
-  }
-}
-```
+### 📊 Format des Résultats
+Les tirages retournent des résultats structurés avec :
+- **Valeur tirée** : Le texte de l'élément sélectionné
+- **Métadonnées** : Informations contextuelles pour enrichir le tirage
+- **Poids** : Influence sur la probabilité d'apparition
+- **Identifiant** : Pour traçabilité et analytics
 
-## Scripts d'administration
-
-### 🏗️ Installation initiale
-```bash
-# 1. Créer les tables
-node scripts/create-oracle-tables.js
-
-# 2. Ajouter la colonne game_system  
-node scripts/add-game-system-column.js
-
-# 3. Injecter les oracles Monsterhearts
-node scripts/inject-all-monsterhearts.js
-
-# 4. Migrer avec systèmes de jeu
-node scripts/migrate-existing-oracles.js
-```
-
-### 📥 Import d'oracles
-```bash
-# Oracle unique depuis JSON
-node scripts/inject-oracle-direct.js oracle.json
-
-# Mode interactif
-node scripts/injecter-oracle.js
-
-# Depuis fichier  
-node scripts/injecter-oracle.js --fichier=oracle.json
-```
-
-### 📁 Format JSON attendu
-```json
-{
-  "oracle": {
-    "name": "Relations - Monsterhearts",
-    "description": "Complications romantiques et sociales",
-    "premium_required": false,
-    "is_active": true
-  },
-  "items": [
-    {
-      "value": "Triangle amoureux inattendu se forme",
-      "weight": 18,
-      "metadata": {
-        "type": "triangle",
-        "intensité": "forte"
-      },
-      "is_active": true
-    }
-  ]
-}
-```
 
 ## Algorithme de tirage
 
@@ -346,6 +237,85 @@ TYPES DE PERSONNALISATION:
 - **Statistiques communauté** : Oracles populaires par système/période
 - **Partenariats éditeurs** : Oracles officiels de nouveaux jeux
 
+## Oracles en Cascade (v1.2)
+
+### Vision : Tirages Contextualisés et Cohérents
+
+Les oracles en cascade permettent de créer des chaînes de tirages où le résultat d'un oracle parent filtre automatiquement les options d'un oracle enfant. Cette fonctionnalité transforme des tirages isolés en narrations cohérentes.
+
+### Concept Fonctionnel
+```
+Oracle Parent → Résultat devient paramètre → Oracle Enfant filtré
+     ↓                    ↓                         ↓
+"Nations"            "Andor"              "Vêtements d'Andor"
+```
+
+### Cas d'Usage Concrets
+
+**Pour les MJs (Alex) :**
+- **PNJs cohérents** : Nation → Traits culturels → Motivations politiques
+- **Lieux immersifs** : Type de lieu → Ambiance → Complications possibles
+- **Rencontres contextuelles** : Faction → Attitude → Demandes spécifiques
+
+**Pour les Joueurs Solo (Sam) :**
+- **Narration fluide** : Événement → Conséquences adaptées au contexte
+- **Exploration cohérente** : Région → Dangers locaux → Ressources disponibles
+- **Relations complexes** : Type de PNJ → Historique → Réaction actuelle
+
+### User Stories Principales
+
+**US1 : Création de Cascade (Créateur)**
+En tant qu'utilisateur avancé, je veux lier des oracles en cascade pour créer des tirages contextualisés automatiquement.
+
+Critères d'acceptation :
+- Je désigne un oracle parent et un oracle enfant
+- Je spécifie quel paramètre du parent filtre l'enfant
+- Je peux prévisualiser le comportement avant sauvegarde
+- Le système empêche les boucles infinies
+
+**US2 : Utilisation de Cascade (Utilisateur)**
+En tant qu'utilisateur, je veux effectuer des tirages en cascade pour obtenir des résultats narrativement cohérents.
+
+Critères d'acceptation :
+- Le tirage parent déclenche automatiquement l'oracle enfant
+- Les résultats s'affichent dans une vue hiérarchique claire
+- Je peux relancer une partie spécifique de la cascade
+- L'historique conserve toute la chaîne de tirage
+
+### Intégration avec le Système de Fork
+
+Les oracles en cascade s'intègrent naturellement avec le système de fork v1.2 :
+- Fork d'une cascade complète avec préservation des relations
+- Modification des paramètres de liaison entre oracles
+- Ajout/suppression de niveaux dans une cascade existante
+- Partage communautaire de cascades complexes
+
+### Types de Cascades
+
+**Cascade Simple (2 niveaux)**
+- Oracle A → Oracle B
+- Exemple : Météo → Complications de voyage
+
+**Cascade Complexe (3+ niveaux)**
+- Oracle A → Oracle B → Oracle C
+- Exemple : Région → Ville → Quartier → Événement local
+
+**Cascade Conditionnelle (v2.0)**
+- Branches différentes selon les résultats
+- Logique avancée pour narrations complexes
+
+### Métriques de Succès Spécifiques
+
+**Adoption (v1.2) :**
+- 30% des utilisateurs avancés créent au moins une cascade
+- Profondeur moyenne : 2-3 niveaux (complexité optimale)
+- 40% des cascades créées sont partagées publiquement
+
+**Valeur Ajoutée :**
+- 80% des utilisateurs trouvent les cascades utiles
+- Réduction de 50% du temps de préparation pour scénarios complexes
+- Augmentation de 25% de l'usage des oracles grâce aux cascades
+
 ## Développements futurs
 
 ### 🚧 En cours (MVP)
@@ -364,6 +334,85 @@ TYPES DE PERSONNALISATION:
 - Marketplace oracles premium (partenariats éditeurs)
 - IA d'assistance création oracles contextuels
 - SDK développeurs pour intégrations tierces
+
+## Oracles en Cascade (v1.2)
+
+### Vision : Tirages Contextualisés et Cohérents
+
+Les oracles en cascade permettent de créer des chaînes de tirages où le résultat d'un oracle parent filtre automatiquement les options d'un oracle enfant. Cette fonctionnalité transforme des tirages isolés en narrations cohérentes.
+
+### Concept Fonctionnel
+```
+Oracle Parent → Résultat devient paramètre → Oracle Enfant filtré
+     ↓                    ↓                         ↓
+"Nations"            "Andor"              "Vêtements d'Andor"
+```
+
+### Cas d'Usage Concrets
+
+**Pour les MJs (Alex) :**
+- **PNJs cohérents** : Nation → Traits culturels → Motivations politiques
+- **Lieux immersifs** : Type de lieu → Ambiance → Complications possibles
+- **Rencontres contextuelles** : Faction → Attitude → Demandes spécifiques
+
+**Pour les Joueurs Solo (Sam) :**
+- **Narration fluide** : Événement → Conséquences adaptées au contexte
+- **Exploration cohérente** : Région → Dangers locaux → Ressources disponibles
+- **Relations complexes** : Type de PNJ → Historique → Réaction actuelle
+
+### User Stories Principales
+
+**US1 : Création de Cascade (Créateur)**
+En tant qu'utilisateur avancé, je veux lier des oracles en cascade pour créer des tirages contextualisés automatiquement.
+
+Critères d'acceptation :
+- Je désigne un oracle parent et un oracle enfant
+- Je spécifie quel paramètre du parent filtre l'enfant
+- Je peux prévisualiser le comportement avant sauvegarde
+- Le système empêche les boucles infinies
+
+**US2 : Utilisation de Cascade (Utilisateur)**
+En tant qu'utilisateur, je veux effectuer des tirages en cascade pour obtenir des résultats narrativement cohérents.
+
+Critères d'acceptation :
+- Le tirage parent déclenche automatiquement l'oracle enfant
+- Les résultats s'affichent dans une vue hiérarchique claire
+- Je peux relancer une partie spécifique de la cascade
+- L'historique conserve toute la chaîne de tirage
+
+### Intégration avec le Système de Fork
+
+Les oracles en cascade s'intègrent naturellement avec le système de fork v1.2 :
+- Fork d'une cascade complète avec préservation des relations
+- Modification des paramètres de liaison entre oracles
+- Ajout/suppression de niveaux dans une cascade existante
+- Partage communautaire de cascades complexes
+
+### Types de Cascades
+
+**Cascade Simple (2 niveaux)**
+- Oracle A → Oracle B
+- Exemple : Météo → Complications de voyage
+
+**Cascade Complexe (3+ niveaux)**
+- Oracle A → Oracle B → Oracle C
+- Exemple : Région → Ville → Quartier → Événement local
+
+**Cascade Conditionnelle (v2.0)**
+- Branches différentes selon les résultats
+- Logique avancée pour narrations complexes
+
+### Métriques de Succès Spécifiques
+
+**Adoption (v1.2) :**
+- 30% des utilisateurs avancés créent au moins une cascade
+- Profondeur moyenne : 2-3 niveaux (complexité optimale)
+- 40% des cascades créées sont partagées publiquement
+
+**Valeur Ajoutée :**
+- 80% des utilisateurs trouvent les cascades utiles
+- Réduction de 50% du temps de préparation pour scénarios complexes
+- Augmentation de 25% de l'usage des oracles grâce aux cascades
 
 ## Métriques de Succès Oracles
 
