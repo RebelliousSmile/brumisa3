@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/RgpdConsentement.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/RgpdConsentement.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseModel = require('./BaseModel');
+const Joi = require('joi');
+
+/**
+ * Modèle RgpdConsentement - Conformité RGPD complète avec traçabilité
+ * 
+ * Fonctionnalités:
+ * - Conformité RGPD complète avec historique immuable des consentements
+ * - Granularité fine par type de traitement de données
+ * - Métadonnées techniques pour audit légal (IP, User-Agent)
+ * - Gestion des révocations et modifications de consentement
+ * - Export de données utilisateur pour conformité RGPD
+ */
+class RgpdConsentement extends BaseModel {
+  constructor() {
+    super('rgpd_consentements', 'id');
+    
+    this.fillable = [
+      'utilisateur_id',
+      'type_consentement',
+      'consentement_donne',
+      'ip_adresse',
+      'user_agent',
+      'version_conditions',
+      'source_consentement'
+    ];
+    
+    this.hidden = ['ip_adresse', 'user_agent']; // Données sensibles cachées par défaut
+    
+    this.casts = {
+      utilisateur_id: 'integer',
+      consentement_donne: 'boolean',
+      date_consentement: 'date'
+    };
+    
+    this.timestamps = false; // Gestion manuelle avec date_consentement
+  }
+
+  /**
+   * Types de consentement RGPD disponibles
+   */
+  static get TYPES_CONSENTEMENT() {
+    return {
+      NEWSLETTER: 'NEWSLETTER',
+      COOKIES_ANALYTIQUES: 'COOKIES_ANALYTIQUES',
+      PARTAGE_DONNEES: 'PARTAGE_DONNEES',
+      COMMUNICATION_MARKETING: 'COMMUNICATION_MARKETING',
+      SAUVEGARDE_PERSONNAGES: 'SAUVEGARDE_PERSONNAGES',
+      HISTORIQUE_NAVIGATION: 'HISTORIQUE_NAVIGATION'
+    };
+  }
+
+  /**
+   * Sources de consentement possibles
+   */
+  static get SOURCES() {
+    return {
+      INSCRIPTION: 'INSCRIPTION',
+      PARAMETRES_COMPTE: 'PARAMETRES_COMPTE',
+      POPUP_COOKIES: 'POPUP_COOKIES',
+      FORMULAIRE_NEWSLETTER: 'FORMULAIRE_NEWSLETTER',
+      IMPORT_MIGRATION: 'IMPORT_MIGRATION'
+    };
+  }
+
+  /**
+   * Schema de validation Joi
+   */
+  getValidationSchema(operation = 'create') {
+    const typesConsentement = Object.values(RgpdConsentement.TYPES_CONSENTEMENT);
+    const sources = Object.values(RgpdConsentement.SOURCES);
+    
+    const baseSchema = {
+      utilisateur_id: Joi.number().integer().positive().required()
+        .messages({
+          'number.base': 'L\'ID utilisateur doit être un nombre',
+          'number.integer': 'L\'ID utilisateur doit être un entier',
+          'number.positive': 'L\'ID utilisateur doit être positif',
+          'any.required': 'L\'ID utilisateur est requis'
+        }),
+        
+      type_consentement: Joi.string().valid(...typesConsentement).required()
+        .messages({
+          'string.base': 'Le type de consentement doit être une chaîne de caractères',
+          'any.only': `Le type de consentement doit être l'un des suivants: ${typesConsentement.join(', ')}`,
+          'any.required': 'Le type de consentement est requis'
+        }),
+        
+      consentement_donne: Joi.boolean().required()
+        .messages({
+          'boolean.base': 'Le consentement doit être un booléen',
+          'any.required': 'Le statut du consentement est requis'
+        }),
+        
+      ip_adresse: Joi.string().ip().required()
+        .messages({
+          'string.base': 'L\'adresse IP doit être une chaîne de caractères',
+          'string.ip': 'L\'adresse IP doit être valide',
+          'any.required': 'L\'adresse IP est requise pour la traçabilité RGPD'
+        }),
+        
+      user_agent: Joi.string().max(1000).required()
+        .messages({
+          'string.base': 'Le User-Agent doit être une chaîne de caractères',
+          'string.max': 'Le User-Agent ne peut pas dépasser 1000 caractères',
+          'any.required': 'Le User-Agent est requis pour la traçabilité RGPD'
+        }),
+        
+      version_conditions: Joi.string().max(50).default('1.0')
+        .messages({
+          'string.base': 'La version des conditions doit être une chaîne de caractères',
+          'string.max': 'La version des conditions ne peut pas dépasser 50 caractères'
+        }),
+        
+      source_consentement: Joi.string().valid(...sources).default(RgpdConsentement.SOURCES.PARAMETRES_COMPTE)
+        .messages({
+          'string.base': 'La source du consentement doit être une chaîne de caractères',
+          'any.only': `La source doit être l'une des suivantes: ${sources.join(', ')}`
+        })
+    };
+
+    return Joi.object(baseSchema);
+  }
+
+  /**
+   * Validation métier spécifique
+   */
+  async businessValidation(data, operation = 'create') {
+    // Vérifier que l'utilisateur existe
+    if (data.utilisateur_id) {
+      const Utilisateur = require('./Utilisateur');
+      const utilisateur = new Utilisateur();
+      const user = await utilisateur.findById(data.utilisateur_id);
+      
+      if (!user) {
+        throw new Error('L\'utilisateur spécifié n\'existe pas');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Hook beforeCreate - Ajouter la date de consentement et validation finale
+   */
+  async beforeCreate(data) {
+    // Ajouter la date de consentement
+    data.date_consentement = new Date().toISOString();
+    
+    // Log de l'action de consentement
+    this.logChange('rgpd_consent', null, null, {
+      type: data.type_consentement,
+      utilisateur_id: data.utilisateur_id,
+      consentement: data.consentement_donne,
+      source: data.source_consentement
+    });
+    
+    return data;
+  }
+
+  /**
+   * Empêcher la modification des consentements (historique immuable)
+   */
+  async update(id, data) {
+    throw new Error('Les consentements RGPD sont immuables. Utilisez enregistrerConsentement() pour créer un nouvel historique.');
+  }
+
+  /**
+   * Empêcher la suppression des consentements (historique immuable)
+   */
+  async delete(id) {
+    throw new Error('Les consentements RGPD ne peuvent pas être supprimés pour des raisons légales.');
+  }
+
+  /**
+   * Enregistrer un consentement avec métadonnées complètes
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} type - Type de consentement
+   * @param {boolean} consenti - Consentement donné ou retiré
+   * @param {Object} metadata - Métadonnées (IP, User-Agent, source, version)
+   * @returns {Object} Consentement enregistré
+   */
+  async enregistrerConsentement(userId, type, consenti, metadata = {}) {
+    const consentementData = {
+      utilisateur_id: userId,
+      type_consentement: type,
+      consentement_donne: consenti,
+      ip_adresse: metadata.ip_adresse || '127.0.0.1',
+      user_agent: metadata.user_agent || 'Unknown',
+      version_conditions: metadata.version_conditions || '1.0',
+      source_consentement: metadata.source_consentement || RgpdConsentement.SOURCES.PARAMETRES_COMPTE
+    };
+
+    return await this.create(consentementData);
+  }
+
+  /**
+   * Vérifier le statut actuel d'un consentement pour un utilisateur
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} type - Type de consentement
+   * @returns {Object|null} Dernier consentement ou null
+   */
+  async verifierConsentement(userId, type) {
+    const dernierConsentement = await this.findOne(
+      'utilisateur_id = $1 AND type_consentement = $2',
+      [userId, type],
+      'date_consentement DESC'
+    );
+
+    return dernierConsentement;
+  }
+
+  /**
+   * Vérifier si un utilisateur a donné son consentement
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} type - Type de consentement
+   * @returns {boolean} True si consentement actuel est positif
+   */
+  async aConsentement(userId, type) {
+    const consentement = await this.verifierConsentement(userId, type);
+    return consentement ? consentement.consentement_donne : false;
+  }
+
+  /**
+   * Retirer un consentement (créer un nouvel enregistrement négatif)
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} type - Type de consentement
+   * @param {Object} metadata - Métadonnées de révocation
+   * @returns {Object} Consentement de révocation
+   */
+  async retirerConsentement(userId, type, metadata = {}) {
+    // Vérifier qu'il y a un consentement positif à révoquer
+    const consentementActuel = await this.verifierConsentement(userId, type);
+    
+    if (!consentementActuel) {
+      throw new Error(`Aucun consentement trouvé pour le type ${type}`);
+    }
+    
+    if (!consentementActuel.consentement_donne) {
+      throw new Error(`Le consentement pour ${type} a déjà été retiré`);
+    }
+
+    return await this.enregistrerConsentement(userId, type, false, metadata);
+  }
+
+  /**
+   * Obtenir l'historique complet des consentements pour un utilisateur
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} typeSpecifique - Type spécifique (optionnel)
+   * @returns {Array} Historique des consentements
+   */
+  async getHistoriqueConsentements(userId, typeSpecifique = null) {
+    let whereClause = 'utilisateur_id = $1';
+    const params = [userId];
+
+    if (typeSpecifique) {
+      whereClause += ' AND type_consentement = $2';
+      params.push(typeSpecifique);
+    }
+
+    return await this.findAll(
+      whereClause,
+      params,
+      'date_consentement DESC'
+    );
+  }
+
+  /**
+   * Obtenir le statut actuel de tous les consentements pour un utilisateur
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @returns {Object} Statut par type de consentement
+   */
+  async getStatutConsentements(userId) {
+    const types = Object.values(RgpdConsentement.TYPES_CONSENTEMENT);
+    const statuts = {};
+
+    for (const type of types) {
+      const consentement = await this.verifierConsentement(userId, type);
+      statuts[type] = {
+        consenti: consentement ? consentement.consentement_donne : false,
+        date_derniere_modification: consentement ? consentement.date_consentement : null,
+        source: consentement ? consentement.source_consentement : null
+      };
+    }
+
+    return statuts;
+  }
+
+  /**
+   * Export des données de consentement pour un utilisateur (conformité RGPD)
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @returns {Object} Export complet des données
+   */
+  async exporterDonnees(userId) {
+    const historique = await this.getHistoriqueConsentements(userId);
+    const statutActuel = await this.getStatutConsentements(userId);
+
+    return {
+      utilisateur_id: userId,
+      date_export: new Date().toISOString(),
+      statut_actuel: statutActuel,
+      historique_complet: historique.map(consent => ({
+        type: consent.type_consentement,
+        consentement_donne: consent.consentement_donne,
+        date_consentement: consent.date_consentement,
+        source: consent.source_consentement,
+        version_conditions: consent.version_conditions
+        // IP et User-Agent exclus pour la confidentialité dans l'export utilisateur
+      })),
+      nombre_total_actions: historique.length
+    };
+  }
+
+  /**
+   * Statistiques de consentement pour le dashboard admin
+   * 
+   * @param {Date} dateDebut - Période de début (optionnel)
+   * @param {Date} dateFin - Période de fin (optionnel)
+   * @returns {Object} Statistiques détaillées
+   */
+  async statistiquesConsentements(dateDebut = null, dateFin = null) {
+    let whereClause = '1 = 1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (dateDebut) {
+      whereClause += ` AND date_consentement >= $${paramIndex}`;
+      params.push(dateDebut.toISOString());
+      paramIndex++;
+    }
+
+    if (dateFin) {
+      whereClause += ` AND date_consentement &lt;= $${paramIndex}`;
+      params.push(dateFin.toISOString());
+      paramIndex++;
+    }
+
+    const db = require('../database/db');
+    
+    // Statistiques par type de consentement
+    const sqlTypes = `
+      SELECT 
+        type_consentement,
+        consentement_donne,
+        COUNT(*) as nombre_actions
+      FROM rgpd_consentements
+      WHERE ${whereClause}
+      GROUP BY type_consentement, consentement_donne
+      ORDER BY type_consentement, consentement_donne DESC
+    `;
+    
+    // Statistiques par source
+    const sqlSources = `
+      SELECT 
+        source_consentement,
+        COUNT(*) as nombre_actions,
+        COUNT(DISTINCT utilisateur_id) as utilisateurs_uniques
+      FROM rgpd_consentements
+      WHERE ${whereClause}
+      GROUP BY source_consentement
+      ORDER BY nombre_actions DESC
+    `;
+    
+    // Évolution dans le temps (par jour)
+    const sqlEvolution = `
+      SELECT 
+        DATE(date_consentement) as date,
+        type_consentement,
+        COUNT(*) as nombre_actions
+      FROM rgpd_consentements
+      WHERE ${whereClause}
+        AND date_consentement >= NOW() - INTERVAL '30 days'
+      GROUP BY DATE(date_consentement), type_consentement
+      ORDER BY date DESC, type_consentement
+    `;
+
+    const [typesStats, sourcesStats, evolutionStats] = await Promise.all([
+      db.all(sqlTypes, params),
+      db.all(sqlSources, params),
+      db.all(sqlEvolution, params)
+    ]);
+
+    return {
+      periode: {
+        debut: dateDebut ? dateDebut.toISOString() : 'Toutes',
+        fin: dateFin ? dateFin.toISOString() : 'Aujourd\'hui'
+      },
+      consentements_par_type: typesStats,
+      consentements_par_source: sourcesStats,
+      evolution_30_jours: evolutionStats
+    };
+  }
+
+  /**
+   * Obtenir les utilisateurs ayant retiré leur consentement récemment
+   * 
+   * @param {string} type - Type de consentement
+   * @param {number} joursRecents - Nombre de jours (défaut: 7)
+   * @returns {Array} Utilisateurs avec révocations récentes
+   */
+  async getRevocationsRecentes(type, joursRecents = 7) {
+    const db = require('../database/db');
+    
+    const sql = `
+      SELECT DISTINCT
+        rc.utilisateur_id,
+        u.nom,
+        u.email,
+        rc.date_consentement as date_revocation
+      FROM rgpd_consentements rc
+      INNER JOIN utilisateurs u ON rc.utilisateur_id = u.id
+      WHERE rc.type_consentement = $1
+        AND rc.consentement_donne = false
+        AND rc.date_consentement >= NOW() - INTERVAL '${joursRecents} days'
+      ORDER BY rc.date_consentement DESC
+    `;
+    
+    const rows = await db.all(sql, [type]);
+    return rows.map(row => this.castAttributes(row));
+  }
+
+  /**
+   * Nettoyer les anciennes données selon la politique de rétention
+   * (Attention: Vérifier les obligations légales de conservation)
+   * 
+   * @param {number} annees - Nombre d'années à conserver
+   * @returns {number} Nombre d'enregistrements supprimés
+   */
+  async nettoyerAnciennesDonnees(annees = 7) {
+    throw new Error('La suppression de données RGPD nécessite une validation juridique spécifique. Cette fonction est désactivée par sécurité.');
+    
+    // Code commenté pour sécurité juridique
+    /*
+    const dateLimit = new Date();
+    dateLimit.setFullYear(dateLimit.getFullYear() - annees);
+    
+    const { sql, params } = this.convertPlaceholders(
+      `DELETE FROM ${this.tableName} WHERE date_consentement &lt; ?`,
+      [dateLimit.toISOString()]
+    );
+    
+    const db = require('../database/db');
+    const result = await db.run(sql, params);
+    return result.changes;
+    */
+  }
+
+  /**
+   * Vérifier la conformité d'un utilisateur pour un traitement de données
+   * 
+   * @param {number} userId - ID de l'utilisateur
+   * @param {string} typeTraitement - Type de traitement nécessitant consentement
+   * @returns {Object} Résultat de vérification avec recommandations
+   */
+  async verifierConformiteTraitement(userId, typeTraitement) {
+    const consentement = await this.verifierConsentement(userId, typeTraitement);
+    
+    if (!consentement) {
+      return {
+        conforme: false,
+        raison: 'AUCUN_CONSENTEMENT',
+        message: 'Aucun consentement enregistré pour ce type de traitement',
+        action_requise: 'DEMANDER_CONSENTEMENT'
+      };
+    }
+    
+    if (!consentement.consentement_donne) {
+      return {
+        conforme: false,
+        raison: 'CONSENTEMENT_RETIRE',
+        message: 'L\'utilisateur a retiré son consentement',
+        date_retrait: consentement.date_consentement,
+        action_requise: 'ARRETER_TRAITEMENT'
+      };
+    }
+    
+    // Vérifier l'âge du consentement (recommandation: renouveler après 2 ans)
+    const dateConsentement = new Date(consentement.date_consentement);
+    const maintenant = new Date();
+    const ageConsentementJours = Math.floor((maintenant - dateConsentement) / (1000 * 60 * 60 * 24));
+    
+    if (ageConsentementJours > 730) { // 2 ans
+      return {
+        conforme: true,
+        raison: 'CONSENTEMENT_ANCIEN',
+        message: 'Consentement valide mais ancien (plus de 2 ans)',
+        age_jours: ageConsentementJours,
+        action_requise: 'RENOUVELER_RECOMMANDE'
+      };
+    }
+    
+    return {
+      conforme: true,
+      raison: 'CONSENTEMENT_VALIDE',
+      message: 'Consentement valide et récent',
+      date_consentement: consentement.date_consentement,
+      age_jours: ageConsentementJours,
+      action_requise: 'AUCUNE'
+    };
+  }
+}
+
+module.exports = RgpdConsentement;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CacheService.html">CacheService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DangerDocument.html">DangerDocument</a></li><li><a href="DemandeChangementEmail.html">DemandeChangementEmail</a></li><li><a href="Document.html">Document</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DocumentModerationHistorique.html">DocumentModerationHistorique</a></li><li><a href="DocumentModerationService.html">DocumentModerationService</a></li><li><a href="DocumentSystemeJeu.html">DocumentSystemeJeu</a></li><li><a href="DocumentVote.html">DocumentVote</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="EngrenagesTheme.html">EngrenagesTheme</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="GroupDocument.html">GroupDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="LoggingService.html">LoggingService</a></li><li><a href="MaintenanceWorker.html">MaintenanceWorker</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="Metro2033Theme.html">Metro2033Theme</a></li><li><a href="MistEngineTheme.html">MistEngineTheme</a></li><li><a href="ModerationController.html">ModerationController</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="OrganizationDocument.html">OrganizationDocument</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="PerformanceMiddleware.html">PerformanceMiddleware</a></li><li><a href="PerformanceMonitoringService.html">PerformanceMonitoringService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="ProductionApp.html">ProductionApp</a></li><li><a href="QueueService.html">QueueService</a></li><li><a href="QueueWorker.html">QueueWorker</a></li><li><a href="RgpdConsentement.html">RgpdConsentement</a></li><li><a href="RgpdService.html">RgpdService</a></li><li><a href="SecurityService.html">SecurityService</a></li><li><a href="ShareService.html">ShareService</a></li><li><a href="SystemCardViewModel.html">SystemCardViewModel</a></li><li><a href="SystemMaintenanceService.html">SystemMaintenanceService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemService.html">SystemService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="SystemThemeService.html">SystemThemeService</a></li><li><a href="SystemeJeu.html">SystemeJeu</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="TownDocument.html">TownDocument</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li><li><a href="VoteController.html">VoteController</a></li><li><a href="VoteService.html">VoteService</a></li><li><a href="ZombiologyTheme.html">ZombiologyTheme</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Joi">Joi</a></li><li><a href="global.html#asyncHandler">asyncHandler</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#database">database</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#handleNotFound">handleNotFound</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requirePremium">requirePremium</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#schemas">schemas</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li><li><a href="global.html#validateFiles">validateFiles</a></li><li><a href="global.html#validateRequest">validateRequest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Aug 08 2025 18:17:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

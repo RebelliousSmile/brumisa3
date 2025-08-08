@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: app-production.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: app-production.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const express = require('express');
+const session = require('express-session');
+const expressLayouts = require('express-ejs-layouts');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+
+// Configuration et utilitaires
+const config = require('./config');
+const logManager = require('./utils/logManager');
+const { initializeDatabase, isDatabaseInitialized } = require('./database/init');
+
+// Services de performance et sécurité
+const SecurityService = require('./services/SecurityService');
+const CacheService = require('./services/CacheService');
+const QueueService = require('./services/QueueService');
+const PerformanceMonitoringService = require('./services/PerformanceMonitoringService');
+const PerformanceMiddleware = require('./middleware/performance');
+const { LoggingService } = require('./services/LoggingService');
+
+/**
+ * Application principale avec optimisations performance et production
+ */
+class ProductionApp {
+  constructor() {
+    this.app = express();
+    this.server = null;
+    this.isShuttingDown = false;
+    
+    // Initialiser les services de performance
+    this.securityService = new SecurityService();
+    this.cache = new CacheService();
+    this.queue = QueueService.create();
+    this.performanceMonitoring = PerformanceMonitoringService.create();
+    this.performanceMiddleware = PerformanceMiddleware.create();
+    this.loggingService = LoggingService.create();
+    
+    logManager.info('Services de performance initialisés');
+  }
+
+  /**
+   * Initialise l'application Express
+   */
+  async initialize() {
+    try {
+      logManager.info('Initialisation de l\'application avec optimisations production', {
+        env: config.server.env,
+        port: config.server.port,
+        performanceTargets: {
+          api: '500ms',
+          pdf: '2000ms'
+        }
+      });
+
+      // Vérification et initialisation de la base de données
+      await this.initializeDatabase();
+
+      // Configuration de base Express
+      this.configureExpress();
+
+      // Middlewares de performance (en premier pour mesurer tout)
+      this.configurePerformanceMiddlewares();
+      
+      // Middlewares de sécurité
+      this.configureSecurityMiddlewares();
+
+      // Middlewares de session et parsing
+      this.configureParsingMiddlewares();
+
+      // Configuration des templates
+      this.configureTemplates();
+
+      // Middlewares applicatifs
+      this.configureApplicationMiddlewares();
+
+      // Routes
+      this.configureRoutes();
+      
+      // Endpoints de monitoring
+      this.configureMonitoringEndpoints();
+
+      // Gestion des erreurs
+      this.configureErrorHandling();
+
+      logManager.info('Application production initialisée avec succès');
+
+    } catch (error) {
+      logManager.error('Erreur lors de l\'initialisation de l\'application:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Initialise la base de données
+   */
+  async initializeDatabase() {
+    try {
+      const isInitialized = await isDatabaseInitialized();
+      
+      if (!isInitialized) {
+        logManager.info('Base de données non initialisée - initialisation en cours...');
+        await initializeDatabase();
+      } else {
+        logManager.info('Base de données déjà initialisée');
+      }
+    } catch (error) {
+      logManager.error('Erreur initialisation base de données', { error: error.message });
+      logManager.warn('L\'application continuera en mode dégradé sans base de données');
+    }
+  }
+
+  /**
+   * Configuration de base d'Express
+   */
+  configureExpress() {
+    // Configuration Express optimisée pour production
+    this.app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : false);
+    this.app.disable('x-powered-by');
+    this.app.set('env', process.env.NODE_ENV || 'development');
+    
+    // Dossier des vues
+    this.app.set('views', config.directories.views);
+    this.app.set('view engine', 'ejs');
+    
+    // Optimisations EJS pour production
+    if (process.env.NODE_ENV === 'production') {
+      this.app.set('view cache', true);
+    }
+  }
+
+  /**
+   * Configure les middlewares de performance
+   */
+  configurePerformanceMiddlewares() {
+    // Logging structuré (en premier pour capturer tout)
+    this.app.use(this.loggingService.middleware());
+    
+    // Monitoring des performances
+    this.app.use(this.performanceMonitoring.middleware());
+    this.app.use(this.performanceMiddleware.monitorAPI());
+    
+    // Rate limiting adaptatif basé sur la performance
+    this.app.use(this.performanceMiddleware.adaptiveRateLimit());
+    
+    logManager.info('Middlewares de performance configurés');
+  }
+
+  /**
+   * Configure les middlewares de sécurité
+   */
+  configureSecurityMiddlewares() {
+    // Configuration sécurité complète via SecurityService
+    this.securityService.configureApp(this.app);
+    
+    // Rate limiting spécialisés
+    this.app.use('/api/auth', this.securityService.getAuthRateLimit());
+    this.app.use('/api/pdf', this.securityService.getPdfRateLimit());
+    this.app.use('/upload', this.securityService.getUploadSecurityMiddleware());
+    
+    // Protection CSRF pour les formulaires
+    this.app.use(this.securityService.getCsrfProtectionMiddleware());
+    
+    logManager.info('Middlewares de sécurité configurés');
+  }
+
+  /**
+   * Configure les middlewares de parsing et session
+   */
+  configureParsingMiddlewares() {
+    // Parsing des cookies
+    this.app.use(cookieParser());
+
+    // Parsing du body avec limites sécurisées
+    this.app.use(express.json({ 
+      limit: '10mb',
+      verify: (req, res, buf) => {
+        // Validation basique du JSON pour éviter les attaques
+        if (buf &amp;&amp; buf.length > 0) {
+          try {
+            JSON.parse(buf.toString());
+          } catch (e) {
+            this.securityService.logSecurityEvent('invalid_json_payload', {
+              ip: req.ip,
+              userAgent: req.get('User-Agent'),
+              contentLength: buf.length
+            });
+          }
+        }
+      }
+    }));
+    
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // Configuration des sessions sécurisées
+    const sessionConfig = {
+      secret: config.session.secret,
+      name: config.session.name || 'brumisater.sid',
+      resave: false,
+      saveUninitialized: false,
+      rolling: true, // Renouveler le cookie à chaque requête
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: config.session.maxAge || 24 * 60 * 60 * 1000, // 24h
+        sameSite: 'strict'
+      }
+    };
+    
+    this.app.use(session(sessionConfig));
+  }
+
+  /**
+   * Configuration des templates EJS
+   */
+  configureTemplates() {
+    this.app.use(expressLayouts);
+    this.app.set('layout', 'layouts/principal');
+    this.app.set('layout extractScripts', true);
+    this.app.set('layout extractStyles', true);
+    
+    // Variables globales pour les templates
+    this.app.use((req, res, next) => {
+      res.locals.currentUrl = req.originalUrl;
+      res.locals.environment = process.env.NODE_ENV;
+      res.locals.version = process.env.npm_package_version || '1.0.0';
+      res.locals.buildTimestamp = Date.now();
+      
+      // Injecter les métriques de performance dans les templates
+      res.locals.performanceMode = process.env.NODE_ENV === 'production';
+      
+      next();
+    });
+  }
+
+  /**
+   * Configure les middlewares applicatifs
+   */
+  configureApplicationMiddlewares() {
+    // Fichiers statiques avec optimisations production
+    const staticOptions = {
+      maxAge: process.env.NODE_ENV === 'production' ? '1y' : 0,
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, path) => {
+        // Headers spécialisés selon le type de fichier
+        if (path.endsWith('.css') || path.endsWith('.js')) {
+          res.set('Cache-Control', 'public, max-age=31536000, immutable');
+        } else if (path.endsWith('.pdf')) {
+          res.set('Cache-Control', 'private, no-cache');
+          res.set('Content-Disposition', 'inline');
+        }
+      }
+    };
+    
+    this.app.use(express.static(config.directories.public, staticOptions));
+
+    // Middlewares personnalisés de l'application
+    const authMiddleware = require('./middleware/auth');
+    const validationMiddleware = require('./middleware/validation');
+    const errorMiddleware = require('./middleware/errors');
+
+    this.app.use(authMiddleware);
+    this.app.use(validationMiddleware);
+
+    logManager.info('Middlewares applicatifs configurés');
+  }
+
+  /**
+   * Configure les routes
+   */
+  configureRoutes() {
+    // Routes web
+    const webRoutes = require('./routes/web');
+    this.app.use('/', webRoutes);
+
+    // Routes API avec monitoring PDF
+    const apiRoutes = require('./routes/api');
+    this.app.use('/api', this.performanceMiddleware.monitorPDF(), apiRoutes);
+
+    logManager.info('Routes configurées');
+  }
+
+  /**
+   * Configure les endpoints de monitoring
+   */
+  configureMonitoringEndpoints() {
+    // Health check complet
+    this.app.get('/health', this.performanceMiddleware.getHealthCheckEndpoint());
+    
+    // Métriques détaillées (accès restreint en production)
+    this.app.get('/metrics', this.performanceMiddleware.getMetricsEndpoint());
+    
+    // Endpoint simple pour load balancer
+    this.app.get('/ping', (req, res) => {
+      res.status(200).send('pong');
+    });
+    
+    // Statistiques cache (développement uniquement)
+    if (process.env.NODE_ENV !== 'production') {
+      this.app.get('/cache-stats', (req, res) => {
+        res.json(this.cache.getStats());
+      });
+      
+      this.app.get('/queue-stats', (req, res) => {
+        res.json(this.queue.getGlobalStats());
+      });
+    }
+    
+    logManager.info('Endpoints de monitoring configurés');
+  }
+
+  /**
+   * Configure la gestion des erreurs
+   */
+  configureErrorHandling() {
+    const errorMiddleware = require('./middleware/errors');
+    
+    // Middleware 404
+    this.app.use((req, res, next) => {
+      this.securityService.logSecurityEvent('404_not_found', {
+        path: req.path,
+        method: req.method,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      const error = new Error(`Page non trouvée: ${req.originalUrl}`);
+      error.statusCode = 404;
+      next(error);
+    });
+    
+    // Gestionnaire d'erreur global avec logging
+    this.app.use((error, req, res, next) => {
+      const statusCode = error.statusCode || 500;
+      
+      // Log l'erreur avec contexte
+      this.loggingService.logError(error, {
+        url: req.originalUrl,
+        method: req.method,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        userId: req.session?.userId,
+        statusCode
+      });
+      
+      // Réponse d'erreur
+      if (req.accepts('json')) {
+        res.status(statusCode).json({
+          error: statusCode >= 500 ? 'Erreur interne du serveur' : error.message,
+          timestamp: new Date().toISOString(),
+          requestId: req.performanceId
+        });
+      } else {
+        res.status(statusCode).render('errors/error', {
+          title: `Erreur ${statusCode}`,
+          message: statusCode >= 500 ? 'Une erreur interne s\'est produite' : error.message,
+          statusCode,
+          layout: 'layouts/principal'
+        });
+      }
+    });
+    
+    logManager.info('Gestion des erreurs configurée');
+  }
+
+  /**
+   * Démarre le serveur avec support HTTPS si configuré
+   */
+  async start() {
+    const port = config.server.port;
+    const host = config.server.host;
+    
+    try {
+      await this.initialize();
+      
+      // Support HTTPS en production
+      const sslConfig = this.securityService.getSSLConfig();
+      if (sslConfig &amp;&amp; process.env.NODE_ENV === 'production') {
+        const https = require('https');
+        this.server = https.createServer(sslConfig, this.app);
+        this.server.listen(port, host, () => {
+          logManager.info(`🚀 Serveur HTTPS démarré sur https://${host}:${port}`);
+          logManager.info(`📊 Monitoring: https://${host}:${port}/health`);
+          logManager.info(`🔒 Mode sécurisé: Production SSL activé`);
+          this.logStartupMetrics();
+        });
+      } else {
+        this.server = this.app.listen(port, host, () => {
+          logManager.info(`🚀 Serveur HTTP démarré sur http://${host}:${port}`);
+          logManager.info(`📊 Monitoring: http://${host}:${port}/health`);
+          if (process.env.NODE_ENV === 'production') {
+            logManager.warn('⚠️ ATTENTION: Serveur en production sans HTTPS');
+          }
+          this.logStartupMetrics();
+        });
+      }
+
+      // Configuration serveur pour production
+      this.server.keepAliveTimeout = 65000; // > load balancer timeout
+      this.server.headersTimeout = 66000;   // > keepAliveTimeout
+      
+      // Gestion gracieuse de l'arrêt
+      this.setupGracefulShutdown();
+
+    } catch (error) {
+      logManager.error('Erreur lors du démarrage du serveur:', error);
+      process.exit(1);
+    }
+  }
+
+  /**
+   * Log les métriques de démarrage
+   */
+  logStartupMetrics() {
+    const memUsage = process.memoryUsage();
+    const cacheStats = this.cache.getStats();
+    
+    logManager.info('Application démarrée avec succès', {
+      environment: process.env.NODE_ENV,
+      nodeVersion: process.version,
+      memory: {
+        heap: Math.round(memUsage.heapUsed / 1024 / 1024) + 'MB',
+        rss: Math.round(memUsage.rss / 1024 / 1024) + 'MB'
+      },
+      cache: {
+        size: cacheStats.size,
+        maxSize: cacheStats.maxSize
+      },
+      performance: {
+        apiTarget: '500ms',
+        pdfTarget: '2000ms'
+      }
+    });
+  }
+
+  /**
+   * Configuration de l'arrêt gracieux
+   */
+  setupGracefulShutdown() {
+    const gracefulShutdown = async (signal) => {
+      if (this.isShuttingDown) return;
+      this.isShuttingDown = true;
+      
+      logManager.info(`Signal ${signal} reçu, arrêt gracieux en cours...`);
+      
+      const timeout = parseInt(process.env.GRACEFUL_SHUTDOWN_TIMEOUT) || 30000;
+      const forceExitTimer = setTimeout(() => {
+        logManager.error('Arrêt forcé après timeout');
+        process.exit(1);
+      }, timeout);
+      
+      try {
+        // Arrêter d'accepter de nouvelles connexions
+        if (this.server) {
+          this.server.close(() => {
+            logManager.info('Serveur HTTP fermé');
+          });
+        }
+        
+        // Attendre que les queues se vident
+        const queueStats = this.queue.getGlobalStats();
+        if (queueStats.activeJobs > 0) {
+          logManager.info(`Attente de ${queueStats.activeJobs} jobs actifs...`);
+          
+          const maxWait = 20000; // 20 secondes max
+          const startWait = Date.now();
+          
+          while (Date.now() - startWait &lt; maxWait) {
+            const stats = this.queue.getGlobalStats();
+            if (stats.activeJobs === 0) break;
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        // Fermer les services
+        await this.loggingService.close();
+        
+        clearTimeout(forceExitTimer);
+        logManager.info('Arrêt gracieux terminé');
+        process.exit(0);
+        
+      } catch (error) {
+        logManager.error('Erreur lors de l\'arrêt gracieux:', error);
+        clearTimeout(forceExitTimer);
+        process.exit(1);
+      }
+    };
+
+    // Écouter les signaux d'arrêt
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // PM2 reload
+
+    // Gérer les erreurs non attrapées
+    process.on('uncaughtException', (error) => {
+      logManager.error('Exception non attrapée:', error);
+      gracefulShutdown('UNCAUGHT_EXCEPTION');
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      logManager.error('Promise rejetée non gérée:', { reason, promise });
+    });
+  }
+}
+
+// Export et démarrage
+const app = new ProductionApp();
+
+// Démarrer l'application si ce fichier est exécuté directement
+if (require.main === module) {
+  app.start().catch(error => {
+    console.error('Erreur fatale lors du démarrage:', error);
+    process.exit(1);
+  });
+}
+
+module.exports = app;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CacheService.html">CacheService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DangerDocument.html">DangerDocument</a></li><li><a href="DemandeChangementEmail.html">DemandeChangementEmail</a></li><li><a href="Document.html">Document</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DocumentModerationHistorique.html">DocumentModerationHistorique</a></li><li><a href="DocumentModerationService.html">DocumentModerationService</a></li><li><a href="DocumentSystemeJeu.html">DocumentSystemeJeu</a></li><li><a href="DocumentVote.html">DocumentVote</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="EngrenagesTheme.html">EngrenagesTheme</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="GroupDocument.html">GroupDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="LoggingService.html">LoggingService</a></li><li><a href="MaintenanceWorker.html">MaintenanceWorker</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="Metro2033Theme.html">Metro2033Theme</a></li><li><a href="MistEngineTheme.html">MistEngineTheme</a></li><li><a href="ModerationController.html">ModerationController</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="OrganizationDocument.html">OrganizationDocument</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="PerformanceMiddleware.html">PerformanceMiddleware</a></li><li><a href="PerformanceMonitoringService.html">PerformanceMonitoringService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="ProductionApp.html">ProductionApp</a></li><li><a href="QueueService.html">QueueService</a></li><li><a href="QueueWorker.html">QueueWorker</a></li><li><a href="RgpdConsentement.html">RgpdConsentement</a></li><li><a href="RgpdService.html">RgpdService</a></li><li><a href="SecurityService.html">SecurityService</a></li><li><a href="ShareService.html">ShareService</a></li><li><a href="SystemCardViewModel.html">SystemCardViewModel</a></li><li><a href="SystemMaintenanceService.html">SystemMaintenanceService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemService.html">SystemService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="SystemThemeService.html">SystemThemeService</a></li><li><a href="SystemeJeu.html">SystemeJeu</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="TownDocument.html">TownDocument</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li><li><a href="VoteController.html">VoteController</a></li><li><a href="VoteService.html">VoteService</a></li><li><a href="ZombiologyTheme.html">ZombiologyTheme</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Joi">Joi</a></li><li><a href="global.html#asyncHandler">asyncHandler</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#database">database</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#handleNotFound">handleNotFound</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requirePremium">requirePremium</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#schemas">schemas</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li><li><a href="global.html#validateFiles">validateFiles</a></li><li><a href="global.html#validateRequest">validateRequest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Aug 08 2025 18:17:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

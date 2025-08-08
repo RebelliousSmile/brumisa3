@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 /**
- * Thème Metro 2033 pour les documents PDF
- * Design post-apocalyptique soviétique avec textures industrielles
+ * Thème Metro 2033 - Style post-apocalyptique
+ * Palette rouge/gris selon les spécifications Phase 4.2
  */
 class Metro2033Theme extends SystemTheme {
     constructor() {
@@ -12,18 +12,47 @@ class Metro2033Theme extends SystemTheme {
     }
     
     /**
-     * Couleurs du thème Metro 2033
+     * Couleurs du thème Metro 2033 - Palette post-apocalyptique rouge/gris
      */
     getColors() {
         return {
-            primary: '#8B0000',        // Rouge soviétique
-            background: '#0A0A0A',     // Noir profond
-            secondary: '#3A3A3A',      // Gris métallique
-            accent: '#FFD700',         // Jaune d'avertissement
-            danger: '#FF0000',         // Rouge vif danger
-            radiation: '#7FFF00',      // Vert radioactif
-            text: '#E8E8E8',          // Blanc cassé
-            sidebar: '#3A3A3A'        // Gris métallique
+            // Couleurs principales - Rouge apocalyptique
+            primary: '#dc2626',          // Rouge principal (apocalypse red)
+            primaryDark: '#991b1b',      // Rouge sombre pour contraste
+            primaryLight: '#ef4444',     // Rouge clair pour highlights
+            
+            // Couleurs secondaires - Gris industriel
+            secondary: '#6b7280',        // Gris métallique moyen
+            secondaryDark: '#374151',    // Gris anthracite
+            secondaryLight: '#9ca3af',   // Gris clair
+            
+            // Couleurs d'accent - Rouge danger et gris acier
+            accent: '#fbbf24',           // Jaune d'avertissement/radiation
+            accentDark: '#f59e0b',       // Orange sombre
+            danger: '#dc2626',           // Rouge danger
+            
+            // Arrière-plans - Tons post-apocalyptiques
+            background: '#f9fafb',       // Blanc légèrement grisé (papier sale)
+            backgroundAlt: '#f3f4f6',    // Gris très clair
+            surface: '#e5e7eb',          // Gris métallique surface
+            
+            // Textes
+            text: '#111827',             // Noir pour texte principal
+            textLight: '#6b7280',        // Gris pour texte secondaire
+            textOnPrimary: '#ffffff',    // Blanc sur fond rouge
+            
+            // Éléments spéciaux post-apocalyptiques
+            sidebar: '#991b1b',          // Rouge sombre pour bande latérale
+            border: '#6b7280',           // Gris métallique pour bordures
+            shadow: 'rgba(107, 114, 128, 0.25)', // Ombre grise industrielle
+            
+            // Thématique post-apocalyptique
+            rust: '#dc2626',             // Rouille/sang
+            steel: '#6b7280',            // Acier gris
+            radiation: '#fbbf24',        // Jaune radioactif
+            danger_zone: '#991b1b',      // Zone dangereuse
+            contamination: '#374151',    // Contamination sombre
+            survival: '#dc2626'          // Rouge survival
         };
     }
     
@@ -160,13 +189,19 @@ class Metro2033Theme extends SystemTheme {
     getSidebarText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return `СЕКТОР-${data.secteur || 'XXX'} | ${data.titre || 'СЕКРЕТНО'}`;
-            case 'class-plan':
-                return `СТАНЦИЯ ${data.className || ''} - ОПАСНО`.trim();
+            case 'generique':
+                return `${data.titre || 'METRO 2033'}`;
+            case 'character':
             case 'character-sheet':
-                return `${data.characterName || 'СТАЛКЕР'} - ДОСЬЕ`;
+                return `${data.characterName || data.nom || 'STALKER'}`;
+            case 'organization':
+                return `${data.nom || 'STATION'}`;
+            case 'danger':
+                return `${data.nom || 'MENACE METRO'}`;
+            case 'class-plan':
+                return `STATION ${data.className || ''}`.trim();
             default:
-                return 'МЕТРО 2033 - СЕКРЕТНЫЕ ДОКУМЕНТЫ';
+                return 'METRO 2033 - SURVIE';
         }
     }
     
@@ -176,13 +211,19 @@ class Metro2033Theme extends SystemTheme {
     getWatermarkText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return 'PROPRIÉTÉ DE LA LIGNE ROUGE';
-            case 'class-plan':
-                return `ПЛАН СТАНЦИИ - ${data.className || 'СЕКРЕТНО'}`;
+            case 'generique':
+                return 'METRO 2033 - DOCUMENT OFFICIEL';
+            case 'character':
             case 'character-sheet':
-                return 'ДОСЬЕ СТАЛКЕРА - НЕ РАСПРОСТРАНЯТЬ';
+                return 'DOSSIER STALKER - METRO 2033';
+            case 'organization':
+                return 'STATION - METRO 2033';
+            case 'danger':
+                return 'RAPPORT DE MENACE - METRO';
+            case 'class-plan':
+                return `PLAN STATION - ${data.className || 'CONFIDENTIEL'}`;
             default:
-                return 'МЕТРО 2033 - КОНФИДЕНЦИАЛЬНО';
+                return 'METRO 2033 - ZONE INTERDITE';
         }
     }
     

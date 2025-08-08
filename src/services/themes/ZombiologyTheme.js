@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 /**
- * Thème Zombiology pour les documents PDF
- * Design survival horror avec esthétique biologique et post-apocalyptique
+ * Thème Zombiology - Style survival horror
+ * Palette jaune/rouge selon les spécifications Phase 4.2
  */
 class ZombiologyTheme extends SystemTheme {
     constructor() {
@@ -12,21 +12,47 @@ class ZombiologyTheme extends SystemTheme {
     }
     
     /**
-     * Couleurs du thème Zombiology
+     * Couleurs du thème Zombiology - Palette survival horror jaune/rouge
      */
     getColors() {
         return {
-            primary: '#7f1d1d',        // Rouge très foncé (red-900)
-            background: '#0f0f0f',     // Noir profond
-            secondary: '#991b1b',      // Rouge foncé (red-800)
-            accent: '#dc2626',         // Rouge vif (red-600)
-            danger: '#ef4444',         // Rouge danger (red-500)
-            infection: '#22c55e',      // Vert infection (green-500)
-            text: '#f5f5f5',          // Blanc cassé
-            sidebar: '#450a0a',       // Rouge très foncé sidebar (red-950)
-            warning: '#fbbf24',       // Jaune avertissement (amber-400)
-            blood: '#991b1b',         // Rouge sang
-            biohazard: '#22c55e'      // Vert biohazard
+            // Couleurs principales - Rouge survival
+            primary: '#dc2626',          // Rouge principal (survival red)
+            primaryDark: '#991b1b',      // Rouge sombre pour contraste
+            primaryLight: '#ef4444',     // Rouge clair pour highlights
+            
+            // Couleurs secondaires - Jaune d'alerte
+            secondary: '#eab308',        // Jaune d'alerte principal
+            secondaryDark: '#ca8a04',    // Jaune sombre
+            secondaryLight: '#fbbf24',   // Jaune clair
+            
+            // Couleurs d'accent - Orange danger
+            accent: '#f97316',           // Orange survival
+            accentDark: '#ea580c',       // Orange sombre
+            accentLight: '#fb923c',      // Orange clair
+            
+            // Arrière-plans - Tons survival
+            background: '#fefefe',       // Blanc légèrement sale
+            backgroundAlt: '#fef3c7',    // Jaune très pâle (contamination)
+            surface: '#fef9c3',          // Jaune surface d'alerte
+            
+            // Textes
+            text: '#1f2937',             // Gris foncé pour texte principal
+            textLight: '#6b7280',        // Gris pour texte secondaire
+            textOnPrimary: '#ffffff',    // Blanc sur fond rouge
+            
+            // Éléments spéciaux survival horror
+            sidebar: '#991b1b',          // Rouge sombre pour bande latérale
+            border: '#eab308',           // Jaune pour bordures d'alerte
+            shadow: 'rgba(220, 38, 38, 0.25)', // Ombre rouge survival
+            
+            // Thématique survival horror
+            danger: '#dc2626',           // Rouge danger
+            warning: '#eab308',          // Jaune alerte
+            infection: '#f97316',        // Orange contamination
+            biohazard: '#ca8a04',        // Jaune biohazard
+            blood: '#991b1b',            // Rouge sang
+            caution: '#fbbf24'           // Jaune prudence
         };
     }
     
@@ -163,13 +189,19 @@ class ZombiologyTheme extends SystemTheme {
     getSidebarText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return `ZONE-${data.zone || 'X'} | ${data.titre || 'QUARANTINE'}`;
+            case 'generique':
+                return `${data.titre || 'ZOMBIOLOGY'}`;
+            case 'character':
+            case 'character-sheet':
+                return `${data.characterName || data.nom || 'SURVIVOR'}`;
+            case 'organization':
+                return `${data.nom || 'COMMUNAUTÉ'}`;
+            case 'danger':
+                return `${data.nom || 'MENACE BIOLOGIQUE'}`;
             case 'class-plan':
                 return `${data.className || 'SURVIVOR'} - PROTOCOL`;
-            case 'character-sheet':
-                return `${data.characterName || 'SURVIVOR'} - DOSSIER`;
             default:
-                return 'ZOMBIOLOGY - SURVIVAL PROTOCOLS';
+                return 'ZOMBIOLOGY - SURVIVAL';
         }
     }
     
@@ -179,13 +211,19 @@ class ZombiologyTheme extends SystemTheme {
     getWatermarkText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return 'BIOHAZARD CONTAINMENT PROTOCOL';
+            case 'generique':
+                return 'ZOMBIOLOGY - SURVIVAL GUIDE';
+            case 'character':
+            case 'character-sheet':
+                return 'SURVIVOR RECORD - ZOMBIOLOGY';
+            case 'organization':
+                return 'COMMUNITY LOG - ZOMBIOLOGY';
+            case 'danger':
+                return 'THREAT ASSESSMENT - BIOHAZARD';
             case 'class-plan':
                 return `SURVIVAL GUIDE - ${data.className || 'CLASSIFIED'}`;
-            case 'character-sheet':
-                return 'SURVIVOR RECORD - CONFIDENTIAL';
             default:
-                return 'ZOMBIOLOGY - OUTBREAK DOCUMENTATION';
+                return 'ZOMBIOLOGY - OUTBREAK PROTOCOL';
         }
     }
     

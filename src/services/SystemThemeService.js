@@ -1,4 +1,5 @@
 const BaseService = require('./BaseService');
+const CacheService = require('./CacheService');
 
 /**
  * Service gérant les thèmes visuels des systèmes de JDR
@@ -8,6 +9,7 @@ const BaseService = require('./BaseService');
 class SystemThemeService extends BaseService {
     constructor() {
         super('SystemThemeService');
+        this.cache = new CacheService();
         
         // Configuration centralisée des thèmes
         this.themes = {
@@ -65,12 +67,20 @@ class SystemThemeService extends BaseService {
     }
 
     /**
-     * Récupère le thème complet d'un système
+     * Récupère le thème complet d'un système (avec cache)
      * @param {string} systemCode - Code du système
      * @returns {Object} Thème avec icône et classes
      */
     getTheme(systemCode) {
-        return this.themes[systemCode] || this.getDefaultTheme();
+        const cacheKey = CacheService.Keys.SYSTEM_CONFIG(`theme_${systemCode}`);
+        
+        return this.cache.getOrSet(
+            cacheKey,
+            () => {
+                return this.themes[systemCode] || this.getDefaultTheme();
+            },
+            CacheService.TTL.VERY_LONG // Cache 1 heure - les thèmes changent rarement
+        );
     }
 
     /**

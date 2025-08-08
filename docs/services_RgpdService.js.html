@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/RgpdService.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/RgpdService.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const BaseService = require('./BaseService');
+const RgpdConsentement = require('../models/RgpdConsentement');
+const DemandeChangementEmail = require('../models/DemandeChangementEmail');
+const Utilisateur = require('../models/Utilisateur');
+
+/**
+ * Service RGPD pour la conformité et gestion des données personnelles
+ * Implémente les obligations RGPD selon architecture-models.md
+ */
+class RgpdService extends BaseService {
+    constructor() {
+        super('RgpdService');
+        
+        // Types de consentement RGPD
+        this.TYPES_CONSENTEMENT = {
+            NEWSLETTER: 'NEWSLETTER',
+            COOKIES_ANALYTIQUES: 'COOKIES_ANALYTIQUES',
+            PARTAGE_DONNEES: 'PARTAGE_DONNEES',
+            COMMUNICATION_MARKETING: 'COMMUNICATION_MARKETING'
+        };
+    }
+
+    /**
+     * Enregistrer un consentement RGPD
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @param {string} typeConsentement - Type de consentement
+     * @param {boolean} consentementDonne - Consentement accordé ou retiré
+     * @param {Object} metadata - Métadonnées (IP, User-Agent, etc.)
+     * @returns {Object} Consentement enregistré
+     */
+    async enregistrerConsentement(utilisateurId, typeConsentement, consentementDonne, metadata = {}) {
+        try {
+            this.validateRequired({ utilisateurId, typeConsentement }, ['utilisateurId', 'typeConsentement']);
+            
+            // Valider le type de consentement
+            if (!Object.values(this.TYPES_CONSENTEMENT).includes(typeConsentement)) {
+                throw new Error(`Type de consentement invalide: ${typeConsentement}`);
+            }
+            
+            // Vérifier que l'utilisateur existe
+            const utilisateur = await Utilisateur.findById(utilisateurId);
+            if (!utilisateur) {
+                throw new Error('Utilisateur non trouvé');
+            }
+            
+            // Révoquer le consentement précédent s'il existe
+            const consentementPrecedent = await RgpdConsentement.findOne({
+                utilisateur_id: utilisateurId,
+                type_consentement: typeConsentement,
+                actif: true
+            });
+            
+            if (consentementPrecedent) {
+                await RgpdConsentement.update(consentementPrecedent.id, { actif: false });
+            }
+            
+            // Créer le nouveau consentement
+            const consentementData = {
+                utilisateur_id: utilisateurId,
+                type_consentement: typeConsentement,
+                consentement_donne: consentementDonne,
+                date_consentement: new Date(),
+                ip_adresse: metadata.ip || null,
+                user_agent: metadata.userAgent || null,
+                contexte: metadata.contexte || 'manuel',
+                actif: true
+            };
+            
+            const consentement = await RgpdConsentement.create(consentementData);
+            
+            this.log('info', 'Consentement RGPD enregistré', {
+                utilisateur_id: utilisateurId,
+                type_consentement: typeConsentement,
+                consentement_donne: consentementDonne,
+                ip_adresse: metadata.ip,
+                contexte: metadata.contexte
+            });
+            
+            return consentement;
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId, typeConsentement, consentementDonne });
+            throw error;
+        }
+    }
+
+    /**
+     * Vérifier le consentement actuel d'un utilisateur
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @param {string} typeConsentement - Type de consentement à vérifier
+     * @returns {boolean} Statut du consentement
+     */
+    async verifierConsentement(utilisateurId, typeConsentement) {
+        try {
+            const consentement = await RgpdConsentement.findOne({
+                utilisateur_id: utilisateurId,
+                type_consentement: typeConsentement,
+                actif: true
+            });
+            
+            return consentement ? consentement.consentement_donne : false;
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId, typeConsentement });
+            return false;
+        }
+    }
+
+    /**
+     * Obtenir tous les consentements d'un utilisateur
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @returns {Object} Consentements par type
+     */
+    async getConsentsUtilisateur(utilisateurId) {
+        try {
+            const consentements = {};
+            
+            for (const type of Object.values(this.TYPES_CONSENTEMENT)) {
+                const consentement = await RgpdConsentement.findOne({
+                    utilisateur_id: utilisateurId,
+                    type_consentement: type,
+                    actif: true
+                });
+                
+                consentements[type] = {
+                    accorde: consentement ? consentement.consentement_donne : false,
+                    date: consentement ? consentement.date_consentement : null,
+                    contexte: consentement ? consentement.contexte : null
+                };
+            }
+            
+            return consentements;
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId });
+            throw error;
+        }
+    }
+
+    /**
+     * Révoquer un consentement spécifique
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @param {string} typeConsentement - Type de consentement à révoquer
+     * @param {Object} metadata - Métadonnées de révocation
+     * @returns {Object} Résultat de la révocation
+     */
+    async revoquerConsentement(utilisateurId, typeConsentement, metadata = {}) {
+        try {
+            return await this.enregistrerConsentement(
+                utilisateurId, 
+                typeConsentement, 
+                false, // Retirer le consentement
+                { ...metadata, contexte: 'revocation' }
+            );
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId, typeConsentement });
+            throw error;
+        }
+    }
+
+    /**
+     * Demander un changement d'email sécurisé
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @param {string} nouvelEmail - Nouvelle adresse email
+     * @param {string} ipDemande - IP de la demande
+     * @returns {Object} Demande créée avec token
+     */
+    async demanderChangementEmail(utilisateurId, nouvelEmail, ipDemande) {
+        try {
+            this.validateRequired({ utilisateurId, nouvelEmail }, ['utilisateurId', 'nouvelEmail']);
+            
+            // Valider le format email
+            if (!this.isValidEmail(nouvelEmail)) {
+                throw new Error('Format d\'email invalide');
+            }
+            
+            // Vérifier que l'utilisateur existe
+            const utilisateur = await Utilisateur.findById(utilisateurId);
+            if (!utilisateur) {
+                throw new Error('Utilisateur non trouvé');
+            }
+            
+            // Vérifier que le nouvel email n'est pas déjà utilisé
+            const emailExistant = await Utilisateur.findOne({ email: nouvelEmail });
+            if (emailExistant &amp;&amp; emailExistant.id !== utilisateurId) {
+                throw new Error('Cette adresse email est déjà utilisée');
+            }
+            
+            // Annuler les demandes précédentes en attente
+            await DemandeChangementEmail.updateWhere(
+                { utilisateur_id: utilisateurId, statut: 'EN_ATTENTE' },
+                { statut: 'ANNULE' }
+            );
+            
+            // Générer un token sécurisé
+            const token = await this.genererTokenSecurise();
+            const dateExpiration = new Date();
+            dateExpiration.setDate(dateExpiration.getDate() + 15); // 15 jours
+            
+            // Créer la demande
+            const demandeData = {
+                utilisateur_id: utilisateurId,
+                ancien_email: utilisateur.email,
+                nouvel_email: nouvelEmail,
+                token_validation: token,
+                statut: 'EN_ATTENTE',
+                date_demande: new Date(),
+                date_expiration: dateExpiration,
+                ip_demande: ipDemande
+            };
+            
+            const demande = await DemandeChangementEmail.create(demandeData);
+            
+            this.log('info', 'Demande changement email créée', {
+                utilisateur_id: utilisateurId,
+                ancien_email: utilisateur.email,
+                nouvel_email: nouvelEmail,
+                ip_demande: ipDemande,
+                token: token
+            });
+            
+            // Envoyer l'email de validation (implémentation future)
+            await this.envoyerEmailValidationChangement(utilisateur, nouvelEmail, token);
+            
+            return {
+                demande_id: demande.id,
+                token: token,
+                date_expiration: dateExpiration,
+                message: 'Un email de validation a été envoyé à votre nouvelle adresse'
+            };
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId, nouvelEmail, ipDemande });
+            throw error;
+        }
+    }
+
+    /**
+     * Valider un changement d'email avec token
+     * 
+     * @param {string} token - Token de validation
+     * @returns {Object} Résultat de la validation
+     */
+    async validerChangementEmail(token) {
+        try {
+            this.validateRequired({ token }, ['token']);
+            
+            const demande = await DemandeChangementEmail.findOne({
+                token_validation: token,
+                statut: 'EN_ATTENTE'
+            });
+            
+            if (!demande) {
+                throw new Error('Token invalide ou demande déjà traitée');
+            }
+            
+            // Vérifier l'expiration
+            if (new Date() > new Date(demande.date_expiration)) {
+                await DemandeChangementEmail.update(demande.id, { statut: 'EXPIRE' });
+                throw new Error('Token expiré. Veuillez refaire une demande.');
+            }
+            
+            // Mettre à jour l'email utilisateur
+            await Utilisateur.update(demande.utilisateur_id, {
+                email: demande.nouvel_email
+            });
+            
+            // Marquer la demande comme validée
+            await DemandeChangementEmail.update(demande.id, {
+                statut: 'VALIDE',
+                date_validation: new Date()
+            });
+            
+            this.log('info', 'Changement email validé', {
+                utilisateur_id: demande.utilisateur_id,
+                ancien_email: demande.ancien_email,
+                nouvel_email: demande.nouvel_email,
+                token: token
+            });
+            
+            return {
+                success: true,
+                nouvel_email: demande.nouvel_email,
+                message: 'Votre adresse email a été mise à jour avec succès'
+            };
+            
+        } catch (error) {
+            this.logError(error, { token });
+            throw error;
+        }
+    }
+
+    /**
+     * Annuler une demande de changement d'email
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @returns {Object} Résultat de l'annulation
+     */
+    async annulerDemandeChangementEmail(utilisateurId) {
+        try {
+            const demande = await DemandeChangementEmail.findOne({
+                utilisateur_id: utilisateurId,
+                statut: 'EN_ATTENTE'
+            });
+            
+            if (!demande) {
+                throw new Error('Aucune demande en attente trouvée');
+            }
+            
+            await DemandeChangementEmail.update(demande.id, { statut: 'ANNULE' });
+            
+            this.log('info', 'Demande changement email annulée', {
+                utilisateur_id: utilisateurId,
+                demande_id: demande.id
+            });
+            
+            return {
+                success: true,
+                message: 'Demande de changement d\'email annulée'
+            };
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId });
+            throw error;
+        }
+    }
+
+    /**
+     * Exporter toutes les données RGPD d'un utilisateur
+     * 
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @returns {Object} Export complet des données
+     */
+    async exporterDonneesUtilisateur(utilisateurId) {
+        try {
+            // Données utilisateur principales
+            const utilisateur = await Utilisateur.findById(utilisateurId);
+            if (!utilisateur) {
+                throw new Error('Utilisateur non trouvé');
+            }
+            
+            // Consentements RGPD
+            const consentements = await RgpdConsentement.findAll({
+                utilisateur_id: utilisateurId
+            }, {
+                orderBy: [['date_consentement', 'DESC']]
+            });
+            
+            // Demandes de changement d'email
+            const demandesEmail = await DemandeChangementEmail.findAll({
+                utilisateur_id: utilisateurId
+            }, {
+                orderBy: [['date_demande', 'DESC']]
+            });
+            
+            // Données de documents et PDFs (utiliser les modèles existants)
+            const Document = require('../models/Document');
+            const Pdf = require('../models/Pdf');
+            const DocumentVote = require('../models/DocumentVote');
+            
+            const documents = await Document.findAll({ utilisateur_id: utilisateurId });
+            const pdfs = await Pdf.findAll({ utilisateur_id: utilisateurId });
+            const votes = await DocumentVote.findAll({ utilisateur_id: utilisateurId });
+            
+            const exportData = {
+                utilisateur: {
+                    id: utilisateur.id,
+                    nom: utilisateur.nom,
+                    email: utilisateur.email,
+                    role: utilisateur.role,
+                    date_creation: utilisateur.created_at,
+                    derniere_connexion: utilisateur.derniere_connexion
+                },
+                consentements: consentements.map(c => ({
+                    type: c.type_consentement,
+                    accorde: c.consentement_donne,
+                    date: c.date_consentement,
+                    ip: c.ip_adresse,
+                    contexte: c.contexte
+                })),
+                demandes_email: demandesEmail.map(d => ({
+                    ancien_email: d.ancien_email,
+                    nouvel_email: d.nouvel_email,
+                    statut: d.statut,
+                    date_demande: d.date_demande,
+                    date_validation: d.date_validation
+                })),
+                documents: documents.map(d => ({
+                    id: d.id,
+                    titre: d.titre,
+                    type: d.type,
+                    systeme: d.systeme,
+                    est_public: d.est_public,
+                    date_creation: d.created_at
+                })),
+                pdfs: pdfs.map(p => ({
+                    id: p.id,
+                    nom_fichier: p.nom_fichier,
+                    statut: p.statut,
+                    date_creation: p.created_at
+                })),
+                votes: votes.map(v => ({
+                    document_id: v.document_id,
+                    qualite_generale: v.qualite_generale,
+                    utilite_pratique: v.utilite_pratique,
+                    respect_gamme: v.respect_gamme,
+                    date_vote: v.created_at
+                })),
+                export_info: {
+                    date_export: new Date(),
+                    version_rgpd: '1.0'
+                }
+            };
+            
+            this.log('info', 'Export données RGPD généré', {
+                utilisateur_id: utilisateurId,
+                nombre_consentements: consentements.length,
+                nombre_documents: documents.length,
+                nombre_pdfs: pdfs.length,
+                nombre_votes: votes.length
+            });
+            
+            return exportData;
+            
+        } catch (error) {
+            this.logError(error, { utilisateurId });
+            throw error;
+        }
+    }
+
+    /**
+     * Nettoyer les demandes expirées
+     * 
+     * @returns {Object} Résultat du nettoyage
+     */
+    async nettoyerDemandesExpirees() {
+        try {
+            const maintenant = new Date();
+            
+            const demandesExpirees = await DemandeChangementEmail.findAll({
+                statut: 'EN_ATTENTE'
+            });
+            
+            const aExpirees = demandesExpirees.filter(d => 
+                new Date(d.date_expiration) &lt; maintenant
+            );
+            
+            for (const demande of aExpirees) {
+                await DemandeChangementEmail.update(demande.id, { statut: 'EXPIRE' });
+            }
+            
+            this.log('info', 'Nettoyage demandes expirées', {
+                nombre_expirees: aExpirees.length
+            });
+            
+            return {
+                success: true,
+                demandes_expirees: aExpirees.length,
+                message: `${aExpirees.length} demandes expirées nettoyées`
+            };
+            
+        } catch (error) {
+            this.logError(error);
+            throw error;
+        }
+    }
+
+    /**
+     * Générer un token sécurisé
+     * 
+     * @private
+     * @returns {string} Token sécurisé
+     */
+    async genererTokenSecurise() {
+        const crypto = require('crypto');
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    /**
+     * Valider le format d'un email
+     * 
+     * @private
+     * @param {string} email - Email à valider
+     * @returns {boolean} Validité du format
+     */
+    isValidEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    /**
+     * Envoyer l'email de validation pour changement
+     * 
+     * @private
+     * @param {Object} utilisateur - Utilisateur
+     * @param {string} nouvelEmail - Nouvel email
+     * @param {string} token - Token de validation
+     */
+    async envoyerEmailValidationChangement(utilisateur, nouvelEmail, token) {
+        // Implémentation future avec EmailService
+        this.log('info', 'Email validation changement à envoyer', {
+            utilisateur_id: utilisateur.id,
+            nouvel_email: nouvelEmail,
+            token: token
+        });
+        
+        // TODO: Intégrer avec EmailService pour envoyer le mail de validation
+    }
+}
+
+module.exports = RgpdService;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CacheService.html">CacheService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DangerDocument.html">DangerDocument</a></li><li><a href="DemandeChangementEmail.html">DemandeChangementEmail</a></li><li><a href="Document.html">Document</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DocumentModerationHistorique.html">DocumentModerationHistorique</a></li><li><a href="DocumentModerationService.html">DocumentModerationService</a></li><li><a href="DocumentSystemeJeu.html">DocumentSystemeJeu</a></li><li><a href="DocumentVote.html">DocumentVote</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="EngrenagesTheme.html">EngrenagesTheme</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="GroupDocument.html">GroupDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="LoggingService.html">LoggingService</a></li><li><a href="MaintenanceWorker.html">MaintenanceWorker</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="Metro2033Theme.html">Metro2033Theme</a></li><li><a href="MistEngineTheme.html">MistEngineTheme</a></li><li><a href="ModerationController.html">ModerationController</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="OrganizationDocument.html">OrganizationDocument</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="PerformanceMiddleware.html">PerformanceMiddleware</a></li><li><a href="PerformanceMonitoringService.html">PerformanceMonitoringService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="ProductionApp.html">ProductionApp</a></li><li><a href="QueueService.html">QueueService</a></li><li><a href="QueueWorker.html">QueueWorker</a></li><li><a href="RgpdConsentement.html">RgpdConsentement</a></li><li><a href="RgpdService.html">RgpdService</a></li><li><a href="SecurityService.html">SecurityService</a></li><li><a href="ShareService.html">ShareService</a></li><li><a href="SystemCardViewModel.html">SystemCardViewModel</a></li><li><a href="SystemMaintenanceService.html">SystemMaintenanceService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemService.html">SystemService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="SystemThemeService.html">SystemThemeService</a></li><li><a href="SystemeJeu.html">SystemeJeu</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="TownDocument.html">TownDocument</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li><li><a href="VoteController.html">VoteController</a></li><li><a href="VoteService.html">VoteService</a></li><li><a href="ZombiologyTheme.html">ZombiologyTheme</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Joi">Joi</a></li><li><a href="global.html#asyncHandler">asyncHandler</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#database">database</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#handleNotFound">handleNotFound</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requirePremium">requirePremium</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#schemas">schemas</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li><li><a href="global.html#validateFiles">validateFiles</a></li><li><a href="global.html#validateRequest">validateRequest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Aug 08 2025 18:17:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const BaseService = require('./BaseService');
 const Oracle = require('../models/Oracle');
 const OracleItem = require('../models/OracleItem');
+const CacheService = require('./CacheService');
 const db = require('../database/db');
 
 /**
@@ -11,6 +12,7 @@ class OracleService extends BaseService {
         super('OracleService');
         this.oracleModel = new Oracle();
         this.oracleItemModel = new OracleItem();
+        this.cache = new CacheService();
     }
 
     /**

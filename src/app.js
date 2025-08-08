@@ -11,11 +11,27 @@ const config = require('./config');
 const logManager = require('./utils/logManager');
 const { initializeDatabase, isDatabaseInitialized } = require('./database/init');
 
+// Services de performance et sécurité
+const SecurityService = require('./services/SecurityService');
+const CacheService = require('./services/CacheService');
+const QueueService = require('./services/QueueService');
+const PerformanceMonitoringService = require('./services/PerformanceMonitoringService');
+const PerformanceMiddleware = require('./middleware/performance');
+const { LoggingService } = require('./services/LoggingService');
+
 class App {
   constructor() {
     this.app = express();
     this.server = null;
     this.isShuttingDown = false;
+    
+    // Initialiser les services de performance
+    this.securityService = new SecurityService();
+    this.cache = new CacheService();
+    this.queue = QueueService.create();
+    this.performanceMonitoring = PerformanceMonitoringService.create();
+    this.performanceMiddleware = PerformanceMiddleware.create();
+    this.loggingService = LoggingService.create();
   }
 
   /**
@@ -34,7 +50,8 @@ class App {
       // Configuration de base Express
       this.configureExpress();
 
-      // Middlewares de sécurité
+      // Middlewares de performance et sécurité
+      this.configurePerformanceMiddlewares();
       this.configureSecurityMiddlewares();
 
       // Middlewares de session et parsing

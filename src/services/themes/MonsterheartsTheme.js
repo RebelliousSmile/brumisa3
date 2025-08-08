@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 /**
- * Thème Monsterhearts - Style minimaliste noir et blanc
- * Implémente l'esthétique gothique épurée du livre officiel
+ * Thème Monsterhearts - Style gothique romantique
+ * Palette violet/rose selon les spécifications Phase 4.2
  */
 class MonsterheartsTheme extends SystemTheme {
     
@@ -14,16 +14,44 @@ class MonsterheartsTheme extends SystemTheme {
     }
     
     /**
-     * Couleurs du thème Monsterhearts - Palette monochrome
+     * Couleurs du thème Monsterhearts - Palette gothique romantique
      */
     getColors() {
         return {
-            primary: '#000000',        // Noir profond
-            background: '#FAFAF8',     // Blanc cassé  
-            secondary: '#333333',      // Gris foncé
-            accent: '#FFFFFF',         // Blanc pur pour texte sur noir
-            sidebar: '#000000',        // Noir pour bande latérale
-            text: '#000000'            // Texte principal
+            // Couleurs principales - Violet gothique
+            primary: '#8b5cf6',          // Violet principal (gothic purple)
+            primaryDark: '#7c3aed',      // Violet plus sombre pour contraste
+            primaryLight: '#a78bfa',     // Violet clair pour highlights
+            
+            // Couleurs secondaires - Rose romantique
+            secondary: '#ec4899',        // Rose vif romantique
+            secondaryDark: '#db2777',    // Rose plus sombre
+            secondaryLight: '#f9a8d4',   // Rose pâle pour backgrounds
+            
+            // Couleur d'accent - Rose poudré
+            accent: '#fce7f3',           // Rose très pâle pour éléments délicats
+            accentDark: '#f3e8ff',       // Violet très pâle alternatif
+            
+            // Arrière-plans - Tons pastel gothiques
+            background: '#fdfcfd',       // Blanc légèrement teinté violet
+            backgroundAlt: '#f8fafc',    // Blanc alternatif
+            surface: '#f3e8ff',          // Surface violet très pâle
+            
+            // Textes
+            text: '#581c87',             // Violet très sombre pour texte principal
+            textLight: '#7c3aed',        // Violet moyen pour texte secondaire  
+            textOnPrimary: '#ffffff',    // Blanc sur fond coloré
+            
+            // Éléments spéciaux
+            sidebar: '#8b5cf6',          // Violet pour bande latérale
+            border: '#d8b4fe',           // Violet clair pour bordures
+            shadow: 'rgba(139, 92, 246, 0.25)', // Ombre violette douce
+            
+            // Thématique gothique romantique
+            gothic: '#581c87',           // Violet très sombre gothique
+            romantic: '#ec4899',         // Rose romantique
+            passion: '#db2777',          // Rose passion intense
+            mystery: '#7c3aed'           // Violet mystérieux
         };
     }
     
@@ -298,7 +326,7 @@ class MonsterheartsTheme extends SystemTheme {
      * Description du thème
      */
     getDescription() {
-        return 'Thème officiel Monsterhearts - Style gothique minimaliste noir et blanc';
+        return 'Thème officiel Monsterhearts - Style gothique romantique avec palette violet/rose';
     }
 }
 

@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 /**
- * Thème Engrenages (Roue du Temps) pour les documents PDF
- * Design fantasy épique avec esthétique parchemin et typographie classique
+ * Thème Engrenages de la Révolution - Style steampunk victorien
+ * Palette émeraude/cuivre selon les spécifications Phase 4.2
  */
 class EngrenagesTheme extends SystemTheme {
     constructor() {
@@ -12,18 +12,47 @@ class EngrenagesTheme extends SystemTheme {
     }
     
     /**
-     * Couleurs du thème Engrenages (Roue du Temps)
+     * Couleurs du thème Engrenages - Palette steampunk victorienne
      */
     getColors() {
         return {
-            primary: '#8B7355',        // Brun doré (ornements)
-            background: '#F5F2E8',     // Fond parchemin
-            secondary: '#E8E2D5',      // Beige encadrés
-            accent: '#8B0000',         // Rouge d'accentuation
-            text: '#2B2B2B',          // Texte principal
-            sidebar: '#8B7355',        // Brun doré
-            border: '#8B7355',         // Bordures
-            contrast: '#A0937D'        // Gris doux
+            // Couleurs principales - Émeraude victorien
+            primary: '#10b981',          // Émeraude principal (steampunk green)
+            primaryDark: '#047857',      // Émeraude sombre pour contraste
+            primaryLight: '#34d399',     // Émeraude clair pour highlights
+            
+            // Couleurs secondaires - Cuivre industriel
+            secondary: '#c2410c',        // Cuivre/bronze industriel
+            secondaryDark: '#9a3412',    // Cuivre sombre
+            secondaryLight: '#ea580c',   // Cuivre lumineux
+            
+            // Couleurs d'accent - Laiton et bronze
+            accent: '#f59e0b',           // Laiton doré
+            accentDark: '#d97706',       // Bronze sombre
+            accentLight: '#fbbf24',      // Laiton clair
+            
+            // Arrière-plans - Tons industriels
+            background: '#f8fafc',       // Blanc légèrement grisé (papier technique)
+            backgroundAlt: '#f1f5f9',    // Gris très clair
+            surface: '#e2e8f0',          // Gris métallique clair
+            
+            // Textes
+            text: '#1e293b',             // Gris anthracite pour texte principal
+            textLight: '#475569',        // Gris moyen pour texte secondaire
+            textOnPrimary: '#ffffff',    // Blanc sur fond coloré
+            
+            // Éléments spéciaux steampunk
+            sidebar: '#047857',          // Émeraude sombre pour bande latérale
+            border: '#6b7280',           // Gris métallique pour bordures
+            shadow: 'rgba(71, 85, 105, 0.25)', // Ombre grise industrielle
+            
+            // Thématique steampunk victorienne
+            copper: '#c2410c',           // Cuivre authentique
+            brass: '#f59e0b',            // Laiton
+            emerald: '#10b981',          // Émeraude
+            steel: '#6b7280',            // Acier
+            steam: '#e2e8f0',            // Vapeur/brouillard
+            victorian: '#1e293b'         // Élégance victorienne sombre
         };
     }
     
@@ -124,13 +153,17 @@ class EngrenagesTheme extends SystemTheme {
     getSidebarText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return `${data.titre || 'LA ROUE DU TEMPS'}`;
-            case 'class-plan':
-                return `VOIE DU ${data.className || 'POUVOIR'}`.trim();
+            case 'generique':
+                return `${data.titre || 'ENGRENAGES DE LA RÉVOLUTION'}`;
+            case 'character':
             case 'character-sheet':
-                return `${data.characterName || 'PERSONNAGE'} - FICHE`;
+                return `${data.characterName || data.nom || 'RÉVOLUTIONNAIRE'}`;
+            case 'organization':
+                return `${data.nom || 'FACTION RÉVOLUTIONNAIRE'}`;
+            case 'class-plan':
+                return `CELLULE ${data.className || 'RÉVOLUTIONNAIRE'}`;
             default:
-                return 'ENGRENAGES DU TEMPS';
+                return 'RÉVOLUTION EN MARCHE';
         }
     }
     
@@ -140,13 +173,17 @@ class EngrenagesTheme extends SystemTheme {
     getWatermarkText(documentType, data) {
         switch (documentType) {
             case 'generic':
-                return 'LA ROUE DU TEMPS - ENGRENAGES';
-            case 'class-plan':
-                return `VOIE DU ${data.className || 'POUVOIR'}`;
+            case 'generique':
+                return 'ENGRENAGES DE LA RÉVOLUTION';
+            case 'character':
             case 'character-sheet':
-                return 'FEUILLE DE PERSONNAGE - ENGRENAGES';
+                return 'RÉVOLUTIONNAIRE - ENGRENAGES';
+            case 'organization':
+                return 'FACTION - ENGRENAGES DE LA RÉVOLUTION';
+            case 'class-plan':
+                return 'CELLULE RÉVOLUTIONNAIRE';
             default:
-                return 'LA ROUE TISSE SELON SES DESSEINS';
+                return 'LA RÉVOLUTION TOURNE SES ENGRENAGES';
         }
     }
     

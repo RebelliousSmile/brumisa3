@@ -3,6 +3,9 @@ const Pdf = require('../models/Pdf');
 const Personnage = require('../models/Personnage');
 const TemplateService = require('./TemplateService');
 const PdfKitService = require('./PdfKitService');
+const CacheService = require('./CacheService');
+const QueueService = require('./QueueService');
+const PerformanceMonitoringService = require('./PerformanceMonitoringService');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
@@ -18,11 +21,20 @@ class PdfService extends BaseService {
         this.personnageModel = new Personnage();
         this.templateService = new TemplateService();
         this.pdfKitService = new PdfKitService();
+        this.cache = new CacheService();
+        this.queue = QueueService.create();
+        this.performance = PerformanceMonitoringService.create();
         this.outputDir = path.join(process.cwd(), 'output');
         this.templatesDir = path.join(process.cwd(), 'src', 'templates', 'pdf');
         
         // Configuration du moteur PDF par défaut
         this.defaultEngine = 'pdfkit';
+        
+        // Configuration performance
+        this.performanceConfig = {
+            pdfGenerationTarget: parseInt(process.env.PDF_GENERATION_TARGET) || 2000, // 2 secondes cible TODO.md
+            apiResponseTarget: parseInt(process.env.API_RESPONSE_TARGET) || 500 // 500ms cible TODO.md
+        };
         
         // Initialiser le dossier de sortie
         this.initialiserDossierSortie();
@@ -102,14 +114,24 @@ class PdfService extends BaseService {
 
             const pdf = await this.pdfModel.create(pdfData);
 
-            // Lancer la génération asynchrone
-            this.genererPdfAsync(pdf.id, donnees, {
-                type,
-                systeme,
-                template: pdfData.donnees_generation.template
-            }).catch(error => {
-                this.logError(error, { pdfId: pdf.id, type, systeme });
-            });
+            // Lancer la génération via queue pour optimisation performance
+            this.queue.add(
+                QueueService.Queues.PDF,
+                QueueService.JobTypes.PDF_GENERATION,
+                {
+                    pdfId: pdf.id,
+                    donnees,
+                    options: {
+                        type,
+                        systeme,
+                        template: pdfData.donnees_generation.template
+                    }
+                },
+                {
+                    priority: type === 'CHARACTER' ? 10 : 5, // Priorité plus haute pour personnages
+                    timeout: this.performanceConfig.pdfGenerationTarget
+                }
+            );
 
             return {
                 document,
@@ -192,7 +214,7 @@ class PdfService extends BaseService {
     }
 
     /**
-     * Obtenir le template approprié selon le type et le système
+     * Obtenir le template approprié selon le type et le système (avec cache)
      * 
      * @private
      * @param {string} type - Type de document
@@ -200,16 +222,24 @@ class PdfService extends BaseService {
      * @returns {string} Nom du template
      */
     getTemplateParType(type, systeme) {
-        const templates = {
-            'CHARACTER': `${systeme}_character`,
-            'TOWN': `${systeme}_town`,
-            'GROUP': `${systeme}_group`, 
-            'ORGANIZATION': `${systeme}_organization`,
-            'DANGER': `${systeme}_danger`,
-            'GENERIQUE': `${systeme}_generique`
-        };
-
-        return templates[type.toUpperCase()] || `${systeme}_generique`;
+        const cacheKey = CacheService.Keys.PDF_TEMPLATES(`${systeme}_${type}`);
+        
+        return this.cache.getOrSet(
+            cacheKey,
+            () => {
+                const templates = {
+                    'CHARACTER': `${systeme}_character`,
+                    'TOWN': `${systeme}_town`,
+                    'GROUP': `${systeme}_group`, 
+                    'ORGANIZATION': `${systeme}_organization`,
+                    'DANGER': `${systeme}_danger`,
+                    'GENERIQUE': `${systeme}_generique`
+                };
+                
+                return templates[type.toUpperCase()] || `${systeme}_generique`;
+            },
+            CacheService.TTL.LONG // Cache 15 minutes
+        );
     }
 
     /**

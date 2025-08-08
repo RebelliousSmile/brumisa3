@@ -1,0 +1,383 @@
+<%
+/**
+ * Composant Dropdown/Menu déroulant v1.0 - Avec Support Thèmes Système
+ * Architecture MVC-CS - Couche View (Composants UI)
+ * 
+ * Usage: <%- include('components/ui-dropdown', {
+ *   trigger: {
+ *     text: 'Options',
+ *     icon: 'fa-solid fa-chevron-down',
+ *     variant: 'primary',
+ *     size: 'md'
+ *   },
+ *   items: [
+ *     { label: 'Éditer', icon: 'fa-solid fa-edit', action: 'editItem()', href: null },
+ *     { label: 'Dupliquer', icon: 'fa-solid fa-copy', action: 'duplicateItem()' },
+ *     { divider: true },
+ *     { label: 'Supprimer', icon: 'fa-solid fa-trash', action: 'deleteItem()', danger: true },
+ *     { label: 'Lien externe', href: '/external', target: '_blank' }
+ *   ],
+ *   position: 'bottom-end|bottom-start|top-end|top-start|right|left',
+ *   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
+ *   closeOnClick: true,
+ *   alpine: {
+ *     open: 'dropdownOpen',
+ *     toggle: 'toggleDropdown'
+ *   },
+ *   width: 'auto|full|48',
+ *   additionalClasses: '',
+ *   id: 'dropdown-actions'
+ * }) %>
+ */
+
+// Paramètres avec valeurs par défaut
+const {
+    trigger = { text: 'Menu', icon: 'fa-solid fa-chevron-down' },
+    items = [],
+    position = 'bottom-end',
+    gameSystem = '',
+    closeOnClick = true,
+    alpine = {},
+    width = 'auto',
+    additionalClasses = '',
+    id = ''
+} = locals;
+
+// Intégration du SystemThemeService
+const SystemThemeService = require('../../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+
+// ID unique pour le dropdown
+const dropdownId = id || `dropdown-${Date.now()}`;
+
+// Classes pour le conteneur
+const containerClasses = [
+    'relative inline-block text-left',
+    additionalClasses
+].filter(Boolean).join(' ');
+
+// Classes pour le menu déroulant selon la position
+const getMenuPositionClasses = () => {
+    const positions = {
+        'bottom-end': 'top-full right-0 mt-2',
+        'bottom-start': 'top-full left-0 mt-2',
+        'top-end': 'bottom-full right-0 mb-2',
+        'top-start': 'bottom-full left-0 mb-2',
+        'right': 'left-full top-0 ml-2',
+        'left': 'right-full top-0 mr-2'
+    };
+    
+    return positions[position] || positions['bottom-end'];
+};
+
+// Classes pour la largeur du menu
+const getMenuWidthClasses = () => {
+    if (width === 'full') return 'w-full';
+    if (width === '48') return 'w-48';
+    return 'w-auto min-w-[12rem]';
+};
+
+// Classes pour le menu
+const menuClasses = [
+    'absolute z-50',
+    getMenuPositionClasses(),
+    getMenuWidthClasses(),
+    'bg-gray-800 rounded-lg shadow-xl border border-gray-700',
+    'py-1',
+    'divide-y divide-gray-700'
+].join(' ');
+
+// Classes pour les items du menu
+const getItemClasses = (item) => {
+    const baseClasses = 'w-full px-4 py-2 text-sm text-left hover:bg-gray-700 transition-colors duration-150 flex items-center space-x-2';
+    
+    let colorClasses = 'text-gray-300 hover:text-white';
+    
+    // Classes danger
+    if (item.danger) {
+        colorClasses = 'text-red-400 hover:text-red-300 hover:bg-red-900/20';
+    }
+    
+    // Classes thématiques si système fourni
+    if (gameSystem && systemTheme && !item.danger) {
+        const systemColorMap = {
+            monsterhearts: 'hover:text-purple-400',
+            engrenages: 'hover:text-emerald-400',
+            metro2033: 'hover:text-red-400',
+            mistengine: 'hover:text-pink-400',
+            zombiology: 'hover:text-yellow-400'
+        };
+        
+        colorClasses = `text-gray-300 ${systemColorMap[gameSystem] || 'hover:text-white'}`;
+    }
+    
+    // Classes pour items désactivés
+    if (item.disabled) {
+        return `${baseClasses} opacity-50 cursor-not-allowed pointer-events-none`;
+    }
+    
+    return `${baseClasses} ${colorClasses}`;
+};
+
+// Génération des attributs Alpine.js
+const getAlpineDataAttribute = () => {
+    if (alpine.open) {
+        return `x-data="{ ${alpine.open}: false }"`;
+    }
+    return 'x-data="{ open: false }"';
+};
+
+const getTriggerAlpineAttributes = () => {
+    const openVar = alpine.open || 'open';
+    
+    if (alpine.toggle) {
+        return `@click="${alpine.toggle}()"`;
+    }
+    
+    return `@click="${openVar} = !${openVar}"`;
+};
+
+const getMenuAlpineAttributes = () => {
+    const openVar = alpine.open || 'open';
+    
+    let attrs = [
+        `x-show="${openVar}"`,
+        'x-transition:enter="transition ease-out duration-100"',
+        'x-transition:enter-start="transform opacity-0 scale-95"',
+        'x-transition:enter-end="transform opacity-100 scale-100"',
+        'x-transition:leave="transition ease-in duration-75"',
+        'x-transition:leave-start="transform opacity-100 scale-100"',
+        'x-transition:leave-end="transform opacity-0 scale-95"',
+        `@click.away="${openVar} = false"`,
+        `@keydown.escape="${openVar} = false"`
+    ];
+    
+    return attrs.join(' ');
+};
+
+const getItemAlpineAttributes = (item) => {
+    if (!closeOnClick) return '';
+    
+    const openVar = alpine.open || 'open';
+    return `@click="${openVar} = false"`;
+};
+%>
+
+<div 
+    class="<%= containerClasses %>"
+    <%= id ? `id="${dropdownId}"` : '' %>
+    <%= getAlpineDataAttribute() %>
+>
+    <!-- Bouton déclencheur -->
+    <% if (trigger.custom) { %>
+        <div <%= getTriggerAlpineAttributes() %>>
+            <%- trigger.custom %>
+        </div>
+    <% } else { %>
+        <%- include('ui-button', {
+            text: trigger.text,
+            variant: trigger.variant || 'secondary',
+            size: trigger.size || 'md',
+            icon: trigger.icon,
+            gameSystem: gameSystem,
+            action: getTriggerAlpineAttributes(),
+            additionalClasses: 'w-full justify-between',
+            ariaLabel: `Ouvrir le menu ${trigger.text}`
+        }) %>
+    <% } %>
+    
+    <!-- Menu déroulant -->
+    <div 
+        class="<%= menuClasses %>"
+        <%= getMenuAlpineAttributes() %>
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="<%= dropdownId %>-trigger"
+    >
+        <% 
+        let groupIndex = 0;
+        let currentGroup = [];
+        
+        // Grouper les items par sections (séparées par divider)
+        items.forEach((item, index) => {
+            if (item.divider) {
+                if (currentGroup.length > 0) {
+                    %>
+                    <div class="py-1" role="none">
+                        <% currentGroup.forEach(groupItem => { %>
+                            <% if (groupItem.header) { %>
+                                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <%= groupItem.header %>
+                                </div>
+                            <% } else if (groupItem.href) { %>
+                                <a 
+                                    href="<%= groupItem.href %>"
+                                    <%= groupItem.target ? `target="${groupItem.target}"` : '' %>
+                                    class="<%= getItemClasses(groupItem) %>"
+                                    role="menuitem"
+                                    <%= getItemAlpineAttributes(groupItem) %>
+                                >
+                                    <% if (groupItem.icon) { %>
+                                        <i class="<%= groupItem.icon %> w-4"></i>
+                                    <% } %>
+                                    <span><%= groupItem.label %></span>
+                                    <% if (groupItem.badge) { %>
+                                        <span class="ml-auto px-2 py-0.5 text-xs bg-gray-700 text-gray-400 rounded-full">
+                                            <%= groupItem.badge %>
+                                        </span>
+                                    <% } %>
+                                    <% if (groupItem.target === '_blank') { %>
+                                        <i class="fa-solid fa-external-link-alt text-xs ml-auto opacity-50"></i>
+                                    <% } %>
+                                </a>
+                            <% } else { %>
+                                <button 
+                                    type="button"
+                                    <%= groupItem.action ? `@click="${groupItem.action}"` : '' %>
+                                    <%= groupItem.disabled ? 'disabled' : '' %>
+                                    class="<%= getItemClasses(groupItem) %>"
+                                    role="menuitem"
+                                    <%= getItemAlpineAttributes(groupItem) %>
+                                >
+                                    <% if (groupItem.icon) { %>
+                                        <i class="<%= groupItem.icon %> w-4"></i>
+                                    <% } %>
+                                    <span><%= groupItem.label %></span>
+                                    <% if (groupItem.badge) { %>
+                                        <span class="ml-auto px-2 py-0.5 text-xs bg-gray-700 text-gray-400 rounded-full">
+                                            <%= groupItem.badge %>
+                                        </span>
+                                    <% } %>
+                                    <% if (groupItem.shortcut) { %>
+                                        <kbd class="ml-auto text-xs text-gray-500">
+                                            <%= groupItem.shortcut %>
+                                        </kbd>
+                                    <% } %>
+                                </button>
+                            <% } %>
+                        <% }); %>
+                    </div>
+                    <%
+                    currentGroup = [];
+                    groupIndex++;
+                }
+            } else {
+                currentGroup.push(item);
+            }
+        });
+        
+        // Afficher le dernier groupe s'il existe
+        if (currentGroup.length > 0) {
+            %>
+            <div class="py-1" role="none">
+                <% currentGroup.forEach(item => { %>
+                    <% if (item.header) { %>
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <%= item.header %>
+                        </div>
+                    <% } else if (item.href) { %>
+                        <a 
+                            href="<%= item.href %>"
+                            <%= item.target ? `target="${item.target}"` : '' %>
+                            class="<%= getItemClasses(item) %>"
+                            role="menuitem"
+                            <%= getItemAlpineAttributes(item) %>
+                        >
+                            <% if (item.icon) { %>
+                                <i class="<%= item.icon %> w-4"></i>
+                            <% } %>
+                            <span><%= item.label %></span>
+                            <% if (item.badge) { %>
+                                <span class="ml-auto px-2 py-0.5 text-xs bg-gray-700 text-gray-400 rounded-full">
+                                    <%= item.badge %>
+                                </span>
+                            <% } %>
+                            <% if (item.target === '_blank') { %>
+                                <i class="fa-solid fa-external-link-alt text-xs ml-auto opacity-50"></i>
+                            <% } %>
+                        </a>
+                    <% } else { %>
+                        <button 
+                            type="button"
+                            <%= item.action ? `@click="${item.action}"` : '' %>
+                            <%= item.disabled ? 'disabled' : '' %>
+                            class="<%= getItemClasses(item) %>"
+                            role="menuitem"
+                            <%= getItemAlpineAttributes(item) %>
+                        >
+                            <% if (item.icon) { %>
+                                <i class="<%= item.icon %> w-4"></i>
+                            <% } %>
+                            <span><%= item.label %></span>
+                            <% if (item.badge) { %>
+                                <span class="ml-auto px-2 py-0.5 text-xs bg-gray-700 text-gray-400 rounded-full">
+                                    <%= item.badge %>
+                                </span>
+                            <% } %>
+                            <% if (item.shortcut) { %>
+                                <kbd class="ml-auto text-xs text-gray-500">
+                                    <%= item.shortcut %>
+                                </kbd>
+                            <% } %>
+                        </button>
+                    <% } %>
+                <% }); %>
+            </div>
+            <%
+        }
+        %>
+    </div>
+</div>
+
+<!-- Script de fallback sans Alpine.js -->
+<% if (!alpine.open) { %>
+    <script>
+        (function() {
+            const dropdown = document.getElementById('<%= dropdownId %>');
+            if (!dropdown) return;
+            
+            const trigger = dropdown.querySelector('button, [role="button"]');
+            const menu = dropdown.querySelector('[role="menu"]');
+            let isOpen = false;
+            
+            if (!trigger || !menu) return;
+            
+            // Initialement caché
+            menu.style.display = 'none';
+            
+            // Toggle au clic sur le trigger
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isOpen = !isOpen;
+                menu.style.display = isOpen ? 'block' : 'none';
+            });
+            
+            // Fermer au clic ailleurs
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) {
+                    isOpen = false;
+                    menu.style.display = 'none';
+                }
+            });
+            
+            // Fermer avec Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isOpen) {
+                    isOpen = false;
+                    menu.style.display = 'none';
+                    trigger.focus();
+                }
+            });
+            
+            <% if (closeOnClick) { %>
+            // Fermer au clic sur un item
+            menu.querySelectorAll('[role="menuitem"]').forEach(item => {
+                item.addEventListener('click', () => {
+                    isOpen = false;
+                    menu.style.display = 'none';
+                });
+            });
+            <% } %>
+        })();
+    </script>
+<% } %>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: config/database.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: config/database.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Configuration principale de la base de données
+ * Regroupement de la config générale de l'application
+ */
+
+const path = require('path');
+const fs = require('fs');
+
+// Charger les variables d'environnement avec priorité
+const envPath = path.join(__dirname, '..', '..', '.env');
+const envLocalPath = path.join(__dirname, '..', '..', '.env.local');
+const envTestPath = path.join(__dirname, '..', '..', '.env.test');
+
+// Charger .env d'abord
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
+
+// Choix du fichier d'environnement selon NODE_ENV
+if (process.env.NODE_ENV === 'test' &amp;&amp; fs.existsSync(envTestPath)) {
+  require('dotenv').config({ path: envTestPath, override: true });
+  console.log('📁 Chargement de .env.test');
+} else if (fs.existsSync(envLocalPath)) {
+  require('dotenv').config({ path: envLocalPath, override: true });
+  console.log('📁 Chargement de .env.local');
+} else {
+  console.log('📁 Utilisation de .env');
+}
+
+const database = {
+  // Serveur
+  server: {
+    port: process.env.PORT || 3000,
+    host: process.env.HOST || 'localhost',
+    env: process.env.NODE_ENV || 'development'
+  },
+
+  // Base de données PostgreSQL
+  database: {
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT) || 5432,
+    database: process.env.POSTGRES_DB || 'brumisa3',
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || 'password',
+    ssl: process.env.NODE_ENV === 'production' ? true : false,
+    connectionString: process.env.DATABASE_URL || null
+  },
+
+  // Sessions
+  session: {
+    secret: process.env.SESSION_SECRET || 'your-super-secret-session-key-change-in-production',
+    name: 'brumisa3',
+    maxAge: parseInt(process.env.SESSION_MAX_AGE) || 24 * 60 * 60 * 1000, // 24h
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'strict'
+  },
+
+  // Codes d'accès
+  auth: {
+    codes: {
+      premium: process.env.CODE_PREMIUM || '123456',
+      admin: process.env.CODE_ADMIN || '789012'
+    },
+    roles: {
+      UTILISATEUR: 'UTILISATEUR',
+      PREMIUM: 'PREMIUM', 
+      ADMIN: 'ADMIN'
+    }
+  },
+
+  // Répertoires
+  directories: {
+    data: process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data'),
+    output: process.env.OUTPUT_DIR || path.join(__dirname, '..', '..', 'output'),
+    uploads: process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'),
+    logs: process.env.LOG_DIR || path.join(__dirname, '..', '..', 'logs'),
+    public: path.join(__dirname, '..', '..', 'public'),
+    views: path.join(__dirname, '..', 'views')
+  },
+
+  // Logs
+  logging: {
+    level: process.env.LOG_LEVEL || 'info',
+    file: {
+      enabled: true,
+      filename: 'app.log',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
+    },
+    console: {
+      enabled: process.env.NODE_ENV === 'development'
+    }
+  },
+
+  // Sécurité
+  security: {
+    rateLimit: {
+      windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW) || 15) * 60 * 1000, // 15 min
+      max: parseInt(process.env.RATE_LIMIT_MAX) || 100
+    },
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://unpkg.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://use.typekit.net', 'https://p.typekit.net'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://use.typekit.net'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"]
+        }
+      }
+    }
+  },
+
+  // PDF
+  pdf: {
+    timeout: parseInt(process.env.PDF_TIMEOUT) || 30000, // 30s
+    maxSize: parseInt(process.env.PDF_MAX_SIZE) || 10 * 1024 * 1024, // 10MB
+    options: {
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '1cm',
+        right: '1cm',
+        bottom: '1cm',
+        left: '1cm'
+      }
+    },
+    cleanup: {
+      maxAge: 24 * 60 * 60 * 1000, // 24h
+      interval: 60 * 60 * 1000 // 1h
+    }
+  },
+
+  // Upload
+  upload: {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedMimes: [
+      'image/jpeg',
+      'image/png', 
+      'image/gif',
+      'image/webp'
+    ],
+    allowedExtensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+  },
+
+  // API
+  api: {
+    prefix: '/api',
+    version: 'v1',
+    timeout: 30000
+  }
+};
+
+// Validation de l'environnement
+if (database.server.env === 'production') {
+  if (database.session.secret === 'your-super-secret-session-key-change-in-production') {
+    throw new Error('SESSION_SECRET doit être changé en production');
+  }
+  
+  if (database.auth.codes.premium === '123456' || database.auth.codes.admin === '789012') {
+    console.warn('⚠️  ATTENTION: Changez les codes d\'accès par défaut en production');
+  }
+}
+
+module.exports = database;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actualite.html">Actualite</a></li><li><a href="AdminController.html">AdminController</a></li><li><a href="AdminOracleService.html">AdminOracleService</a></li><li><a href="AnonymousTokenService.html">AnonymousTokenService</a></li><li><a href="AuthentificationController.html">AuthentificationController</a></li><li><a href="BaseController.html">BaseController</a></li><li><a href="BaseModel.html">BaseModel</a></li><li><a href="BasePdfKitService.html">BasePdfKitService</a></li><li><a href="BaseService.html">BaseService</a></li><li><a href="CacheService.html">CacheService</a></li><li><a href="CharacterSheetDocument.html">CharacterSheetDocument</a></li><li><a href="ClassPlanDocument.html">ClassPlanDocument</a></li><li><a href="DangerDocument.html">DangerDocument</a></li><li><a href="DemandeChangementEmail.html">DemandeChangementEmail</a></li><li><a href="Document.html">Document</a></li><li><a href="DocumentFactory.html">DocumentFactory</a></li><li><a href="DocumentModerationHistorique.html">DocumentModerationHistorique</a></li><li><a href="DocumentModerationService.html">DocumentModerationService</a></li><li><a href="DocumentSystemeJeu.html">DocumentSystemeJeu</a></li><li><a href="DocumentVote.html">DocumentVote</a></li><li><a href="DonationController.html">DonationController</a></li><li><a href="EmailService.html">EmailService</a></li><li><a href="EmailTemplate.html">EmailTemplate</a></li><li><a href="EngrenagesTheme.html">EngrenagesTheme</a></li><li><a href="GenericDocument.html">GenericDocument</a></li><li><a href="GroupDocument.html">GroupDocument</a></li><li><a href="HomeController.html">HomeController</a></li><li><a href="LoggingService.html">LoggingService</a></li><li><a href="MaintenanceWorker.html">MaintenanceWorker</a></li><li><a href="MarkdownService.html">MarkdownService</a></li><li><a href="Metro2033Theme.html">Metro2033Theme</a></li><li><a href="MistEngineTheme.html">MistEngineTheme</a></li><li><a href="ModerationController.html">ModerationController</a></li><li><a href="MonsterheartsTheme.html">MonsterheartsTheme</a></li><li><a href="Newsletter.html">Newsletter</a></li><li><a href="NewsletterService.html">NewsletterService</a></li><li><a href="Oracle.html">Oracle</a></li><li><a href="OracleController.html">OracleController</a></li><li><a href="OracleItem.html">OracleItem</a></li><li><a href="OracleService.html">OracleService</a></li><li><a href="OrganizationDocument.html">OrganizationDocument</a></li><li><a href="Pdf.html">Pdf</a></li><li><a href="PdfController.html">PdfController</a></li><li><a href="PdfKitService.html">PdfKitService</a></li><li><a href="PdfService.html">PdfService</a></li><li><a href="PerformanceMiddleware.html">PerformanceMiddleware</a></li><li><a href="PerformanceMonitoringService.html">PerformanceMonitoringService</a></li><li><a href="Personnage.html">Personnage</a></li><li><a href="PersonnageController.html">PersonnageController</a></li><li><a href="PersonnageService.html">PersonnageService</a></li><li><a href="ProductionApp.html">ProductionApp</a></li><li><a href="QueueService.html">QueueService</a></li><li><a href="QueueWorker.html">QueueWorker</a></li><li><a href="RgpdConsentement.html">RgpdConsentement</a></li><li><a href="RgpdService.html">RgpdService</a></li><li><a href="SecurityService.html">SecurityService</a></li><li><a href="ShareService.html">ShareService</a></li><li><a href="SystemCardViewModel.html">SystemCardViewModel</a></li><li><a href="SystemMaintenanceService.html">SystemMaintenanceService</a></li><li><a href="SystemRightsService.html">SystemRightsService</a></li><li><a href="SystemService.html">SystemService</a></li><li><a href="SystemTheme.html">SystemTheme</a></li><li><a href="SystemThemeService.html">SystemThemeService</a></li><li><a href="SystemeJeu.html">SystemeJeu</a></li><li><a href="Temoignage.html">Temoignage</a></li><li><a href="TemoignageService.html">TemoignageService</a></li><li><a href="TemplateService.html">TemplateService</a></li><li><a href="TownDocument.html">TownDocument</a></li><li><a href="Utilisateur.html">Utilisateur</a></li><li><a href="UtilisateurService.html">UtilisateurService</a></li><li><a href="VoteController.html">VoteController</a></li><li><a href="VoteService.html">VoteService</a></li><li><a href="ZombiologyTheme.html">ZombiologyTheme</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Joi">Joi</a></li><li><a href="global.html#asyncHandler">asyncHandler</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#compareVersions">compareVersions</a></li><li><a href="global.html#createError">createError</a></li><li><a href="global.html#createMigrationsTable">createMigrationsTable</a></li><li><a href="global.html#createTables">createTables</a></li><li><a href="global.html#database">database</a></li><li><a href="global.html#executeMigration">executeMigration</a></li><li><a href="global.html#getCurrentVersion">getCurrentVersion</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getExecutedMigrations">getExecutedMigrations</a></li><li><a href="global.html#getMigrationStatus">getMigrationStatus</a></li><li><a href="global.html#getVersionsToMigrate">getVersionsToMigrate</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#handleNotFound">handleNotFound</a></li><li><a href="global.html#initializeDatabase">initializeDatabase</a></li><li><a href="global.html#isDatabaseInitialized">isDatabaseInitialized</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#markMigrationExecuted">markMigrationExecuted</a></li><li><a href="global.html#migrateDatabase">migrateDatabase</a></li><li><a href="global.html#migrateToLatest">migrateToLatest</a></li><li><a href="global.html#migrateToVersion">migrateToVersion</a></li><li><a href="global.html#migrations">migrations</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requirePremium">requirePremium</a></li><li><a href="global.html#resetDatabase">resetDatabase</a></li><li><a href="global.html#rollbackMigration">rollbackMigration</a></li><li><a href="global.html#schemas">schemas</a></li><li><a href="global.html#updateAppVersion">updateAppVersion</a></li><li><a href="global.html#validateFiles">validateFiles</a></li><li><a href="global.html#validateRequest">validateRequest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Aug 08 2025 18:17:39 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
