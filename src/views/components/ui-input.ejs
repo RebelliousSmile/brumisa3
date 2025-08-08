@@ -1,6 +1,6 @@
 <%
 /*
- * Composant Input Universel
+ * Composant Input Universel v2.0 - Avec Support Thèmes Système
  * Usage: <%- include('components/ui-input', { 
  *   type: 'text|email|password|number|tel|url|search|textarea',
  *   name: 'fieldName',
@@ -9,14 +9,21 @@
  *   value: '',
  *   required: false,
  *   disabled: false,
+ *   readonly: false,
  *   error: '',
  *   helpText: 'Texte d\'aide',
  *   icon: 'fa-solid fa-user',
- *   rows: 4 (pour textarea),
+ *   rows: 4, // pour textarea
+ *   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
+ *   variant: 'default|outline|filled',
+ *   size: 'sm|md|lg',
  *   additionalClasses: '',
  *   id: '',
  *   maxlength: '',
- *   pattern: ''
+ *   pattern: '',
+ *   autocomplete: '',
+ *   xModel: '', // Pour Alpine.js binding
+ *   onChange: '' // Action Alpine.js
  * }) %>
  */
 
@@ -29,45 +36,92 @@ const {
     value = '',
     required = false,
     disabled = false,
+    readonly = false,
     error = '',
     helpText = '',
     icon = '',
     rows = 4,
+    gameSystem = '',
+    variant = 'default',
+    size = 'md',
     additionalClasses = '',
     id = name || '',
     maxlength = '',
     pattern = '',
-    autocomplete = ''
+    autocomplete = '',
+    xModel = '',
+    onChange = ''
 } = locals;
+
+// Intégration du SystemThemeService côté serveur
+const SystemThemeService = require('../../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
 
 // Classes de base
 const baseClasses = 'block w-full transition-colors duration-200 focus:outline-none';
-const inputClasses = 'px-4 py-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400';
-const focusClasses = 'focus:border-generique focus:bg-gray-600';
-const errorClasses = error ? 'border-erreur focus:border-erreur' : '';
+
+// Classes par taille
+const sizeClasses = {
+    sm: 'px-3 py-2 text-sm rounded-md',
+    md: 'px-4 py-3 text-base rounded-lg', 
+    lg: 'px-5 py-4 text-lg rounded-lg'
+};
+
+// Classes par variant
+const variantClasses = {
+    default: 'bg-gray-700 border-2 border-gray-600',
+    outline: 'bg-transparent border-2 border-gray-500',
+    filled: 'bg-gray-800 border-2 border-transparent'
+};
+
+// Classes système-spécifiques pour le focus
+const getFocusClasses = (systemTheme) => {
+    if (!systemTheme) return 'focus:border-blue-500 focus:bg-gray-600';
+    
+    const systemColorMap = {
+        monsterhearts: 'purple',
+        engrenages: 'emerald',
+        metro2033: 'red', 
+        mistengine: 'pink',
+        zombiology: 'yellow'
+    };
+    
+    const systemColor = systemColorMap[gameSystem] || 'blue';
+    return `focus:border-${systemColor}-500 focus:bg-gray-600`;
+};
+
+const inputClasses = 'text-white placeholder-gray-400';
+const focusClasses = getFocusClasses(systemTheme);
+const errorClasses = error ? 'border-red-500 focus:border-red-500' : '';
 const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed bg-gray-800' : '';
+const readonlyClasses = readonly ? 'bg-gray-800 cursor-default' : '';
 
 // Classes finales
 const finalClasses = [
     baseClasses,
     inputClasses,
+    sizeClasses[size] || sizeClasses.md,
+    variantClasses[variant] || variantClasses.default,
     focusClasses,
     errorClasses,
     disabledClasses,
+    readonlyClasses,
     additionalClasses
 ].filter(Boolean).join(' ');
 
 // Attributs dynamiques
 const attributes = [];
-if (id) attributes.push(`id="${id}"`);
 if (name) attributes.push(`name="${name}"`);
 if (placeholder) attributes.push(`placeholder="${placeholder}"`);
 if (value) attributes.push(`value="${value}"`);
 if (required) attributes.push('required');
 if (disabled) attributes.push('disabled');
+if (readonly) attributes.push('readonly');
 if (maxlength) attributes.push(`maxlength="${maxlength}"`);
 if (pattern) attributes.push(`pattern="${pattern}"`);
 if (autocomplete) attributes.push(`autocomplete="${autocomplete}"`);
+if (xModel) attributes.push(`x-model="${xModel}"`);
+if (onChange) attributes.push(`@change="${onChange}"`);
 
 // ID unique pour l'association label-input
 const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
@@ -78,7 +132,7 @@ const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
         <label for="<%= fieldId %>" class="block text-sm font-medium text-gray-300">
             <%= label %>
             <% if (required) { %>
-                <span class="text-erreur">*</span>
+                <span class="text-red-400">*</span>
             <% } %>
         </label>
     <% } %>
@@ -108,13 +162,13 @@ const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
         
         <% if (error) { %>
             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <i class="fa-solid fa-exclamation-circle text-erreur"></i>
+                <i class="fa-solid fa-exclamation-circle text-red-400"></i>
             </div>
         <% } %>
     </div>
     
     <% if (error) { %>
-        <p class="text-sm text-erreur flex items-center mt-1">
+        <p class="text-sm text-red-400 flex items-center mt-1">
             <i class="fa-solid fa-exclamation-triangle mr-1"></i>
             <%= error %>
         </p>

@@ -309,6 +309,90 @@ class Utilisateur extends BaseModel {
 
         return await this.update(id, { preferences: nouvellesPreferences });
     }
+
+    /**
+     * RELATIONS - Récupérer les personnages de l'utilisateur
+     * hasMany('personnages')
+     */
+    async getPersonnages(utilisateurId, filtres = {}) {
+        const Personnage = require('./Personnage');
+        const personnage = new Personnage();
+        return await personnage.findByUtilisateur(utilisateurId, filtres);
+    }
+
+    /**
+     * RELATIONS - Récupérer les documents de l'utilisateur
+     * hasMany('documents')
+     */
+    async getDocuments(utilisateurId, filtres = {}) {
+        const Document = require('./Document');
+        const document = new Document();
+        return await document.findVisibleBy(utilisateurId, filtres);
+    }
+
+    /**
+     * RELATIONS - Récupérer les PDFs de l'utilisateur
+     * hasMany('pdfs')
+     */
+    async getPdfs(utilisateurId, filtres = {}) {
+        const Pdf = require('./Pdf');
+        const pdf = new Pdf();
+        return await pdf.findByUtilisateur(utilisateurId, filtres);
+    }
+
+    /**
+     * RELATIONS - Récupérer les votes de l'utilisateur
+     * hasMany('document_votes')
+     */
+    async getDocumentVotes(utilisateurId, documentId = null) {
+        const DocumentVote = require('./DocumentVote');
+        const vote = new DocumentVote();
+        
+        if (documentId) {
+            return await vote.getVotesUtilisateur(utilisateurId, documentId);
+        } else {
+            return await vote.findAll('utilisateur_id = $1', [utilisateurId], 'date_creation DESC');
+        }
+    }
+
+    /**
+     * RELATIONS - Récupérer les consentements RGPD de l'utilisateur
+     * hasMany('rgpd_consentements')
+     */
+    async getRgpdConsentements(utilisateurId) {
+        const RgpdConsentement = require('./RgpdConsentement');
+        const consentement = new RgpdConsentement();
+        return await consentement.findAll('utilisateur_id = $1', [utilisateurId], 'date_consentement DESC');
+    }
+
+    /**
+     * RELATIONS - Récupérer les demandes de changement email
+     * hasMany('demandes_changement_email')
+     */
+    async getDemandesChangementEmail(utilisateurId, statut = null) {
+        const DemandeChangementEmail = require('./DemandeChangementEmail');
+        const demande = new DemandeChangementEmail();
+        
+        let whereClause = 'utilisateur_id = $1';
+        const params = [utilisateurId];
+        
+        if (statut) {
+            whereClause += ' AND statut = $2';
+            params.push(statut);
+        }
+        
+        return await demande.findAll(whereClause, params, 'date_demande DESC');
+    }
+
+    /**
+     * RELATIONS - Récupérer l'historique de modération par cet utilisateur (si modérateur)
+     * hasMany('document_moderation_historique') as moderator
+     */
+    async getActionsModeration(moderateurId) {
+        const DocumentModerationHistorique = require('./DocumentModerationHistorique');
+        const historique = new DocumentModerationHistorique();
+        return await historique.getActionsModerateur(moderateurId);
+    }
 }
 
 module.exports = Utilisateur;

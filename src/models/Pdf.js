@@ -578,6 +578,66 @@ class Pdf extends BaseModel {
             return [];
         }
     }
+
+    /**
+     * RELATIONS - Récupérer l'utilisateur propriétaire du PDF
+     * belongsTo('utilisateur')
+     */
+    async getUtilisateur(pdfId) {
+        const pdf = await this.findById(pdfId);
+        if (!pdf || !pdf.utilisateur_id) {
+            return null;
+        }
+        
+        const Utilisateur = require('./Utilisateur');
+        const utilisateur = new Utilisateur();
+        return await utilisateur.findById(pdf.utilisateur_id);
+    }
+
+    /**
+     * RELATIONS - Récupérer le document source du PDF
+     * belongsTo('document')
+     */
+    async getDocument(pdfId) {
+        const pdf = await this.findById(pdfId);
+        if (!pdf || !pdf.document_id) {
+            return null;
+        }
+        
+        const Document = require('./Document');
+        const document = new Document();
+        return await document.findById(pdf.document_id);
+    }
+
+    /**
+     * RELATIONS - Récupérer le personnage source du PDF (si applicable)
+     * belongsTo('personnage')
+     */
+    async getPersonnage(pdfId) {
+        const pdf = await this.findById(pdfId);
+        if (!pdf || !pdf.personnage_id) {
+            return null;
+        }
+        
+        const Personnage = require('./Personnage');
+        const personnage = new Personnage();
+        return await personnage.findById(pdf.personnage_id);
+    }
+
+    /**
+     * RELATIONS - Récupérer les informations du système JDR
+     * belongsTo('systeme_jeu')
+     */
+    async getSystemeJeu(pdfId) {
+        const pdf = await this.findById(pdfId);
+        if (!pdf || !pdf.systeme_jeu) {
+            return null;
+        }
+        
+        const SystemeJeu = require('./SystemeJeu');
+        const systemeJeu = new SystemeJeu();
+        return await systemeJeu.findById(pdf.systeme_jeu);
+    }
 }
 
 module.exports = Pdf;

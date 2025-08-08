@@ -1,9 +1,47 @@
 const db = require('../database/db');
 const logManager = require('../utils/logManager');
+const Joi = require('joi');
 
 /**
  * Classe de base pour tous les modèles
  * Implémente les principes SOLID et DRY
+ * 
+ * RELATIONS SUPPORTÉES DANS L'ARCHITECTURE MVC-CS:
+ * 
+ * Les modèles implémentent des relations via des méthodes préfixées selon le pattern Active Record:
+ * 
+ * 1. **hasMany(model)** - Relation 1:N
+ *    - Méthode: `get{Models}(parentId, filters)`
+ *    - Exemple: `utilisateur.getPersonnages(userId)`
+ *    - CASCADE: Dépend du modèle enfant
+ * 
+ * 2. **belongsTo(model)** - Relation N:1
+ *    - Méthode: `get{Model}(childId)`
+ *    - Exemple: `personnage.getUtilisateur(personnageId)`
+ *    - CASCADE: SET NULL ou RESTRICT selon importance
+ * 
+ * 3. **hasOne(model)** - Relation 1:1 
+ *    - Méthode: `get{Model}(parentId)`
+ *    - Rare dans ce projet
+ * 
+ * STRATÉGIES DE CASCADE IMPLÉMENTÉES:
+ * 
+ * - **CASCADE**: Suppression en cascade pour données dépendantes
+ *   - Votes, historiques de modération, consentements RGPD
+ * 
+ * - **SET NULL**: Préservation des données avec désassociation
+ *   - Documents anonymes, historiques avec modérateur supprimé
+ * 
+ * - **RESTRICT**: Interdiction de suppression si dépendances
+ *   - Systèmes JDR avec documents/personnages existants
+ * 
+ * CONTRAINTES D'INTÉGRITÉ APPLIQUÉES:
+ * 
+ * - **UNIQUE**: Un vote par utilisateur/document, clés composites
+ * - **NOT NULL**: Relations obligatoires (personnages->utilisateur)
+ * - **CHECK**: Validation des énumérations et valeurs
+ * 
+ * Voir architecture-models.md et migration 011_add_foreign_key_constraints.sql pour détails complets.
  */
 class BaseModel {
   constructor(tableName, primaryKey = 'id') {
@@ -137,7 +175,12 @@ class BaseModel {
       }
       
       // Retourne l'enregistrement créé
-      return await this.findById(insertedId);
+      const createdRecord = await this.findById(insertedId);
+      
+      // Hook afterCreate
+      const finalRecord = await this.afterCreate(createdRecord);
+      
+      return finalRecord;
     } catch (error) {
       if (logManager.logDatabaseOperation) {
         logManager.logDatabaseOperation('create', this.tableName, null, false, error);
@@ -182,7 +225,13 @@ class BaseModel {
         logManager.logDatabaseOperation('update', this.tableName, id, true);
       }
       
-      return await this.findById(id);
+      // Récupère l'enregistrement mis à jour
+      const updatedRecord = await this.findById(id);
+      
+      // Hook afterUpdate
+      const finalRecord = await this.afterUpdate(updatedRecord);
+      
+      return finalRecord;
     } catch (error) {
       if (logManager.logDatabaseOperation) {
         logManager.logDatabaseOperation('update', this.tableName, id, false, error);
@@ -196,6 +245,12 @@ class BaseModel {
    */
   async delete(id) {
     try {
+      // Hook beforeDelete
+      const canDelete = await this.beforeDelete(id);
+      if (!canDelete) {
+        throw new Error(`La suppression de l'enregistrement ${id} a été annulée par beforeDelete`);
+      }
+      
       const { sql, params } = this.convertPlaceholders(
         `DELETE FROM ${this.tableName} WHERE ${this.primaryKey} = ?`,
         [id]
@@ -209,6 +264,10 @@ class BaseModel {
       if (logManager.logDatabaseOperation) {
         logManager.logDatabaseOperation('delete', this.tableName, id, true);
       }
+      
+      // Hook afterDelete
+      await this.afterDelete(id);
+      
       return true;
     } catch (error) {
       if (logManager.logDatabaseOperation) {
@@ -357,9 +416,61 @@ class BaseModel {
   }
 
   /**
-   * Validation métier (à override dans les classes filles)
+   * Schema Joi pour validation (à override dans les classes filles)
+   */
+  getValidationSchema(operation = 'create') {
+    // Schema de base - à étendre dans les modèles spécifiques
+    return Joi.object({});
+  }
+
+  /**
+   * Validation métier avec Joi intégré
    */
   async validate(data, operation = 'create') {
+    // Validation Joi si schema défini
+    const schema = this.getValidationSchema(operation);
+    if (schema && Object.keys(schema.describe().keys || {}).length > 0) {
+      // Ajouter les champs de timestamps automatiques au schema si nécessaire
+      let schemaWithTimestamps = schema;
+      if (this.timestamps && (operation === 'create' || operation === 'update')) {
+        schemaWithTimestamps = schema.keys({
+          date_creation: Joi.string().optional(),
+          date_modification: Joi.string().optional()
+        });
+      }
+      
+      const { error, value } = schemaWithTimestamps.validate(data, {
+        abortEarly: false,
+        allowUnknown: true, // Permet les champs supplémentaires pour la flexibilité
+        stripUnknown: false
+      });
+      
+      if (error) {
+        const errorDetails = error.details.map(detail => ({
+          field: detail.path.join('.'),
+          message: detail.message,
+          value: detail.context?.value
+        }));
+        
+        const validationError = new Error(`Erreurs de validation: ${error.details.map(d => d.message).join(', ')}`);
+        validationError.name = 'ValidationError';
+        validationError.details = errorDetails;
+        validationError.isJoi = true;
+        throw validationError;
+      }
+      
+      // Retourne les données nettoyées par Joi
+      Object.assign(data, value);
+    }
+    
+    // Validation métier spécifique (à étendre)
+    return await this.businessValidation(data, operation);
+  }
+
+  /**
+   * Validation métier spécifique (à override dans les classes filles)
+   */
+  async businessValidation(data, operation = 'create') {
     // Validation de base - à étendre dans les modèles spécifiques
     return true;
   }
@@ -435,6 +546,98 @@ class BaseModel {
   async findAllActive(where = '', params = [], orderBy = '') {
     const activeWhere = where ? `(${where}) AND deleted_at IS NULL` : 'deleted_at IS NULL';
     return await this.findAll(activeWhere, params, orderBy);
+  }
+
+  /**
+   * Mise à jour partielle (patch)
+   */
+  async patch(id, data) {
+    // Vérifie que l'enregistrement existe
+    const existing = await this.findById(id);
+    if (!existing) {
+      throw new Error(`Aucun enregistrement trouvé avec l'ID ${id}`);
+    }
+    
+    // Fusionne avec les données existantes
+    const mergedData = { ...existing, ...data };
+    return await this.update(id, mergedData);
+  }
+
+  /**
+   * Transaction wrapper pour opérations complexes
+   */
+  async transaction(callback) {
+    if (typeof callback !== 'function') {
+      throw new Error('Le callback de transaction doit être une fonction');
+    }
+    
+    try {
+      await db.query('BEGIN');
+      const result = await callback(this);
+      await db.query('COMMIT');
+      return result;
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  }
+
+  /**
+   * Génère un UUID v4 pour les clés primaires
+   */
+  generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  /**
+   * Validation des relations (clés étrangères)
+   */
+  async validateForeignKeys(data) {
+    // À implémenter dans les modèles spécifiques si nécessaire
+    return true;
+  }
+
+  /**
+   * Log des changements pour audit trail
+   */
+  logChange(operation, id, oldData = null, newData = null) {
+    if (logManager.logModelOperation) {
+      logManager.logModelOperation(this.tableName, operation, id, {
+        oldData,
+        newData,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * Méthode factory pour créer des instances avec données prédéfinies
+   */
+  static factory(overwrites = {}) {
+    const instance = new this();
+    return Object.assign(instance, overwrites);
+  }
+
+  /**
+   * Trouve ou crée un enregistrement
+   */
+  async findOrCreate(findData, createData = {}) {
+    const whereConditions = Object.keys(findData).map(key => `${key} = ?`).join(' AND ');
+    const whereParams = Object.values(findData);
+    
+    const existing = await this.findOne(whereConditions, whereParams);
+    
+    if (existing) {
+      return { record: existing, created: false };
+    }
+    
+    const merged = { ...findData, ...createData };
+    const created = await this.create(merged);
+    return { record: created, created: true };
   }
 }
 

@@ -1,0 +1,460 @@
+<%- include('../../layouts/principal', { body: `
+<div class="min-h-screen bg-gray-900 py-8" x-data="userDashboard()">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">Mon Dashboard</h1>
+                <p class="text-gray-400">Gérez vos personnages, documents et participez à la communauté</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-gray-800/50 px-4 py-2 rounded-lg">
+                    <span class="text-blue-400 font-medium" x-text="stats.personnages"></span>
+                    <span class="text-gray-400 ml-1">personnages</span>
+                </div>
+                <div class="bg-gray-800/50 px-4 py-2 rounded-lg">
+                    <span class="text-green-400 font-medium" x-text="stats.pdfs"></span>
+                    <span class="text-gray-400 ml-1">PDFs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation par onglets -->
+        <div class="mb-8">
+            <nav class="flex space-x-8">
+                <button @click="activeTab = 'personnages'"
+                        :class="activeTab === 'personnages' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-user-edit mr-2"></i>
+                    Mes Personnages
+                </button>
+                <button @click="activeTab = 'pdfs'"
+                        :class="activeTab === 'pdfs' ? 'border-green-500 text-green-400' : 'border-transparent text-gray-400 hover:text-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-file-pdf mr-2"></i>
+                    Mes PDFs
+                </button>
+                <button @click="activeTab = 'communaute'"
+                        :class="activeTab === 'communaute' ? 'border-purple-500 text-purple-400' : 'border-transparent text-gray-400 hover:text-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-heart mr-2"></i>
+                    Mes Contributions
+                </button>
+                <button @click="activeTab = 'stats'"
+                        :class="activeTab === 'stats' ? 'border-yellow-500 text-yellow-400' : 'border-transparent text-gray-400 hover:text-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Statistiques
+                </button>
+            </nav>
+        </div>
+
+        <!-- Contenu Personnages -->
+        <div x-show="activeTab === 'personnages'" x-transition>
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-white">Mes Personnages</h2>
+                <%- include('../../components/ui-button', {
+                    text: 'Créer un personnage',
+                    variant: 'primary',
+                    size: 'sm',
+                    href: '/personnages/nouveau',
+                    icon: 'fas fa-plus'
+                }) %>
+            </div>
+            
+            <div x-show="personnages.length === 0" class="text-center py-12 text-gray-400">
+                <i class="fas fa-user-plus text-4xl mb-4"></i>
+                <p class="text-lg mb-2">Aucun personnage créé</p>
+                <p class="text-sm mb-4">Créez votre premier personnage pour commencer</p>
+                <%- include('../../components/ui-button', {
+                    text: 'Créer mon premier personnage',
+                    variant: 'primary',
+                    href: '/personnages/nouveau',
+                    icon: 'fas fa-user-plus'
+                }) %>
+            </div>
+            
+            <div x-show="personnages.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="personnage in personnages" :key="personnage.id">
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-white" x-text="personnage.nom"></h3>
+                            <span class="px-2 py-1 text-xs rounded-full"
+                                  :class="getSystemColor(personnage.systeme)"
+                                  x-text="personnage.systeme"></span>
+                        </div>
+                        
+                        <div class="text-gray-400 text-sm space-y-1 mb-4">
+                            <p><span class="font-medium">Système:</span> <span x-text="personnage.systeme"></span></p>
+                            <p><span class="font-medium">Modifié:</span> <span x-text="formatDate(personnage.updated_at)"></span></p>
+                            <p x-show="personnage.nb_pdfs > 0">
+                                <span class="font-medium">PDFs générés:</span> 
+                                <span x-text="personnage.nb_pdfs" class="text-green-400"></span>
+                            </p>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <%- include('../../components/ui-button', {
+                                text: 'Éditer',
+                                variant: 'outline',
+                                size: 'sm',
+                                action: 'editPersonnage(personnage.id)',
+                                icon: 'fas fa-edit',
+                                additionalClasses: 'flex-1'
+                            }) %>
+                            <%- include('../../components/ui-button', {
+                                text: 'PDF',
+                                variant: 'primary',
+                                size: 'sm',
+                                action: 'generatePdf(personnage.id)',
+                                icon: 'fas fa-file-pdf',
+                                additionalClasses: 'flex-1'
+                            }) %>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Contenu PDFs -->
+        <div x-show="activeTab === 'pdfs'" x-transition>
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-white">Mes Documents PDF</h2>
+                <div class="flex space-x-2">
+                    <%- include('../../components/ui-button', {
+                        text: 'Générer un PDF',
+                        variant: 'primary',
+                        size: 'sm',
+                        href: '/generateur',
+                        icon: 'fas fa-plus'
+                    }) %>
+                </div>
+            </div>
+            
+            <div x-show="pdfs.length === 0" class="text-center py-12 text-gray-400">
+                <i class="fas fa-file-pdf text-4xl mb-4"></i>
+                <p class="text-lg mb-2">Aucun PDF généré</p>
+                <p class="text-sm mb-4">Créez des documents PDF depuis vos personnages ou le générateur</p>
+            </div>
+            
+            <div x-show="pdfs.length > 0" class="space-y-4">
+                <template x-for="pdf in pdfs" :key="pdf.id">
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-4 mb-2">
+                                    <h3 class="text-lg font-medium text-white" x-text="pdf.nom_fichier.replace(/\\.[^/.]+$/, '')"></h3>
+                                    <span class="px-2 py-1 text-xs rounded-full"
+                                          :class="getStatusColor(pdf.statut)"
+                                          x-text="getStatusLabel(pdf.statut)"></span>
+                                    <span x-show="pdf.est_public" class="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
+                                        Public
+                                    </span>
+                                </div>
+                                
+                                <div class="text-gray-400 text-sm space-y-1">
+                                    <p><span class="font-medium">Type:</span> <span x-text="pdf.type"></span></p>
+                                    <p><span class="font-medium">Système:</span> <span x-text="pdf.systeme"></span></p>
+                                    <p><span class="font-medium">Créé:</span> <span x-text="formatDate(pdf.created_at)"></span></p>
+                                    <p x-show="pdf.votes_recus > 0" class="text-yellow-400">
+                                        <i class="fas fa-star mr-1"></i>
+                                        <span x-text="pdf.moyenne_votes"></span>/5 
+                                        (<span x-text="pdf.votes_recus"></span> votes)
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col space-y-2 ml-4">
+                                <template x-if="pdf.statut === 'TERMINE'">
+                                    <div class="flex space-x-2">
+                                        <%- include('../../components/ui-button', {
+                                            text: 'Télécharger',
+                                            variant: 'primary',
+                                            size: 'sm',
+                                            action: 'downloadPdf(pdf.id)',
+                                            icon: 'fas fa-download'
+                                        }) %>
+                                        <%- include('../../components/ui-button', {
+                                            text: 'Partager',
+                                            variant: 'outline',
+                                            size: 'sm',
+                                            action: 'sharePdf(pdf.id)',
+                                            icon: 'fas fa-share'
+                                        }) %>
+                                    </div>
+                                </template>
+                                
+                                <button @click="togglePdfVisibility(pdf)"
+                                        :class="pdf.est_public ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-400'"
+                                        class="px-3 py-1 rounded text-sm">
+                                    <i :class="pdf.est_public ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mr-1"></i>
+                                    <span x-text="pdf.est_public ? 'Public' : 'Privé'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Contenu Communauté -->
+        <div x-show="activeTab === 'communaute'" x-transition>
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-white mb-2">Mes Contributions</h2>
+                <p class="text-gray-400">Documents partagés avec la communauté et mes votes</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Documents publics -->
+                <div>
+                    <h3 class="text-lg font-medium text-white mb-4">Mes Documents Publics</h3>
+                    <div x-show="documentsPublics.length === 0" class="text-center py-8 text-gray-400">
+                        <i class="fas fa-share text-2xl mb-2"></i>
+                        <p class="text-sm">Aucun document partagé</p>
+                    </div>
+                    
+                    <div x-show="documentsPublics.length > 0" class="space-y-3">
+                        <template x-for="doc in documentsPublics" :key="doc.id">
+                            <div class="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-white" x-text="doc.titre"></h4>
+                                    <span class="text-yellow-400" x-show="doc.moyenne_votes > 0">
+                                        <i class="fas fa-star"></i>
+                                        <span x-text="doc.moyenne_votes"></span>
+                                    </span>
+                                </div>
+                                <div class="text-gray-400 text-sm">
+                                    <span x-text="doc.nb_votes"></span> votes • 
+                                    <span x-text="doc.nb_vues"></span> vues
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Mes votes récents -->
+                <div>
+                    <h3 class="text-lg font-medium text-white mb-4">Mes Votes Récents</h3>
+                    <div x-show="mesVotes.length === 0" class="text-center py-8 text-gray-400">
+                        <i class="fas fa-vote-yea text-2xl mb-2"></i>
+                        <p class="text-sm">Aucun vote encore</p>
+                    </div>
+                    
+                    <div x-show="mesVotes.length > 0" class="space-y-3">
+                        <template x-for="vote in mesVotes" :key="vote.id">
+                            <div class="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+                                <h4 class="font-medium text-white mb-2" x-text="vote.document.titre"></h4>
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex space-x-4">
+                                        <span class="text-yellow-400">Qualité: <span x-text="vote.qualite_generale"></span>/5</span>
+                                        <span class="text-blue-400">Utilité: <span x-text="vote.utilite_pratique"></span>/5</span>
+                                        <span class="text-green-400">Respect: <span x-text="vote.respect_gamme"></span>/5</span>
+                                    </div>
+                                    <span class="text-gray-400" x-text="formatDate(vote.created_at)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu Statistiques -->
+        <div x-show="activeTab === 'stats'" x-transition>
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-white mb-2">Mes Statistiques</h2>
+                <p class="text-gray-400">Vue d'ensemble de votre activité sur la plateforme</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-400">Total personnages</p>
+                            <p class="text-3xl font-bold text-blue-400" x-text="stats.personnages"></p>
+                        </div>
+                        <div class="p-3 bg-blue-500/20 rounded-lg">
+                            <i class="fas fa-user text-blue-400 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-400">PDFs générés</p>
+                            <p class="text-3xl font-bold text-green-400" x-text="stats.pdfs"></p>
+                        </div>
+                        <div class="p-3 bg-green-500/20 rounded-lg">
+                            <i class="fas fa-file-pdf text-green-400 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-400">Votes donnés</p>
+                            <p class="text-3xl font-bold text-purple-400" x-text="stats.votes_donnes"></p>
+                        </div>
+                        <div class="p-3 bg-purple-500/20 rounded-lg">
+                            <i class="fas fa-heart text-purple-400 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-400">Votes reçus</p>
+                            <p class="text-3xl font-bold text-yellow-400" x-text="stats.votes_recus"></p>
+                        </div>
+                        <div class="p-3 bg-yellow-500/20 rounded-lg">
+                            <i class="fas fa-star text-yellow-400 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function userDashboard() {
+    return {
+        activeTab: 'personnages',
+        personnages: [],
+        pdfs: [],
+        documentsPublics: [],
+        mesVotes: [],
+        stats: {
+            personnages: 0,
+            pdfs: 0,
+            votes_donnes: 0,
+            votes_recus: 0
+        },
+        
+        init() {
+            this.loadData();
+        },
+        
+        async loadData() {
+            try {
+                // Charger toutes les données en parallèle
+                const [personnagesRes, pdfsRes, statsRes] = await Promise.all([
+                    fetch('/api/personnages', { credentials: 'include' }),
+                    fetch('/api/pdfs', { credentials: 'include' }),
+                    fetch('/api/utilisateur/statistiques', { credentials: 'include' })
+                ]);
+                
+                const [personnagesData, pdfsData, statsData] = await Promise.all([
+                    personnagesRes.json(),
+                    pdfsRes.json(),
+                    statsRes.json()
+                ]);
+                
+                if (personnagesData.succes) {
+                    this.personnages = personnagesData.donnees;
+                }
+                
+                if (pdfsData.succes) {
+                    this.pdfs = pdfsData.donnees;
+                }
+                
+                if (statsData.succes) {
+                    this.stats = statsData.donnees;
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+            }
+        },
+        
+        editPersonnage(id) {
+            window.location.href = '/personnages/' + id + '/editer';
+        },
+        
+        async generatePdf(personnageId) {
+            try {
+                const response = await fetch('/api/personnages/' + personnageId + '/pdf', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.succes) {
+                    alert('PDF en cours de génération !');
+                    this.loadData(); // Recharger les données
+                }
+            } catch (error) {
+                console.error('Erreur génération PDF:', error);
+            }
+        },
+        
+        downloadPdf(pdfId) {
+            window.open('/api/pdfs/' + pdfId + '/telecharger', '_blank');
+        },
+        
+        async sharePdf(pdfId) {
+            // Implémenter le partage
+            console.log('Partage PDF:', pdfId);
+        },
+        
+        async togglePdfVisibility(pdf) {
+            try {
+                const response = await fetch('/api/pdfs/' + pdf.id + '/basculer-visibilite', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.succes) {
+                    pdf.est_public = !pdf.est_public;
+                }
+            } catch (error) {
+                console.error('Erreur basculement visibilité:', error);
+            }
+        },
+        
+        getSystemColor(system) {
+            const colors = {
+                'monsterhearts': 'bg-purple-500/20 text-purple-300',
+                'engrenages': 'bg-emerald-500/20 text-emerald-300',
+                'metro2033': 'bg-red-500/20 text-red-300',
+                'mistengine': 'bg-pink-500/20 text-pink-300',
+                'zombiology': 'bg-yellow-500/20 text-yellow-300'
+            };
+            return colors[system] || 'bg-gray-500/20 text-gray-300';
+        },
+        
+        getStatusColor(status) {
+            const colors = {
+                'EN_COURS': 'bg-yellow-500/20 text-yellow-300',
+                'TERMINE': 'bg-green-500/20 text-green-300',
+                'ERREUR': 'bg-red-500/20 text-red-300'
+            };
+            return colors[status] || 'bg-gray-500/20 text-gray-300';
+        },
+        
+        getStatusLabel(status) {
+            const labels = {
+                'EN_COURS': 'En cours',
+                'TERMINE': 'Terminé',
+                'ERREUR': 'Erreur'
+            };
+            return labels[status] || status;
+        },
+        
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+    }
+}
+</script>
+` }) %>

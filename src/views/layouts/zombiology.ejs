@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= locals.titre || 'Zombiology - Générateur PDF JDR' %></title>
+    
+    <!-- Meta tags SEO -->
+    <meta name="description" content="<%= locals.description || 'Créateur de fiches de personnages Zombiology avec génération PDF' %>">
+    <meta name="keywords" content="zombiology, jdr, zombies, survie, fiche personnage, pdf">
+    <meta name="author" content="Brumisater">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="<%= locals.titre || 'Zombiology - Générateur PDF JDR' %>">
+    <meta property="og:description" content="<%= locals.description || 'Créateur de fiches de personnages Zombiology avec génération PDF' %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= process.env.BASE_URL || 'https://brumisater' %>">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rpg-awesome@0.2.0/css/rpg-awesome.min.css">
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <style>
+        .font-display { font-family: 'Orbitron', monospace; }
+        .font-body { font-family: 'Inter', sans-serif; }
+        
+        /* Variables CSS thématiques Zombiology - Survival Horror */
+        :root {
+            --system-primary: #FF8C00;        /* Orange survival */
+            --system-secondary: #DC143C;      /* Rouge danger */
+            --system-accent: #FFD700;         /* Jaune avertissement */
+            --system-bg-from: #8B0000;        /* Rouge sombre */
+            --system-bg-to: #2F4F4F;          /* Gris slate foncé */
+            --system-text-primary: #F5F5DC;   /* Beige clair */
+            --system-text-secondary: #CD853F; /* Peru */
+            --system-border: #A0522D;         /* Marron sienna */
+        }
+        
+        /* Effets thématiques Zombiology */
+        .zombiology-glow {
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+        }
+        
+        .zombiology-border {
+            border: 2px solid var(--system-border);
+            border-radius: 4px;
+        }
+        
+        .zombiology-bg {
+            background: linear-gradient(135deg, var(--system-bg-from) 0%, var(--system-bg-to) 100%);
+        }
+        
+        .zombiology-pattern {
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(255, 140, 0, 0.1) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        
+        /* Animations thématiques */
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .zombiology-pulse {
+            animation: pulse-danger 2s infinite;
+        }
+        
+        /* Composants spécifiques */
+        .zombiology-card {
+            background: rgba(139, 0, 0, 0.1);
+            border: 1px solid var(--system-border);
+            backdrop-filter: blur(10px);
+        }
+        
+        .zombiology-button {
+            background: linear-gradient(45deg, var(--system-primary), var(--system-secondary));
+            color: var(--system-text-primary);
+            border: 1px solid var(--system-accent);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+        
+        .zombiology-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+        }
+        
+        /* Styles spécifiques au thème survival */
+        .survival-alert {
+            background: rgba(220, 20, 60, 0.2);
+            border-left: 4px solid var(--system-secondary);
+            color: var(--system-text-primary);
+        }
+        
+        .resource-bar {
+            background: rgba(47, 79, 79, 0.3);
+            border: 1px solid var(--system-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .resource-fill {
+            background: linear-gradient(90deg, var(--system-accent), var(--system-primary));
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="font-body bg-gray-900 text-gray-100 zombiology-pattern min-h-screen">
+    <!-- Background atmosphérique -->
+    <div class="fixed inset-0 zombiology-bg opacity-90 pointer-events-none"></div>
+    
+    <!-- Contenu principal -->
+    <div class="relative z-10">
+        <%- body %>
+    </div>
+    
+    <!-- Scripts thématiques Zombiology -->
+    <script>
+        // Effets atmosphériques pour le thème survival horror
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter des effets de survie si nécessaire
+            const systemTheme = 'zombiology';
+            
+            // Gestion des alertes de ressources
+            const resourceBars = document.querySelectorAll('.resource-bar');
+            resourceBars.forEach(bar => {
+                const fill = bar.querySelector('.resource-fill');
+                if (fill) {
+                    const value = fill.dataset.value || '100';
+                    fill.style.width = value + '%';
+                    
+                    // Animation d'alerte si ressource basse
+                    if (parseInt(value) < 25) {
+                        fill.classList.add('zombiology-pulse');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -7,6 +7,8 @@ const HomeController = require('../controllers/HomeController');
 const DonationController = require('../controllers/DonationController');
 const AdminController = require('../controllers/AdminController');
 const OracleController = require('../controllers/OracleController');
+const VoteController = require('../controllers/VoteController');
+const ModerationController = require('../controllers/ModerationController');
 
 const router = express.Router();
 
@@ -43,6 +45,8 @@ const homeController = new HomeController();
 const donationController = new DonationController();
 const adminController = new AdminController();
 const oracleController = new OracleController();
+const voteController = new VoteController();
+const moderationController = new ModerationController();
 
 // ===== ROUTES AUTHENTIFICATION =====
 
@@ -197,6 +201,33 @@ router.get('/admin/oracles/:id/export/json', authController.middlewareRole('ADMI
 router.get('/admin/oracles/:id/export/csv', authController.middlewareRole('ADMIN'), oracleController.exporterCSV);
 router.get('/admin/oracles/imports', authController.middlewareRole('ADMIN'), oracleController.historiqueImports);
 router.post('/admin/oracles/imports/:importId/rollback', authController.middlewareRole('ADMIN'), oracleController.annulerImport);
+
+// ===== ROUTES VOTES ET COMMUNAUTÉ =====
+
+// Votes sur documents
+router.post('/documents/:id/vote', authController.middlewareAuth, voteController.voterDocument);
+router.delete('/documents/:id/vote', authController.middlewareAuth, voteController.supprimerVote);
+router.get('/documents/:id/statistiques-votes', voteController.obtenirStatistiquesDocument);
+router.get('/documents/:id/mon-vote', authController.middlewareAuth, voteController.obtenirMonVote);
+
+// Pages communautaires par système
+router.get('/communaute/:systeme/documents-populaires', voteController.documentsPopulaires);
+router.get('/communaute/:systeme/documents-recents', voteController.documentsRecents);
+router.get('/communaute/:systeme/documents-mis-en-avant', moderationController.documentsMisEnAvant);
+
+// Signalement de documents
+router.post('/documents/:id/signaler', authController.middlewareAuth, moderationController.signalerDocument);
+
+// ===== ROUTES MODÉRATION ADMIN =====
+
+// Modération des documents
+router.get('/admin/moderation/documents-en-attente', authController.middlewareRole('ADMIN'), moderationController.documentsEnAttente);
+router.post('/admin/moderation/documents/:id/approuver', authController.middlewareRole('ADMIN'), moderationController.approuverDocument);
+router.post('/admin/moderation/documents/:id/rejeter', authController.middlewareRole('ADMIN'), moderationController.rejeterDocument);
+router.post('/admin/moderation/documents/:id/mettre-en-avant', authController.middlewareRole('ADMIN'), moderationController.mettreEnAvant);
+router.post('/admin/moderation/documents/:id/retirer-mise-en-avant', authController.middlewareRole('ADMIN'), moderationController.retirerMiseEnAvant);
+router.get('/admin/moderation/documents/:id/historique', authController.middlewareRole('ADMIN'), moderationController.obtenirHistoriqueDocument);
+router.get('/admin/moderation/statistiques', authController.middlewareRole('ADMIN'), moderationController.obtenirStatistiques);
 
 // ===== ROUTES ADMIN TÉMOIGNAGES =====
 

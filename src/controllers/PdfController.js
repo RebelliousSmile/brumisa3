@@ -342,7 +342,7 @@ class PdfController extends BaseController {
         const donneesRequises = ['titre', 'sections'];
         this.validerCorps(req, donneesRequises);
         
-        const { SystemeUtils } = require('../config/systemesUtils');
+        const SystemeUtils = require('../utils/SystemeUtils');
         const systeme = req.params.systeme;
         
         // Vérifier que le système existe
@@ -449,7 +449,7 @@ class PdfController extends BaseController {
         const donneesRequises = ['titre', 'sections'];
         this.validerCorps(req, donneesRequises);
         
-        const { SystemeUtils } = require('../config/systemesUtils');
+        const SystemeUtils = require('../utils/SystemeUtils');
         
         // Vérifier que le système existe
         if (!SystemeUtils.getSysteme(systeme)) {

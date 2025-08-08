@@ -338,6 +338,68 @@ class Personnage extends BaseModel {
         const db = require('../database/db');
         return await db.get(sql, [utilisateurId]);
     }
+
+    /**
+     * RELATIONS - Récupérer l'utilisateur propriétaire du personnage
+     * belongsTo('utilisateur')
+     */
+    async getUtilisateur(personnageId) {
+        const personnage = await this.findById(personnageId);
+        if (!personnage || !personnage.utilisateur_id) {
+            return null;
+        }
+        
+        const Utilisateur = require('./Utilisateur');
+        const utilisateur = new Utilisateur();
+        return await utilisateur.findById(personnage.utilisateur_id);
+    }
+
+    /**
+     * RELATIONS - Récupérer les documents générés depuis ce personnage
+     * hasMany('documents')
+     */
+    async getDocuments(personnageId, filtres = {}) {
+        const Document = require('./Document');
+        const document = new Document();
+        
+        let whereClause = 'personnage_id = $1 AND statut != $2';
+        const params = [personnageId, 'SUPPRIME'];
+        let paramIndex = 3;
+
+        if (filtres.type) {
+            whereClause += ` AND type = $${paramIndex}`;
+            params.push(filtres.type);
+            paramIndex++;
+        }
+
+        if (filtres.visibilite) {
+            whereClause += ` AND visibilite = $${paramIndex}`;
+            params.push(filtres.visibilite);
+            paramIndex++;
+        }
+
+        return await document.findAll(whereClause, params, 'date_creation DESC');
+    }
+
+    /**
+     * RELATIONS - Récupérer les PDFs générés depuis ce personnage
+     * hasMany('pdfs')
+     */
+    async getPdfs(personnageId, filtres = {}) {
+        const Pdf = require('./Pdf');
+        const pdf = new Pdf();
+        return await pdf.findByPersonnage(personnageId);
+    }
+
+    /**
+     * RELATIONS - Génerer un document depuis ce personnage
+     * Méthode de création de relation
+     */
+    async genererDocument(personnageId) {
+        const Document = require('./Document');
+        const document = new Document();
+        return await document.createFromPersonnage(personnageId);
+    }
 }
 
 module.exports = Personnage;

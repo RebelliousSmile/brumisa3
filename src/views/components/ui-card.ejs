@@ -1,85 +1,155 @@
 <%
 /*
- * Composant Card Universel
+ * Composant Card Universel v2.0 - Avec Support Thèmes Système
  * Usage: <%- include('components/ui-card', { 
  *   title: 'Titre de la carte',
- *   subtitle: 'Sous-titre',
- *   variant: 'default',
- *   padding: 'md',
- *   hover: true,
- *   clickAction: 'naviguer("/page")'
+ *   subtitle: 'Sous-titre optionnel',
+ *   variant: 'default|elevated|outlined|ghost',
+ *   size: 'sm|md|lg',
+ *   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
+ *   headerActions: '<button>Action</button>', // HTML pour actions dans le header
+ *   bodyClasses: 'custom-body-class',
+ *   additionalClasses: 'mb-4',
+ *   clickable: false,
+ *   href: '/lien', // Si clickable et href fourni, devient un lien
+ *   action: 'handleClick()', // Action Alpine.js pour clickable
+ *   content: 'Contenu du corps', // Contenu principal
+ *   headerContent: '<div>Header custom</div>', // Contenu header personnalisé
+ *   footerContent: '<div>Footer</div>' // Contenu footer
  * }) %>
- * Contenu à mettre dans le body via le paramètre 'content' ou en wrappant
  */
 
+// Paramètres avec valeurs par défaut
 const {
     title = '',
     subtitle = '',
     variant = 'default',
-    padding = 'md',
-    hover = false,
-    clickAction = '',
+    size = 'md',
+    gameSystem = '',
+    headerActions = '',
+    bodyClasses = '',
     additionalClasses = '',
+    clickable = false,
+    href = '',
+    action = '',
+    id = '',
+    ariaLabel = '',
     content = '',
     headerContent = '',
     footerContent = ''
 } = locals;
 
-const baseClasses = 'bg-gray-900 rounded-lg border transition-all duration-200';
+// Intégration du SystemThemeService côté serveur
+const SystemThemeService = require('../../services/SystemThemeService');
+const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
 
+// Classes de base
+const baseClasses = 'bg-gray-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200';
+
+// Classes par variant
 const variantClasses = {
-    default: 'border-gray-700',
-    primary: 'border-generique/30 bg-generique/5',
-    success: 'border-succes/30 bg-succes/5',
-    warning: 'border-avertissement/30 bg-avertissement/5',
-    danger: 'border-erreur/30 bg-erreur/5'
+    default: 'bg-gray-800/50 border-gray-700',
+    elevated: 'bg-gray-800 border-gray-600 shadow-xl',
+    outlined: 'bg-transparent border-2 border-gray-600',
+    ghost: 'bg-gray-800/30 border-gray-800'
+};
+
+// Classes système-spécifiques si un thème est fourni
+const getSystemVariantClasses = (variant, systemTheme) => {
+    if (!systemTheme) return variantClasses[variant];
+    
+    const systemColorMap = {
+        monsterhearts: 'purple',
+        engrenages: 'emerald', 
+        metro2033: 'red',
+        mistengine: 'pink',
+        zombiology: 'yellow'
+    };
+    
+    const systemColor = systemColorMap[gameSystem] || 'gray';
+    
+    switch (variant) {
+        case 'outlined':
+            return `bg-transparent border-2 border-${systemColor}-500/50`;
+        case 'elevated':
+            return `bg-gray-800 border-${systemColor}-500/30 shadow-xl shadow-${systemColor}-500/10`;
+        default:
+            return variantClasses[variant];
+    }
+};
+
+// Classes de taille
+const sizeClasses = {
+    sm: 'text-sm',
+    md: 'text-base', 
+    lg: 'text-lg'
 };
 
 const paddingClasses = {
-    none: '',
     sm: 'p-4',
-    md: 'p-6', 
+    md: 'p-6',
     lg: 'p-8'
 };
 
-const hoverClasses = hover ? 'hover:border-gray-600 hover:shadow-lg cursor-pointer' : '';
-
+// Classes finales
 const finalClasses = [
     baseClasses,
-    variantClasses[variant] || variantClasses.default,
-    paddingClasses[padding] || paddingClasses.md,
-    hoverClasses,
+    getSystemVariantClasses(variant, systemTheme),
+    sizeClasses[size] || sizeClasses.md,
+    clickable ? 'cursor-pointer hover:bg-gray-700/50' : '',
     additionalClasses
-].join(' ');
+].filter(Boolean).join(' ');
 
+// Attributs dynamiques
 const attributes = [];
-if (clickAction) attributes.push(`@click="${clickAction}"`);
+if (id) attributes.push(`id="${id}"`);
+if (ariaLabel) attributes.push(`aria-label="${ariaLabel}"`);
+if (clickable && action) attributes.push(`@click="${action}"`);
+if (clickable && !action && !href) attributes.push(`@click="$dispatch('card-click', { card: $el })"`);
+
+// Détermine si c'est un lien
+const isLink = clickable && !!href;
+const tagName = isLink ? 'a' : 'div';
+const hrefAttr = isLink ? `href="${href}"` : '';
 %>
 
-<div class="<%= finalClasses %>" <%= attributes.join(' ') %>>
-    <% if (title || subtitle || headerContent) { %>
-        <div class="<%= padding !== 'none' ? 'mb-4' : '' %>">
-            <% if (title) { %>
-                <h3 class="text-lg font-semibold text-white mb-1"><%= title %></h3>
-            <% } %>
-            <% if (subtitle) { %>
-                <p class="text-gray-400 text-sm"><%= subtitle %></p>
-            <% } %>
-            <% if (headerContent) { %>
-                <%- headerContent %>
-            <% } %>
+<<%= tagName %> class="<%= finalClasses %>" <%= hrefAttr %> <%= attributes.join(' ') %>>
+    <% if (title || subtitle || headerActions || headerContent) { %>
+        <div class="<%= paddingClasses[size] || paddingClasses.md %> pb-0">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <% if (title) { %>
+                        <h3 class="text-lg font-semibold text-white mb-1"><%= title %></h3>
+                    <% } %>
+                    <% if (subtitle) { %>
+                        <p class="text-gray-400 text-sm"><%= subtitle %></p>
+                    <% } %>
+                    <% if (headerContent) { %>
+                        <div class="mt-2">
+                            <%- headerContent %>
+                        </div>
+                    <% } %>
+                </div>
+                <% if (headerActions) { %>
+                    <div class="ml-4 flex-shrink-0">
+                        <%- headerActions %>
+                    </div>
+                <% } %>
+            </div>
         </div>
     <% } %>
     
     <% if (content) { %>
-        <div class="text-gray-300">
+        <div class="<%= (title || subtitle || headerActions || headerContent) ? paddingClasses[size] + ' pt-4' : paddingClasses[size] %> <%= bodyClasses %> text-gray-300">
             <%- content %>
         </div>
     <% } %>
     
     <% if (footerContent) { %>
-        <div class="<%= padding !== 'none' ? 'mt-4 pt-4 border-t border-gray-700' : '' %>">
-            <%- footerContent %>
+        <div class="<%= paddingClasses[size] || paddingClasses.md %> pt-0">
+            <div class="pt-4 border-t border-gray-700">
+                <%- footerContent %>
+            </div>
         </div>
     <% } %>
-</div>
+</<%= tagName %>>

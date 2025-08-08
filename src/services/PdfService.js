@@ -41,6 +41,193 @@ class PdfService extends BaseService {
     }
 
     /**
+     * Génère un document PDF selon le type et le système
+     * Méthode générique selon flux-generation-pdf.md
+     * 
+     * @param {string} type - Type de document (CHARACTER, TOWN, GROUP, etc.)
+     * @param {Object} donnees - Données du document
+     * @param {Object} utilisateur - Utilisateur (ou null pour anonyme)
+     * @param {string} systeme - Système JDR
+     * @returns {Object} Document et PDF créés
+     */
+    async genererDocument(type, donnees, utilisateur = null, systeme = 'monsterhearts') {
+        try {
+            this.log('info', 'Génération document demandée', {
+                type,
+                systeme,
+                utilisateur_id: utilisateur?.id || null
+            });
+
+            // Validation du type de document
+            const typesValides = ['CHARACTER', 'TOWN', 'GROUP', 'ORGANIZATION', 'DANGER', 'GENERIQUE'];
+            if (!typesValides.includes(type.toUpperCase())) {
+                throw new Error(`Type de document invalide: ${type}`);
+            }
+
+            // Validation du système
+            if (!systemesJeu[systeme]) {
+                throw new Error(`Système JDR non supporté: ${systeme}`);
+            }
+
+            // Créer l'entrée Document
+            const Document = require('../models/Document');
+            const documentData = {
+                titre: donnees.titre || `Document ${type}`,
+                type: type.toUpperCase(),
+                systeme: systeme,
+                donnees: donnees,
+                utilisateur_id: utilisateur?.id || null,
+                est_public: false, // Par défaut privé
+                statut_moderation: utilisateur ? 'EN_ATTENTE' : null, // Seulement si utilisateur connecté
+                visible_admin_only: !utilisateur // Visible admin seulement si anonyme
+            };
+
+            const document = await Document.create(documentData);
+
+            // Créer l'entrée PDF associée
+            const nomFichier = this.genererNomFichierUnique(type, systeme, document.id);
+            const pdfData = {
+                document_id: document.id,
+                utilisateur_id: utilisateur?.id || null,
+                nom_fichier: nomFichier,
+                statut: 'EN_COURS',
+                systeme: systeme,
+                type: type.toUpperCase(),
+                donnees_generation: {
+                    template: this.getTemplateParType(type, systeme),
+                    version: '1.0',
+                    moteur: 'pdfkit'
+                }
+            };
+
+            const pdf = await this.pdfModel.create(pdfData);
+
+            // Lancer la génération asynchrone
+            this.genererPdfAsync(pdf.id, donnees, {
+                type,
+                systeme,
+                template: pdfData.donnees_generation.template
+            }).catch(error => {
+                this.logError(error, { pdfId: pdf.id, type, systeme });
+            });
+
+            return {
+                document,
+                pdf,
+                statut: 'EN_COURS',
+                message: 'Génération en cours...'
+            };
+
+        } catch (error) {
+            this.logError(error, { type, systeme, utilisateurId: utilisateur?.id });
+            throw error;
+        }
+    }
+
+    /**
+     * Génère un document PDF depuis un personnage sauvegardé
+     * 
+     * @param {number} personnageId - ID du personnage
+     * @param {number} utilisateurId - ID de l'utilisateur
+     * @returns {Object} Document généré
+     */
+    async genererDepuisPersonnage(personnageId, utilisateurId) {
+        try {
+            // Récupérer le personnage
+            const personnage = await this.personnageModel.findById(personnageId);
+            if (!personnage) {
+                throw new Error('Personnage non trouvé');
+            }
+
+            // Vérifier les permissions
+            if (personnage.utilisateur_id !== utilisateurId) {
+                throw new Error('Vous ne pouvez pas générer un PDF pour ce personnage');
+            }
+
+            // Récupérer l'utilisateur
+            const Utilisateur = require('../models/Utilisateur');
+            const utilisateur = await Utilisateur.findById(utilisateurId);
+
+            // Transformer les données du personnage pour le document
+            const donnees = this.transformerPersonnageEnDocument(personnage);
+
+            this.log('info', 'Génération PDF depuis personnage', {
+                personnage_id: personnageId,
+                utilisateur_id: utilisateurId,
+                systeme: personnage.systeme
+            });
+
+            // Générer le document CHARACTER
+            return await this.genererDocument(
+                'CHARACTER',
+                donnees,
+                utilisateur,
+                personnage.systeme
+            );
+
+        } catch (error) {
+            this.logError(error, { personnageId, utilisateurId });
+            throw error;
+        }
+    }
+
+    /**
+     * Transformer les données d'un personnage en format document
+     * 
+     * @private
+     * @param {Object} personnage - Données du personnage
+     * @returns {Object} Données formatées pour le document
+     */
+    transformerPersonnageEnDocument(personnage) {
+        return {
+            titre: personnage.nom || 'Personnage sans nom',
+            nom: personnage.nom,
+            systeme: personnage.systeme,
+            donnees: personnage.donnees,
+            // Enrichir avec des métadonnées
+            source: 'personnage_sauvegarde',
+            personnage_id: personnage.id,
+            date_creation_personnage: personnage.created_at
+        };
+    }
+
+    /**
+     * Obtenir le template approprié selon le type et le système
+     * 
+     * @private
+     * @param {string} type - Type de document
+     * @param {string} systeme - Système JDR
+     * @returns {string} Nom du template
+     */
+    getTemplateParType(type, systeme) {
+        const templates = {
+            'CHARACTER': `${systeme}_character`,
+            'TOWN': `${systeme}_town`,
+            'GROUP': `${systeme}_group`, 
+            'ORGANIZATION': `${systeme}_organization`,
+            'DANGER': `${systeme}_danger`,
+            'GENERIQUE': `${systeme}_generique`
+        };
+
+        return templates[type.toUpperCase()] || `${systeme}_generique`;
+    }
+
+    /**
+     * Générer un nom de fichier unique
+     * 
+     * @private
+     * @param {string} type - Type de document
+     * @param {string} systeme - Système JDR
+     * @param {number} documentId - ID du document
+     * @returns {string} Nom de fichier unique
+     */
+    genererNomFichierUnique(type, systeme, documentId) {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(2, 7);
+        return `${systeme}_${type.toLowerCase()}_${documentId}_${timestamp}_${random}.pdf`;
+    }
+
+    /**
      * Liste les PDFs d'un utilisateur
      */
     async listerParUtilisateur(utilisateurId, filtres = {}, pagination = {}) {

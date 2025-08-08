@@ -1,6 +1,6 @@
 const BasePdfKitService = require('../BasePdfKitService');
 const SystemTheme = require('../themes/SystemTheme');
-const { SystemeUtils } = require('../../config/systemesUtils');
+const SystemeUtils = require('../../utils/SystemeUtils');
 const fs = require('fs');
 
 /**
