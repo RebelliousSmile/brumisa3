@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble du projet
 
-Générateur de **documents** PDF pour jeux de rôle, développé en **JavaScript pur** avec une architecture **MVC moderne** utilisant **Alpine.js** pour l'interactivité frontend.
+Générateur de **documents** PDF pour jeux de rôle, développé en **JavaScript pur** avec une architecture **MVC-CS** (Model-View-Controller with Components & Services) utilisant **Alpine.js** pour l'interactivité frontend.
 
 ### 🎯 Objectif principal
 Créer et gérer des **personnages** (données sauvegardées) et générer des **documents** PDF stylisés pour différents systèmes de JDR, avec une approche mobile-first.
@@ -24,12 +24,13 @@ Utilisateur connecté ──► Personnage sauvegardé ──► Document CHARAC
 Utilisateur anonyme ────► Formulaire direct ──► Document (visible admin uniquement)
 ```
 
-### 5 Types de Documents
+### 6 Types de Documents
 1. **CHARACTER** : Feuilles de personnage (tous systèmes)
 2. **TOWN** : Cadres de ville (spécifique Monsterhearts)
 3. **GROUP** : Plans de classe/groupe (spécifique Monsterhearts)
 4. **ORGANIZATION** : Listes de PNJs organisées (tous systèmes)
 5. **DANGER** : Fronts et dangers (spécifique Mist Engine)
+6. **GENERIQUE** : Documents libres avec structure flexible (tous systèmes)
 
 ### 5 Systèmes JDR Supportés
 - **Monsterhearts** : Romance gothique adolescente, système PbtA (2d6)
@@ -43,7 +44,7 @@ Utilisateur anonyme ────► Formulaire direct ──► Document (visibl
 ### Backend
 - **Runtime** : Node.js 18+
 - **Framework web** : Express.js
-- **Base de données** : SQLite (développement) / PostgreSQL (production)
+- **Base de données** : PostgreSQL (production et développement)
 - **Templates** : EJS avec layouts
 - **Génération PDF** : PDFKit avec système de thèmes
 - **Authentification** : Sessions Express avec codes d'accès
@@ -63,7 +64,7 @@ Utilisateur anonyme ────► Formulaire direct ──► Document (visibl
 - **Build** : Scripts pnpm personnalisés
 - **Documentation** : JSDoc automatique
 
-## Architecture MVC
+## Architecture MVC-CS
 
 ### Modèles (Models)
 - **BaseModel** : CRUD générique, validation, hooks
@@ -84,6 +85,18 @@ Utilisateur anonyme ────► Formulaire direct ──► Document (visibl
 - **UtilisateurController** : Authentification et profils
 - **PersonnageController** : CRUD données sauvegardées
 
+### Composants (Components)
+- **Alpine.js Components** : Logique réactive côté client
+- **Stores globaux** : État partagé entre composants
+- **Architecture 4 couches** : Données, Computed, Méthodes, Lifecycle
+- **Progressive Enhancement** : Amélioration progressive de l'UX
+
+### Services (Services)
+- **BaseService** : Classe abstraite pour services métier
+- **PersonnageService** : Logique métier personnages
+- **PdfService** : Orchestration génération PDF
+- **DocumentFactory** : Factory pattern pour types de documents
+
 ## Architecture de génération PDF
 
 ### Hiérarchie des services
@@ -95,7 +108,8 @@ PdfService (orchestration)
     │   ├── TownDocument
     │   ├── GroupDocument
     │   ├── OrganizationDocument
-    │   └── DangerDocument
+    │   ├── DangerDocument
+    │   └── GeneriqueDocument
     │
     └── SystemThemeService (thèmes visuels)
         ├── MonsterheartsTheme
@@ -203,6 +217,7 @@ PdfService (orchestration)
 ---
 
 *Ce document donne une vue d'ensemble de l'architecture. Consultez les fichiers spécialisés pour les détails techniques :*
+- **Pattern MVC-CS** → [`architecture-pattern.md`](architecture-pattern.md)
 - **Modèles** → [`architecture-models.md`](architecture-models.md)
 - **Frontend** → [`architecture-frontend.md`](architecture-frontend.md)
-- **Génération PDF** → [`../FONCTIONNALITES/generation-pdf.md`](../FONCTIONNALITES/generation-pdf.md)
+- **Création Documents** → [`../FONCTIONNALITES/02-creation-documents.md`](../FONCTIONNALITES/02-creation-documents.md)

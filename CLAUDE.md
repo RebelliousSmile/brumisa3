@@ -1,8 +1,8 @@
-ah j'a# brumisater - Documentation Technique
+Brumisater - Documentation Technique
 
 ## Vue d'ensemble
 
-Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec architecture **MVC moderne** et **Alpine.js**.
+Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec architecture **MVC-CS** (Model-View-Controller with Components & Services) et **Alpine.js**.
 
 ### 🏗️ Stack technique
 - **Backend** : Node.js + Express + PostgreSQL + EJS
@@ -39,9 +39,9 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 ### 📚 Documentation d'abord
 - **Toujours vérifier** si le fonctionnement a été détaillé dans `documentation/` avant de créer de nouvelles instructions
 - Consulter les fichiers existants :
-  - `architecture-*.md` pour les patterns et structures
-  - `testing.md` pour les pratiques de test
-  - `api.md` pour les endpoints
+  - `ARCHITECTURE/*.md` pour les patterns et structures
+  - `FONCTIONNALITES/*.md` pour les descriptions fonctionnelles
+  - `DEVELOPPEMENT/*.md` pour les choix de développement
 - **Compléter** la documentation existante plutôt que de créer de nouveaux fichiers
 
 ### 🧪 Tests du code métier
@@ -56,7 +56,6 @@ Créateur de fiches de personnages JDR immersives en **JavaScript pur** avec arc
 ## Structure du projet
 - le répertoire scripts ne doit pas avoir de sous-répertoire
 - le répertoire documentation doit comporter le moins de code possible. 
-- les fichiers markdown du répertoire documentation ne devraient pas comporter plus de 200 lignes. 
 - le fichier CLAUDE.md ne devrait pas comporter plus de 500 lignes. 
 
 ## Notes techniques

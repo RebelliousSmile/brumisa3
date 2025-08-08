@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-L'architecture frontend de brumisater combine **EJS** pour les templates côté serveur et **Alpine.js** pour la réactivité côté client, avec un système de composants modulaires et des layouts thématiques par système de jeu.
+L'architecture frontend de brumisater combine **EJS** pour les templates côté serveur et **Alpine.js** pour la réactivité côté client, avec un système de composants modulaires et des layouts thématiques par système de jeu, s'intégrant dans l'architecture **MVC-CS** (Model-View-Controller with Components & Services).
 
 ## Stack Frontend
 
@@ -206,7 +206,7 @@ public/js/
     └── ButtonHelpers.js
 ```
 
-### Architecture en 4 Couches
+### Architecture de la Couche Components (MVC-CS)
 
 #### 1. Système de Composants Centralisé (alpine-component-system.js)
 ```javascript

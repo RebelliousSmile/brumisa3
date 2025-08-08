@@ -1,5 +1,71 @@
 # Commandes Windows pour le développement
 
+## Configuration environnement
+
+### Installation PostgreSQL
+```cmd
+# Via winget (Windows 10/11)
+winget install PostgreSQL.PostgreSQL
+
+# Ou télécharger depuis https://www.postgresql.org/download/windows/
+```
+
+### Configuration PostgreSQL
+```cmd
+# Se connecter à PostgreSQL
+psql -U postgres
+
+# Créer base de données
+CREATE DATABASE brumisater_dev;
+CREATE DATABASE brumisater_test;
+
+# Créer utilisateur dédié
+CREATE USER brumisater_user WITH PASSWORD 'dev_password';
+GRANT ALL PRIVILEGES ON DATABASE brumisater_dev TO brumisater_user;
+GRANT ALL PRIVILEGES ON DATABASE brumisater_test TO brumisater_user;
+```
+
+### Installation Node.js et pnpm
+```cmd
+# Via winget
+winget install OpenJS.NodeJS
+winget install pnpm.pnpm
+
+# Vérification
+node --version
+pnpm --version
+```
+
+## Commandes de développement quotidiennes
+
+### Démarrage projet
+```cmd
+# Installation dépendances
+pnpm install
+
+# Copie configuration
+copy .env.example .env
+
+# Démarrage développement
+pnpm run dev
+
+# Tests
+pnpm test
+pnpm run test:watch
+```
+
+### Base de données
+```cmd
+# Migrations
+pnpm run db:migrate
+
+# Reset base de données
+pnpm run db:reset
+
+# Sauvegarde
+pg_dump -U brumisater_user -d brumisater_dev > backup.sql
+```
+
 ## PowerShell - Remplacement de texte dans les fichiers
 
 ### Remplacement simple dans un fichier

@@ -5,24 +5,27 @@
 ## 🚀 Démarrage rapide
 
 ### Pour les nouveaux développeurs
-1. **Commencez ici** → [`ARCHITECTURE/architecture-overview.md`](ARCHITECTURE/architecture-overview.md) - Comprenez les concepts fondamentaux
-2. **Systèmes JDR** → [`SYSTEMES-JDR/systemes-configuration.md`](SYSTEMES-JDR/systemes-configuration.md) - Découvrez les jeux supportés  
-3. **Environnement** → [`DEVELOPPEMENT/commandes-windows.md`](DEVELOPPEMENT/commandes-windows.md) - Configurez votre poste de développement
-4. **User Stories** → [`FONCTIONNALITES/user-stories.md`](FONCTIONNALITES/user-stories.md) - Comprenez les besoins utilisateurs
+1. **Installation** → [`DEVELOPPEMENT/quickstart.md`](DEVELOPPEMENT/quickstart.md) - Configurez rapidement votre environnement
+2. **Concepts fondamentaux** → [`ARCHITECTURE/architecture-overview.md`](ARCHITECTURE/architecture-overview.md) - Comprenez l'architecture MVC-CS
+3. **Systèmes JDR** → [`SYSTEMES-JDR/systemes-configuration.md`](SYSTEMES-JDR/systemes-configuration.md) - Découvrez les 5 jeux supportés
+4. **API** → [`api.md`](api.md) - Utilisez l'API REST pour intégrer le système
 
 ### Pour les contributeurs expérimentés
+- **Pattern MVC-CS** → [`ARCHITECTURE/architecture-pattern.md`](ARCHITECTURE/architecture-pattern.md) - Architecture détaillée
 - **Modèles de données** → [`ARCHITECTURE/architecture-models.md`](ARCHITECTURE/architecture-models.md)
-- **Flux PDF** → [`DEVELOPPEMENT/flux-generation-pdf.md`](DEVELOPPEMENT/flux-generation-pdf.md)
-- **Charte graphique** → [`DESIGN-SYSTEM/charte-graphique-web.md`](DESIGN-SYSTEM/charte-graphique-web.md)
+- **Tests** → [`testing.md`](testing.md) - Stratégies de test Jest et Supertest
+- **API complète** → [`api.md`](api.md) - Référence détaillée des endpoints
 
 ---
 
 ## 📚 Organisation de la documentation
 
 ### 🏗️ **ARCHITECTURE/** - Structure technique
-- **`architecture-overview.md`** - Vue d'ensemble et concepts clés (MVC, Document vs Personnage)
-- **`architecture-models.md`** - Modèles de données et relations en base
+- **`architecture-overview.md`** - Vue d'ensemble MVC-CS et concepts clés (6 types de documents)
+- **`architecture-pattern.md`** - Pattern MVC-CS détaillé (Models, Views, Controllers, Components, Services)
+- **`architecture-models.md`** - Modèles de données et relations PostgreSQL
 - **`architecture-frontend.md`** - Composants Alpine.js et vues EJS
+- **`architecture-avancee.md`** - Fonctionnalités avancées et optimisations
 
 ### 🎮 **SYSTEMES-JDR/** - Jeux de rôle supportés
 - **`systemes-configuration.md`** - Configuration des 5 systèmes + types de données
@@ -42,6 +45,8 @@
 - **`charte-graphique-zombiology-pdf.md`** - Spécificités survival horror
 
 ### 🛠️ **DEVELOPPEMENT/** - Guides techniques
+- **`quickstart.md`** - Guide de démarrage rapide (installation, configuration, tests)
+- **`administration-technique.md`** - Dashboard admin et fonctionnalités d'administration
 - **`commandes-windows.md`** - Commandes PowerShell et environnement Windows
 - **`flux-generation-pdf.md`** - Processus complet de génération PDF avec DocumentFactory
 - **`pdfkit.md`** - Architecture PDFKit et templates programmatiques
@@ -49,7 +54,9 @@
 - **`jsdoc-integration.md`** - Documentation automatique du code
 - **`envoi-emails.md`** - Configuration email et notifications
 
-### 📸 **Ressources**
+### 📸 **Documentation transversale**
+- **`api.md`** - Référence complète de l'API REST
+- **`testing.md`** - Guide des tests unitaires et d'intégration
 - **`captures/`** - Screenshots et images de documentation
 - **`templates/`** - Templates HTML pour les différents documents
 
@@ -62,17 +69,20 @@
 - **Personnage** : Données sauvegardées par un utilisateur connecté
 - **Guest** : Utilisateur anonyme, peut créer des documents mais pas les retrouver
 
-### Architecture MVC
-- **Modèles** : BaseModel + spécialisations (Utilisateur, Document, Personnage, PDF)
-- **Vues** : EJS + Alpine.js + Tailwind CSS
-- **Contrôleurs** : Express.js avec services métier
+### Architecture MVC-CS
+- **Models** : BaseModel + spécialisations (Utilisateur, Document, Personnage, PDF)
+- **Views** : Templates EJS avec layouts thématiques
+- **Controllers** : Routage Express.js avec validation
+- **Components** : Composants Alpine.js réactifs
+- **Services** : Logique métier et orchestration
 
-### 5 Types de Documents
+### 6 Types de Documents
 1. **CHARACTER** : Feuilles de personnage (tous systèmes)
 2. **TOWN** : Cadres de ville (Monsterhearts)
 3. **GROUP** : Plans de classe (Monsterhearts) 
 4. **ORGANIZATION** : Listes de PNJs (tous systèmes)
 5. **DANGER** : Fronts et dangers (Mist Engine)
+6. **GENERIQUE** : Documents libres avec structure flexible (tous systèmes)
 
 ### 5 Systèmes JDR Supportés
 - **Monsterhearts** : Romance gothique, PbtA
@@ -126,4 +136,4 @@ npm run deploy:production
 
 ---
 
-*Documentation mise à jour le : 2025-01-22 - Version post-réorganisation*
+*Documentation mise à jour le : 2025-08-08 - Version MVC-CS complète avec API et quickstart*

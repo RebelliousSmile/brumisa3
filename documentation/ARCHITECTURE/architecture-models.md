@@ -2,9 +2,9 @@
 
 ## Vue d'ensemble
 
-Le projet utilise une architecture de modèles basée sur le pattern **Active Record** avec une classe de base `BaseModel` qui fournit les opérations CRUD communes et les fonctionnalités avancées.
+Le projet utilise une architecture de modèles basée sur le pattern **Active Record** avec une classe de base `BaseModel` qui fournit les opérations CRUD communes et les fonctionnalités avancées, s'intégrant dans l'architecture **MVC-CS** (Model-View-Controller with Components & Services).
 
-Cette architecture supporte le workflow central de brumisater : **mode "sur le pouce" (anonyme) + gestion à moyen terme (avec compte)** avec 5 types de documents JDR.
+Cette architecture supporte le workflow central de brumisater : **mode "sur le pouce" (anonyme) + gestion à moyen terme (avec compte)** avec 6 types de documents JDR.
 
 ## Structure générale
 

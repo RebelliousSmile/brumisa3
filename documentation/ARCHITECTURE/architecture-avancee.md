@@ -4,76 +4,18 @@
 
 Ce document présente les fonctionnalités avancées de brumisater qui enrichissent l'expérience utilisateur au-delà de la génération PDF de base.
 
-## Architecture Alpine.js 4 Couches
+## Architecture Alpine.js - Couche Components du Pattern MVC-CS
 
-### Système de Composants Centralisé
+La couche Components du pattern MVC-CS est détaillée dans [`architecture-frontend.md`](architecture-frontend.md#architecture-de-la-couche-components-mvc-cs). Cette section se concentre sur les fonctionnalités avancées spécifiques.
 
-Le framework utilise une architecture sophistiquée basée sur Alpine.js avec 4 couches distinctes :
+### Fonctionnalités Avancées des Composants
 
-1. **Système de Composants Centralisé** (`alpine-component-system.js`)
-2. **Stores Alpine Globaux** (`app.js`)
-3. **Composants Métier Fonctionnels** (`components/`)
-4. **Services Métier** (`services/`)
+Les composants Alpine.js implémentent des fonctionnalités avancées décrites dans [`architecture-frontend.md`](architecture-frontend.md#auto-sauvegarde-et-offline) :
 
-#### Patterns SOLID Implémentés
-
-- **Single Responsibility** : Chaque composant a une responsabilité unique
-- **Open/Closed** : Extensibilité via Factory patterns
-- **Liskov Substitution** : Interfaces communes pour les composants
-- **Interface Segregation** : Builders spécialisés par domaine
-- **Dependency Inversion** : Services injectés via le store global
-
-### Composants Réactifs Avancés
-
-#### Auto-sauvegarde Intelligente
-
-- **Fréquence** : Sauvegarde automatique toutes les 30 secondes
-- **Détection de changements** : Via `hasUnsavedChanges` dans le store navigation
-- **Persistance locale** : Utilisation de localStorage en fallback
-- **Récupération** : Restauration automatique en cas de fermeture accidentelle
-
-```javascript
-// Auto-save toutes les 30 secondes
-setInterval(() => {
-    if (Alpine.store('navigation').hasUnsavedChanges) {
-        const formComponent = document.querySelector('[data-auto-save]');
-        if (formComponent?._x_dataStack?.[0]?.sauvegarderAuto) {
-            formComponent._x_dataStack[0].sauvegarderAuto();
-        }
-    }
-}, 30000);
-```
-
-#### Gestion Hors Ligne
-
-- **Détection** : Surveillance des événements `offline/online`
-- **Mode dégradé** : Fonctionnement limité sans connexion
-- **Synchronisation** : Reprise automatique dès reconnexion
-- **Notifications** : Messages utilisateur appropriés
-
-```javascript
-window.addEventListener('offline', () => {
-    Alpine.store('navigation').isOffline = true;
-    Alpine.store('app').ajouterMessage('avertissement', 'Mode hors ligne activé');
-});
-```
-
-#### Gestures Mobiles
-
-- **Navigation par gestes** : Swipe entre sections de formulaires
-- **Seuil de déclenchement** : 50px minimum
-- **Feedback visuel** : Animations de transition
-- **Accessibilité** : Compatible avec les readers d'écran
-
-```javascript
-function handleGesture() {
-    if (swipeDistance > 50) {
-        Alpine.store('navigation').prevSection();
-    } else if (swipeDistance < -50) {
-        Alpine.store('navigation').nextSection();
-    }
-}
-```
+- **Auto-sauvegarde intelligente** : Sauvegarde automatique toutes les 30 secondes avec détection de changements
+- **Gestion hors ligne** : Mode dégradé avec synchronisation automatique au retour de connexion
+- **Gestures mobiles** : Navigation tactile avec seuil de 50px et feedback visuel
+- **Progressive Enhancement** : Amélioration progressive depuis HTML/CSS de base
 
 ## Système d'Authentification Avancé
 
@@ -310,4 +252,4 @@ class DocumentFactory {
 - **Performance Metrics** : Dashboards temps réel
 - **User Analytics** : Patterns d'utilisation
 
-Cette architecture avancée permet une évolutivité maximale tout en conservant la simplicité d'utilisation qui fait le succès de brumisater.
+Cette architecture avancée, intégrée dans le pattern MVC-CS, permet une évolutivité maximale tout en conservant la simplicité d'utilisation qui fait le succès de brumisater.
