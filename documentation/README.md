@@ -32,33 +32,44 @@
 - **`systemes-interfaces.md`** - Pages et layouts spécifiques par système
 
 ### 📋 **FONCTIONNALITES/** - Fonctionnalités métier
-- **`user-stories.md`** - Stories utilisateur et personas (Casey, Sam, Alex, Jordan)
-- **`oracles.md`** - Système d'oracles et génération aléatoire
-- **`features-avancees.md`** - Fonctionnalités avancées, architecture Alpine.js 4 couches
+- **`01-vision-produit.md`** - Vision produit et personas utilisateur
+- **`02-creation-documents.md`** - Création et gestion des documents
+- **`03-gestion-personnages.md`** - Sauvegarde et gestion des personnages
+- **`04-oracles.md`** - Système d'oracles et génération aléatoire
+- **`05-partage-communaute.md`** - Système de votes et modération communautaire
+- **`06-administration.md`** - Dashboard admin et outils de modération
+- **`07-temoignages.md`** - Système de témoignages utilisateur
+- **`08-systeme-premium.md`** - Fonctionnalités premium et monétisation
+- **`09-gestion-compte.md`** - Gestion comptes et conformité RGPD
 
 ### 🎨 **DESIGN-SYSTEM/** - Charte graphique
+- **`design-system-guide.md`** - Guide complet du design system avec composants UI (Phase 4)
 - **`charte-graphique-web.md`** - Design système pour l'interface web (CSS, Tailwind)
 - **`charte-graphique-pdf.md`** - Règles générales PDF (PDFKit, impression)
-- **`charte-graphique-monsterhearts-pdf.md`** - Spécificités gothique/romantique
-- **`charte-graphique-engrenages-pdf.md`** - Spécificités steampunk
-- **`charte-graphique-metro2033-pdf.md`** - Spécificités post-apocalyptique
-- **`charte-graphique-zombiology-pdf.md`** - Spécificités survival horror
+- **`charte-graphique-monsterhearts-pdf.md`** - Spécificités gothique/romantique (violet/rose)
+- **`charte-graphique-engrenages-pdf.md`** - Spécificités steampunk victorien (émeraude/cuivre)
+- **`charte-graphique-metro2033-pdf.md`** - Spécificités post-apocalyptique (rouge/gris)
+- **`charte-graphique-zombiology-pdf.md`** - Spécificités survival horror (jaune/rouge)
+- **`ux-mobile-first.md`** - Approche mobile-first et responsive design
 
 ### 🛠️ **DEVELOPPEMENT/** - Guides techniques
 - **`quickstart.md`** - Guide de démarrage rapide (installation, configuration, tests)
+- **`development-strategy.md`** - Stratégie de développement et patterns MVC-CS
+- **`testing.md`** - Guide des tests unitaires et d'intégration (Phase 5)
 - **`administration-technique.md`** - Dashboard admin et fonctionnalités d'administration
 - **`commandes-windows.md`** - Commandes PowerShell et environnement Windows
 - **`flux-generation-pdf.md`** - Processus complet de génération PDF avec DocumentFactory
 - **`pdfkit.md`** - Architecture PDFKit et templates programmatiques
 - **`deployment-production.md`** - Déploiement et configuration production
+- **`phase6-production-guide.md`** - Guide optimisations performance et production (Phase 6)
 - **`jsdoc-integration.md`** - Documentation automatique du code
 - **`envoi-emails.md`** - Configuration email et notifications
 
 ### 📸 **Documentation transversale**
 - **`api.md`** - Référence complète de l'API REST
-- **`testing.md`** - Guide des tests unitaires et d'intégration
-- **`captures/`** - Screenshots et images de documentation
-- **`templates/`** - Templates HTML pour les différents documents
+- **`RELATIONS.md`** - Documentation des relations entre modèles (Phase 2)
+- **`RESSOURCES/captures/`** - Screenshots et images de documentation
+- **`RESSOURCES/templates/`** - Templates HTML pour les différents documents
 
 ---
 
@@ -98,20 +109,23 @@
 | Concept | Fichier principal | Détails supplémentaires |
 |---------|------------------|------------------------|
 | **Alpine.js** | `ARCHITECTURE/architecture-frontend.md` | Composants, état, réactivité |
+| **Architecture MVC-CS** | `ARCHITECTURE/architecture-pattern.md` | Models, Views, Controllers, Components, Services |
 | **Authentification** | `ARCHITECTURE/architecture-models.md` | Sessions, rôles, codes d'accès |
 | **BaseModel** | `ARCHITECTURE/architecture-models.md` | CRUD, validation, hooks |
-| **Charte graphique** | `DESIGN-SYSTEM/charte-graphique-web.md` | Couleurs, polices, thèmes |
-| **Déploiement** | `DEVELOPPEMENT/deployment-production.md` | Production, environnement |
-| **Documents** | `ARCHITECTURE/architecture-models.md` | Types, statuts, génération |
-| **EJS** | `ARCHITECTURE/architecture-frontend.md` | Templates, layouts, vues |
-| **Génération PDF** | `DEVELOPPEMENT/flux-generation-pdf.md` | Flux complet PDFKit |
-| **Oracles** | `FONCTIONNALITES/oracles.md` | Tables aléatoires, générateurs |
-| **PDFKit** | `DEVELOPPEMENT/pdfkit.md` | API, templates, thèmes |
-| **Personnages** | `ARCHITECTURE/architecture-models.md` | Sauvegarde, gestion utilisateur |
-| **PostgreSQL** | `ARCHITECTURE/architecture-models.md` | Schéma, relations, migrations |
-| **Systèmes JDR** | `SYSTEMES-JDR/systemes-configuration.md` | Monsterhearts, Metro, etc. |
-| **Tailwind CSS** | `DESIGN-SYSTEM/charte-graphique-web.md` | Utility-first, responsive |
-| **User Stories** | `FONCTIONNALITES/user-stories.md` | Personas, critères acceptation |
+| **Cache & Performance** | `DEVELOPPEMENT/phase6-production-guide.md` | CacheService, QueueService, monitoring |
+| **Design System** | `DESIGN-SYSTEM/design-system-guide.md` | Composants UI, variables CSS, thèmes |
+| **Déploiement** | `DEVELOPPEMENT/deployment-production.md` | Production, environnement, SSL |
+| **Documents PDF** | `DEVELOPPEMENT/flux-generation-pdf.md` | 6 types, 5 thèmes, DocumentFactory |
+| **EJS Templates** | `ARCHITECTURE/architecture-frontend.md` | Layouts, vues, composants UI |
+| **Génération PDF** | `DEVELOPPEMENT/pdfkit.md` | PDFKit, templates programmatiques |
+| **Modération** | `FONCTIONNALITES/05-partage-communaute.md` | Workflow a posteriori, traçabilité |
+| **Oracles** | `FONCTIONNALITES/04-oracles.md` | Tables aléatoires, générateurs |
+| **PostgreSQL** | `ARCHITECTURE/architecture-models.md` | 16 modèles, relations, contraintes |
+| **RGPD** | `FONCTIONNALITES/09-gestion-compte.md` | Consentements, export données |
+| **Services métier** | `ARCHITECTURE/architecture-models.md` | 20+ services avec logique business |
+| **Systèmes JDR** | `SYSTEMES-JDR/systemes-configuration.md` | 5 systèmes supportés |
+| **Tests** | `DEVELOPPEMENT/testing.md` | Jest, Supertest, couverture > 80% |
+| **Votes communauté** | `FONCTIONNALITES/05-partage-communaute.md` | 3 critères, statistiques |
 
 ---
 
@@ -136,4 +150,4 @@ npm run deploy:production
 
 ---
 
-*Documentation mise à jour le : 2025-08-08 - Version MVC-CS complète avec API et quickstart*
+*Documentation mise à jour le : 2025-08-08 - Version MVC-CS complète - Toutes phases terminées (1-6) avec production-ready*

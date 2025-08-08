@@ -1,18 +1,24 @@
 {
   "source": {
     "include": [
-      "./src/"
+      "./src/",
+      "./public/js/"
     ],
     "includePattern": "\\.(js)$",
     "exclude": [
       "node_modules/",
       "tests/",
-      "scripts/"
+      "scripts/",
+      "src/workers/",
+      "coverage/",
+      "logs/",
+      "output/"
     ]
   },
   "opts": {
     "destination": "./docs/",
-    "recurse": true
+    "recurse": true,
+    "readme": "./documentation/README.md"
   },
   "plugins": [
     "plugins/markdown"
@@ -20,5 +26,9 @@
   "templates": {
     "cleverLinks": false,
     "monospaceLinks": false
+  },
+  "metadata": {
+    "title": "Brumisater - Documentation API",
+    "description": "Créateur de fiches JDR immersives avec architecture MVC-CS"
   }
 }
