@@ -11,56 +11,95 @@ class SystemThemeService extends BaseService {
         super('SystemThemeService');
         this.cache = new CacheService();
         
-        // Configuration centralisée des thèmes
+        // Configuration centralisée des thèmes selon la charte graphique
         this.themes = {
-            monsterhearts: {
+            pbta: {
                 icon: 'ra-heartburn',
                 classes: {
-                    bg: 'bg-purple-600/20',
+                    bg: 'bg-purple-500/20',
                     border: 'border-purple-500/30',
-                    text: 'text-purple-400',
+                    text: 'text-purple-500',
                     badgeBg: 'bg-purple-500/20',
                     badgeBorder: 'border-purple-500/30'
+                },
+                universes: {
+                    monsterhearts: { icon: 'ra-bleeding-hearts', name: 'Monsterhearts' },
+                    urban_shadows: { icon: 'ra-moon', name: 'Urban Shadows' }
                 }
             },
             engrenages: {
                 icon: 'ra-candle',
                 classes: {
-                    bg: 'bg-emerald-600/20',
+                    bg: 'bg-emerald-500/20',
                     border: 'border-emerald-500/30',
-                    text: 'text-emerald-400',
+                    text: 'text-emerald-500',
                     badgeBg: 'bg-emerald-500/20',
                     badgeBorder: 'border-emerald-500/30'
-                }
-            },
-            metro2033: {
-                icon: 'ra-nuclear',
-                classes: {
-                    bg: 'bg-red-600/20',
-                    border: 'border-red-500/30',
-                    text: 'text-red-400',
-                    badgeBg: 'bg-red-500/20',
-                    badgeBorder: 'border-red-500/30'
+                },
+                universes: {
+                    roue_du_temps: { icon: 'ra-dragon', name: 'La Roue du Temps' },
+                    ecryme: { icon: 'ra-knight-helmet', name: 'Ecryme' }
                 }
             },
             mistengine: {
                 icon: 'ra-ocarina',
                 classes: {
-                    bg: 'bg-pink-600/20',
+                    bg: 'bg-pink-500/20',
                     border: 'border-pink-500/30',
-                    text: 'text-pink-400',
+                    text: 'text-pink-500',
                     badgeBg: 'bg-pink-500/20',
                     badgeBorder: 'border-pink-500/30'
+                },
+                universes: {
+                    obojima: { icon: 'ra-crystals', name: 'Obojima' },
+                    zamanora: { icon: 'ra-feather-wing', name: 'Zamanora' },
+                    post_mortem: { icon: 'ra-skull', name: 'Post-Mortem' },
+                    otherscape: { icon: 'ra-lighthouse', name: 'Tokyo:Otherscape' }
+                }
+            },
+            myz: {
+                icon: 'ra-pills',
+                classes: {
+                    bg: 'bg-red-600/20',
+                    border: 'border-red-600/30',
+                    text: 'text-red-600',
+                    badgeBg: 'bg-red-600/20',
+                    badgeBorder: 'border-red-600/30'
+                },
+                universes: {
+                    metro2033: { icon: 'ra-pills', name: 'Metro 2033' }
                 }
             },
             zombiology: {
-                icon: 'ra-biohazard',
+                icon: 'ra-death-skull',
                 classes: {
-                    bg: 'bg-zombie-600/20',
-                    border: 'border-zombie-500/30',
-                    text: 'text-zombie-400',
-                    badgeBg: 'bg-zombie-500/20',
-                    badgeBorder: 'border-zombie-500/30'
+                    bg: 'bg-yellow-500/20',
+                    border: 'border-yellow-500/30',
+                    text: 'text-yellow-500',
+                    badgeBg: 'bg-yellow-500/20',
+                    badgeBorder: 'border-yellow-500/30'
+                }
+            },
+            
+            // Compatibilité avec les anciens codes pour éviter les erreurs
+            monsterhearts: {
+                icon: 'ra-heartburn',
+                classes: {
+                    bg: 'bg-purple-800/20',
+                    border: 'border-purple-600/30',
+                    text: 'text-purple-300',
+                    badgeBg: 'bg-purple-600/20',
+                    badgeBorder: 'border-purple-600/30'
+                }
+            },
+            metro2033: {
+                icon: 'ra-nuclear',
+                classes: {
+                    bg: 'bg-gray-600/20',
+                    border: 'border-gray-500/30',
+                    text: 'text-gray-400',
+                    badgeBg: 'bg-gray-500/20',
+                    badgeBorder: 'border-gray-500/30'
                 }
             }
         };
@@ -90,6 +129,16 @@ class SystemThemeService extends BaseService {
      */
     getIcon(systemCode) {
         return this.themes[systemCode]?.icon || 'ra-dice';
+    }
+
+    /**
+     * Récupère l'icône d'un univers spécifique
+     * @param {string} systemCode - Code du système
+     * @param {string} universeCode - Code de l'univers
+     * @returns {string} Classe de l'icône de l'univers
+     */
+    getUniverseIcon(systemCode, universeCode) {
+        return this.themes[systemCode]?.universes?.[universeCode]?.icon || this.getIcon(systemCode);
     }
 
     /**
@@ -202,4 +251,4 @@ class SystemThemeService extends BaseService {
     }
 }
 
-module.exports = new SystemThemeService();
+module.exports = SystemThemeService;

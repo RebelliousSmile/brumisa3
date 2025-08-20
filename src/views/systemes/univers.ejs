@@ -1,0 +1,139 @@
+<%
+// Configuration dynamique basée sur l'univers et le système
+// theme et universeIcon sont maintenant passés par le contrôleur
+// Protection contre les valeurs undefined
+const safeTheme = theme || { classes: { text: 'text-gray-400', border: 'border-gray-500', bg: 'bg-gray-600/20' } };
+const safeUniverseIcon = universeIcon || 'ra-dice';
+
+const configUniversGeneric = {
+    hero: {
+        gradient: 'from-gray-900 via-gray-800 to-black',
+        icone: safeUniverseIcon,
+        couleurIcone: safeTheme.classes.text,
+        titre: configUnivers.nom,
+        description: configUnivers.description,
+        couleurTexte: 'text-gray-200',
+        couleurBoutonPrimaire: 'bg-blue-600 hover:bg-blue-700',
+        couleurBoutonSecondaire: 'border-gray-400 text-gray-400 hover:bg-gray-400 hover:text-gray-900',
+        texteBoutonPrimaire: 'Créer un personnage',
+        texteBoutonSecondaire: 'Voir les oracles'
+    },
+    commentCreer: {
+        nomSysteme: configUnivers.nom,
+        couleurBordure: safeTheme.classes.border,
+        couleurFond: safeTheme.classes.bg.replace('/20', ''),
+        couleurIcone: safeTheme.classes.text,
+        texteEtape1: `Parcourez notre collection de templates pour ${configUnivers.nom} et sélectionnez celui qui correspond à vos besoins.`,
+        texteEtape2: 'Utilisez notre éditeur intuitif pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
+        texteEtape3: 'Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager avec votre table.'
+    },
+    oracles: {
+        nomSysteme: configUnivers.nom,
+        couleurBordure: safeTheme.classes.border.replace('/30', '/30'),
+        couleurIcone: safeTheme.classes.text,
+        couleurBouton: safeTheme.classes.bg.replace('/20', '') + ' hover:' + safeTheme.classes.bg.replace('/20', '-700'),
+        lienOracles: `/oracles/systeme/${systeme}`,
+        descriptionOracles: `Les oracles sont des outils essentiels pour enrichir vos parties dans l'univers de ${configUnivers.nom}. Ces tables aléatoires vous aident à générer des événements, des complications et des éléments narratifs de manière improvisée.`,
+        oracles: [
+            {
+                icone: 'ra ra-crystal-ball',
+                nom: 'Événements',
+                description: 'Événements aléatoires pour vos parties'
+            },
+            {
+                icone: 'ra ra-player',
+                nom: 'PNJ',
+                description: 'Personnages non-joueurs à improviser'
+            },
+            {
+                icone: 'ra ra-location',
+                nom: 'Lieux',
+                description: 'Endroits mystérieux à découvrir'
+            }
+        ]
+    },
+    downloads: {
+        nomSysteme: configUnivers.nom,
+        couleurBordure: safeTheme.classes.border.replace('/30', '/20'),
+        couleurHover: safeTheme.classes.text.replace('text-', '').replace('-400', '-400'),
+        couleurBouton: safeTheme.classes.bg.replace('/20', '') + ' hover:' + safeTheme.classes.bg.replace('/20', '-700'),
+        couleurBordureSecondaire: safeTheme.classes.border.replace('/30', '') + ' ' + safeTheme.classes.text + ' hover:' + safeTheme.classes.bg.replace('/20', '') + ' hover:text-white',
+        downloads: [
+            {
+                titre: 'Aide-mémoire MJ',
+                description: 'Référence rapide des règles principales',
+                auteur: 'la Communauté',
+                telechargements: '1.2k',
+                typeBadge: safeTheme.classes.bg.replace('/20', ''),
+                typeLabel: 'PDF'
+            },
+            {
+                titre: 'Tables d\'Événements',
+                description: '100 événements pour enrichir vos parties',
+                auteur: 'MJ_Anonyme',
+                telechargements: '890',
+                typeBadge: safeTheme.classes.bg.replace('/20', ''),
+                typeLabel: 'PDF'
+            }
+        ]
+    },
+    cta: {
+        gradient: safeTheme.classes.bg.replace('/20', '') + ' to-' + safeTheme.classes.bg.replace('/20', '-600'),
+        titreCTA: `Prêt à explorer l'univers de ${configUnivers.nom} ?`,
+        descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
+        couleurTexte: 'text-gray-100',
+        couleurTexteBouton: safeTheme.classes.text.replace('-400', '-600'),
+        couleurTexteBoutonSecondaire: 'hover:' + safeTheme.classes.text.replace('-400', '-600')
+    }
+};
+%>
+
+<%- include('../partials/systeme-hero', configUniversGeneric.hero) %>
+
+<%- include('../partials/systeme-comment-creer', configUniversGeneric.commentCreer) %>
+
+<!-- Templates Section -->
+<div class="bg-gray-800 py-16 px-4">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold text-center mb-12 text-white">
+            Documents Disponibles
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-2xl mx-auto">
+            <!-- Document Générique -->
+            <div class="bg-gray-900 p-6 rounded-lg border <%= safeTheme.classes.border %> hover:border-<%= safeTheme.classes.text.replace('text-', '').replace('-400', '-400') %> transition-colors group">
+                <div class="text-center mb-4">
+                    <i class="ra ra-scroll text-5xl <%= safeTheme.classes.text %> group-hover:text-<%= safeTheme.classes.text.replace('text-', '').replace('-400', '-300') %> transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3 <%= safeTheme.classes.text %> text-center">Document Générique</h3>
+                <p class="text-gray-300 mb-4 text-center">Template polyvalent pour créer tous types de documents pour <%= configUnivers.nom %> avec un style adapté à l'univers.</p>
+                
+                <div class="mb-6">
+                    <h4 class="text-sm font-semibold text-white mb-2">Inclus :</h4>
+                    <ul class="text-sm text-gray-400 space-y-1">
+                        <li>• Mise en page élégante adaptée à l'univers</li>
+                        <li>• Polices thématiques</li>
+                        <li>• Marges généreuses (2,5 cm)</li>
+                        <li>• Hiérarchie typographique à 3 niveaux</li>
+                        <li>• Encadrés pour informations importantes</li>
+                        <li>• Export PDF haute qualité</li>
+                    </ul>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <a href="/systeme/<%= systeme %>/<%= univers %>/document-generique" class="w-full <%= safeTheme.classes.bg.replace('/20', '') %> hover:<%= safeTheme.classes.bg.replace('/20', '-700') %> text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors text-center">
+                        Créer un document
+                    </a>
+                    <button class="w-full border <%= safeTheme.classes.border %> <%= safeTheme.classes.text %> hover:<%= safeTheme.classes.bg.replace('/20', '') %> hover:text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
+                        Voir un exemple
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/systeme-oracles', configUniversGeneric.oracles) %>
+
+<%- include('../partials/systeme-downloads', configUniversGeneric.downloads) %>
+
+<%- include('../partials/systeme-cta', configUniversGeneric.cta) %>

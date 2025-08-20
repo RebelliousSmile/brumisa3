@@ -17,6 +17,7 @@ class SystemService extends BaseService {
     async listerSystemesDisponibles(filtres = {}) {
         try {
             const systemes = Object.entries(systemesJeu)
+                .filter(([cle, config]) => config.systeme === true)
                 .map(([cle, config]) => ({
                     id: cle,
                     nom: config.nom,
@@ -31,7 +32,8 @@ class SystemService extends BaseService {
                     },
                     complexite: config.complexite || 'moyenne',
                     tags: config.tags || [],
-                    icone: config.icone || null
+                    icone: config.icone || null,
+                    univers: config.univers ? Object.keys(config.univers) : null
                 }))
                 .filter(systeme => {
                     // Filtres optionnels
@@ -70,47 +72,72 @@ class SystemService extends BaseService {
     /**
      * Obtient les détails complets d'un système de jeu
      */
-    async obtenirDetailsSysteme(systemeId) {
+    async obtenirDetailsSysteme(systemeId, universId = null) {
         try {
             const config = systemesJeu[systemeId];
             if (!config) {
                 throw new Error('Système de jeu non trouvé');
             }
 
+            // Si un univers est spécifié, fusionner ses données
+            let configFinale = { ...config };
+            if (universId && config.univers && config.univers[universId]) {
+                const universConfig = config.univers[universId];
+                configFinale = {
+                    ...config,
+                    ...universConfig,
+                    systeme_parent: systemeId,
+                    univers_id: universId,
+                    // Garder les attributs du système parent s'ils ne sont pas redéfinis
+                    attributs: universConfig.attributs || config.attributs,
+                    mechanics: { ...config.mechanics, ...(universConfig.mechanics_specifiques || {}) }
+                };
+            }
+
             const details = {
-                id: systemeId,
-                nom: config.nom,
-                description: config.description || '',
-                version: config.version || '1.0.0',
-                actif: config.actif !== false,
+                id: universId || systemeId,
+                systeme_id: systemeId,
+                nom: configFinale.nom,
+                description: configFinale.description || '',
+                version: configFinale.version || '1.0.0',
+                actif: configFinale.actif !== false,
                 
                 // Configuration détaillée
-                attributs: config.attributs || {},
-                competences: config.competences || {},
-                infos_base: config.infos_base || {},
+                attributs: configFinale.attributs || {},
+                competences: configFinale.competences || {},
+                infos_base: configFinale.infos_base || {},
+                mechanics: configFinale.mechanics || {},
                 
                 // Personnalisation
-                couleurs: config.couleurs || {},
-                icone: config.icone || null,
-                styles_css: config.styles_css || null,
+                couleurs: configFinale.couleurs || {},
+                couleur: configFinale.couleur || null,
+                icone: configFinale.icone || null,
+                styles_css: configFinale.styles_css || null,
                 
                 // Métadonnées
-                auteur: config.auteur || 'Système officiel',
-                licence: config.licence || 'Utilisation libre',
-                url_officiel: config.url_officiel || null,
+                auteur: configFinale.auteur || 'Système officiel',
+                licence: configFinale.licence || 'Utilisation libre',
+                url_officiel: configFinale.url_officiel || null,
                 
                 // Informations techniques
-                templates_disponibles: config.templates || [],
-                supports_pdf: config.supports_pdf !== false,
-                supports_exports: config.supports_exports || ['pdf', 'json'],
+                templates_disponibles: configFinale.templates || [],
+                supports_pdf: configFinale.supports_pdf !== false,
+                supports_exports: configFinale.supports_exports || ['pdf', 'json'],
                 
                 // Classification
-                complexite: config.complexite || 'moyenne',
-                tags: config.tags || [],
-                public_cible: config.public_cible || 'tout-public',
+                complexite: configFinale.complexite || 'moyenne',
+                tags: configFinale.tags || [],
+                public_cible: configFinale.public_cible || 'tout-public',
+                
+                // Univers disponibles pour ce système
+                univers_disponibles: config.univers ? Object.keys(config.univers).map(key => ({
+                    id: key,
+                    nom: config.univers[key].nom,
+                    description: config.univers[key].description
+                })) : null,
                 
                 // Statistiques d'usage
-                statistiques: await this.obtenirStatistiquesSysteme(systemeId)
+                statistiques: await this.obtenirStatistiquesSysteme(universId || systemeId)
             };
 
             return details;
@@ -499,6 +526,69 @@ class SystemService extends BaseService {
     async verifierExistenceTemplate(systemeId, templateId) {
         // TODO: Implémenter la vérification d'existence des templates
         return true;
+    }
+
+    /**
+     * Liste tous les univers d'un système
+     */
+    async listerUniversSysteme(systemeId) {
+        try {
+            const config = systemesJeu[systemeId];
+            if (!config || !config.systeme) {
+                throw new Error('Système de jeu non trouvé');
+            }
+
+            if (!config.univers) {
+                return [];
+            }
+
+            return Object.entries(config.univers).map(([cle, univers]) => ({
+                id: cle,
+                nom: univers.nom,
+                description: univers.description || '',
+                couleur: univers.couleur || null,
+                systeme_id: systemeId,
+                systeme_nom: config.nom
+            }));
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la liste des univers pour ${systemeId}:`, erreur);
+            throw erreur;
+        }
+    }
+
+    /**
+     * Obtient la configuration complète pour un univers spécifique
+     */
+    async obtenirConfigurationUnivers(systemeId, universId) {
+        try {
+            const config = systemesJeu[systemeId];
+            if (!config || !config.systeme) {
+                throw new Error('Système de jeu non trouvé');
+            }
+
+            if (!config.univers || !config.univers[universId]) {
+                throw new Error('Univers non trouvé pour ce système');
+            }
+
+            const universConfig = config.univers[universId];
+            return {
+                ...config,
+                ...universConfig,
+                id: universId,
+                systeme_id: systemeId,
+                systeme_nom: config.nom,
+                // Fusionner les mécaniques spécifiques avec celles du système
+                mechanics: {
+                    ...config.mechanics,
+                    ...(universConfig.mechanics_specifiques || {})
+                },
+                // Garder les attributs du système s'ils ne sont pas redéfinis
+                attributs: universConfig.attributs || config.attributs
+            };
+        } catch (erreur) {
+            this.logger.error(`Erreur lors de la récupération de l'univers ${universId}:`, erreur);
+            throw erreur;
+        }
     }
 }
 

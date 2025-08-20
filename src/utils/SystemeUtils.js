@@ -13,18 +13,82 @@ const SystemeUtils = {
    * Liste tous les systèmes disponibles
    */
   getAllSystemes() {
-    return Object.values(systemesJeu);
+    return Object.entries(systemesJeu)
+      .filter(([code, config]) => config.systeme === true)
+      .map(([code, config]) => ({
+        code,
+        nom: config.nom,
+        description: config.description,
+        version: config.version
+      }));
+  },
+
+  /**
+   * Liste tous les systèmes avec leurs univers
+   */
+  getSystemesAvecUnivers() {
+    return Object.entries(systemesJeu)
+      .filter(([code, config]) => config.systeme === true)
+      .map(([code, config]) => ({
+        code,
+        nom: config.nom,
+        description: config.description,
+        univers: config.univers ? Object.entries(config.univers).map(([univCode, univConfig]) => ({
+          code: univCode,
+          nom: univConfig.nom,
+          description: univConfig.description,
+          couleur: univConfig.couleur
+        })) : null
+      }));
+  },
+
+  /**
+   * Récupère un univers spécifique d'un système
+   */
+  getUnivers(codeSysteme, codeUnivers) {
+    const systeme = this.getSysteme(codeSysteme);
+    if (!systeme || !systeme.univers) return null;
+    return systeme.univers[codeUnivers] || null;
+  },
+
+  /**
+   * Récupère la configuration complète (système + univers)
+   */
+  getConfigurationComplete(codeSysteme, codeUnivers = null) {
+    const systeme = this.getSysteme(codeSysteme);
+    if (!systeme) return null;
+
+    if (!codeUnivers || !systeme.univers) {
+      return systeme;
+    }
+
+    const univers = systeme.univers[codeUnivers];
+    if (!univers) return systeme;
+
+    // Fusionner les configurations
+    return {
+      ...systeme,
+      ...univers,
+      systeme_parent: codeSysteme,
+      univers_id: codeUnivers,
+      // Garder les attributs du système parent s'ils ne sont pas redéfinis
+      attributs: univers.attributs || systeme.attributs,
+      mechanics: { ...systeme.mechanics, ...(univers.mechanics_specifiques || {}) }
+    };
   },
 
   /**
    * Récupère les noms des systèmes pour sélection
    */
   getSystemesListe() {
-    return Object.entries(systemesJeu).map(([code, systeme]) => ({
-      code,
-      nom: systeme.nom,
-      description: systeme.description
-    }));
+    return Object.entries(systemesJeu)
+      .filter(([code, config]) => config.systeme === true)
+      .map(([code, systeme]) => ({
+        code,
+        nom: systeme.nom,
+        description: systeme.description,
+        hasUnivers: !!systeme.univers
+      }));
   },
 
   /**
@@ -110,8 +174,9 @@ const SystemeUtils = {
    * @returns {Object} Données formatées pour le template
    */
   formatForMonsterheartsTemplate(personnageData) {
-    const systeme = this.getSysteme('monsterhearts');
-    if (!systeme) return personnageData;
+    // Monsterhearts est maintenant un univers de PBTA
+    const config = this.getConfigurationComplete('pbta', 'monsterhearts');
+    if (!config) return personnageData;
 
     return {
       nom: personnageData.nom || personnageData.name || '',
@@ -127,11 +192,11 @@ const SystemeUtils = {
           dark: personnageData.stats?.dark || 0
         },
         moves: {
-          basic: this.formatMovesForTemplate(personnageData.moves?.basic, systeme.moves.basic),
+          basic: this.formatMovesForTemplate(personnageData.moves?.basic, config.moves?.basic || []),
           skin: this.formatMovesForTemplate(personnageData.moves?.skin || [], [])
         },
         harm: this.formatTrackForTemplate(personnageData.harm, 4),
-        conditions: this.formatConditionsForTemplate(personnageData.conditions, systeme.mechanics.conditions),
+        conditions: this.formatConditionsForTemplate(personnageData.conditions, config.mechanics_specifiques?.conditions || []),
         experience: {
           current: personnageData.experience?.current || 0
         },

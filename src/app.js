@@ -111,6 +111,15 @@ class App {
   }
 
   /**
+   * Middlewares de performance - version simplifiée
+   */
+  configurePerformanceMiddlewares() {
+    // Version simplifiée pour l'environnement de développement
+    // Les middlewares de performance complets sont dans app-production.js
+    logManager.info('Middlewares de performance configurés (mode développement)');
+  }
+
+  /**
    * Middlewares de sécurité
    */
   configureSecurityMiddlewares() {

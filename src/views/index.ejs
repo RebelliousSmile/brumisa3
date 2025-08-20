@@ -89,7 +89,7 @@ par la communauté ce mois-ci.</div>
                 <div class="relative z-10">
                     <div class="text-center mb-8">
                         <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 font-display">
-                            Choisissez votre univers de jeu
+                            Choisissez votre système de jeu
                         </h2>
                         <p class="text-gray-300 max-w-2xl mx-auto">
                             Chaque système possède son propre design thématique et ses mécaniques uniques pour créer des fiches immersives.
@@ -103,17 +103,33 @@ par la communauté ce mois-ci.</div>
                                 <% if (locals.systemCards && locals.systemCards.mainColumn) { %>
                                     <% systemCards.mainColumn.forEach(card => { %>
                                         <div data-carte-systeme 
-                                             @click="naviguerVersSysteme('<%= card.code %>')" 
-                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all hover:border-gray-600">
-                                            <div class="flex items-center">
+                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 transition-all hover:border-gray-600">
+                                            <div class="flex items-start">
                                                 <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center flex-shrink-0 <%= card.classes.border %> mr-4">
                                                     <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
                                                 </div>
                                                 <div class="flex-grow">
                                                     <h3 class="text-lg font-bold text-white mb-1"><%= card.nom %></h3>
-                                                    <p class="text-sm text-gray-400 mb-2">
+                                                    <p class="text-sm text-gray-400 mb-3">
                                                         <%= card.description %>
                                                     </p>
+                                                    
+                                                    <% if (card.univers && card.univers.length > 0) { %>
+                                                        <div class="flex flex-wrap gap-2 mb-3">
+                                                            <% card.univers.forEach(univers => { %>
+                                                                <a href="/systeme/<%= card.code %>/<%= univers.code %>" 
+                                                                   class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
+                                                                    <%= univers.nom %>
+                                                                </a>
+                                                            <% }); %>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <a href="/systeme/<%= card.code %>" 
+                                                           class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
+                                                            Accéder au système
+                                                        </a>
+                                                    <% } %>
+                                                    
                                                     <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
                                                 </div>
                                             </div>
@@ -129,8 +145,7 @@ par la communauté ce mois-ci.</div>
                                 <% if (locals.systemCards && locals.systemCards.secondColumn) { %>
                                     <% systemCards.secondColumn.forEach(card => { %>
                                         <div data-carte-systeme 
-                                             @click="naviguerVersSysteme('<%= card.code %>')" 
-                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all hover:border-gray-600">
+                                             class="group bg-gray-900 rounded-lg p-6 border border-gray-700 transition-all hover:border-gray-600">
                                             <div class="text-center">
                                                 <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center mx-auto mb-4 <%= card.classes.border %>">
                                                     <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
@@ -139,6 +154,23 @@ par la communauté ce mois-ci.</div>
                                                 <p class="text-sm text-gray-400 mb-4">
                                                     <%= card.description %>
                                                 </p>
+                                                
+                                                <% if (card.univers && card.univers.length > 0) { %>
+                                                    <div class="flex flex-col gap-2 mb-4">
+                                                        <% card.univers.forEach(univers => { %>
+                                                            <a href="/systeme/<%= card.code %>/<%= univers.code %>" 
+                                                               class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
+                                                                <%= univers.nom %>
+                                                            </a>
+                                                        <% }); %>
+                                                    </div>
+                                                <% } else { %>
+                                                    <a href="/systeme/<%= card.code %>" 
+                                                       class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all mb-4">
+                                                        Accéder au système
+                                                    </a>
+                                                <% } %>
+                                                
                                                 <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
                                             </div>
                                         </div>

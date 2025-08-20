@@ -68,13 +68,39 @@ document.addEventListener('alpine:init', () => {
             return new Date(dateString).toLocaleDateString('fr-FR');
         },
         
-        obtenirCouleurSysteme(systeme) {
+        obtenirCouleurSysteme(systeme, univers = null) {
+            // Nouvelles couleurs pour la structure système/univers
             const couleurs = {
-                'monsterhearts': '#8b0000',
-                'engrenages': '#8b4513',
-                'metro_2033': '#2c3e50',
-                'mist_engine': '#663399'
+                // Système PBTA
+                'pbta': '#663399',
+                'monsterhearts': '#8B008B',
+                'urban_shadows': '#9370DB',
+                
+                // Système Engrenages
+                'engrenages': '#8B4513',
+                'roue_du_temps': '#4169E1',
+                'ecryme': '#DC143C',
+                
+                // Système MYZ
+                'myz': '#2F4F4F',
+                'metro2033': '#2F4F4F',
+                
+                // Système Mist Engine
+                'mistengine': '#663399',
+                'obojima': '#2F4F4F',
+                'zamanora': '#4B0082',
+                'post_mortem': '#800020',
+                'otherscape': '#FF1493',
+                
+                // Zombiology (standalone)
+                'zombiology': '#8B4513'
             };
+            
+            // Si un univers est spécifié, utiliser sa couleur en priorité
+            if (univers && couleurs[univers]) {
+                return couleurs[univers];
+            }
+            
             return couleurs[systeme] || '#6b7280';
         },
         

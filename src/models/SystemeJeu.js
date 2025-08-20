@@ -60,11 +60,28 @@ class SystemeJeu extends BaseModel {
    */
   static get SYSTEMES_SUPPORTES() {
     return [
-      'monsterhearts',
-      'engrenages', 
-      'metro2033',
-      'mistengine',
+      'pbta',
+      'engrenages',
+      'mistengine', 
+      'myz',
       'zombiology'
+    ];
+  }
+  
+  /**
+   * IDs des univers supportés (pour compatibilité)
+   */
+  static get UNIVERS_SUPPORTES() {
+    return [
+      'monsterhearts',
+      'urban_shadows',
+      'roue_du_temps',
+      'ecryme',
+      'obojima',
+      'zamanora',
+      'post_mortem',
+      'otherscape',
+      'metro2033'
     ];
   }
 
@@ -520,63 +537,63 @@ class SystemeJeu extends BaseModel {
   async initialiserSystemesDefaut() {
     const systemesDefaut = [
       {
-        id: 'monsterhearts',
-        nom_complet: 'Monsterhearts',
-        description: 'Un jeu sur l\'adolescence monstrueuse et les émotions interdites',
-        site_officiel: 'https://www.mongoosepublishing.com/products/monsterhearts-2',
-        version_supportee: '2.0',
-        couleur_theme: '#8B0000',
-        icone: 'fa-heart-broken',
+        id: 'pbta',
+        nom_complet: 'PBTA (Powered by the Apocalypse)',
+        description: 'Système narratif basé sur les mouvements pour jeux d\'adolescence et d\'horreur urbaine',
+        site_officiel: 'http://apocalypse-world.com/',
+        version_supportee: 'Core System',
+        couleur_theme: '#663399',
+        icone: 'fa-mask',
         ordre_affichage: 1,
         structure_donnees: {
           CHARACTER: {
             champs_requis: ['skin', 'hot', 'cold', 'volatile', 'dark'],
-            template_pdf: 'monsterhearts_character',
+            template_pdf: 'pbta_character',
             validation_custom: ['skin_valide', 'stats_equilibrees']
           },
           TOWN: {
             champs_requis: ['nom', 'description', 'lieux'],
-            template_pdf: 'monsterhearts_town'
+            template_pdf: 'pbta_town'
           },
           GROUP: {
             champs_requis: ['nom', 'type', 'membres'],
-            template_pdf: 'monsterhearts_group'
+            template_pdf: 'pbta_group'
           }
         }
       },
       {
         id: 'engrenages',
-        nom_complet: 'Engrenages & Sortilèges',
-        description: 'Fantasy steampunk dans un monde de magie et de technologie',
+        nom_complet: 'Engrenages',
+        description: 'Système steampunk/fantasy avec dés à 10 faces pour La Roue du Temps et Ecryme',
         version_supportee: '3.0',
-        couleur_theme: '#2F4F4F',
+        couleur_theme: '#8B4513',
         icone: 'fa-cogs',
         ordre_affichage: 2
       },
       {
-        id: 'metro2033',
-        nom_complet: 'Metro 2033',
-        description: 'Survie post-apocalyptique dans le métro de Moscou',
-        version_supportee: '1.0',
-        couleur_theme: '#DC143C',
-        icone: 'fa-subway',
+        id: 'mistengine',
+        nom_complet: 'Mist Engine',
+        description: 'Moteur narratif pour univers mystiques (Obojima, Zamanora, Post-Mortem, Otherscape)',
+        version_supportee: 'Core System',
+        couleur_theme: '#663399',
+        icone: 'fa-cloud',
         ordre_affichage: 3
       },
       {
-        id: 'mistengine',
-        nom_complet: 'Mist Engine',
-        description: 'Système générique pour univers mystiques et poétiques',
-        version_supportee: '1.5',
-        couleur_theme: '#9370DB',
-        icone: 'fa-cloud',
+        id: 'myz',
+        nom_complet: 'MYZ (Mutant Year Zero)',
+        description: 'Year Zero Engine pour la survie post-apocalyptique (Metro 2033)',
+        version_supportee: 'Year Zero Engine',
+        couleur_theme: '#2F4F4F',
+        icone: 'fa-radiation-alt',
         ordre_affichage: 4
       },
       {
         id: 'zombiology',
         nom_complet: 'Zombiology',
-        description: 'Survival horror dans un monde envahi par les zombies',
+        description: 'Système d100 pour survival horror zombie',
         version_supportee: '2.1',
-        couleur_theme: '#DAA520',
+        couleur_theme: '#8B4513',
         icone: 'fa-biohazard',
         ordre_affichage: 5
       }

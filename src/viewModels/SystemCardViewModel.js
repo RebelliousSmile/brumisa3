@@ -20,8 +20,14 @@ class SystemCardViewModel {
             nom: system.nom,
             description: system.description || '',
             version: system.version || '',
-            icon: theme.icon,
-            classes: theme.classes
+            icon: theme?.icon || 'ra-dice',
+            classes: theme?.classes || {
+                bg: 'bg-gray-600/20',
+                border: 'border-gray-500/30', 
+                text: 'text-gray-400',
+                badgeBg: 'bg-gray-500/20',
+                badgeBorder: 'border-gray-500/30'
+            }
         };
     }
 
@@ -52,6 +58,31 @@ class SystemCardViewModel {
         return {
             mainColumn: findSystems(mainColumnCodes),
             secondColumn: findSystems(secondColumnCodes)
+        };
+    }
+
+    /**
+     * Groupe les systèmes avec leurs univers par colonne pour l'affichage
+     * @param {string[]} mainColumnCodes - Codes des systèmes colonne principale
+     * @param {string[]} secondColumnCodes - Codes des systèmes colonne secondaire
+     * @param {Object[]} allSystemsWithUniverses - Tous les systèmes avec leurs univers
+     * @returns {Object} Systèmes avec univers groupés par colonne
+     */
+    groupByColumnsWithUniverses(mainColumnCodes, secondColumnCodes, allSystemsWithUniverses) {
+        const findSystemsWithUniverses = (codes) => {
+            return codes
+                .map(code => allSystemsWithUniverses.find(s => s.code === code))
+                .filter(Boolean)
+                .map(system => {
+                    const card = this.prepareCard(system);
+                    card.univers = system.univers || [];
+                    return card;
+                });
+        };
+
+        return {
+            mainColumn: findSystemsWithUniverses(mainColumnCodes),
+            secondColumn: findSystemsWithUniverses(secondColumnCodes)
         };
     }
 }

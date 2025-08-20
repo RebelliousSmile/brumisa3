@@ -38,8 +38,15 @@ const {
 } = locals;
 
 // Intégration du SystemThemeService côté serveur
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+let systemTheme = null;
+try {
+    const SystemThemeService = require('../../services/SystemThemeService');
+    const themeService = new SystemThemeService();
+    systemTheme = gameSystem ? themeService.getTheme(gameSystem) : null;
+} catch (error) {
+    // En cas d'erreur, on continue sans le thème système
+    systemTheme = null;
+}
 
 // Détermine si c'est un lien ou un bouton
 const isLink = !!href;

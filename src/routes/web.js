@@ -19,6 +19,7 @@ router.use((req, res, next) => {
     res.locals.utilisateur = req.session?.utilisateur || null;
     res.locals.systemes = systemesJeu;
     res.locals.systemesJeu = SystemeUtils.getAllSystemes();
+    res.locals.systemesAvecUnivers = SystemeUtils.getSystemesAvecUnivers();
     res.locals.config = {
         appName: 'Générateur PDF JDR',
         version: process.env.npm_package_version || '1.0.0'
@@ -33,15 +34,16 @@ router.get('/', (req, res) => {
     const SystemCardViewModel = require('../viewModels/SystemCardViewModel');
     
     // Injection de dépendances
-    const viewModel = new SystemCardViewModel(SystemThemeService);
+    const systemThemeService = new SystemThemeService();
+    const viewModel = new SystemCardViewModel(systemThemeService);
     
-    // Configuration des colonnes
-    const mainColumnCodes = ['monsterhearts', 'metro2033', 'zombiology'];
-    const secondColumnCodes = ['engrenages', 'mistengine'];
+    // Configuration des colonnes - maintenant basée sur les systèmes
+    const mainColumnCodes = ['pbta', 'engrenages', 'myz', 'zombiology'];
+    const secondColumnCodes = ['mistengine'];
     
-    // Préparation des données via le ViewModel
-    const allSystems = SystemeUtils.getAllSystemes();
-    const systemCards = viewModel.groupByColumns(mainColumnCodes, secondColumnCodes, allSystems);
+    // Préparation des données via le ViewModel avec les univers
+    const allSystemsWithUniverses = SystemeUtils.getSystemesAvecUnivers();
+    const systemCards = viewModel.groupByColumnsWithUniverses(mainColumnCodes, secondColumnCodes, allSystemsWithUniverses);
     
     res.render('index', {
         title: 'Générateur PDF JDR - Créez vos fiches de personnages',
@@ -50,84 +52,198 @@ router.get('/', (req, res) => {
             keywords: 'jdr, jeu de rôle, pdf, fiche personnage, monsterhearts, engrenages, metro 2033'
         },
         systemesJeu: SystemeUtils.getAllSystemes(),
+        systemesAvecUnivers: allSystemsWithUniverses,
         systemCards: systemCards
     });
 });
 
 // ===== PAGES SYSTEMES DE JEU =====
 
-// Page Monsterhearts
+// Routes dynamiques pour systèmes et univers
+router.get('/systeme/:systeme', (req, res) => {
+    const systeme = req.params.systeme;
+    const config = systemesJeu[systeme];
+    
+    if (!config || !config.systeme) {
+        return res.status(404).render('errors/404', {
+            title: 'Système non trouvé',
+            message: `Le système "${systeme}" n'existe pas.`
+        });
+    }
+    
+    res.render('systemes/index', {
+        title: `${config.nom} - Générateur PDF JDR`,
+        description: config.description,
+        systeme: systeme,
+        config: config
+    });
+});
+
+router.get('/systeme/:systeme/:univers', (req, res) => {
+    const systeme = req.params.systeme;
+    const univers = req.params.univers;
+    const configSysteme = systemesJeu[systeme];
+    
+    if (!configSysteme || !configSysteme.systeme) {
+        return res.status(404).render('errors/404', {
+            title: 'Système non trouvé',
+            message: `Le système "${systeme}" n'existe pas.`
+        });
+    }
+    
+    if (!configSysteme.univers || !configSysteme.univers[univers]) {
+        return res.status(404).render('errors/404', {
+            title: 'Univers non trouvé',
+            message: `L'univers "${univers}" n'existe pas pour le système ${configSysteme.nom}.`
+        });
+    }
+    
+    const configUnivers = configSysteme.univers[univers];
+    
+    // Récupération du thème via le service
+    const SystemThemeService = require('../services/SystemThemeService');
+    const systemThemeService = new SystemThemeService();
+    const theme = systemThemeService.getTheme(systeme);
+    const universeIcon = systemThemeService.getUniverseIcon(systeme, univers);
+    
+    // Debug logging
+    console.log('Theme for', systeme, ':', theme);
+    console.log('Universe icon for', systeme, univers, ':', universeIcon);
+    
+    res.render('systemes/univers', {
+        title: `${configUnivers.nom} - Générateur PDF JDR`,
+        description: configUnivers.description,
+        systeme: systeme,
+        univers: univers,
+        configSysteme: configSysteme,
+        configUnivers: configUnivers,
+        theme: theme,
+        universeIcon: universeIcon
+    });
+});
+
+// Redirections pour compatibilité avec les anciennes routes
 router.get('/monsterhearts', (req, res) => {
-    res.render('systemes/monsterhearts', {
+    res.redirect(301, '/systeme/pbta/monsterhearts');
+});
+
+router.get('/urban-shadows', (req, res) => {
+    res.redirect(301, '/systeme/pbta/urban_shadows');
+});
+
+router.get('/metro2033', (req, res) => {
+    res.redirect(301, '/systeme/myz/metro2033');
+});
+
+router.get('/engrenages', (req, res) => {
+    res.redirect(301, '/systeme/engrenages/roue_du_temps');
+});
+
+router.get('/mistengine', (req, res) => {
+    res.redirect(301, '/systeme/mistengine');
+});
+
+router.get('/zombiology', (req, res) => {
+    res.redirect(301, '/systeme/zombiology');
+});
+
+// Page Monsterhearts (gardée pour compatibilité)
+router.get('/systeme/pbta/monsterhearts', (req, res) => {
+    const configSysteme = systemesJeu.pbta;
+    const configUnivers = configSysteme.univers.monsterhearts;
+    
+    // Récupération du thème via le service
+    const SystemThemeService = require('../services/SystemThemeService');
+    const systemThemeService = new SystemThemeService();
+    const theme = systemThemeService.getTheme('pbta');
+    const universeIcon = systemThemeService.getUniverseIcon('pbta', 'monsterhearts');
+    
+    res.render('systemes/univers', {
         title: 'Monsterhearts - Générateur PDF JDR',
         description: 'Créez des fiches de personnages pour Monsterhearts',
-        systeme: 'monsterhearts'
+        systeme: 'pbta',
+        univers: 'monsterhearts',
+        configSysteme: configSysteme,
+        configUnivers: configUnivers,
+        theme: theme,
+        universeIcon: universeIcon
     });
 });
 
-// Formulaire document générique Monsterhearts
+// Formulaire document générique (routes dynamiques)
+router.get('/systeme/:systeme/document-generique', (req, res) => {
+    const systeme = req.params.systeme;
+    const config = systemesJeu[systeme];
+    
+    if (!config || !config.systeme) {
+        return res.status(404).render('errors/404', {
+            title: 'Système non trouvé'
+        });
+    }
+    
+    res.render('systemes/creer-document-generique', {
+        title: `Créer un Document ${config.nom}`,
+        description: `Créez un document PDF personnalisé avec le style ${config.nom}`,
+        systeme: systeme,
+        config: config
+    });
+});
+
+router.get('/systeme/:systeme/:univers/document-generique', (req, res) => {
+    const systeme = req.params.systeme;
+    const univers = req.params.univers;
+    const configSysteme = systemesJeu[systeme];
+    
+    if (!configSysteme || !configSysteme.systeme || !configSysteme.univers?.[univers]) {
+        return res.status(404).render('errors/404', {
+            title: 'Univers non trouvé'
+        });
+    }
+    
+    const configUnivers = configSysteme.univers[univers];
+    
+    res.render('systemes/creer-document-generique', {
+        title: `Créer un Document ${configUnivers.nom}`,
+        description: `Créez un document PDF personnalisé avec le style ${configUnivers.nom}`,
+        systeme: systeme,
+        univers: univers,
+        configSysteme: configSysteme,
+        configUnivers: configUnivers
+    });
+});
+
+// Compatibilité ancienne route
 router.get('/monsterhearts/document-generique', (req, res) => {
-    res.render('systemes/monsterhearts/creer-document-generique', {
-        title: 'Créer un Document Monsterhearts',
-        description: 'Créez un document PDF personnalisé avec le style Monsterhearts',
-        systeme: 'monsterhearts'
-    });
+    res.redirect(301, '/systeme/pbta/monsterhearts/document-generique');
 });
 
-// Page Engrenages (Roue du Temps)
-router.get('/engrenages', (req, res) => {
-    res.render('systemes/engrenages', {
-        title: 'Engrenages (Roue du Temps) - Générateur PDF JDR',
-        description: 'Créez des aides de jeu pour la Roue du Temps',
-        systeme: 'engrenages'
-    });
-});
-
-// Formulaire document générique Engrenages
+// Compatibilité pour les anciennes routes de document générique
 router.get('/engrenages/document-generique', (req, res) => {
-    res.render('systemes/engrenages/creer-document-generique', {
-        title: 'Créer un Document Engrenages',
-        description: 'Créez un document PDF personnalisé avec le style Roue du Temps',
-        systeme: 'engrenages'
-    });
+    res.redirect(301, '/systeme/engrenages/roue_du_temps/document-generique');
 });
 
-
-// Page Metro 2033
-router.get('/metro2033', (req, res) => {
-    res.render('systemes/metro2033', {
-        title: 'Metro 2033 - Générateur PDF JDR',
-        description: 'Créez des fiches de personnages pour Metro 2033',
-        systeme: 'metro2033'
-    });
-});
-
-// Page Mist Engine
-router.get('/mistengine', (req, res) => {
-    res.render('systemes/mistengine', {
-        title: 'Mist Engine - Générateur PDF JDR',
-        description: 'Créez des fiches de personnages pour Mist Engine',
-        systeme: 'mistengine'
-    });
-});
-
-// Page Zombiology
-router.get('/zombiology', (req, res) => {
-    res.render('systemes/zombiology', {
-        title: 'Zombiology - Générateur PDF JDR',
-        description: 'Créez des fiches de personnages pour Zombiology',
-        systeme: 'zombiology'
-    });
-});
-
-// Route de compatibilité pour /systemes/:systeme -> redirection vers /:systeme
+// Route de compatibilité pour /systemes/:systeme -> redirection vers /systeme/:systeme
 router.get('/systemes/:systeme', (req, res) => {
     const systeme = req.params.systeme;
-    const routesValides = ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'];
     
-    if (routesValides.includes(systeme)) {
-        // Redirection permanente vers la route courte
-        return res.redirect(301, `/${systeme}`);
+    // Redirections basées sur la nouvelle structure
+    const redirections = {
+        'monsterhearts': '/systeme/pbta/monsterhearts',
+        'urban-shadows': '/systeme/pbta/urban_shadows',
+        'engrenages': '/systeme/engrenages',
+        'roue-du-temps': '/systeme/engrenages/roue_du_temps',
+        'ecryme': '/systeme/engrenages/ecryme',
+        'metro2033': '/systeme/myz/metro2033',
+        'mistengine': '/systeme/mistengine',
+        'obojima': '/systeme/mistengine/obojima',
+        'zamanora': '/systeme/mistengine/zamanora',
+        'post-mortem': '/systeme/mistengine/post_mortem',
+        'otherscape': '/systeme/mistengine/otherscape',
+        'zombiology': '/systeme/zombiology'
+    };
+    
+    if (redirections[systeme]) {
+        return res.redirect(301, redirections[systeme]);
     }
     
     // Système non supporté

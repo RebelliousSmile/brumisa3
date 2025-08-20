@@ -29,14 +29,10 @@
                 
                 <!-- CTA pour ajouter un témoignage -->
                 <div class="text-center mt-8">
-                    <%- include('../components/ui-button', {
-                        text: 'Laisser un témoignage',
-                        variant: 'primary',
-                        size: 'lg',
-                        action: 'afficherFormulaireTemoignage = !afficherFormulaireTemoignage',
-                        gameSystem: locals.gameSystem || '',
-                        additionalClasses: 'font-display'
-                    }) %>
+                    <button @click="afficherFormulaireTemoignage = !afficherFormulaireTemoignage" 
+                            class="inline-flex items-center justify-center px-6 py-3 text-lg rounded-lg font-medium transition-all duration-200 bg-generique hover:bg-generique-dark text-white focus:ring-generique font-display">
+                        Laisser un témoignage
+                    </button>
                 </div>
             </div>
         </div>
