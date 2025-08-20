@@ -36,6 +36,23 @@
 | **Mist Engine** | `#ec4899` | `pink-500` | Bordures, badges, différenciation visuelle |
 | **Zombiology** | `#d4af37` | Or métallique | Bordures, badges, différenciation visuelle |
 
+### Pictogrammes des systèmes JDR
+
+Chaque système utilise des icônes RPG Awesome spécifiques pour renforcer son identité visuelle :
+
+| Système | Icône principale | Sous-univers | Icône spécifique | Thématique |
+|---------|------------------|--------------|------------------|------------|
+| **PBTA** | `ra-heartburn` | Monsterhearts | `ra-heartburn` | Romance gothique |
+| | | Urban Shadows | `ra-moon-sun` | Urbain nocturne |
+| **Engrenages** | `ra-cog` | La Roue du Temps | `ra-candle` | Fantasy mystique |
+| | | Ecryme | `ra-chemical-arrow` | Corrosif/dangereux |
+| **Mist Engine** | `ra-ocarina` | Obojima | `ra-ocarina` | Mystique musical |
+| | | Zamanora | `ra-rune-stone` | Narratif runique |
+| | | Post-Mortem | `ra-skull` | Mortuaire |
+| | | Tokyo:Otherscape | `ra-surveillance-camera` | Cyberpunk |
+| **MYZ** | `ra-pills` | Metro 2033 | `ra-pills` | Post-apocalyptique |
+| **Zombiology** | `ra-death-skull` | - | `ra-death-skull` | Survival horror |
+
 ### Couleurs fonctionnelles
 
 | Couleur | Hex | Tailwind | Usage |

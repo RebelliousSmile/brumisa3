@@ -101,36 +101,41 @@ par la communauté ce mois-ci.</div>
                         <div class="lg:col-span-2">
                             <div class="grid grid-cols-1 gap-6">
                                 <% if (locals.systemCards && locals.systemCards.mainColumn) { %>
-                                    <% systemCards.mainColumn.forEach(card => { %>
+                                    <% systemCards.mainColumn.forEach(card => { 
+                                        const safeCard = card || {};
+                                        const safeClasses = safeCard.classes || { bg: 'bg-gray-600/20', border: 'border-gray-500/30', text: 'text-gray-400', badgeBg: 'bg-gray-500/20', badgeBorder: 'border-gray-500/30' };
+                                        const safeIcon = safeCard.icon || 'ra-dice';
+                                        const safeVersion = safeCard.version || 'Version inconnue';
+                                    %>
                                         <div data-carte-systeme 
                                              class="group bg-gray-900 rounded-lg p-6 border border-gray-700 transition-all hover:border-gray-600">
                                             <div class="flex items-start">
-                                                <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center flex-shrink-0 <%= card.classes.border %> mr-4">
-                                                    <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
+                                                <div class="w-16 h-16 <%= safeClasses.bg %> rounded-full flex items-center justify-center flex-shrink-0 <%= safeClasses.border %> mr-4">
+                                                    <i class="ra <%= safeIcon %> <%= safeClasses.text %> text-2xl"></i>
                                                 </div>
                                                 <div class="flex-grow">
-                                                    <h3 class="text-lg font-bold text-white mb-1"><%= card.nom %></h3>
+                                                    <h3 class="text-lg font-bold text-white mb-1"><%= safeCard.nom %></h3>
                                                     <p class="text-sm text-gray-400 mb-3">
-                                                        <%= card.description %>
+                                                        <%= safeCard.description %>
                                                     </p>
                                                     
-                                                    <% if (card.univers && card.univers.length > 0) { %>
+                                                    <% if (safeCard.univers && safeCard.univers.length > 0) { %>
                                                         <div class="flex flex-wrap gap-2 mb-3">
-                                                            <% card.univers.forEach(univers => { %>
-                                                                <a href="/systeme/<%= card.code %>/<%= univers.code %>" 
+                                                            <% safeCard.univers.forEach(univers => { %>
+                                                                <a href="/systeme/<%= safeCard.code %>/<%= univers.code %>" 
                                                                    class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
                                                                     <%= univers.nom %>
                                                                 </a>
                                                             <% }); %>
                                                         </div>
                                                     <% } else { %>
-                                                        <a href="/systeme/<%= card.code %>" 
+                                                        <a href="/systeme/<%= safeCard.code %>" 
                                                            class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
                                                             Accéder au système
                                                         </a>
                                                     <% } %>
                                                     
-                                                    <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
+                                                    <span class="inline-block text-xs <%= safeClasses.badgeBg %> <%= safeClasses.text %> px-3 py-1 rounded-full <%= safeClasses.badgeBorder %> font-display"><%= safeVersion %></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -143,35 +148,40 @@ par la communauté ce mois-ci.</div>
                         <div class="lg:col-span-1">
                             <div class="grid grid-cols-1 gap-6">
                                 <% if (locals.systemCards && locals.systemCards.secondColumn) { %>
-                                    <% systemCards.secondColumn.forEach(card => { %>
+                                    <% systemCards.secondColumn.forEach(card => { 
+                                        const safeCard = card || {};
+                                        const safeClasses = safeCard.classes || { bg: 'bg-gray-600/20', border: 'border-gray-500/30', text: 'text-gray-400', badgeBg: 'bg-gray-500/20', badgeBorder: 'border-gray-500/30' };
+                                        const safeIcon = safeCard.icon || 'ra-dice';
+                                        const safeVersion = safeCard.version || 'Version inconnue';
+                                    %>
                                         <div data-carte-systeme 
                                              class="group bg-gray-900 rounded-lg p-6 border border-gray-700 transition-all hover:border-gray-600">
                                             <div class="text-center">
-                                                <div class="w-16 h-16 <%= card.classes.bg %> rounded-full flex items-center justify-center mx-auto mb-4 <%= card.classes.border %>">
-                                                    <i class="ra <%= card.icon %> <%= card.classes.text %> text-2xl"></i>
+                                                <div class="w-16 h-16 <%= safeClasses.bg %> rounded-full flex items-center justify-center mx-auto mb-4 <%= safeClasses.border %>">
+                                                    <i class="ra <%= safeIcon %> <%= safeClasses.text %> text-2xl"></i>
                                                 </div>
-                                                <h3 class="text-lg font-bold text-white mb-2"><%= card.nom %></h3>
+                                                <h3 class="text-lg font-bold text-white mb-2"><%= safeCard.nom %></h3>
                                                 <p class="text-sm text-gray-400 mb-4">
-                                                    <%= card.description %>
+                                                    <%= safeCard.description %>
                                                 </p>
                                                 
-                                                <% if (card.univers && card.univers.length > 0) { %>
+                                                <% if (safeCard.univers && safeCard.univers.length > 0) { %>
                                                     <div class="flex flex-col gap-2 mb-4">
-                                                        <% card.univers.forEach(univers => { %>
-                                                            <a href="/systeme/<%= card.code %>/<%= univers.code %>" 
+                                                        <% safeCard.univers.forEach(univers => { %>
+                                                            <a href="/systeme/<%= safeCard.code %>/<%= univers.code %>" 
                                                                class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
                                                                 <%= univers.nom %>
                                                             </a>
                                                         <% }); %>
                                                     </div>
                                                 <% } else { %>
-                                                    <a href="/systeme/<%= card.code %>" 
+                                                    <a href="/systeme/<%= safeCard.code %>" 
                                                        class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all mb-4">
                                                         Accéder au système
                                                     </a>
                                                 <% } %>
                                                 
-                                                <span class="inline-block text-xs <%= card.classes.badgeBg %> <%= card.classes.text %> px-3 py-1 rounded-full <%= card.classes.badgeBorder %> font-display"><%= card.version %></span>
+                                                <span class="inline-block text-xs <%= safeClasses.badgeBg %> <%= safeClasses.text %> px-3 py-1 rounded-full <%= safeClasses.badgeBorder %> font-display"><%= safeVersion %></span>
                                             </div>
                                         </div>
                                     <% }); %>

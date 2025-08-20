@@ -23,12 +23,12 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-purple-500/30'
                 },
                 universes: {
-                    monsterhearts: { icon: 'ra-bleeding-hearts', name: 'Monsterhearts' },
-                    urban_shadows: { icon: 'ra-moon', name: 'Urban Shadows' }
+                    monsterhearts: { icon: 'ra-heartburn', name: 'Monsterhearts' },
+                    urban_shadows: { icon: 'ra-moon-sun', name: 'Urban Shadows' }
                 }
             },
             engrenages: {
-                icon: 'ra-candle',
+                icon: 'ra-cog',
                 classes: {
                     bg: 'bg-emerald-500/20',
                     border: 'border-emerald-500/30',
@@ -37,8 +37,8 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-emerald-500/30'
                 },
                 universes: {
-                    roue_du_temps: { icon: 'ra-dragon', name: 'La Roue du Temps' },
-                    ecryme: { icon: 'ra-knight-helmet', name: 'Ecryme' }
+                    roue_du_temps: { icon: 'ra-candle', name: 'La Roue du Temps' },
+                    ecryme: { icon: 'ra-chemical-arrow', name: 'Ecryme' }
                 }
             },
             mistengine: {
@@ -51,10 +51,10 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-pink-500/30'
                 },
                 universes: {
-                    obojima: { icon: 'ra-crystals', name: 'Obojima' },
-                    zamanora: { icon: 'ra-feather-wing', name: 'Zamanora' },
+                    obojima: { icon: 'ra-ocarina', name: 'Obojima' },
+                    zamanora: { icon: 'ra-rune-stone', name: 'Zamanora' },
                     post_mortem: { icon: 'ra-skull', name: 'Post-Mortem' },
-                    otherscape: { icon: 'ra-lighthouse', name: 'Tokyo:Otherscape' }
+                    otherscape: { icon: 'ra-surveillance-camera', name: 'Tokyo:Otherscape' }
                 }
             },
             myz: {
@@ -106,20 +106,12 @@ class SystemThemeService extends BaseService {
     }
 
     /**
-     * Récupère le thème complet d'un système (avec cache)
+     * Récupère le thème complet d'un système (sans cache pour éviter les problèmes async)
      * @param {string} systemCode - Code du système
      * @returns {Object} Thème avec icône et classes
      */
     getTheme(systemCode) {
-        const cacheKey = CacheService.Keys.SYSTEM_CONFIG(`theme_${systemCode}`);
-        
-        return this.cache.getOrSet(
-            cacheKey,
-            () => {
-                return this.themes[systemCode] || this.getDefaultTheme();
-            },
-            CacheService.TTL.VERY_LONG // Cache 1 heure - les thèmes changent rarement
-        );
+        return this.themes[systemCode] || this.getDefaultTheme();
     }
 
     /**

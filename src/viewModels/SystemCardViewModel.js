@@ -20,14 +20,8 @@ class SystemCardViewModel {
             nom: system.nom,
             description: system.description || '',
             version: system.version || '',
-            icon: theme?.icon || 'ra-dice',
-            classes: theme?.classes || {
-                bg: 'bg-gray-600/20',
-                border: 'border-gray-500/30', 
-                text: 'text-gray-400',
-                badgeBg: 'bg-gray-500/20',
-                badgeBorder: 'border-gray-500/30'
-            }
+            icon: theme.icon,
+            classes: theme.classes
         };
     }
 
