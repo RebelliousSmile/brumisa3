@@ -89,10 +89,10 @@ par la communauté ce mois-ci.</div>
                 <div class="relative z-10">
                     <div class="text-center mb-8">
                         <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 font-display">
-                            Choisissez votre système de jeu
+                            Choisissez votre univers
                         </h2>
                         <p class="text-gray-300 max-w-2xl mx-auto">
-                            Chaque système possède son propre design thématique et ses mécaniques uniques pour créer des fiches immersives.
+                            Chaque univers proposé est basé sur un des systèmes décortiqués par le site, pour vous fournir les meilleurs outils et aides de jeu.
                         </p>
                     </div>
                     
@@ -123,7 +123,8 @@ par la communauté ce mois-ci.</div>
                                                         <div class="flex flex-wrap gap-2 mb-3">
                                                             <% safeCard.univers.forEach(univers => { %>
                                                                 <a href="/systeme/<%= safeCard.code %>/<%= univers.code %>" 
-                                                                   class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
+                                                                   class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 <%= safeClasses.text %> hover:text-white border <%= safeClasses.border %> hover:border-<%= safeClasses.text.replace('text-', '') %> transition-all">
+                                                                    <i class="ra <%= univers.icon || safeIcon %> <%= safeClasses.text %> mr-1.5"></i>
                                                                     <%= univers.nom %>
                                                                 </a>
                                                             <% }); %>
@@ -134,8 +135,6 @@ par la communauté ce mois-ci.</div>
                                                             Accéder au système
                                                         </a>
                                                     <% } %>
-                                                    
-                                                    <span class="inline-block text-xs <%= safeClasses.badgeBg %> <%= safeClasses.text %> px-3 py-1 rounded-full <%= safeClasses.badgeBorder %> font-display"><%= safeVersion %></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -169,7 +168,8 @@ par la communauté ce mois-ci.</div>
                                                     <div class="flex flex-col gap-2 mb-4">
                                                         <% safeCard.univers.forEach(univers => { %>
                                                             <a href="/systeme/<%= safeCard.code %>/<%= univers.code %>" 
-                                                               class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all">
+                                                               class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 <%= safeClasses.text %> hover:text-white border <%= safeClasses.border %> hover:border-<%= safeClasses.text.replace('text-', '') %> transition-all">
+                                                                <i class="ra <%= univers.icon || safeIcon %> <%= safeClasses.text %> mr-1.5"></i>
                                                                 <%= univers.nom %>
                                                             </a>
                                                         <% }); %>
@@ -180,8 +180,6 @@ par la communauté ce mois-ci.</div>
                                                         Accéder au système
                                                     </a>
                                                 <% } %>
-                                                
-                                                <span class="inline-block text-xs <%= safeClasses.badgeBg %> <%= safeClasses.text %> px-3 py-1 rounded-full <%= safeClasses.badgeBorder %> font-display"><%= safeVersion %></span>
                                             </div>
                                         </div>
                                     <% }); %>

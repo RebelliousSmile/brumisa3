@@ -69,7 +69,11 @@ class SystemCardViewModel {
                 .filter(Boolean)
                 .map(system => {
                     const card = this.prepareCard(system);
-                    card.univers = system.univers || [];
+                    // Ajouter les univers avec leurs icônes
+                    card.univers = (system.univers || []).map(univers => ({
+                        ...univers,
+                        icon: this.systemThemeService.getUniverseIcon(system.code, univers.code)
+                    }));
                     return card;
                 });
         };

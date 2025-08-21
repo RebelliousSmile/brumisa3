@@ -1,23 +1,21 @@
 <%
-/*
- * Composant Bouton Universel v2.1 - Avec Support Thèmes Système
- * Usage: <%- include('components/ui-button', { 
- *   text: 'Mon bouton', 
- *   variant: 'primary|secondary|success|danger|outline|ghost', 
- *   size: 'sm|md|lg|xl',
- *   type: 'button|submit|reset',
- *   action: 'naviguer("/page")',
- *   href: '/lien' (crée un lien au lieu d'un bouton),
- *   icon: 'fa-solid fa-download',
- *   iconOnly: false,
- *   disabled: false,
- *   loading: false,
- *   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
- *   additionalClasses: 'w-full',
- *   id: '',
- *   ariaLabel: ''
- * }) %>
- */
+// Composant Bouton Universel v2.1 - Avec Support Thèmes Système
+// Usage: include('components/ui-button', { 
+//   text: 'Mon bouton', 
+//   variant: 'primary|secondary|success|danger|outline|ghost', 
+//   size: 'sm|md|lg|xl',
+//   type: 'button|submit|reset',
+//   action: 'naviguer("/page")',
+//   href: '/lien' (crée un lien au lieu d'un bouton),
+//   icon: 'fa-solid fa-download',
+//   iconOnly: false,
+//   disabled: false,
+//   loading: false,
+//   gameSystem: 'monsterhearts|engrenages|metro2033|mistengine|zombiology',
+//   additionalClasses: 'w-full',
+//   id: '',
+//   ariaLabel: ''
+// })
 
 // Paramètres avec valeurs par défaut
 const {
@@ -33,20 +31,13 @@ const {
     loading = false,
     gameSystem = '', // Système de jeu pour thématisation
     additionalClasses = '',
+    customClass = '',  // Classes personnalisées qui remplacent les classes par défaut
     id = '',
     ariaLabel = ''
 } = locals;
 
-// Intégration du SystemThemeService côté serveur
-let systemTheme = null;
-try {
-    const SystemThemeService = require('../../services/SystemThemeService');
-    const themeService = new SystemThemeService();
-    systemTheme = gameSystem ? themeService.getTheme(gameSystem) : null;
-} catch (error) {
-    // En cas d'erreur, on continue sans le thème système
-    systemTheme = null;
-}
+// Le systemTheme devrait être passé depuis le contrôleur si nécessaire
+const systemTheme = locals.systemTheme || null;
 
 // Détermine si c'est un lien ou un bouton
 const isLink = !!href;
@@ -99,7 +90,8 @@ const sizeClasses = {
     xl: iconOnly ? 'p-4 text-xl rounded-xl' : 'px-8 py-4 text-xl rounded-xl'
 };
 
-const finalClasses = [
+// Si customClass est fourni, l'utiliser à la place des classes par défaut
+const finalClasses = customClass || [
     baseClasses,
     variantClasses,
     sizeClasses[size] || sizeClasses.md,

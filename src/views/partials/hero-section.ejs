@@ -32,9 +32,8 @@ const {
     customClass = ''
 } = locals;
 
-// Intégration du SystemThemeService côté serveur
-const SystemThemeService = require('../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Intégration du SystemThemeService via locals
+const systemTheme = locals.systemTheme || null;
 
 // Classes de thème de base
 const baseThemeClasses = {

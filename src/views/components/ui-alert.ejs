@@ -41,9 +41,8 @@ const {
     id = ''
 } = locals;
 
-// Intégration du SystemThemeService
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Intégration du SystemThemeService via locals
+const systemTheme = locals.systemTheme || null;
 
 // Classes de base
 const baseClasses = 'relative flex p-4 rounded-lg shadow-lg';

@@ -34,9 +34,8 @@ const {
     id = ''
 } = locals;
 
-// Intégration du SystemThemeService
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Intégration du SystemThemeService via locals
+const systemTheme = locals.systemTheme || null;
 
 // Déterminer l'onglet actif par défaut
 const activeTabIndex = tabs.findIndex(tab => tab.active) || 0;

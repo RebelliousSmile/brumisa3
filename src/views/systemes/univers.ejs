@@ -5,18 +5,30 @@
 const safeTheme = theme || { classes: { text: 'text-gray-400', border: 'border-gray-500', bg: 'bg-gray-600/20' } };
 const safeUniverseIcon = universeIcon || 'ra-dice';
 
+// Déterminer les couleurs du système
+const systemColors = {
+    pbta: { gradient: 'from-purple-900 via-purple-800 to-black', primary: 'bg-purple-600 hover:bg-purple-700', secondary: 'border-purple-400 text-purple-400 hover:bg-purple-400' },
+    engrenages: { gradient: 'from-amber-900 via-amber-800 to-black', primary: 'bg-amber-700 hover:bg-amber-800', secondary: 'border-amber-600 text-amber-600 hover:bg-amber-600' },
+    myz: { gradient: 'from-red-900 via-red-800 to-black', primary: 'bg-red-600 hover:bg-red-700', secondary: 'border-red-400 text-red-400 hover:bg-red-400' },
+    mistengine: { gradient: 'from-pink-900 via-pink-800 to-black', primary: 'bg-pink-600 hover:bg-pink-700', secondary: 'border-pink-400 text-pink-400 hover:bg-pink-400' },
+    zombiology: { gradient: 'from-yellow-900 via-yellow-800 to-black', primary: 'bg-yellow-600 hover:bg-yellow-700', secondary: 'border-yellow-400 text-yellow-400 hover:bg-yellow-400' }
+};
+const currentSystemColors = systemColors[systeme] || { gradient: 'from-gray-900 via-gray-800 to-black', primary: 'bg-blue-600 hover:bg-blue-700', secondary: 'border-gray-400 text-gray-400 hover:bg-gray-400' };
+
 const configUniversGeneric = {
     hero: {
-        gradient: 'from-gray-900 via-gray-800 to-black',
+        gradient: currentSystemColors.gradient,
         icone: safeUniverseIcon,
         couleurIcone: safeTheme.classes.text,
         titre: configUnivers.nom,
         description: configUnivers.description,
         couleurTexte: 'text-gray-200',
-        couleurBoutonPrimaire: 'bg-blue-600 hover:bg-blue-700',
-        couleurBoutonSecondaire: 'border-gray-400 text-gray-400 hover:bg-gray-400 hover:text-gray-900',
+        couleurBoutonPrimaire: currentSystemColors.primary,
+        couleurBoutonSecondaire: currentSystemColors.secondary + ' hover:text-gray-900',
         texteBoutonPrimaire: 'Créer un personnage',
-        texteBoutonSecondaire: 'Voir les oracles'
+        texteBoutonSecondaire: 'Voir les oracles',
+        systemTheme: safeTheme,
+        gameSystem: systeme
     },
     commentCreer: {
         nomSysteme: configUnivers.nom,
@@ -78,19 +90,19 @@ const configUniversGeneric = {
         ]
     },
     cta: {
-        gradient: safeTheme.classes.bg.replace('/20', '') + ' to-' + safeTheme.classes.bg.replace('/20', '-600'),
+        gradient: currentSystemColors.gradient,
         titreCTA: `Prêt à explorer l'univers de ${configUnivers.nom} ?`,
         descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
         couleurTexte: 'text-gray-100',
-        couleurTexteBouton: safeTheme.classes.text.replace('-400', '-600'),
-        couleurTexteBoutonSecondaire: 'hover:' + safeTheme.classes.text.replace('-400', '-600')
+        couleurTexteBouton: currentSystemColors.primary,
+        couleurTexteBoutonSecondaire: currentSystemColors.secondary
     }
 };
 %>
 
-<%- include('../partials/systeme-hero', configUniversGeneric.hero) %>
+<%- include('../partials/systeme-hero', Object.assign({}, configUniversGeneric.hero, { systemTheme: safeTheme, gameSystem: systeme })) %>
 
-<%- include('../partials/systeme-comment-creer', configUniversGeneric.commentCreer) %>
+<%- include('../partials/systeme-comment-creer', Object.assign({}, configUniversGeneric.commentCreer, { systemTheme: safeTheme, gameSystem: systeme })) %>
 
 <!-- Templates Section -->
 <div class="bg-gray-800 py-16 px-4">
@@ -132,8 +144,8 @@ const configUniversGeneric = {
     </div>
 </div>
 
-<%- include('../partials/systeme-oracles', configUniversGeneric.oracles) %>
+<%- include('../partials/systeme-oracles', Object.assign({}, configUniversGeneric.oracles, { systemTheme: safeTheme, gameSystem: systeme })) %>
 
-<%- include('../partials/systeme-downloads', configUniversGeneric.downloads) %>
+<%- include('../partials/systeme-downloads', Object.assign({}, configUniversGeneric.downloads, { systemTheme: safeTheme, gameSystem: systeme })) %>
 
-<%- include('../partials/systeme-cta', configUniversGeneric.cta) %>
+<%- include('../partials/systeme-cta', Object.assign({}, configUniversGeneric.cta, { systemTheme: safeTheme, gameSystem: systeme })) %>

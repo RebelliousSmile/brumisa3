@@ -101,18 +101,18 @@
                     
                     <!-- Engrenages avec dropdown -->
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                        <button class="flex items-center text-emerald-500 hover:text-gray-300 transition-colors">
-                            <i class="ra ra-cog text-emerald-500 mr-2"></i>
+                        <button class="flex items-center text-amber-600 hover:text-gray-300 transition-colors">
+                            <i class="ra ra-cog text-amber-600 mr-2"></i>
                             <span class="text-sm">Engrenages</span>
                             <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="absolute left-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-2 border border-gray-700">
-                            <a href="/systeme/engrenages/roue_du_temps" class="flex items-center px-4 py-2 text-sm text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300">
+                            <a href="/systeme/engrenages/roue_du_temps" class="flex items-center px-4 py-2 text-sm text-amber-600 hover:bg-amber-900/20 hover:text-amber-500">
                                 <i class="ra ra-candle mr-2"></i>La Roue du Temps
                             </a>
-                            <a href="/systeme/engrenages/ecryme" class="flex items-center px-4 py-2 text-sm text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300">
+                            <a href="/systeme/engrenages/ecryme" class="flex items-center px-4 py-2 text-sm text-amber-600 hover:bg-amber-900/20 hover:text-amber-500">
                                 <i class="ra ra-chemical-arrow mr-2"></i>Ecryme
                             </a>
                         </div>
@@ -150,7 +150,7 @@
                     </a>
                     
                     <!-- Zombiology lien direct -->
-                    <a href="/systeme/zombiology" class="flex items-center text-yellow-500 hover:text-gray-300 transition-colors">
+                    <a href="/systeme/zombiology/zombiology" class="flex items-center text-yellow-500 hover:text-gray-300 transition-colors">
                         <i class="ra ra-death-skull text-yellow-500 mr-2"></i>
                         <span class="text-sm">Zombiology</span>
                     </a>
@@ -237,14 +237,14 @@
                 
                 <!-- Engrenages -->
                 <div class="px-4 py-1 mt-2">
-                    <p class="text-sm font-semibold text-emerald-500 flex items-center">
+                    <p class="text-sm font-semibold text-amber-600 flex items-center">
                         <i class="ra ra-cog mr-2"></i>Engrenages
                     </p>
                 </div>
-                <a @click="naviguer('/systeme/engrenages/roue_du_temps')" class="flex items-center px-8 py-2 text-emerald-500 hover:bg-emerald-900/20">
+                <a @click="naviguer('/systeme/engrenages/roue_du_temps')" class="flex items-center px-8 py-2 text-amber-600 hover:bg-amber-900/20">
                     <i class="ra ra-candle mr-2"></i>La Roue du Temps
                 </a>
-                <a @click="naviguer('/systeme/engrenages/ecryme')" class="flex items-center px-8 py-2 text-emerald-500 hover:bg-emerald-900/20">
+                <a @click="naviguer('/systeme/engrenages/ecryme')" class="flex items-center px-8 py-2 text-amber-600 hover:bg-amber-900/20">
                     <i class="ra ra-chemical-arrow mr-2"></i>Ecryme
                 </a>
                 
@@ -278,7 +278,7 @@
                 </a>
                 
                 <!-- Zombiology -->
-                <a @click="naviguer('/systeme/zombiology')" class="block px-4 py-2 text-yellow-500 hover:bg-yellow-900/20 mt-2">
+                <a @click="naviguer('/systeme/zombiology/zombiology')" class="block px-4 py-2 text-yellow-500 hover:bg-yellow-900/20 mt-2">
                     <i class="ra ra-death-skull mr-2"></i>
                     Zombiology
                 </a>

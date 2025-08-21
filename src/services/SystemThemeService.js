@@ -14,7 +14,7 @@ class SystemThemeService extends BaseService {
         // Configuration centralisée des thèmes selon la charte graphique
         this.themes = {
             pbta: {
-                icon: 'ra-heartburn',
+                icon: 'ra ra-heartburn',
                 classes: {
                     bg: 'bg-purple-500/20',
                     border: 'border-purple-500/30',
@@ -23,26 +23,26 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-purple-500/30'
                 },
                 universes: {
-                    monsterhearts: { icon: 'ra-heartburn', name: 'Monsterhearts' },
-                    urban_shadows: { icon: 'ra-moon-sun', name: 'Urban Shadows' }
+                    monsterhearts: { icon: 'ra ra-heartburn', name: 'Monsterhearts' },
+                    urban_shadows: { icon: 'ra ra-moon-sun', name: 'Urban Shadows' }
                 }
             },
             engrenages: {
-                icon: 'ra-cog',
+                icon: 'ra ra-cog',
                 classes: {
-                    bg: 'bg-emerald-500/20',
-                    border: 'border-emerald-500/30',
-                    text: 'text-emerald-500',
-                    badgeBg: 'bg-emerald-500/20',
-                    badgeBorder: 'border-emerald-500/30'
+                    bg: 'bg-amber-700/20',
+                    border: 'border-amber-700/30',
+                    text: 'text-amber-600',
+                    badgeBg: 'bg-amber-700/20',
+                    badgeBorder: 'border-amber-700/30'
                 },
                 universes: {
-                    roue_du_temps: { icon: 'ra-candle', name: 'La Roue du Temps' },
-                    ecryme: { icon: 'ra-chemical-arrow', name: 'Ecryme' }
+                    roue_du_temps: { icon: 'ra ra-candle', name: 'La Roue du Temps' },
+                    ecryme: { icon: 'ra ra-chemical-arrow', name: 'Ecryme' }
                 }
             },
             mistengine: {
-                icon: 'ra-ocarina',
+                icon: 'ra ra-ocarina',
                 classes: {
                     bg: 'bg-pink-500/20',
                     border: 'border-pink-500/30',
@@ -51,14 +51,14 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-pink-500/30'
                 },
                 universes: {
-                    obojima: { icon: 'ra-ocarina', name: 'Obojima' },
-                    zamanora: { icon: 'ra-rune-stone', name: 'Zamanora' },
-                    post_mortem: { icon: 'ra-skull', name: 'Post-Mortem' },
-                    otherscape: { icon: 'ra-surveillance-camera', name: 'Tokyo:Otherscape' }
+                    obojima: { icon: 'ra ra-ocarina', name: 'Obojima' },
+                    zamanora: { icon: 'ra ra-rune-stone', name: 'Zamanora' },
+                    post_mortem: { icon: 'ra ra-skull', name: 'Post-Mortem' },
+                    otherscape: { icon: 'ra ra-surveillance-camera', name: 'Tokyo:Otherscape' }
                 }
             },
             myz: {
-                icon: 'ra-pills',
+                icon: 'ra ra-pills',
                 classes: {
                     bg: 'bg-red-600/20',
                     border: 'border-red-600/30',
@@ -67,23 +67,26 @@ class SystemThemeService extends BaseService {
                     badgeBorder: 'border-red-600/30'
                 },
                 universes: {
-                    metro2033: { icon: 'ra-pills', name: 'Metro 2033' }
+                    metro2033: { icon: 'ra ra-pills', name: 'Metro 2033' }
                 }
             },
             zombiology: {
-                icon: 'ra-death-skull',
+                icon: 'ra ra-death-skull',
                 classes: {
                     bg: 'bg-yellow-500/20',
                     border: 'border-yellow-500/30',
                     text: 'text-yellow-500',
                     badgeBg: 'bg-yellow-500/20',
                     badgeBorder: 'border-yellow-500/30'
+                },
+                universes: {
+                    zombiology: { icon: 'ra ra-death-skull', name: 'Zombiology' }
                 }
             },
             
             // Compatibilité avec les anciens codes pour éviter les erreurs
             monsterhearts: {
-                icon: 'ra-heartburn',
+                icon: 'ra ra-heartburn',
                 classes: {
                     bg: 'bg-purple-800/20',
                     border: 'border-purple-600/30',
@@ -93,7 +96,7 @@ class SystemThemeService extends BaseService {
                 }
             },
             metro2033: {
-                icon: 'ra-nuclear',
+                icon: 'ra ra-nuclear',
                 classes: {
                     bg: 'bg-gray-600/20',
                     border: 'border-gray-500/30',

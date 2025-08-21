@@ -1,20 +1,18 @@
 <%
-/*
- * Hero Section Système v2.0
- * Usage: <%- include('partials/systeme-hero', { 
- *   titre: 'Nom du Système',
- *   description: 'Description du système de jeu',
- *   icone: 'ra ra-sword',
- *   gradient: 'from-purple-900 to-blue-900',
- *   couleurIcone: 'text-purple-400',
- *   couleurTexte: 'text-gray-300',
- *   texteBoutonPrimaire: 'Créer un document',
- *   actionBoutonPrimaire: '/systeme/create',
- *   texteBoutonSecondaire: 'Voir exemples',
- *   actionBoutonSecondaire: '/systeme/examples',
- *   theme: 'systeme' // ou 'dark', 'light'
- * }) %>
- */
+// Hero Section Système v2.0
+// Usage: include('partials/systeme-hero', { 
+//   titre: 'Nom du Système',
+//   description: 'Description du système de jeu',
+//   icone: 'ra ra-sword',
+//   gradient: 'from-purple-900 to-blue-900',
+//   couleurIcone: 'text-purple-400',
+//   couleurTexte: 'text-gray-300',
+//   texteBoutonPrimaire: 'Créer un document',
+//   actionBoutonPrimaire: '/systeme/create',
+//   texteBoutonSecondaire: 'Voir exemples',
+//   actionBoutonSecondaire: '/systeme/examples',
+//   theme: 'systeme' // ou 'dark', 'light'
+// })
 
 // Paramètres avec valeurs par défaut
 const {
@@ -28,6 +26,8 @@ const {
     actionBoutonPrimaire = '#',
     texteBoutonSecondaire = 'Voir exemples',
     actionBoutonSecondaire = '#',
+    couleurBoutonPrimaire = 'bg-blue-600 hover:bg-blue-700',
+    couleurBoutonSecondaire = 'border-gray-400 text-gray-400 hover:bg-gray-400',
     theme = 'systeme'
 } = locals;
 
@@ -60,23 +60,17 @@ const secondaryVariant = 'outline';
             
             <!-- Boutons d'action -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <%- include('../components/ui-button', {
-                    text: texteBoutonPrimaire,
-                    href: actionBoutonPrimaire.startsWith('/') ? actionBoutonPrimaire : undefined,
-                    action: !actionBoutonPrimaire.startsWith('/') ? actionBoutonPrimaire : undefined,
-                    variant: primaryVariant,
-                    size: 'xl',
-                    additionalClasses: 'font-semibold'
-                }) %>
+                <% if (texteBoutonPrimaire && actionBoutonPrimaire) { %>
+                    <a href="<%= actionBoutonPrimaire %>" class="inline-block px-8 py-4 text-xl font-semibold text-white <%= couleurBoutonPrimaire %> rounded-lg transition-colors">
+                        <%= texteBoutonPrimaire %>
+                    </a>
+                <% } %>
                 
-                <%- include('../components/ui-button', {
-                    text: texteBoutonSecondaire,
-                    href: actionBoutonSecondaire.startsWith('/') ? actionBoutonSecondaire : undefined,
-                    action: !actionBoutonSecondaire.startsWith('/') ? actionBoutonSecondaire : undefined,
-                    variant: secondaryVariant,
-                    size: 'xl',
-                    additionalClasses: 'font-semibold border-2'
-                }) %>
+                <% if (texteBoutonSecondaire && actionBoutonSecondaire) { %>
+                    <a href="<%= actionBoutonSecondaire %>" class="inline-block px-8 py-4 text-xl font-semibold border-2 <%= couleurBoutonSecondaire %> hover:text-gray-900 rounded-lg transition-colors">
+                        <%= texteBoutonSecondaire %>
+                    </a>
+                <% } %>
             </div>
         </div>
     </div>

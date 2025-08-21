@@ -337,11 +337,21 @@ const systemesJeu = {
 
   // Système Zombiology (standalone)
   zombiology: {
-    nom: 'Zombiology',
+    nom: 'Zombiology d100 System',
     code: 'zombiology',
-    description: 'JdR de survie zombie avec système d100',
+    description: 'Système d100 pour jeux de survie',
     version: '2e édition',
     systeme: true,
+    
+    // Univers disponibles
+    univers: {
+      zombiology: {
+        nom: 'Zombiology',
+        code: 'zombiology',
+        description: 'JdR de survie zombie avec système d100',
+        couleur: '#d4af37'
+      }
+    },
     
     attributs: {
       // Physiques

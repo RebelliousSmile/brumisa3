@@ -31,7 +31,7 @@
 | Couleur | Hex | Tailwind | Usage |
 |---------|-----|----------|-------|
 | **Monsterhearts** | `#8b5cf6` | `purple-500` | Bordures, badges, différenciation visuelle |
-| **Engrenages** | `#10b981` | `emerald-500` | Bordures, badges, différenciation visuelle |
+| **Engrenages** | `#d97706` | `amber-600` | Bordures, badges, différenciation visuelle |
 | **Metro 2033** | `#dc2626` | `red-600` | Bordures, badges, différenciation visuelle |
 | **Mist Engine** | `#ec4899` | `pink-500` | Bordures, badges, différenciation visuelle |
 | **Zombiology** | `#d4af37` | Or métallique | Bordures, badges, différenciation visuelle |
@@ -108,7 +108,7 @@ Les dégradés sont réservés aux **zones d'impact visuel** :
   
   /* Couleurs système JDR (uniquement pour différenciation visuelle) */
   --monsterhearts: #8b5cf6;  /* purple-500 */
-  --engrenages: #10b981;     /* emerald-500 */
+  --engrenages: #d97706;     /* amber-600 */
   --metro2033: #dc2626;      /* red-600 */
   --mistengine: #ec4899;     /* pink-500 */
   --zombiology: #d4af37;     /* or métallique */
@@ -305,16 +305,16 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
          hover:bg-purple-600 hover:text-white hover:border-purple-600;
 }
 
-/* Engrenages - Vert émeraude */
+/* Engrenages - Brun ambré */
 .btn-engrenages {
-  @apply bg-emerald-600 text-white border-emerald-600
-         hover:bg-emerald-700 hover:border-emerald-700
-         focus:ring-emerald-500;
+  @apply bg-amber-700 text-white border-amber-700
+         hover:bg-amber-800 hover:border-amber-800
+         focus:ring-amber-600;
 }
 
 .btn-outline.btn-engrenages {
-  @apply text-emerald-400 border-emerald-500
-         hover:bg-emerald-600 hover:text-white hover:border-emerald-600;
+  @apply text-amber-600 border-amber-700
+         hover:bg-amber-700 hover:text-white hover:border-amber-700;
 }
 
 /* Metro 2033 - Rouge post-apo */
@@ -535,7 +535,7 @@ Les couleurs spécifiques aux systèmes sont utilisées dans leur **contexte app
 | Système | Couleur | Hex | Usage limité |
 |---------|---------|-----|-------------|
 | **Monsterhearts** | Violet | `#8b5cf6` | Pages système, bordures, badges, dégradés hero |
-| **Engrenages** | Vert émeraude | `#10b981` | Pages système, bordures, badges, dégradés hero |
+| **Engrenages** | Brun ambré | `#d97706` | Pages système, bordures, badges, dégradés hero |
 | **Metro 2033** | Rouge | `#dc2626` | Pages système, bordures, badges, dégradés hero |
 | **Mist Engine** | Rose | `#ec4899` | Pages système, bordures, badges, dégradés hero |
 | **Zombiology** | Or métallique | `#d4af37` | Pages système, bordures, badges, dégradés hero |
@@ -577,11 +577,11 @@ font-family: 'Crimson Text', 'Source Serif 4', serif; /* Élégance gothique */
 ```css
 /* Style PDF Engrenages */
 :root {
-  --eng-primary: #10b981;     /* Vert émeraude */
-  --eng-secondary: #059669;   /* Vert plus foncé */
+  --eng-primary: #d97706;     /* Brun ambré */
+  --eng-secondary: #92400e;   /* Brun plus foncé */
   --eng-accent: #fbbf24;      /* Or antique */
-  --eng-dark: #064e3b;        /* Vert très sombre */
-  --eng-bg: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  --eng-dark: #451a03;        /* Brun très sombre */
+  --eng-bg: linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%);
 }
 
 /* Polices thématiques */
@@ -732,7 +732,7 @@ font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
 
 ##### ⚙️ Engrenages - Fantasy Épique  
 - **Polices** : Cinzel, Times New Roman (médiévales, nobles)
-- **Couleurs** : Verts émeraude, ors, bruns terre
+- **Couleurs** : Bruns ambrés, ors, terres cuivrées
 - **Décorations** : Entrelacs, roues, motifs celtiques
 - **Ambiance** : Noble, épique, traditionnel
 - **Éviter** : Polices modernes, néons, styles futuristes
@@ -1090,7 +1090,7 @@ module.exports = {
         'violet-electrique': '#9b51e0',
         // Couleurs système JDR
         'monsterhearts': '#8b5cf6',
-        'engrenages': '#10b981',
+        'engrenages': '#d97706',
         'metro2033': '#dc2626',
         'mistengine': '#ec4899',
         'zombiology': '#d4af37',

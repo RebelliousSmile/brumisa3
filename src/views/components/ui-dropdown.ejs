@@ -43,9 +43,8 @@ const {
     id = ''
 } = locals;
 
-// Intégration du SystemThemeService
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Intégration du SystemThemeService via locals
+const systemTheme = locals.systemTheme || null;
 
 // ID unique pour le dropdown
 const dropdownId = id || `dropdown-${Date.now()}`;

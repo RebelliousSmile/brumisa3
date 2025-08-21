@@ -39,9 +39,8 @@ const {
     footerContent = ''
 } = locals;
 
-// Intégration du SystemThemeService côté serveur
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Intégration du SystemThemeService via locals
+const systemTheme = locals.systemTheme || null;
 
 // Classes de base
 const baseClasses = 'bg-gray-800 border border-gray-700 rounded-xl overflow-hidden transition-all duration-200';

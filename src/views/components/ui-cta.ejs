@@ -1,21 +1,19 @@
 <%
-/*
- * Composant CTA (Call to Action) Universel v1.0 - Avec Support Thèmes Système
- * Usage: <%- include('components/ui-cta', { 
- *   title: 'Rejoignez l\'aventure !',
- *   subtitle: 'Créez vos personnages et vivez des histoires épiques',
- *   backgroundType: 'gradient|solid|image',
- *   backgroundImage: '/images/cta-bg.jpg',
- *   gameSystem: 'monsterhearts',
- *   buttons: [
- *     { text: 'Commencer', href: '/signup', variant: 'primary', size: 'lg' },
- *     { text: 'En savoir plus', href: '/about', variant: 'outline', size: 'lg' }
- *   ],
- *   centered: true,
- *   padding: 'py-16',
- *   customClass: ''
- * }) %>
- */
+// Composant CTA (Call to Action) Universel v1.0 - Avec Support Thèmes Système
+// Usage: include('components/ui-cta', { 
+//   title: 'Rejoignez l\'aventure !',
+//   subtitle: 'Créez vos personnages et vivez des histoires épiques',
+//   backgroundType: 'gradient|solid|image',
+//   backgroundImage: '/images/cta-bg.jpg',
+//   gameSystem: 'monsterhearts',
+//   buttons: [
+//     { text: 'Commencer', href: '/signup', variant: 'primary', size: 'lg' },
+//     { text: 'En savoir plus', href: '/about', variant: 'outline', size: 'lg' }
+//   ],
+//   centered: true,
+//   padding: 'py-16',
+//   customClass: ''
+// })
 
 // Paramètres avec valeurs par défaut
 const {
@@ -30,9 +28,8 @@ const {
     customClass = ''
 } = locals;
 
-// Intégration du SystemThemeService côté serveur
-const SystemThemeService = require('../../services/SystemThemeService');
-const systemTheme = gameSystem ? SystemThemeService.getTheme(gameSystem) : null;
+// Le systemTheme devrait être passé depuis le contrôleur si nécessaire
+const systemTheme = locals.systemTheme || null;
 
 // Classes de fond par type
 const getBackgroundClasses = (type, systemTheme) => {
@@ -52,6 +49,11 @@ const getBackgroundClasses = (type, systemTheme) => {
             return systemColorMap[gameSystem] || 'bg-gray-900';
         }
         return 'bg-gray-900';
+    }
+    
+    // Si un gradient est explicitement passé, l'utiliser
+    if (type === 'gradient' && gradient) {
+        return 'bg-gradient-to-br ' + gradient;
     }
     
     // Gradient par défaut ou thématique
@@ -117,7 +119,9 @@ const contentClasses = centered ? 'text-center' : 'text-left';
                             size: button.size || 'lg',
                             icon: button.icon,
                             gameSystem: gameSystem,
-                            additionalClasses: 'font-semibold ' + (button.additionalClasses || '')
+                            systemTheme: systemTheme,
+                            additionalClasses: 'font-semibold ' + (button.additionalClasses || ''),
+                            customClass: button.customClass || ''
                         }) %>
                     <% }); %>
                 </div>
