@@ -429,8 +429,10 @@ router.get('/pdfs/:id', authController.middlewareAuth, (req, res) => {
 
 // Pages publiques oracles
 router.get('/oracles', oracleController.pageListeOracles);
+router.get('/oracles/:univers', oracleController.pageListeOraclesParUnivers);
+// Route de compatibilité pour l'ancien système
 router.get('/oracles/systeme/:gameSystem', oracleController.pageListeOraclesParSysteme);
-router.get('/oracles/:id', oracleController.pageDetailOracle);
+router.get('/oracles/detail/:id', oracleController.pageDetailOracle);
 
 // ===== ADMINISTRATION =====
 

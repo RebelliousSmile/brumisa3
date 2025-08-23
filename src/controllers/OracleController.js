@@ -440,7 +440,116 @@ class OracleController extends BaseController {
     });
 
     /**
-     * GET /oracles/:id - Page détail d'un oracle
+     * GET /oracles/:univers - Page liste des oracles par univers
+     */
+    pageListeOraclesParUnivers = this.wrapAsync(async (req, res) => {
+        const { univers } = req.params;
+        const pagination = this.extrairePagination(req);
+        const userRole = req.session?.utilisateur?.role || 'UTILISATEUR';
+        
+        // Vérifier que l'univers existe
+        const UniversJeu = require('../models/UniversJeu');
+        const universModel = new UniversJeu();
+        const universInfo = await universModel.findById(univers);
+        
+        if (!universInfo) {
+            return res.status(404).render('errors/404', {
+                title: 'Univers non trouvé',
+                message: `L'univers "${univers}" n'existe pas.`
+            });
+        }
+        
+        const oracles = await this.oracleService.listerOraclesParUnivers(
+            univers,
+            userRole,
+            pagination.page,
+            pagination.limite
+        );
+        
+        // Configuration des couleurs par univers
+        const couleursUnivers = {
+            'monsterhearts': {
+                primary: 'purple',
+                gradient: 'from-purple-900/20 via-purple-800/30 to-pink-900/20',
+                accent: 'purple-400',
+                icon: 'ra-heartburn'
+            },
+            'urban_shadows': {
+                primary: 'slate',
+                gradient: 'from-slate-900/20 via-slate-800/30 to-gray-900/20',
+                accent: 'slate-400',
+                icon: 'ra-city'
+            },
+            'roue_du_temps': {
+                primary: 'amber',
+                gradient: 'from-amber-900/20 via-orange-800/30 to-yellow-900/20',
+                accent: 'amber-400',
+                icon: 'ra-spinning-wheel'
+            },
+            'ecryme': {
+                primary: 'indigo',
+                gradient: 'from-indigo-900/20 via-purple-800/30 to-blue-900/20',
+                accent: 'indigo-400',
+                icon: 'ra-cogs'
+            },
+            'metro2033': {
+                primary: 'orange',
+                gradient: 'from-orange-900/20 via-red-800/30 to-gray-900/20',
+                accent: 'orange-400',
+                icon: 'ra-radiation'
+            },
+            'obojima': {
+                primary: 'red',
+                gradient: 'from-red-900/20 via-pink-800/30 to-red-900/20',
+                accent: 'red-400',
+                icon: 'ra-cherry-blossoms'
+            },
+            'zamanora': {
+                primary: 'violet',
+                gradient: 'from-violet-900/20 via-purple-800/30 to-indigo-900/20',
+                accent: 'violet-400',
+                icon: 'ra-moon'
+            },
+            'post_mortem': {
+                primary: 'blue',
+                gradient: 'from-blue-900/20 via-indigo-800/30 to-slate-900/20',
+                accent: 'blue-400',
+                icon: 'ra-skull'
+            },
+            'otherscape': {
+                primary: 'pink',
+                gradient: 'from-pink-900/20 via-rose-800/30 to-red-900/20',
+                accent: 'pink-400',
+                icon: 'ra-cherry-blossoms'
+            },
+            'zombiology': {
+                primary: 'green',
+                gradient: 'from-green-900/20 via-emerald-800/30 to-lime-900/20',
+                accent: 'green-400',
+                icon: 'ra-biohazard'
+            }
+        };
+        
+        const couleurUnivers = couleursUnivers[univers] || {
+            primary: 'gray',
+            gradient: 'from-gray-900/20 via-gray-800/30 to-gray-900/20',
+            accent: 'gray-400',
+            icon: 'ra-crystal-ball'
+        };
+
+        res.render('oracles/liste', {
+            titre: `Oracles - ${universInfo.nom_complet}`,
+            oracles: oracles.data,
+            pagination: oracles.pagination,
+            univers: univers,
+            universInfo: universInfo,
+            couleurUnivers: couleurUnivers,
+            utilisateur: req.session?.utilisateur || null
+        });
+    });
+
+    /**
+     * GET /oracles/detail/:id - Page détail d'un oracle
      */
     pageDetailOracle = this.wrapAsync(async (req, res) => {
         const { id } = req.params;

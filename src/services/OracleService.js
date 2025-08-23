@@ -486,6 +486,36 @@ class OracleService extends BaseService {
      * @param {number} limit - Nombre d'éléments par page
      * @returns {Promise<Object>} Liste paginée des oracles
      */
+    /**
+     * Liste les oracles d'un univers spécifique avec pagination
+     */
+    async listerOraclesParUnivers(universJeu, userRole = 'UTILISATEUR', page = 1, limit = 20) {
+        try {
+            const result = await this.oracleModel.listerAvecStatsParUnivers(universJeu, userRole, page, limit);
+            
+            // Filtrer les données selon les permissions
+            result.data = result.data.map(oracle => 
+                this.oracleModel.filterByPermission(oracle, userRole)
+            );
+
+            this.log('info', 'Liste des oracles par univers récupérée', {
+                univers_jeu: universJeu,
+                user_role: userRole,
+                page,
+                limit,
+                total: result.pagination.total
+            });
+
+            return result;
+        } catch (error) {
+            this.logError(error, { univers_jeu: universJeu, user_role: userRole, page, limit });
+            throw error;
+        }
+    }
+
+    /**
+     * Liste les oracles d'un système spécifique avec pagination (rétrocompatibilité)
+     */
     async listerOraclesParSysteme(gameSystem, userRole = 'UTILISATEUR', page = 1, limit = 20) {
         try {
             const result = await this.oracleModel.listerAvecStatsParSysteme(gameSystem, userRole, page, limit);

@@ -77,7 +77,7 @@
 
                 <!-- Actions -->
                 <div class="p-6 flex space-x-3">
-                    <a href="/oracles/<%= oracle.id %>" 
+                    <a href="/oracles/detail/<%= oracle.id %>" 
                        class="flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors"
                        style="background: var(--system-primary); hover:background: color-mix(in srgb, var(--system-primary) 90%, black)">
                         <i class="ra ra-crystal-ball mr-2"></i>
@@ -327,7 +327,7 @@ function afficherResultatsRecherche(oracles) {
                 </div>
             </div>
             <div class="p-6 flex space-x-3">
-                <a href="/oracles/${oracle.id}" class="flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors" style="background: var(--system-primary)">
+                <a href="/oracles/detail/${oracle.id}" class="flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors" style="background: var(--system-primary)">
                     <i class="ra ra-crystal-ball mr-2"></i>Consulter
                 </a>
                 ${!oracle.premium_required ? 
