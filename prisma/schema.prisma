@@ -1,0 +1,293 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Énumération pour les rôles utilisateurs
+enum Role {
+  ADMIN
+  UTILISATEUR
+}
+
+// Énumération pour les types de documents
+enum DocumentType {
+  GENERIQUE
+  CHARACTER
+  TOWN
+  GROUP
+  ORGANIZATION
+  DANGER
+}
+
+// Table des utilisateurs
+model Utilisateur {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          Role     @default(UTILISATEUR)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  documents     Document[]
+  votes         DocumentVote[]
+  oracles       OraclePersonnalise[]
+  consentements RgpdConsentement[]
+  demandesEmail DemandeChangementEmail[]
+  
+  @@map("utilisateurs")
+}
+
+// Table des systèmes de jeu
+model SystemeJeu {
+  id                String   @id
+  nomComplet        String   @map("nom_complet")
+  description       String?
+  siteOfficiel      String?  @map("site_officiel")
+  versionSupportee  String?  @map("version_supportee")
+  
+  // Métadonnées
+  actif             Boolean  @default(true)
+  ordreAffichage    Int      @default(0) @map("ordre_affichage")
+  couleurPrimaire   String?  @map("couleur_primaire")
+  couleurSecondaire String?  @map("couleur_secondaire")
+  pictogramme       String?
+  
+  // Timestamps
+  dateCreation      DateTime @default(now()) @map("date_creation")
+  dateModification  DateTime @updatedAt @map("date_modification")
+  
+  // Relations
+  univers           UniversJeu[]
+  
+  @@map("systemes_jeu")
+}
+
+// Table des univers de jeu
+model UniversJeu {
+  id                String   @id
+  nomComplet        String   @map("nom_complet")
+  description       String?
+  siteOfficiel      String?  @map("site_officiel")
+  
+  // Référence au système parent
+  systemeJeuId      String   @map("systeme_jeu_id")
+  systemeJeu        SystemeJeu @relation(fields: [systemeJeuId], references: [id])
+  
+  // Métadonnées
+  actif             Boolean  @default(true)
+  ordreAffichage    Int      @default(0) @map("ordre_affichage")
+  couleurPrimaire   String?  @map("couleur_primaire")
+  couleurSecondaire String?  @map("couleur_secondaire")
+  pictogramme       String?
+  
+  // Timestamps
+  dateCreation      DateTime @default(now()) @map("date_creation")
+  dateModification  DateTime @updatedAt @map("date_modification")
+  
+  // Relations
+  documents         Document[]
+  oracles           Oracle[]
+  configurationsDoc DocumentUniversJeu[]
+  
+  @@map("univers_jeu")
+}
+
+// Table des documents
+model Document {
+  id               Int          @id @default(autoincrement())
+  type             DocumentType
+  titre            String
+  systemeJeu       String       @map("systeme_jeu")
+  
+  // Nouvelle référence univers
+  universJeu       String?      @map("univers_jeu")
+  univers          UniversJeu?  @relation(fields: [universJeu], references: [id])
+  
+  // Auteur
+  utilisateurId    Int          @map("utilisateur_id")
+  utilisateur      Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  
+  // Contenu
+  contenu          Json         @default("{}")
+  
+  // Métadonnées
+  statut           String       @default("BROUILLON")
+  nombreVues       Int          @default(0) @map("nombre_vues")
+  nombreUtilisations Int        @default(0) @map("nombre_utilisations")
+  
+  // Timestamps
+  dateCreation     DateTime     @default(now()) @map("date_creation")
+  dateModification DateTime     @updatedAt @map("date_modification")
+  datePublication  DateTime?    @map("date_publication")
+  
+  // Relations
+  votes            DocumentVote[]
+  
+  @@map("documents")
+}
+
+// Table des configurations document-univers
+model DocumentUniversJeu {
+  documentType     String      @map("document_type")
+  universJeu       String      @map("univers_jeu")
+  univers          UniversJeu  @relation(fields: [universJeu], references: [id])
+  
+  actif            Boolean     @default(true)
+  ordreAffichage   Int         @default(0) @map("ordre_affichage")
+  configuration    Json        @default("{}")
+  
+  // Timestamps
+  dateCreation     DateTime    @default(now()) @map("date_creation")
+  dateModification DateTime    @updatedAt @map("date_modification")
+  
+  @@id([documentType, universJeu])
+  @@map("document_univers_jeu")
+}
+
+// Table des oracles
+model Oracle {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nom          String
+  description  String?
+  donnees      Json       @map("donnees_oracle")
+  systemeJeu   String     @map("systeme_jeu")
+  
+  // Nouvelle référence univers
+  universJeu   String?    @map("univers_jeu")
+  univers      UniversJeu? @relation(fields: [universJeu], references: [id])
+  
+  // Métadonnées
+  actif        Boolean    @default(true)
+  public       Boolean    @default(true)
+  
+  // Timestamps
+  dateCreation DateTime   @default(now()) @map("date_creation")
+  
+  @@map("oracles")
+}
+
+// Table des oracles personnalisés
+model OraclePersonnalise {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  utilisateurId  Int         @map("utilisateur_id")
+  utilisateur    Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  nom            String
+  description    String?
+  donneesOracle  Json        @map("donnees_oracle")
+  
+  // Timestamps
+  dateCreation   DateTime    @default(now()) @map("date_creation")
+  dateModification DateTime  @updatedAt @map("date_modification")
+  
+  @@map("oracles_personnalises")
+}
+
+// Table des votes sur les documents
+model DocumentVote {
+  id                Int      @id @default(autoincrement())
+  documentId        Int      @map("document_id")
+  document          Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  utilisateurId     Int      @map("utilisateur_id")
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  
+  qualiteGenerale   Int      @map("qualite_generale")
+  utilitePratique   Int      @map("utilite_pratique")
+  clartePresentation Int     @map("clarte_presentation")
+  faciliteUtilisation Int   @map("facilite_utilisation")
+  
+  commentaire       String?
+  dateVote          DateTime @default(now()) @map("date_vote")
+  
+  @@unique([documentId, utilisateurId])
+  @@map("document_votes")
+}
+
+// Table des témoignages
+model Temoignage {
+  id           Int      @id @default(autoincrement())
+  auteurNom    String   @map("auteur_nom")
+  auteurEmail  String   @map("auteur_email")
+  contenu      String
+  note         Int?
+  statut       String   @default("EN_ATTENTE")
+  
+  // Timestamps
+  dateCreation DateTime @default(now()) @map("date_creation")
+  dateModeration DateTime? @map("date_moderation")
+  
+  @@map("temoignages")
+}
+
+// Table des abonnés newsletter
+model NewsletterAbonne {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  nom              String?
+  
+  // Préférences
+  systemesInterets String[] @map("systemes_interets")
+  frequenceEnvoi   String   @default("MENSUELLE") @map("frequence_envoi")
+  actif            Boolean  @default(true)
+  
+  // Timestamps
+  dateInscription  DateTime @default(now()) @map("date_inscription")
+  dateDesinscription DateTime? @map("date_desinscription")
+  
+  @@map("newsletter_abonnes")
+}
+
+// Table des actualités
+model Actualite {
+  id           Int      @id @default(autoincrement())
+  titre        String
+  resume       String?
+  contenuHtml  String   @map("contenu_html")
+  
+  // Métadonnées
+  statut       String   @default("BROUILLON")
+  auteurId     Int?     @map("auteur_id")
+  
+  // Timestamps
+  dateCreation DateTime @default(now()) @map("date_creation")
+  datePublication DateTime? @map("date_publication")
+  
+  @@map("actualites")
+}
+
+// Table des consentements RGPD
+model RgpdConsentement {
+  id                  Int         @id @default(autoincrement())
+  utilisateurId       Int         @map("utilisateur_id")
+  utilisateur         Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  typeConsentement    String      @map("type_consentement")
+  consentementDonne   Boolean     @map("consentement_donne")
+  dateConsentement    DateTime    @default(now()) @map("date_consentement")
+  adresseIp          String?     @map("adresse_ip")
+  userAgent          String?     @map("user_agent")
+  
+  @@map("rgpd_consentements")
+}
+
+// Table des demandes de changement d'email
+model DemandeChangementEmail {
+  id                Int         @id @default(autoincrement())
+  utilisateurId     Int         @map("utilisateur_id")
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  ancienEmail       String      @map("ancien_email")
+  nouvelEmail       String      @map("nouvel_email")
+  tokenValidation   String      @unique @map("token_validation")
+  dateExpiration    DateTime    @map("date_expiration")
+  statut            String      @default("EN_ATTENTE")
+  dateCreation      DateTime    @default(now()) @map("date_creation")
+  dateTraitement    DateTime?   @map("date_traitement")
+  
+  @@map("demandes_changement_email")
+}

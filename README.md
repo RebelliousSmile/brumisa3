@@ -1,28 +1,29 @@
-# 🎲 Générateur PDF JDR
+# 🎲 Brumisater - Générateur PDF JDR
 
-**Générateur de PDFs pour fiches de personnages et aides de jeu de rôle**
+**Créateur de fiches de personnages JDR immersives avec Nuxt 4 et architecture moderne**
 
-Créez et gérez vos fiches de personnages pour **Monsterhearts**, **7ème Mer**, **Engrenages & Sortilèges**, **Metro 2033** et **Mist Engine** avec génération automatique de PDFs stylisés.
+Générez des PDFs stylisés pour **Monsterhearts**, **Engrenages & Sortilèges**, **Metro 2033**, **Mist Engine** et **Zombiology** avec une expérience utilisateur moderne et réactive.
 
 ## ✨ Fonctionnalités
 
 - 🎭 **5 systèmes JDR supportés** avec templates spécialisés
-- 📄 **Génération PDF automatique** avec styles thématiques
-- 👥 **Système de rôles** (Utilisateur, Premium, Admin)
-- ⚡ **Interface Alpine.js** moderne et réactive
-- 🎨 **Design responsive** avec Tailwind CSS
-- 🔒 **Authentification sécurisée** avec codes d'accès
-- 🏗️ **Architecture MVC propre** avec principes SOLID/DRY
+- 📄 **Génération PDF automatique** avec PDFKit et styles thématiques
+- 🏗️ **Architecture Nuxt 4** avec Vue 3 Composition API
+- 🗄️ **PostgreSQL + Prisma ORM** pour la persistance
+- 👥 **Authentification** avec @sidebase/nuxt-auth et sessions
+- 🎨 **Design system** Tailwind CSS avec thèmes par univers
+- ⚡ **Pinia stores** pour la gestion d'état moderne
+- 📚 **Documentation automatique** avec TypeDoc
 
 ## 🎮 Systèmes supportés
 
 | Système | Type | Mécaniques |
 |---------|------|-----------|
-| **Monsterhearts** | PbtA | Skins, Moves, Conditions, Strings |
-| **7ème Mer** | Swashbuckling | Nations, Hero Points, Avantages |
-| **Engrenages & Sortilèges** | Steampunk | Spécialisations Magie/Science |
+| **Monsterhearts** | PbtA Teen Drama | Skins, Moves, Conditions, Strings |
+| **Engrenages & Sortilèges** | Steampunk Fantasy | Magie/Science, Rouages, Sortilèges |
 | **Metro 2033** | Post-apocalyptique | Factions, Radiation, Survie |
-| **Mist Engine** | Narratif | Assets, Debilities, Momentum |
+| **Mist Engine** | Horror Victorien | Assets, Debilities, Momentum |
+| **Zombiology** | Survie Zombie | Infection, Ressources, Groupes |
 
 ## 🚀 Installation rapide
 
@@ -31,221 +32,169 @@ Créez et gérez vos fiches de personnages pour **Monsterhearts**, **7ème Mer**
 git clone https://github.com/RebelliousSmile/generateur-pdf-jdr.git
 cd generateur-pdf-jdr
 
-# Installer les dépendances
-npm install
+# Installer les dépendances (pnpm recommandé)
+pnpm install
 
-# Configuration
+# Configuration environnement
 cp .env.example .env
-# Modifier les variables d'environnement si nécessaire
+# Modifier les variables PostgreSQL et autres
 
 # Initialiser la base de données
-npm run db:init
-npm run db:seed
+pnpm run db:generate
+pnpm run db:migrate
+pnpm run db:seed
 
 # Démarrer en mode développement
-npm run dev
+pnpm run dev
 ```
 
-L'application sera accessible sur http://localhost:3074
+L'application sera accessible sur http://localhost:3000
 
 ## 📚 Documentation
 
-- **[CLAUDE.md](documentation/CLAUDE.md)** - Architecture détaillée du projet
-- **[API.md](documentation/API.md)** - Documentation des endpoints
-- **[SYSTEMS.md](documentation/SYSTEMS.md)** - Guide des systèmes JDR
+- **[Documentation complète](documentation/)** - Architecture et guides
+- **[API Reference](documentation/api/)** - Documentation TypeDoc automatique
+- **[CLAUDE.md](CLAUDE.md)** - Instructions de développement
 
-## 🏗️ Architecture
+### Structure de documentation
+
+- 📋 **[FONCTIONNALITES/](documentation/FONCTIONNALITES/)** - Spécifications métier
+- 🏗️ **[ARCHITECTURE/](documentation/ARCHITECTURE/)** - Patterns techniques
+- 🎮 **[SYSTEMES-JDR/](documentation/SYSTEMES-JDR/)** - Configuration des jeux
+- 🎨 **[DESIGN-SYSTEM/](documentation/DESIGN-SYSTEM/)** - Charte graphique
+- 🛠️ **[DEVELOPPEMENT/](documentation/DEVELOPPEMENT/)** - Guides développeur
+
+## 🏗️ Architecture Nuxt 4
+
+### Stack technique
 
 ```
-src/
-├── models/          # Modèles métier (SOLID)
-├── controllers/     # Contrôleurs MVC
-├── services/        # Services métier
-├── views/           # Templates EJS (logique séparée)
-└── routes/          # Routes Express
-public/js/
-├── services/        # Services métier frontend
-├── components/      # Composants Alpine réutilisables
-└── app.js          # Configuration Alpine + stores
+🖥️ Frontend:      Vue 3 + Composition API + Pinia
+🌐 Framework:     Nuxt 4 + Nitro Server
+🗄️ Base de données: PostgreSQL + Prisma ORM
+🔐 Auth:          @sidebase/nuxt-auth
+🎨 Styling:       Tailwind CSS + Design System
+📄 PDF:           PDFKit programmatique
+🧪 Tests:         Vitest + @nuxt/test-utils
 ```
 
-### 🧩 Architecture Alpine.js
+### Structure projet
 
-- **Stores globaux** pour état partagé
-- **Services métier** séparés (PersonnageService, PdfService)
-- **Composants réutilisables** sans logique dans les templates
-- **Validation côté client ET serveur**
+```
+├── components/          # Composants Vue réutilisables
+├── composables/         # Logique réutilisable Composition API
+├── stores/              # Pinia stores (état global)
+├── server/
+│   ├── api/            # Routes API Nitro
+│   ├── services/       # Services métier
+│   └── utils/          # Utilitaires serveur
+├── pages/              # Pages et routage automatique
+├── middleware/         # Middleware de navigation
+├── prisma/            # Schéma et migrations DB
+└── documentation/     # Documentation complète
+```
+
+## 🛠️ Scripts disponibles
+
+### Développement
+
+```bash
+pnpm run dev              # Serveur développement (port 3000)
+pnpm run build           # Build production
+pnpm run preview         # Preview build production
+pnpm run typecheck       # Vérification TypeScript
+```
+
+### Base de données
+
+```bash
+pnpm run db:generate     # Générer client Prisma
+pnpm run db:migrate      # Appliquer migrations
+pnpm run db:studio      # Interface graphique Prisma
+pnpm run db:seed        # Données d'exemple
+```
+
+### Tests
+
+```bash
+pnpm run test           # Tests avec Vitest
+pnpm run test:ui        # Interface graphique tests
+pnpm run test:coverage  # Couverture de code
+```
+
+### Documentation
+
+```bash
+pnpm run docs:generate  # Générer documentation API
+pnpm run docs:serve    # Servir documentation (port 3001)
+pnpm run docs:build    # Build et confirmation
+pnpm run docs:clean    # Nettoyer documentation
+```
+
+### Production
+
+```bash
+pnpm run deploy:build   # Build complet pour déploiement
+pnpm run deploy:start   # Démarrage production
+pnpm run pm2:start     # Démarrage PM2
+```
 
 ## 🎯 Utilisation
 
 ### Créer un personnage
-1. Choisir un système de JDR
-2. Remplir les informations de base
-3. Configurer les attributs selon le système
-4. Sauvegarder la fiche
+1. Choisir un système JDR et type de document
+2. Remplir les informations selon le système
+3. Sauvegarder la fiche (compte requis)
+4. Générer le PDF stylisé
 
-### Générer un PDF
-1. Ouvrir la fiche personnage
-2. Cliquer "Générer PDF"
-3. Télécharger le document stylisé
+### Systèmes d'oracles
+- Tables aléatoires par univers
+- Génération procédurale
+- Intégration dans les documents
 
-### Codes d'accès
-- **Premium** : `123456` (plus de fonctionnalités)
-- **Admin** : `789012` (administration complète)
-
-## 🛠️ Scripts disponibles
-
-### Scripts NPM
-
-```bash
-npm run dev         # Mode développement (nodemon + CSS watch)
-npm run build:css   # Compile Tailwind CSS
-npm start          # Production
-npm test           # Tests Jest
-npm run lint       # ESLint
-npm run db:seed    # Remplir avec données d'exemple
-```
-
-### Scripts de maintenance (dossier `scripts/`)
-
-#### 🗄️ **Base de données**
-
-```bash
-# Migration complète de la base de données (11 migrations)
-node scripts/migrate-db.js
-
-# Debug et vérification
-node scripts/debug-db.js                    # Vérifier état général de la DB
-node scripts/check-table-structure.js       # Vérifier structure des tables
-node scripts/check-users.js                # Vérifier utilisateurs et authentification
-node scripts/test-db-connection.js         # Tester connexion à la base
-
-# Base de données de test
-node scripts/init-test-db.js               # Initialiser base de test
-```
-
-#### 🎲 **Oracles et contenus**
-
-```bash
-# Injection d'oracles
-node scripts/injecter-oracle.js [fichier.json] [--jeu=nom] [--admin-id=123]
-node scripts/inject-monsterhearts.js       # Injecter oracles Monsterhearts
-node scripts/inject-all-monsterhearts.js   # Injecter tous les oracles MH
-
-# Debug oracles
-node scripts/debug-oracles.js              # Vérifier oracles en base
-node scripts/check-oracles-db.js           # État complet des oracles
-node scripts/test-oracle-query.js          # Tester requêtes oracles
-```
-
-#### 🔐 **Authentification et utilisateurs**
-
-```bash
-# Tests d'authentification
-node scripts/test-auth-manual.js           # Test auth manuel
-node scripts/debug-user-exists.js          # Vérifier existence utilisateur
-node scripts/test-reset-password.js        # Tester reset mot de passe
-node scripts/test-reset-admin.js           # Reset admin
-
-# Gestion mots de passe
-node scripts/debug-password-reset.js       # Debug reset password
-node scripts/debug-token-expiration.js     # Debug expiration tokens
-```
-
-#### 📧 **Emails et notifications**
-
-```bash
-# Tests d'envoi d'emails
-node scripts/test-email.js                 # Test email basique
-node scripts/test-email-simple.js          # Test email simplifié  
-node scripts/debug-email-sending.js        # Debug envoi emails
-node scripts/test-password-reset-email.js  # Test email reset password
-node scripts/test-with-real-user-email.js  # Test avec vrai utilisateur
-
-# Services emails
-node scripts/debug-resend.js               # Debug service Resend
-node scripts/test-email-service-improved.js # Test service email amélioré
-```
-
-#### 📄 **PDFs et génération**
-
-```bash
-# Tests génération PDF
-node scripts/test-base-pdfkit.js           # Test PDFKit de base
-node scripts/test-pdf-model.js             # Test modèle PDF
-node scripts/test-monsterhearts-generique-pdfkit.js # Test PDF Monsterhearts
-node scripts/test-long-document-pdfkit.js  # Test document long
-```
-
-#### 🧪 **Tests et debug**
-
-```bash
-# Tests endpoints
-node scripts/test-endpoints-real.js        # Test endpoints réels
-node scripts/test-route-oracles.js         # Test routes oracles
-node scripts/test-session-expiration.js    # Test expiration sessions
-
-# Debug divers
-node scripts/debug-env-test.js             # Debug variables environnement
-node scripts/test-templates-helpers.js     # Test helpers templates
-node scripts/load-env.js                   # Charger variables env
-```
-
-#### 🔧 **Migration et développement**
-
-```bash
-# Migration de projet
-node scripts/migrate-chai-to-jest.js       # Migration Chai vers Jest
-node scripts/migrate-existing-oracles.js   # Migration oracles existants
-node scripts/add-game-system-column.js     # Ajouter colonne système jeu
-
-# Utilitaires développement  
-node scripts/migrate-db-functions.js       # Fonctions de migration
-node scripts/test-db-helper.js             # Helper de test DB
-```
+### Authentification
+- Sessions sécurisées
+- Codes d'accès par défaut (voir .env.example)
+- Gestion de profils utilisateur
 
 ## 🧪 Tests
 
+Le projet inclut une suite de tests complète :
+
 ```bash
-npm test                    # Tous les tests
-npm run test:unit          # Tests unitaires
-npm run test:integration   # Tests d'intégration
-npm run test:coverage     # Couverture de code
+# Tests unitaires et d'intégration
+pnpm run test
+
+# Tests avec interface graphique
+pnpm run test:ui
+
+# Couverture de code
+pnpm run test:coverage
 ```
+
+Tests couverts :
+- ✅ Services métier et PDF
+- ✅ API routes et authentification
+- ✅ Composables et stores
+- ✅ Intégration base de données
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! Nous accueillons tous types de contributions :
+Les contributions sont bienvenues ! 
 
-### 🐛 Signaler un bug ou proposer une fonctionnalité
+### Types de contributions
+- 🐛 **Signalement de bugs** via les issues
+- ✨ **Nouvelles fonctionnalités** avec Pull Requests
+- 🎲 **Nouveaux systèmes JDR** (voir documentation/SYSTEMES-JDR/)
+- 📖 **Amélioration documentation**
 
-- **[Créer une issue](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues/new)** pour signaler un problème
-- **[Parcourir les issues existantes](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues)** pour voir ce qui est en cours
-
-### 🔧 Contribuer au code
-
-1. **Fork** le repository
-2. **Créer une branche** pour votre fonctionnalité : `git checkout -b feature/ma-fonctionnalite`
-3. **Respecter l'architecture** existante (SOLID/DRY)
-4. **Ajouter des tests** pour le nouveau code
-5. **Mettre à jour la documentation**
-6. **Soumettre une [Pull Request](https://github.com/RebelliousSmile/generateur-pdf-jdr/pulls)**
-
-### 🎲 Ajouter un nouveau système JDR
-
-1. Ajouter la configuration dans `src/utils/systemesJeu.js`
-2. Créer le template PDF dans `src/services/PdfService.js`  
-3. Ajouter les tests correspondants
-4. Mettre à jour la documentation
-
-### 📖 Améliorer la documentation
-
-- Corriger les fautes de frappe
-- Ajouter des exemples
-- Traduire en d'autres langues
-- Améliorer les guides d'utilisation
-
-**[Voir toutes les façons de contribuer →](https://github.com/RebelliousSmile/generateur-pdf-jdr/blob/main/CONTRIBUTING.md)**
+### Processus de contribution
+1. Fork le repository
+2. Créer une branche feature : `git checkout -b feature/ma-fonctionnalite`
+3. Respecter l'architecture existante
+4. Ajouter des tests pour le nouveau code
+5. Mettre à jour la documentation si nécessaire
+6. Soumettre une Pull Request
 
 ## 📝 Licence
 
@@ -253,11 +202,13 @@ Ce projet est sous licence MIT. Voir [LICENSE](LICENSE) pour plus de détails.
 
 ## 🙏 Remerciements
 
-- Inspiré de **EuroCeramic** pour l'architecture de base
-- Communauté **Alpine.js** pour la réactivité moderne
+- **Nuxt 4** pour le framework moderne
+- **Vue 3** et l'écosystème Composition API
+- **Prisma** pour l'ORM TypeScript
 - **Tailwind CSS** pour le design system
-- Créateurs des systèmes JDR supportés
+- **PDFKit** pour la génération programmatique
+- Communauté JDR française pour l'inspiration
 
 ---
 
-**Créé avec ❤️ pour la communauté JDR française**
+**Créé avec ❤️ pour la communauté JDR - Migration Express → Nuxt 4 réussie**

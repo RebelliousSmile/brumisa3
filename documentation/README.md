@@ -1,6 +1,178 @@
-# Documentation brumisater
+# Brumisater - Documentation Technique
 
-**Créateur de fiches de personnages JDR immersives et professionnelles**
+## Vue d'ensemble
+
+Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architecture moderne.
+
+### 🏗️ Stack Technique
+- **Framework** : Nuxt 4 + Vue 3 Composition API
+- **Backend** : Nitro Server + PostgreSQL + Prisma ORM
+- **Frontend** : Vue 3 + Tailwind CSS + Pinia
+- **PDF** : PDFKit avec génération programmatique
+- **Auth** : @sidebase/nuxt-auth avec sessions
+
+### 🎮 Systèmes de Jeu Supportés
+- **Monsterhearts** - Teen monster drama
+- **Engrenages & Sortilèges** - Steampunk fantasy
+- **Metro 2033** - Post-apocalyptic survival
+- **Mist Engine** - Victorian horror
+- **Zombiology** - Zombie apocalypse
+
+---
+
+## 📚 Documentation
+
+### 📖 Documentation Fonctionnelle
+Spécifications métier et fonctionnalités :
+- [Vision Produit](FONCTIONNALITES/01-vision-produit.md)
+- [Création Documents](FONCTIONNALITES/02-creation-documents.md)
+- [Gestion Personnages](FONCTIONNALITES/03-gestion-personnages.md)
+- [Oracles](FONCTIONNALITES/04-oracles.md)
+- [Partage Communauté](FONCTIONNALITES/05-partage-communaute.md)
+- [Administration](FONCTIONNALITES/06-administration.md)
+- [Témoignages](FONCTIONNALITES/07-temoignages.md)
+- [Système Premium](FONCTIONNALITES/08-systeme-premium.md)
+- [Gestion Compte](FONCTIONNALITES/09-gestion-compte.md)
+
+### 🏗️ Documentation Architecture
+Structure technique et patterns :
+- [Architecture Générale](ARCHITECTURE/README.md)
+- [Services Backend](ARCHITECTURE/services.md)
+- [API Routes](ARCHITECTURE/api-routes.md)
+- [Composables](ARCHITECTURE/composables.md)
+- [Stores Pinia](ARCHITECTURE/stores.md)
+- [Base de Données](ARCHITECTURE/database.md)
+
+### 💻 Documentation Développement
+Guides et processus de développement :
+- [Setup Développement](DEVELOPPEMENT/setup.md)
+- [Tests](testing.md)
+- [Déploiement](DEVELOPPEMENT/deployment.md)
+- [Conventions Code](DEVELOPPEMENT/conventions.md)
+- [Performance](DEVELOPPEMENT/performance.md)
+
+### 🔧 API Documentation
+Documentation automatique du code TypeScript :
+- **[API Reference](api/)** - Documentation TypeDoc générée automatiquement
+
+---
+
+## 🚀 Génération Documentation API
+
+### Commandes Disponibles
+
+```bash
+# Générer la documentation API automatiquement
+pnpm run docs:generate
+
+# Construire et afficher un message de confirmation  
+pnpm run docs:build
+
+# Servir la documentation localement (port 3001)
+pnpm run docs:serve
+
+# Nettoyer la documentation générée
+pnpm run docs:clean
+```
+
+### 📁 Structure Générée
+
+```
+documentation/
+├── README.md (ce fichier)
+├── FONCTIONNALITES/ (spécifications métier)
+├── ARCHITECTURE/ (documentation technique)  
+├── DEVELOPPEMENT/ (guides développeur)
+└── api/ (documentation TypeDoc générée)
+    ├── index.html
+    ├── modules/
+    ├── classes/
+    └── interfaces/
+```
+
+### 🔧 Configuration TypeDoc
+
+La génération automatique scanne :
+- `server/services/` - Services métier
+- `server/api/` - Routes API Nuxt
+- `composables/` - Logique réutilisable Vue
+- `stores/` - État global Pinia
+- `server/utils/` - Utilitaires serveur
+
+Configuration dans [`typedoc.json`](../typedoc.json).
+
+---
+
+## 📋 Conventions Documentation
+
+### 📝 Documentation Code
+
+Utiliser la syntaxe JSDoc pour documenter le code TypeScript :
+
+```typescript
+/**
+ * Service de génération PDF pour documents JDR
+ * 
+ * @example
+ * ```typescript
+ * const pdfService = new PdfService()
+ * const result = await pdfService.genererDocument({
+ *   type: 'CHARACTER',
+ *   systeme: 'monsterhearts', 
+ *   donnees: { nom: 'Luna', concept: 'Vampire séductrice' }
+ * })
+ * ```
+ */
+export class PdfService {
+  /**
+   * Génère un document PDF pour un système de jeu
+   * @param data - Données du document à générer
+   * @returns Promise avec document et chemin PDF
+   * @throws Error si type de document invalide
+   */
+  async genererDocument(data: PdfGenerationOptions): Promise<GeneratedDocument> {
+    // Implémentation...
+  }
+}
+```
+
+### 📖 Documentation Fonctionnelle
+
+- **Markdown** pour toute la documentation métier
+- **Structure hiérarchique** : dossiers par thème
+- **Liens croisés** entre documents liés
+- **Exemples concrets** avec données réalistes
+
+### 🔄 Mise à Jour
+
+La documentation API est générée automatiquement depuis le code TypeScript. 
+Pour mettre à jour :
+
+1. Modifier les commentaires JSDoc dans le code
+2. Exécuter `pnpm run docs:generate` 
+3. La documentation HTML est mise à jour dans `documentation/api/`
+
+---
+
+## 🎯 Utilisation
+
+### Pour les Développeurs
+1. **Lire** la documentation fonctionnelle pour comprendre les besoins métier
+2. **Consulter** l'architecture pour comprendre les patterns techniques  
+3. **Utiliser** la documentation API pour les détails d'implémentation
+4. **Suivre** les guides de développement pour les processus
+
+### Pour les Product Owners  
+1. **Suivre** la vision produit et les spécifications fonctionnelles
+2. **Vérifier** que le code respecte les spécifications via les tests
+3. **Utiliser** la documentation comme référence pour les évolutions
+
+### Pour les Utilisateurs Finaux
+La documentation utilisateur sera générée séparément via Nuxt Content ou équivalent pour le site web public.
+
+---
+
+*Documentation générée automatiquement - Dernière mise à jour : 3 septembre 2025*
 
 ## 🚀 Démarrage rapide
 

@@ -65,7 +65,14 @@
       "Bash(head:*)",
       "WebFetch(domain:nagoshiashumari.github.io)",
       "WebFetch(domain:cdnjs.cloudflare.com)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(npx nuxi:*)",
+      "Bash(pnpm prisma:*)",
+      "Bash(for dir in app/components app/middleware app/plugins)",
+      "Bash(do if [ -d \"$dir\" ])",
+      "Bash(then echo \"$dir est vide\")",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": []
   }
