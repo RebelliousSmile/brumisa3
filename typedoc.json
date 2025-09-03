@@ -12,7 +12,7 @@
   "plugin": [
     "typedoc-plugin-markdown"
   ],
-  "readme": "./documentation/README.md",
+  "readme": "none",
   "includeVersion": true,
   "excludeExternals": true,
   "excludePrivate": false,
