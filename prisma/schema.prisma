@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,284 +7,758 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Énumération pour les rôles utilisateurs
-enum Role {
-  ADMIN
-  UTILISATEUR
-}
-
-// Énumération pour les types de documents
-enum DocumentType {
-  GENERIQUE
-  CHARACTER
-  TOWN
-  GROUP
-  ORGANIZATION
-  DANGER
-}
-
-// Table des utilisateurs
 model Utilisateur {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  role          Role     @default(UTILISATEUR)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  
-  // Relations
-  documents     Document[]
-  votes         DocumentVote[]
-  oracles       OraclePersonnalise[]
-  consentements RgpdConsentement[]
-  demandesEmail DemandeChangementEmail[]
-  
+  id                                              Int                              @id @default(autoincrement())
+  nom                                             String                           @db.VarChar(255)
+  email                                           String?                          @unique @db.VarChar(255)
+  role                                            String                           @default("UTILISATEUR") @db.VarChar(50)
+  code_acces                                      String?                          @db.VarChar(255)
+  session_id                                      String?                          @db.VarChar(255)
+  derniere_connexion                              DateTime?                        @db.Timestamp(6)
+  date_creation                                   DateTime?                        @default(now()) @db.Timestamp(6)
+  date_modification                               DateTime?                        @default(now()) @db.Timestamp(6)
+  actif                                           Boolean?                         @default(true)
+  mot_de_passe                                    String?                          @db.VarChar(255)
+  token_recuperation                              String?                          @db.VarChar(64)
+  token_expiration                                DateTime?                        @db.Timestamp(6)
+  type_compte                                     String?                          @default("STANDARD") @db.VarChar(20)
+  est_anonyme                                     Boolean?                         @default(false)
+  avatar                                          String?                          @db.VarChar(500)
+  preferences                                     Json?                            @default("{}")
+  statut                                          String                           @default("ACTIF") @db.VarChar(20)
+  type_premium                                    String?                          @db.VarChar(20)
+  premium_expire_le                               DateTime?                        @db.Timestamp(6)
+  newsletter_abonne                               Boolean                          @default(false)
+  communication_preferences                       Json?                            @default("{}")
+  pseudo_public                                   String?                          @db.VarChar(255)
+  email_precedent                                 String?                          @db.VarChar(255)
+  email_validation_token                          String?                          @db.VarChar(255)
+  email_changement_expire_le                      DateTime?                        @db.Timestamp(6)
+  derniere_modification_email                     DateTime?                        @db.Timestamp(6)
+  token_changement_email                          String?                          @db.VarChar(255)
+  date_demande_changement_email                   DateTime?                        @db.Timestamp(6)
+  historique_emails                               Json?                            @default("[]")
+  passwordHash                                    String?                          @map("password_hash") @db.VarChar
+  updatedAt                                       DateTime?                        @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  actualites                                      Actualite[]
+  demandesEmail                                   DemandeChangementEmail[]
+  document_moderation_historique                  document_moderation_historique[]
+  votes                                           DocumentVote[]
+  documents_documents_moderateur_idToutilisateurs Document[]                       @relation("documents_moderateur_idToutilisateurs")
+  documents                                       Document[]
+  logs_activite                                   logs_activite[]
+  oracle_cascades                                 oracle_cascades[]
+  oracle_drafts                                   oracle_drafts[]
+  oracle_draws                                    oracle_draws[]
+  oracle_edit_history                             oracle_edit_history[]
+  oracle_imports                                  oracle_imports[]
+  oracle_propositions                             oracle_propositions[]
+  oracle_votes                                    oracle_votes[]
+  oracles                                         Oracle[]
+  oraclesPersonnalises                            OraclePersonnalise[]
+  pdfs                                            pdfs[]
+  personnages                                     personnages[]
+  consentements                                   RgpdConsentement[]
+  sessions                                        sessions[]
+  temoignages                                     Temoignage[]
+  templates_pdf                                   templates_pdf[]
+  utilisateur_email_historique                    utilisateur_email_historique[]
+
+  @@index([est_anonyme], map: "idx_utilisateurs_anonyme")
+  @@index([email], map: "idx_utilisateurs_email")
+  @@index([session_id], map: "idx_utilisateurs_session")
+  @@index([token_recuperation], map: "idx_utilisateurs_token")
+  @@index([token_expiration], map: "idx_utilisateurs_token_expiration")
+  @@index([token_recuperation], map: "idx_utilisateurs_token_recuperation")
+  @@index([type_compte], map: "idx_utilisateurs_type_compte")
   @@map("utilisateurs")
 }
 
-// Table des systèmes de jeu
 model SystemeJeu {
-  id                String   @id
-  nomComplet        String   @map("nom_complet")
-  description       String?
-  siteOfficiel      String?  @map("site_officiel")
-  versionSupportee  String?  @map("version_supportee")
-  
-  // Métadonnées
-  actif             Boolean  @default(true)
-  ordreAffichage    Int      @default(0) @map("ordre_affichage")
-  couleurPrimaire   String?  @map("couleur_primaire")
-  couleurSecondaire String?  @map("couleur_secondaire")
-  pictogramme       String?
-  
-  // Timestamps
-  dateCreation      DateTime @default(now()) @map("date_creation")
-  dateModification  DateTime @updatedAt @map("date_modification")
-  
-  // Relations
-  univers           UniversJeu[]
-  
+  id                          String       @id @db.VarChar(50)
+  nomComplet                  String       @map("nom_complet") @db.VarChar(255)
+  description                 String?
+  siteOfficiel                String?      @map("site_officiel") @db.VarChar(500)
+  versionSupportee            String?      @map("version_supportee") @db.VarChar(50)
+  structure_donnees           Json?        @default("{}")
+  statut                      String       @default("ACTIF") @db.VarChar(20)
+  message_maintenance         String?
+  ordreAffichage              Int?         @default(0) @map("ordre_affichage")
+  couleur_theme               String?      @default("#333333") @db.VarChar(7)
+  icone                       String?      @db.VarChar(100)
+  date_ajout                  DateTime?    @default(now()) @db.Timestamp(6)
+  dateModification            DateTime?    @default(now()) @updatedAt @map("date_modification") @db.Timestamp(6)
+  date_derniere_maj_structure DateTime?    @db.Timestamp(6)
+  actif                       Boolean?     @default(true)
+  couleurPrimaire             String?      @map("couleur_primaire") @db.VarChar
+  couleurSecondaire           String?      @map("couleur_secondaire") @db.VarChar
+  pictogramme                 String?      @db.VarChar
+  univers_jeu                 UniversJeu[]
+
+  @@index([ordreAffichage], map: "idx_systemes_jeu_ordre")
+  @@index([statut], map: "idx_systemes_jeu_statut")
   @@map("systemes_jeu")
 }
 
-// Table des univers de jeu
 model UniversJeu {
-  id                String   @id
-  nomComplet        String   @map("nom_complet")
-  description       String?
-  siteOfficiel      String?  @map("site_officiel")
-  
-  // Référence au système parent
-  systemeJeuId      String   @map("systeme_jeu_id")
-  systemeJeu        SystemeJeu @relation(fields: [systemeJeuId], references: [id])
-  
-  // Métadonnées
-  actif             Boolean  @default(true)
-  ordreAffichage    Int      @default(0) @map("ordre_affichage")
-  couleurPrimaire   String?  @map("couleur_primaire")
-  couleurSecondaire String?  @map("couleur_secondaire")
-  pictogramme       String?
-  
-  // Timestamps
-  dateCreation      DateTime @default(now()) @map("date_creation")
-  dateModification  DateTime @updatedAt @map("date_modification")
-  
-  // Relations
-  documents         Document[]
-  oracles           Oracle[]
-  configurationsDoc DocumentUniversJeu[]
-  
+  id                                               String               @id @db.VarChar(50)
+  nomComplet                                       String               @map("nom_complet") @db.VarChar(255)
+  description                                      String?
+  editeur                                          String?              @db.VarChar(255)
+  annee_sortie                                     Int?
+  siteOfficiel                                     String?              @map("site_officiel") @db.VarChar(500)
+  systeme_jeu                                      String               @db.VarChar(50)
+  configuration                                    Json?                @default("{}")
+  structure_donnees                                Json?                @default("{}")
+  statut                                           String               @default("ACTIF") @db.VarChar(20)
+  message_maintenance                              String?
+  ordreAffichage                                   Int?                 @default(0) @map("ordre_affichage")
+  couleur_theme                                    String?              @default("#333333") @db.VarChar(7)
+  couleur_accent                                   String?              @db.VarChar(7)
+  icone                                            String?              @db.VarChar(100)
+  image_hero                                       String?              @db.VarChar(500)
+  tags                                             String[]
+  version_supportee                                String?              @db.VarChar(50)
+  langue_principale                                String?              @default("fr") @db.VarChar(2)
+  langues_disponibles                              String[]
+  dateCreation                                     DateTime?            @default(now()) @map("date_creation") @db.Timestamp(6)
+  dateModification                                 DateTime?            @default(now()) @updatedAt @map("date_modification") @db.Timestamp(6)
+  date_derniere_maj_structure                      DateTime?            @db.Timestamp(6)
+  configurationsDoc                                DocumentUniversJeu[]
+  documents                                        Document[]
+  oracles                                          Oracle[]
+  pdfs_pdfs_univers_jeuTounivers_jeu               pdfs[]               @relation("pdfs_univers_jeuTounivers_jeu")
+  personnages_personnages_univers_jeuTounivers_jeu personnages[]        @relation("personnages_univers_jeuTounivers_jeu")
+  systemes_jeu                                     SystemeJeu           @relation(fields: [systeme_jeu], references: [id], onUpdate: NoAction, map: "fk_univers_systeme")
+
+  @@index([ordreAffichage], map: "idx_univers_ordre")
+  @@index([statut], map: "idx_univers_statut")
+  @@index([systeme_jeu], map: "idx_univers_systeme")
+  @@index([tags], map: "idx_univers_tags", type: Gin)
   @@map("univers_jeu")
 }
 
-// Table des documents
 model Document {
-  id               Int          @id @default(autoincrement())
-  type             DocumentType
-  titre            String
-  systemeJeu       String       @map("systeme_jeu")
-  
-  // Nouvelle référence univers
-  universJeu       String?      @map("univers_jeu")
-  univers          UniversJeu?  @relation(fields: [universJeu], references: [id])
-  
-  // Auteur
-  utilisateurId    Int          @map("utilisateur_id")
-  utilisateur      Utilisateur  @relation(fields: [utilisateurId], references: [id])
-  
-  // Contenu
-  contenu          Json         @default("{}")
-  
-  // Métadonnées
-  statut           String       @default("BROUILLON")
-  nombreVues       Int          @default(0) @map("nombre_vues")
-  nombreUtilisations Int        @default(0) @map("nombre_utilisations")
-  
-  // Timestamps
-  dateCreation     DateTime     @default(now()) @map("date_creation")
-  dateModification DateTime     @updatedAt @map("date_modification")
-  datePublication  DateTime?    @map("date_publication")
-  
-  // Relations
-  votes            DocumentVote[]
-  
+  id                                                 Int                              @id @default(autoincrement())
+  type                                               String                           @db.VarChar(20)
+  titre                                              String                           @db.VarChar(255)
+  systemeJeu                                         String                           @map("systeme_jeu") @db.VarChar(50)
+  utilisateurId                                      Int?                             @map("utilisateur_id")
+  personnage_id                                      Int?
+  donnees                                            Json                             @default("{}")
+  notes_creation                                     String?
+  contexte_utilisation                               String?
+  statut                                             String                           @default("ACTIF") @db.VarChar(20)
+  visibilite                                         String                           @default("PRIVE") @db.VarChar(20)
+  visible_admin_only                                 Boolean                          @default(false)
+  dateCreation                                       DateTime?                        @default(now()) @map("date_creation") @db.Timestamp(6)
+  dateModification                                   DateTime?                        @default(now()) @updatedAt @map("date_modification") @db.Timestamp(6)
+  est_mis_en_avant                                   Boolean                          @default(false)
+  date_mise_en_avant                                 DateTime?                        @db.Timestamp(6)
+  moderateur_id                                      Int?
+  statut_moderation                                  String                           @default("EN_ATTENTE") @db.VarChar(20)
+  date_moderation                                    DateTime?                        @db.Timestamp(6)
+  motif_rejet                                        String?
+  universJeu                                         String?                          @map("univers_jeu") @db.VarChar(50)
+  nombreVues                                         Int?                             @default(0) @map("nombre_vues")
+  nombreUtilisations                                 Int?                             @default(0) @map("nombre_utilisations")
+  contenu                                            Json?                            @default("{}")
+  document_moderation_historique                     document_moderation_historique[]
+  votes                                              DocumentVote[]
+  utilisateurs_documents_moderateur_idToutilisateurs Utilisateur?                     @relation("documents_moderateur_idToutilisateurs", fields: [moderateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  personnages                                        personnages?                     @relation(fields: [personnage_id], references: [id], onUpdate: NoAction)
+  utilisateur                                        Utilisateur?                     @relation(fields: [utilisateurId], references: [id], onUpdate: NoAction)
+  univers                                            UniversJeu?                      @relation(fields: [universJeu], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_documents_univers")
+
+  @@index([dateCreation], map: "idx_documents_date_creation")
+  @@index([statut_moderation, date_moderation], map: "idx_documents_moderation")
+  @@index([personnage_id], map: "idx_documents_personnage")
+  @@index([statut], map: "idx_documents_statut")
+  @@index([type, systemeJeu], map: "idx_documents_type_systeme")
+  @@index([universJeu], map: "idx_documents_univers")
+  @@index([utilisateurId], map: "idx_documents_utilisateur")
+  @@index([visibilite, visible_admin_only], map: "idx_documents_visibilite")
   @@map("documents")
 }
 
-// Table des configurations document-univers
 model DocumentUniversJeu {
-  documentType     String      @map("document_type")
-  universJeu       String      @map("univers_jeu")
-  univers          UniversJeu  @relation(fields: [universJeu], references: [id])
-  
-  actif            Boolean     @default(true)
-  ordreAffichage   Int         @default(0) @map("ordre_affichage")
-  configuration    Json        @default("{}")
-  
-  // Timestamps
-  dateCreation     DateTime    @default(now()) @map("date_creation")
-  dateModification DateTime    @updatedAt @map("date_modification")
-  
+  documentType     String     @map("document_type") @db.VarChar(50)
+  universJeu       String     @map("univers_jeu") @db.VarChar(50)
+  actif            Boolean?   @default(true)
+  ordreAffichage   Int?       @default(0) @map("ordre_affichage")
+  configuration    Json?      @default("{}")
+  date_ajout       DateTime?  @default(now()) @db.Timestamp(6)
+  dateModification DateTime?  @default(now()) @updatedAt @map("date_modification") @db.Timestamp(6)
+  univers          UniversJeu @relation(fields: [universJeu], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_doc_univers_univers")
+
   @@id([documentType, universJeu])
   @@map("document_univers_jeu")
 }
 
-// Table des oracles
 model Oracle {
-  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nom          String
-  description  String?
-  donnees      Json       @map("donnees_oracle")
-  systemeJeu   String     @map("systeme_jeu")
-  
-  // Nouvelle référence univers
-  universJeu   String?    @map("univers_jeu")
-  univers      UniversJeu? @relation(fields: [universJeu], references: [id])
-  
-  // Métadonnées
-  actif        Boolean    @default(true)
-  public       Boolean    @default(true)
-  
-  // Timestamps
-  dateCreation DateTime   @default(now()) @map("date_creation")
-  
+  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                        String                        @db.VarChar(255)
+  description                 String?
+  premium_required            Boolean?                      @default(false)
+  total_weight                Int?                          @default(0)
+  filters                     Json?
+  is_active                   Boolean?                      @default(true)
+  created_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  updated_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  created_by                  Int?
+  game_system                 String?                       @db.VarChar(50)
+  universJeu                  String?                       @map("univers_jeu") @db.VarChar(50)
+  oracle_category_assignments oracle_category_assignments[]
+  oracle_drafts               oracle_drafts[]
+  oracle_draws                oracle_draws[]
+  oracle_edit_history         oracle_edit_history[]
+  oracle_imports              oracle_imports[]
+  oracle_items                oracle_items[]
+  univers                     UniversJeu?                   @relation(fields: [universJeu], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_oracles_univers")
+  utilisateurs                Utilisateur?                  @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_oracles_active")
+  @@index([created_by], map: "idx_oracles_created_by")
+  @@index([filters], map: "idx_oracles_filters", type: Gin)
+  @@index([game_system], map: "idx_oracles_game_system")
+  @@index([game_system, is_active], map: "idx_oracles_game_system_active")
+  @@index([name], map: "idx_oracles_name")
+  @@index([premium_required], map: "idx_oracles_premium")
+  @@index([universJeu], map: "idx_oracles_univers")
   @@map("oracles")
 }
 
-// Table des oracles personnalisés
 model OraclePersonnalise {
-  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  utilisateurId  Int         @map("utilisateur_id")
-  utilisateur    Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
-  nom            String
-  description    String?
-  donneesOracle  Json        @map("donnees_oracle")
-  
-  // Timestamps
-  dateCreation   DateTime    @default(now()) @map("date_creation")
-  dateModification DateTime  @updatedAt @map("date_modification")
-  
+  id                                                                      Int                  @id @default(autoincrement())
+  nom                                                                     String               @db.VarChar(255)
+  description                                                             String?
+  systeme_jeu                                                             String?              @db.VarChar(50)
+  utilisateurId                                                           Int                  @map("utilisateur_id")
+  oracle_parent_id                                                        Int?
+  donnees                                                                 Json
+  statut                                                                  String               @default("PRIVE") @db.VarChar(20)
+  nombre_utilisations                                                     Int?                 @default(0)
+  dateCreation                                                            DateTime?            @default(now()) @map("date_creation") @db.Timestamp(6)
+  dateModification                                                        DateTime?            @default(now()) @updatedAt @map("date_modification") @db.Timestamp(6)
+  oracle_cascades_oracle_cascades_oracle_enfant_idTooracles_personnalises oracle_cascades[]    @relation("oracle_cascades_oracle_enfant_idTooracles_personnalises")
+  oracle_cascades_oracle_cascades_oracle_parent_idTooracles_personnalises oracle_cascades[]    @relation("oracle_cascades_oracle_parent_idTooracles_personnalises")
+  oracle_votes                                                            oracle_votes[]
+  oracles_personnalises                                                   OraclePersonnalise?  @relation("oracles_personnalisesTooracles_personnalises", fields: [oracle_parent_id], references: [id], onUpdate: NoAction, map: "fk_oracle_parent")
+  other_oracles_personnalises                                             OraclePersonnalise[] @relation("oracles_personnalisesTooracles_personnalises")
+  utilisateur                                                             Utilisateur          @relation(fields: [utilisateurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([oracle_parent_id], map: "idx_oracles_personnalises_parent")
+  @@index([statut], map: "idx_oracles_personnalises_statut")
+  @@index([systeme_jeu], map: "idx_oracles_personnalises_systeme")
+  @@index([utilisateurId], map: "idx_oracles_personnalises_utilisateur")
   @@map("oracles_personnalises")
 }
 
-// Table des votes sur les documents
 model DocumentVote {
-  id                Int      @id @default(autoincrement())
-  documentId        Int      @map("document_id")
-  document          Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  utilisateurId     Int      @map("utilisateur_id")
-  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
-  
-  qualiteGenerale   Int      @map("qualite_generale")
-  utilitePratique   Int      @map("utilite_pratique")
-  clartePresentation Int     @map("clarte_presentation")
-  faciliteUtilisation Int   @map("facilite_utilisation")
-  
-  commentaire       String?
-  dateVote          DateTime @default(now()) @map("date_vote")
-  
+  id              Int         @id @default(autoincrement())
+  documentId      Int         @map("document_id")
+  utilisateurId   Int         @map("utilisateur_id")
+  qualiteGenerale Int         @map("qualite_generale")
+  utilitePratique Int         @map("utilite_pratique")
+  respect_gamme   Int
+  commentaire     String?
+  date_creation   DateTime?   @default(now()) @db.Timestamp(6)
+  document        Document    @relation(fields: [documentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateur     Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
   @@unique([documentId, utilisateurId])
+  @@index([documentId], map: "idx_document_votes_document")
+  @@index([qualiteGenerale], map: "idx_document_votes_qualite")
+  @@index([utilisateurId], map: "idx_document_votes_utilisateur")
   @@map("document_votes")
 }
 
-// Table des témoignages
 model Temoignage {
-  id           Int      @id @default(autoincrement())
-  auteurNom    String   @map("auteur_nom")
-  auteurEmail  String   @map("auteur_email")
-  contenu      String
-  note         Int?
-  statut       String   @default("EN_ATTENTE")
-  
-  // Timestamps
-  dateCreation DateTime @default(now()) @map("date_creation")
-  dateModeration DateTime? @map("date_moderation")
-  
+  id                Int          @id @default(autoincrement())
+  auteurNom         String       @map("auteur_nom") @db.VarChar(255)
+  auteurEmail       String       @map("auteur_email") @db.VarChar(255)
+  lien_contact      String?      @db.VarChar(500)
+  contenu           String
+  note              Int
+  systeme_jeu       String       @db.VarChar(50)
+  statut            String       @default("EN_ATTENTE") @db.VarChar(20)
+  dateModeration    DateTime?    @map("date_moderation") @db.Timestamp(6)
+  moderateur_id     Int?
+  motif_rejet       String?
+  ip_adresse        String?      @db.Inet
+  user_agent        String?
+  dateCreation      DateTime?    @default(now()) @map("date_creation") @db.Timestamp(6)
+  date_modification DateTime?    @default(now()) @db.Timestamp(6)
+  utilisateurs      Utilisateur? @relation(fields: [moderateur_id], references: [id], onUpdate: NoAction)
+
+  @@index([dateCreation], map: "idx_temoignages_date")
+  @@index([dateModeration], map: "idx_temoignages_moderation")
+  @@index([statut], map: "idx_temoignages_statut")
+  @@index([systeme_jeu], map: "idx_temoignages_systeme")
   @@map("temoignages")
 }
 
-// Table des abonnés newsletter
 model NewsletterAbonne {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
-  nom              String?
-  
-  // Préférences
-  systemesInterets String[] @map("systemes_interets")
-  frequenceEnvoi   String   @default("MENSUELLE") @map("frequence_envoi")
-  actif            Boolean  @default(true)
-  
-  // Timestamps
-  dateInscription  DateTime @default(now()) @map("date_inscription")
-  dateDesinscription DateTime? @map("date_desinscription")
-  
+  id                     Int       @id @default(autoincrement())
+  email                  String    @unique @db.VarChar(255)
+  nom                    String?   @db.VarChar(255)
+  preferences            Json?     @default("{}")
+  statut                 String    @default("EN_ATTENTE") @db.VarChar(20)
+  token_confirmation     String?   @db.VarChar(255)
+  date_confirmation      DateTime? @db.Timestamp(6)
+  source                 String?   @db.VarChar(100)
+  derniere_communication DateTime? @db.Timestamp(6)
+  date_creation          DateTime? @default(now()) @db.Timestamp(6)
+  date_modification      DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([email], map: "idx_newsletter_email")
+  @@index([statut], map: "idx_newsletter_statut")
   @@map("newsletter_abonnes")
 }
 
-// Table des actualités
 model Actualite {
-  id           Int      @id @default(autoincrement())
-  titre        String
-  resume       String?
-  contenuHtml  String   @map("contenu_html")
-  
-  // Métadonnées
-  statut       String   @default("BROUILLON")
-  auteurId     Int?     @map("auteur_id")
-  
-  // Timestamps
-  dateCreation DateTime @default(now()) @map("date_creation")
-  datePublication DateTime? @map("date_publication")
-  
+  id                 Int         @id @default(autoincrement())
+  titre              String      @db.VarChar(255)
+  resume             String?
+  contenuHtml        String      @map("contenu_html")
+  auteurId           Int         @map("auteur_id")
+  systemes_concernes Json?       @default("[]")
+  type               String      @default("NOUVEAUTE") @db.VarChar(20)
+  statut             String      @default("BROUILLON") @db.VarChar(20)
+  datePublication    DateTime?   @map("date_publication") @db.Timestamp(6)
+  date_envoi         DateTime?   @db.Timestamp(6)
+  dateCreation       DateTime?   @default(now()) @map("date_creation") @db.Timestamp(6)
+  date_modification  DateTime?   @default(now()) @db.Timestamp(6)
+  utilisateurs       Utilisateur @relation(fields: [auteurId], references: [id], onUpdate: NoAction)
+
+  @@index([auteurId], map: "idx_actualites_auteur")
+  @@index([datePublication], map: "idx_actualites_date_publication")
+  @@index([statut], map: "idx_actualites_statut")
   @@map("actualites")
 }
 
-// Table des consentements RGPD
 model RgpdConsentement {
-  id                  Int         @id @default(autoincrement())
-  utilisateurId       Int         @map("utilisateur_id")
-  utilisateur         Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
-  typeConsentement    String      @map("type_consentement")
-  consentementDonne   Boolean     @map("consentement_donne")
-  dateConsentement    DateTime    @default(now()) @map("date_consentement")
-  adresseIp          String?     @map("adresse_ip")
-  userAgent          String?     @map("user_agent")
-  
+  id                Int         @id @default(autoincrement())
+  utilisateurId     Int         @map("utilisateur_id")
+  typeConsentement  String      @map("type_consentement") @db.VarChar(50)
+  consentementDonne Boolean     @map("consentement_donne")
+  dateConsentement  DateTime?   @default(now()) @map("date_consentement") @db.Timestamp(6)
+  ip_adresse        String?     @db.Inet
+  userAgent         String?     @map("user_agent")
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([utilisateurId], map: "idx_rgpd_utilisateur")
   @@map("rgpd_consentements")
 }
 
-// Table des demandes de changement d'email
 model DemandeChangementEmail {
-  id                Int         @id @default(autoincrement())
-  utilisateurId     Int         @map("utilisateur_id")
-  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
-  ancienEmail       String      @map("ancien_email")
-  nouvelEmail       String      @map("nouvel_email")
-  tokenValidation   String      @unique @map("token_validation")
-  dateExpiration    DateTime    @map("date_expiration")
-  statut            String      @default("EN_ATTENTE")
-  dateCreation      DateTime    @default(now()) @map("date_creation")
-  dateTraitement    DateTime?   @map("date_traitement")
-  
+  id              Int         @id @default(autoincrement())
+  utilisateurId   Int         @map("utilisateur_id")
+  ancienEmail     String      @map("ancien_email") @db.VarChar(255)
+  nouvelEmail     String      @map("nouvel_email") @db.VarChar(255)
+  tokenValidation String      @unique @map("token_validation") @db.VarChar(255)
+  statut          String      @default("EN_ATTENTE") @db.VarChar(20)
+  date_demande    DateTime?   @default(now()) @db.Timestamp(6)
+  dateExpiration  DateTime?   @default(dbgenerated("(CURRENT_TIMESTAMP + '15 days'::interval)")) @map("date_expiration") @db.Timestamp(6)
+  date_validation DateTime?   @db.Timestamp(6)
+  ip_demande      String?     @db.Inet
+  utilisateur     Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([tokenValidation], map: "idx_demandes_email_token")
   @@map("demandes_changement_email")
+}
+
+model document_moderation_historique {
+  id             Int         @id @default(autoincrement())
+  document_id    Int
+  moderateur_id  Int
+  action         String      @db.VarChar(50)
+  ancien_statut  String?     @db.VarChar(20)
+  nouveau_statut String?     @db.VarChar(20)
+  motif          String?
+  date_action    DateTime?   @default(now()) @db.Timestamp(6)
+  documents      Document    @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs   Utilisateur @relation(fields: [moderateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([document_id], map: "idx_moderation_historique_document")
+  @@index([moderateur_id], map: "idx_moderation_historique_moderateur")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model document_systeme_jeu {
+  document_type     String    @db.VarChar(20)
+  systeme_jeu       String    @db.VarChar(50)
+  actif             Boolean   @default(true)
+  ordre_affichage   Int?
+  configuration     Json?     @default("{}")
+  date_ajout        DateTime? @default(now()) @db.Timestamp(6)
+  date_modification DateTime? @default(now()) @db.Timestamp(6)
+
+  @@id([document_type, systeme_jeu])
+}
+
+model logs_activite {
+  id             Int          @id @default(autoincrement())
+  utilisateur_id Int?
+  action         String       @db.VarChar(100)
+  ressource      String?      @db.VarChar(100)
+  ressource_id   Int?
+  details        Json?
+  adresse_ip     String?      @db.Inet
+  user_agent     String?
+  date_creation  DateTime?    @default(now()) @db.Timestamp(6)
+  utilisateurs   Utilisateur? @relation(fields: [utilisateur_id], references: [id], onUpdate: NoAction)
+
+  @@index([action], map: "idx_logs_action")
+  @@index([date_creation], map: "idx_logs_date")
+  @@index([utilisateur_id], map: "idx_logs_utilisateur")
+}
+
+model migrations {
+  id             Int       @id @default(autoincrement())
+  version        String    @db.VarChar(20)
+  migration_name String    @db.VarChar(100)
+  executed_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([version, migration_name])
+}
+
+model oracle_cascades {
+  id                                                                            Int                @id @default(autoincrement())
+  oracle_parent_id                                                              Int
+  oracle_enfant_id                                                              Int
+  parametre_liaison                                                             String             @db.VarChar(100)
+  utilisateur_id                                                                Int
+  ordre_execution                                                               Int                @default(1)
+  date_creation                                                                 DateTime?          @default(now()) @db.Timestamp(6)
+  oracles_personnalises_oracle_cascades_oracle_enfant_idTooracles_personnalises OraclePersonnalise @relation("oracle_cascades_oracle_enfant_idTooracles_personnalises", fields: [oracle_enfant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  oracles_personnalises_oracle_cascades_oracle_parent_idTooracles_personnalises OraclePersonnalise @relation("oracle_cascades_oracle_parent_idTooracles_personnalises", fields: [oracle_parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  utilisateurs                                                                  Utilisateur        @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([oracle_parent_id, oracle_enfant_id, ordre_execution])
+  @@index([oracle_parent_id], map: "idx_oracle_cascades_parent")
+}
+
+model oracle_categories {
+  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                        String                        @unique @db.VarChar(255)
+  description                 String?
+  parent_id                   String?                       @db.Uuid
+  sort_order                  Int?                          @default(0)
+  created_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  oracle_categories           oracle_categories?            @relation("oracle_categoriesTooracle_categories", fields: [parent_id], references: [id], onUpdate: NoAction)
+  other_oracle_categories     oracle_categories[]           @relation("oracle_categoriesTooracle_categories")
+  oracle_category_assignments oracle_category_assignments[]
+
+  @@index([name], map: "idx_oracle_categories_name")
+  @@index([parent_id], map: "idx_oracle_categories_parent")
+}
+
+model oracle_category_assignments {
+  oracle_id         String            @db.Uuid
+  category_id       String            @db.Uuid
+  oracle_categories oracle_categories @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  oracles           Oracle            @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([oracle_id, category_id])
+}
+
+model oracle_drafts {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oracle_id     String?     @db.Uuid
+  admin_user_id Int
+  draft_name    String?     @db.VarChar(255)
+  oracle_data   Json
+  items_data    Json
+  is_published  Boolean?    @default(false)
+  created_at    DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at    DateTime?   @default(now()) @db.Timestamp(6)
+  published_at  DateTime?   @db.Timestamp(6)
+  utilisateurs  Utilisateur @relation(fields: [admin_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  oracles       Oracle?     @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([admin_user_id], map: "idx_oracle_drafts_admin_user")
+  @@index([oracle_id], map: "idx_oracle_drafts_oracle_id")
+  @@index([is_published], map: "idx_oracle_drafts_published")
+}
+
+model oracle_draws {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oracle_id       String       @db.Uuid
+  user_id         Int?
+  session_id      String?      @db.VarChar(255)
+  results         Json
+  filters_applied Json?
+  draw_count      Int          @default(1)
+  ip_address      String?      @db.Inet
+  user_agent      String?
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  oracles         Oracle       @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs    Utilisateur? @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_oracle_draws_created_at")
+  @@index([oracle_id], map: "idx_oracle_draws_oracle_id")
+  @@index([results], map: "idx_oracle_draws_results", type: Gin)
+  @@index([session_id], map: "idx_oracle_draws_session")
+  @@index([user_id], map: "idx_oracle_draws_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oracle_edit_history {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oracle_id     String      @db.Uuid
+  admin_user_id Int
+  action_type   String      @db.VarChar(50)
+  entity_type   String      @db.VarChar(50)
+  entity_id     String?     @db.Uuid
+  old_values    Json?
+  new_values    Json?
+  change_reason String?
+  ip_address    String?     @db.Inet
+  created_at    DateTime?   @default(now()) @db.Timestamp(6)
+  utilisateurs  Utilisateur @relation(fields: [admin_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  oracles       Oracle      @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([action_type], map: "idx_oracle_edit_history_action")
+  @@index([admin_user_id], map: "idx_oracle_edit_history_admin_user")
+  @@index([created_at], map: "idx_oracle_edit_history_created_at")
+  @@index([oracle_id], map: "idx_oracle_edit_history_oracle_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oracle_imports {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  admin_user_id      Int
+  oracle_id          String?     @db.Uuid
+  filename           String      @db.VarChar(255)
+  file_size          Int?
+  file_hash          String?     @db.VarChar(64)
+  import_type        String      @db.VarChar(20)
+  import_mode        String      @db.VarChar(20)
+  items_imported     Int?        @default(0)
+  items_failed       Int?        @default(0)
+  validation_errors  Json?
+  import_status      String?     @default("PENDING") @db.VarChar(20)
+  processing_time_ms Int?
+  created_at         DateTime?   @default(now()) @db.Timestamp(6)
+  completed_at       DateTime?   @db.Timestamp(6)
+  utilisateurs       Utilisateur @relation(fields: [admin_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  oracles            Oracle?     @relation(fields: [oracle_id], references: [id], onUpdate: NoAction)
+
+  @@index([admin_user_id], map: "idx_oracle_imports_admin_user")
+  @@index([created_at], map: "idx_oracle_imports_created_at")
+  @@index([oracle_id], map: "idx_oracle_imports_oracle_id")
+  @@index([import_status], map: "idx_oracle_imports_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oracle_items {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oracle_id  String    @db.Uuid
+  value      String
+  weight     Int       @default(1)
+  metadata   Json?
+  is_active  Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  oracles    Oracle    @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_oracle_items_active")
+  @@index([metadata], map: "idx_oracle_items_metadata", type: Gin)
+  @@index([oracle_id], map: "idx_oracle_items_oracle_id")
+  @@index([value], map: "idx_oracle_items_value")
+  @@index([weight], map: "idx_oracle_items_weight")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oracle_propositions {
+  id               Int         @id @default(autoincrement())
+  oracle_id        Int
+  utilisateur_id   Int
+  option_proposee  Json
+  statut           String      @default("EN_ATTENTE") @db.VarChar(20)
+  motif_rejet      String?
+  date_proposition DateTime?   @default(now()) @db.Timestamp(6)
+  date_traitement  DateTime?   @db.Timestamp(6)
+  utilisateurs     Utilisateur @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([oracle_id], map: "idx_oracle_propositions_oracle")
+  @@index([statut], map: "idx_oracle_propositions_statut")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oracle_votes {
+  id                    Int                @id @default(autoincrement())
+  oracle_id             Int
+  utilisateur_id        Int
+  qualite_generale      Int
+  utilite_pratique      Int
+  respect_gamme         Int
+  commentaire           String?
+  date_creation         DateTime?          @default(now()) @db.Timestamp(6)
+  oracles_personnalises OraclePersonnalise @relation(fields: [oracle_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs          Utilisateur        @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([oracle_id, utilisateur_id])
+  @@index([oracle_id], map: "idx_oracle_votes_oracle")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model parametres {
+  cle               String    @id @db.VarChar(100)
+  valeur            String
+  type              String?   @default("string") @db.VarChar(20)
+  description       String?
+  modifiable        Boolean?  @default(true)
+  date_creation     DateTime? @default(now()) @db.Timestamp(6)
+  date_modification DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model pdf_templates_premium {
+  id                           Int       @id @default(autoincrement())
+  nom                          String    @db.VarChar(255)
+  systeme_jeu                  String    @db.VarChar(50)
+  type_document                String    @db.VarChar(50)
+  configuration_template       Json
+  disponible_premium_seulement Boolean   @default(true)
+  date_creation                DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([systeme_jeu, type_document], map: "idx_pdf_templates_systeme")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model pdfs {
+  id                                        Int          @id @default(autoincrement())
+  personnage_id                             Int
+  utilisateur_id                            Int?
+  type_pdf                                  String       @default("fiche_personnage") @db.VarChar(50)
+  statut                                    String       @default("EN_ATTENTE") @db.VarChar(50)
+  progression                               Int?         @default(0)
+  nom_fichier                               String?      @db.VarChar(255)
+  chemin_fichier                            String?      @db.VarChar(500)
+  taille_fichier                            BigInt?
+  url_temporaire                            String?      @db.VarChar(500)
+  options_generation                        Json?
+  template_utilise                          String?      @db.VarChar(255)
+  temps_generation                          Int?
+  erreur_message                            String?
+  date_creation                             DateTime?    @default(now()) @db.Timestamp(6)
+  date_expiration                           DateTime?    @db.Timestamp(6)
+  telecharge                                Boolean?     @default(false)
+  nombre_telechargements                    Int?         @default(0)
+  system_rights                             String?      @default("private") @db.VarChar(20)
+  titre                                     String?      @db.VarChar(255)
+  date_fin_generation                       DateTime?    @db.Timestamp(6)
+  document_id                               Int?
+  systeme_jeu                               String?      @db.VarChar(50)
+  statut_visibilite                         String       @default("PRIVE") @db.VarChar(20)
+  options_export                            Json?        @default("{}")
+  partage_token                             String?      @db.VarChar(255)
+  hash_fichier                              String?      @db.VarChar(64)
+  type_export                               String?      @default("FICHE_COMPLETE") @db.VarChar(50)
+  template_premium                          String?      @db.VarChar(100)
+  personnalisation                          Json?        @default("{}")
+  date_expiration_partage                   DateTime?    @db.Timestamp(6)
+  univers_jeu                               String?      @db.VarChar(50)
+  univers_jeu_pdfs_univers_jeuTounivers_jeu UniversJeu?  @relation("pdfs_univers_jeuTounivers_jeu", fields: [univers_jeu], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_pdfs_univers")
+  personnages                               personnages  @relation(fields: [personnage_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs                              Utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([date_expiration], map: "idx_pdfs_expiration")
+  @@index([personnage_id], map: "idx_pdfs_personnage")
+  @@index([statut], map: "idx_pdfs_statut")
+  @@index([system_rights], map: "idx_pdfs_system_rights")
+  @@index([univers_jeu], map: "idx_pdfs_univers")
+  @@index([utilisateur_id], map: "idx_pdfs_utilisateur")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model personnages {
+  id                                               Int          @id @default(autoincrement())
+  utilisateur_id                                   Int?
+  nom                                              String       @db.VarChar(255)
+  systeme_jeu                                      String       @db.VarChar(50)
+  attributs                                        Json
+  competences                                      Json?
+  avantages                                        Json?
+  equipement                                       Json?
+  historique                                       Json?
+  notes                                            String?
+  sante_actuelle                                   Int?         @default(0)
+  sante_maximale                                   Int?         @default(0)
+  experience_actuelle                              Int?         @default(0)
+  experience_totale                                Int?         @default(0)
+  avatar_url                                       String?      @db.VarChar(500)
+  couleur_theme                                    String?      @db.VarChar(50)
+  public                                           Boolean?     @default(false)
+  date_creation                                    DateTime?    @default(now()) @db.Timestamp(6)
+  date_modification                                DateTime?    @default(now()) @db.Timestamp(6)
+  tags                                             Json?        @default("[]")
+  derniere_utilisation                             DateTime?    @default(now()) @db.Timestamp(6)
+  nombre_modifications                             Int?         @default(0)
+  univers_jeu                                      String?      @db.VarChar(50)
+  documents                                        Document[]
+  pdfs                                             pdfs[]
+  univers_jeu_personnages_univers_jeuTounivers_jeu UniversJeu?  @relation("personnages_univers_jeuTounivers_jeu", fields: [univers_jeu], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "fk_personnages_univers")
+  utilisateurs                                     Utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([public], map: "idx_personnages_public")
+  @@index([systeme_jeu], map: "idx_personnages_systeme")
+  @@index([univers_jeu], map: "idx_personnages_univers")
+  @@index([utilisateur_id], map: "idx_personnages_utilisateur")
+}
+
+model sessions {
+  id                      String       @id @db.VarChar(255)
+  utilisateur_id          Int?
+  donnees                 Json
+  adresse_ip              String?      @db.Inet
+  user_agent              String?
+  actif                   Boolean?     @default(true)
+  date_creation           DateTime?    @default(now()) @db.Timestamp(6)
+  date_expiration         DateTime     @db.Timestamp(6)
+  donnees_supplementaires Json?        @default("{}")
+  utilisateurs            Utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([date_expiration], map: "idx_sessions_expiration")
+  @@index([utilisateur_id], map: "idx_sessions_utilisateur")
+}
+
+model templates_pdf {
+  id                    Int          @id @default(autoincrement())
+  nom                   String       @db.VarChar(255)
+  systeme_jeu           String       @db.VarChar(50)
+  type_template         String       @db.VarChar(50)
+  contenu_html          String
+  styles_css            String
+  variables_disponibles Json?
+  description           String?
+  auteur_id             Int?
+  public                Boolean?     @default(false)
+  version               String?      @default("1.0.0") @db.VarChar(20)
+  actif                 Boolean?     @default(true)
+  date_creation         DateTime?    @default(now()) @db.Timestamp(6)
+  date_modification     DateTime?    @default(now()) @db.Timestamp(6)
+  utilisateurs          Utilisateur? @relation(fields: [auteur_id], references: [id], onUpdate: NoAction)
+
+  @@index([public], map: "idx_templates_public")
+  @@index([systeme_jeu], map: "idx_templates_systeme")
+}
+
+model test_migration {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(50)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model utilisateur_email_historique {
+  id              Int         @id @default(autoincrement())
+  utilisateur_id  Int
+  ancien_email    String      @db.VarChar(255)
+  nouvel_email    String      @db.VarChar(255)
+  date_changement DateTime?   @default(now()) @db.Timestamp(6)
+  ip_changement   String?     @db.Inet
+  statut          String      @default("VALIDE") @db.VarChar(20)
+  utilisateurs    Utilisateur @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([utilisateur_id], map: "idx_utilisateur_email_historique_user")
 }

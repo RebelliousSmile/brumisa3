@@ -1,4 +1,4 @@
-import { prisma } from '~/server/utils/prisma'
+import { prisma } from '../utils/prisma'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     // Statistiques newsletter
     const nbAbonnesNewsletter = await prisma.newsletterAbonne.count({
       where: {
-        actif: true
+        statut: 'CONFIRME'
       }
     })
     

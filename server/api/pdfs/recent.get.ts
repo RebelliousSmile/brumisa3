@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
         }
       },
       orderBy: {
-        datePublication: 'desc'
+        dateCreation: 'desc'
       },
       take: 6 // Limite à 6 résultats
     })

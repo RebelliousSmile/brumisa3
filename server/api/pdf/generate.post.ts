@@ -22,8 +22,17 @@ export default defineEventHandler(async (event) => {
     }
     
     // Récupération de la session utilisateur (optionnel)
-    const session = await getUserSession(event)
-    const utilisateur = session?.user || null
+    const sessionCookie = getCookie(event, 'nuxt-session')
+    let utilisateur = null
+    
+    if (sessionCookie) {
+      try {
+        const session = JSON.parse(decodeURIComponent(sessionCookie))
+        utilisateur = session?.user || null
+      } catch (e) {
+        console.warn('Erreur décodage session:', e)
+      }
+    }
     
     // Service de génération PDF
     const pdfService = new PdfService()

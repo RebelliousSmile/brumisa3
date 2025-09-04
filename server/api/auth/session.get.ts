@@ -1,25 +1,55 @@
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getUserSession(event)
+    // Pour @sidebase/nuxt-auth, utiliser les cookies de session
+    const sessionCookie = getCookie(event, 'nuxt-session')
+    
+    if (!sessionCookie) {
+      return {
+        data: {
+          user: null,
+          loggedIn: false
+        }
+      }
+    }
+    
+    // Décoder la session depuis le cookie de façon sécurisée
+    let session = null
+    try {
+      session = JSON.parse(decodeURIComponent(sessionCookie))
+    } catch (parseError) {
+      console.warn('Erreur parsing session cookie:', parseError)
+      return {
+        data: {
+          user: null,
+          loggedIn: false
+        }
+      }
+    }
     
     if (!session?.user) {
       return {
-        user: null,
-        loggedIn: false
+        data: {
+          user: null,
+          loggedIn: false
+        }
       }
     }
     
     return {
-      user: session.user,
-      loggedIn: true
+      data: {
+        user: session.user,
+        loggedIn: true
+      }
     }
     
   } catch (error) {
     console.error('Erreur récupération session:', error)
     
     return {
-      user: null,
-      loggedIn: false
+      data: {
+        user: null,
+        loggedIn: false
+      }
     }
   }
 })

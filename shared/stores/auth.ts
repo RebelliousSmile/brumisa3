@@ -39,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(email: string, password: string) {
-      const { login } = useAuth()
+      const { login } = useCustomAuth()
       
       this.setLoading(true)
       this.clearError()
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const success = await login({ email, password })
         if (success) {
-          const { user } = useAuth()
+          const { user } = useCustomAuth()
           this.setUser(user.value)
         }
         return success
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async register(email: string, password: string, confirmPassword: string) {
-      const { register } = useAuth()
+      const { register } = useCustomAuth()
       
       this.setLoading(true)
       this.clearError()
@@ -68,7 +68,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const success = await register({ email, password, confirmPassword })
         if (success) {
-          const { user } = useAuth()
+          const { user } = useCustomAuth()
           this.setUser(user.value)
         }
         return success
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout() {
-      const { logout } = useAuth()
+      const { logout } = useCustomAuth()
       
       this.setLoading(true)
       
@@ -96,7 +96,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async updateProfile(profileData: any) {
-      const { updateProfile } = useAuth()
+      const { updateProfile } = useCustomAuth()
       
       this.setLoading(true)
       this.clearError()
@@ -104,7 +104,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const success = await updateProfile(profileData)
         if (success) {
-          const { user } = useAuth()
+          const { user } = useCustomAuth()
           this.setUser(user.value)
         }
         return success
@@ -117,12 +117,12 @@ export const useAuthStore = defineStore('auth', {
     },
 
     canAccess(requiredRole?: 'ADMIN' | 'UTILISATEUR') {
-      const { canAccess } = useAuth()
+      const { canAccess } = useCustomAuth()
       return canAccess(requiredRole)
     },
 
     async initializeAuth() {
-      const { initializeAuth, user } = useAuth()
+      const { initializeAuth, user } = useCustomAuth()
       
       try {
         await initializeAuth()

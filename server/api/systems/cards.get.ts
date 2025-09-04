@@ -8,9 +8,9 @@ export default defineEventHandler(async (event) => {
         actif: true
       },
       include: {
-        univers: {
+        univers_jeu: {
           where: {
-            actif: true
+            statut: 'ACTIF'
           },
           orderBy: {
             ordreAffichage: 'asc'
@@ -29,20 +29,20 @@ export default defineEventHandler(async (event) => {
       description: systeme.description || '',
       icon: getSystemIcon(systeme.id),
       classes: getSystemClasses(systeme.id),
-      univers: systeme.univers.map(univers => ({
+      univers: systeme.univers_jeu.map(univers => ({
         code: univers.id,
         nom: univers.nomComplet,
         icon: getUniversIcon(univers.id)
       }))
     }))
     
-    // Séparation en colonnes (logique à adapter selon vos besoins)
+    // Séparation en colonnes selon la production
     const mainColumn = systemCards.filter(card => 
-      ['monsterhearts', 'engrenages'].includes(card.code)
+      ['pbta', 'engrenages', 'myz', 'zombiology'].includes(card.code)
     )
     
     const secondColumn = systemCards.filter(card => 
-      !['monsterhearts', 'engrenages'].includes(card.code)
+      ['mistengine'].includes(card.code)
     )
     
     return {
@@ -55,27 +55,66 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     console.error('Erreur récupération cartes systèmes:', error)
     
-    // Fallback avec données exemple
+    // Fallback avec données de production
     return {
       data: {
         mainColumn: [
           {
-            code: 'monsterhearts',
-            nom: 'Monsterhearts',
-            description: 'Romance surnaturelle adolescente',
-            icon: 'ra:ra-heart',
-            classes: getSystemClasses('monsterhearts'),
-            univers: []
+            code: 'pbta',
+            nom: 'PBTA',
+            description: 'Système Powered by the Apocalypse - Jeux narratifs basés sur les mouvements',
+            icon: getSystemIcon('pbta'),
+            classes: getSystemClasses('pbta'),
+            univers: [
+              { code: 'monsterhearts', nom: 'Monsterhearts', icon: getUniversIcon('monsterhearts') },
+              { code: 'urban_shadows', nom: 'Urban Shadows', icon: getUniversIcon('urban_shadows') }
+            ]
+          },
+          {
+            code: 'engrenages',
+            nom: 'Engrenages',
+            description: 'Système steampunk/fantasy avec dés à 10 faces',
+            icon: getSystemIcon('engrenages'),
+            classes: getSystemClasses('engrenages'),
+            univers: [
+              { code: 'roue_du_temps', nom: 'La Roue du Temps', icon: getUniversIcon('roue_du_temps') },
+              { code: 'ecryme', nom: 'Ecryme', icon: getUniversIcon('ecryme') }
+            ]
+          },
+          {
+            code: 'myz',
+            nom: 'MYZ (Mutant Year Zero)',
+            description: 'Système Year Zero Engine - Survie post-apocalyptique',
+            icon: getSystemIcon('myz'),
+            classes: getSystemClasses('myz'),
+            univers: [
+              { code: 'metro2033', nom: 'Metro 2033', icon: getUniversIcon('metro2033') }
+            ]
+          },
+          {
+            code: 'zombiology',
+            nom: 'Zombiology d100 System',
+            description: 'Système d100 pour jeux de survie',
+            icon: getSystemIcon('zombiology'),
+            classes: getSystemClasses('zombiology'),
+            univers: [
+              { code: 'zombiology', nom: 'Zombiology', icon: getUniversIcon('zombiology') }
+            ]
           }
         ],
         secondColumn: [
           {
-            code: 'engrenages',
-            nom: 'Engrenages & Sortilèges',
-            description: 'Steampunk et magie',
-            icon: 'ra:ra-gear',
-            classes: getSystemClasses('engrenages'),
-            univers: []
+            code: 'mistengine',
+            nom: 'Mist Engine',
+            description: 'Moteur de jeu narratif et mystique',
+            icon: getSystemIcon('mistengine'),
+            classes: getSystemClasses('mistengine'),
+            univers: [
+              { code: 'obojima', nom: 'Obojima', icon: getUniversIcon('obojima') },
+              { code: 'zamanora', nom: 'Zamanora', icon: getUniversIcon('zamanora') },
+              { code: 'post_mortem', nom: 'Post-Mortem', icon: getUniversIcon('post_mortem') },
+              { code: 'otherscape', nom: 'Tokyo:Otherscape', icon: getUniversIcon('otherscape') }
+            ]
           }
         ]
       }
@@ -85,17 +124,26 @@ export default defineEventHandler(async (event) => {
 
 function getSystemIcon(systemId: string): string {
   const icons: Record<string, string> = {
-    monsterhearts: 'ra:ra-heart',
-    engrenages: 'ra:ra-gear',
-    metro2033: 'ra:ra-tunnel',
-    mistengine: 'ra:ra-fog',
-    zombiology: 'ra:ra-skull'
+    pbta: 'ra:ra-heartburn',
+    monsterhearts: 'ra:ra-heartburn',
+    engrenages: 'ra:ra-cog',
+    metro2033: 'ra:ra-pills',
+    myz: 'ra:ra-pills',
+    mistengine: 'ra:ra-ocarina',
+    zombiology: 'ra:ra-death-skull'
   }
   return icons[systemId] || 'ra:ra-dice'
 }
 
 function getSystemClasses(systemId: string) {
   const classes: Record<string, any> = {
+    pbta: {
+      bg: 'bg-purple-500/20',
+      border: 'border-purple-500/30',
+      text: 'text-purple-500',
+      badgeBg: 'bg-purple-500/20',
+      badgeBorder: 'border-purple-500/30'
+    },
     monsterhearts: {
       bg: 'bg-pink-500/20',
       border: 'border-pink-500/30',
@@ -111,11 +159,18 @@ function getSystemClasses(systemId: string) {
       badgeBorder: 'border-amber-500/30'
     },
     metro2033: {
-      bg: 'bg-green-500/20',
-      border: 'border-green-500/30',
-      text: 'text-green-400',
-      badgeBg: 'bg-green-500/20',
-      badgeBorder: 'border-green-500/30'
+      bg: 'bg-red-600/20',
+      border: 'border-red-600/30',
+      text: 'text-red-600',
+      badgeBg: 'bg-red-600/20',
+      badgeBorder: 'border-red-600/30'
+    },
+    myz: {
+      bg: 'bg-red-600/20',
+      border: 'border-red-600/30',
+      text: 'text-red-600',
+      badgeBg: 'bg-red-600/20',
+      badgeBorder: 'border-red-600/30'
     },
     mistengine: {
       bg: 'bg-purple-500/20',
@@ -144,5 +199,5 @@ function getSystemClasses(systemId: string) {
 
 function getUniversIcon(universId: string): string {
   // À adapter selon vos univers spécifiques
-  return 'ra:ra-planet'
+  return 'game-icons:planet-core'
 }

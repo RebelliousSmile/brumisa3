@@ -8,7 +8,7 @@ const mockLogout = vi.fn()
 const mockUser = ref(null)
 
 vi.mock('~/composables/useAuth', () => ({
-  useAuth: () => ({
+  useCustomAuth: () => ({
     login: mockLogin,
     logout: mockLogout,
     user: mockUser,

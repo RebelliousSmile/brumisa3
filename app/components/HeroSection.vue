@@ -1,10 +1,10 @@
 <template>
   <header class="relative pt-20 pb-16 px-4 overflow-hidden">
     <!-- Background Effects -->
-    <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-brand-violet"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-generique"></div>
     <div class="absolute inset-0">
-      <div class="absolute top-20 left-10 w-72 h-72 bg-brand-violet/20 rounded-full filter blur-3xl"></div>
-      <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl"></div>
+      <div class="absolute top-20 left-10 w-72 h-72 bg-generique/20 rounded-full filter blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full filter blur-3xl"></div>
     </div>
     
     <div class="max-w-7xl mx-auto">
@@ -13,7 +13,7 @@
         <div class="relative lg:order-first order-first">
           <div class="relative max-w-md mx-auto lg:ml-0">
             <!-- Hero Glow Effect -->
-            <div class="absolute inset-0 bg-gradient-to-r from-brand-violet/30 to-purple-500/30 rounded-full filter blur-3xl"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-generique/30 to-blue-500/30 rounded-full filter blur-3xl"></div>
             
             <!-- Character -->
             <img 
@@ -28,7 +28,7 @@
         <div class="text-center lg:text-left lg:order-last relative z-10">
           <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight font-display">
             N'EMBARQUEZ PAS DANS LA BRUME
-            <span class="text-brand-violet">
+            <span class="text-generique">
               LES MAINS VIDES
             </span>
           </h1>
@@ -46,13 +46,13 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <!-- Stat 1 - Utilisateurs inscrits -->
           <div class="text-center">
-            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-violet">
-              <Icon name="ra:ra-player-king" class="text-brand-violet text-2xl" />
+            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+              <i class="ra ra-player-king text-generique text-2xl"></i>
             </div>
             <div class="text-3xl md:text-4xl font-bold text-white mb-2">
               {{ formatNumber(statistics?.nbUtilisateursInscrits) || '...' }}
             </div>
-            <div class="text-brand-violet font-medium font-display">UTILISATEURS</div>
+            <div class="text-generique font-medium font-display">UTILISATEURS</div>
             <div class="text-gray-400 text-sm mt-1">
               Joueuses inscrites créant des personnages épiques et partageant leurs aventures.
             </div>
@@ -60,13 +60,13 @@
           
           <!-- Stat 2 - Contenus ouverts ce mois -->
           <div class="text-center">
-            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-violet">
-              <Icon name="fa-solid:eye" class="text-brand-violet text-2xl" />
+            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+              <i class="fa fa-eye text-generique text-2xl"></i>
             </div>
             <div class="text-3xl md:text-4xl font-bold text-white mb-2">
               {{ formatNumber(statistics?.nbContenusOuvertsMois) || '...' }}
             </div>
-            <div class="text-brand-violet font-medium font-display">VUES CE MOIS</div>
+            <div class="text-generique font-medium font-display">VUES CE MOIS</div>
             <div class="text-gray-400 text-sm mt-1">
               PDFs consultés et téléchargés par la communauté ce mois-ci.
             </div>
@@ -74,13 +74,13 @@
           
           <!-- Stat 3 - PDFs stockés -->
           <div class="text-center">
-            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-violet">
-              <Icon name="fa-solid:scroll" class="text-brand-violet text-2xl" />
+            <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-generique">
+              <i class="fa fa-scroll text-generique text-2xl"></i>
             </div>
             <div class="text-3xl md:text-4xl font-bold text-white mb-2">
               {{ formatNumber(statistics?.nbPdfsStockes) || '...' }}
             </div>
-            <div class="text-brand-violet font-medium font-display">PDFS STOCKÉS</div>
+            <div class="text-generique font-medium font-display">PDFS STOCKÉS</div>
             <div class="text-gray-400 text-sm mt-1">
               Fiches de personnages et aides de jeu sauvegardées.
             </div>

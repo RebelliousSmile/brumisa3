@@ -7,7 +7,7 @@
     <div v-if="layout === 'main'" class="flex items-start">
       <div class="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 mr-4"
            :class="[card.classes.bg, card.classes.border]">
-        <Icon :name="card.icon" :class="[card.classes.text, 'text-2xl']" />
+        <i :class="card.icon + ' ' + card.classes.text + ' text-2xl'"></i>
       </div>
       <div class="flex-grow">
         <h3 class="text-lg font-bold text-white mb-1">{{ card.nom }}</h3>
@@ -19,7 +19,7 @@
           <NuxtLink
             v-for="univers in card.univers"
             :key="univers.code"
-            :to="`/systeme/${card.code}/${univers.code}`"
+            :to="`/systemes/${card.code}/${univers.code}`"
             class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 hover:text-white border transition-all"
             :class="[
               card.classes.text,
@@ -27,13 +27,13 @@
               `hover:border-${card.classes.text.replace('text-', '')}`
             ]"
           >
-            <Icon :name="univers.icon || card.icon" :class="[card.classes.text, 'mr-1.5']" />
+            <i :class="(univers.icon || card.icon) + ' ' + card.classes.text + ' mr-1.5'"></i>
             {{ univers.nom }}
           </NuxtLink>
         </div>
         <NuxtLink
           v-else
-          :to="`/systeme/${card.code}`"
+          :to="`/systemes/${card.code}`"
           class="inline-flex items-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all"
         >
           Accéder au système
@@ -45,7 +45,7 @@
     <div v-else class="text-center">
       <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
            :class="[card.classes.bg, card.classes.border]">
-        <Icon :name="card.icon" :class="[card.classes.text, 'text-2xl']" />
+        <i :class="card.icon + ' ' + card.classes.text + ' text-2xl'"></i>
       </div>
       <h3 class="text-lg font-bold text-white mb-2">{{ card.nom }}</h3>
       <p class="text-sm text-gray-400 mb-4">
@@ -56,7 +56,7 @@
         <NuxtLink
           v-for="univers in card.univers"
           :key="univers.code"
-          :to="`/systeme/${card.code}/${univers.code}`"
+          :to="`/systemes/${card.code}/${univers.code}`"
           class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 hover:text-white border transition-all"
           :class="[
             card.classes.text,
@@ -70,7 +70,7 @@
       </div>
       <NuxtLink
         v-else
-        :to="`/systeme/${card.code}`"
+        :to="`/systemes/${card.code}`"
         class="inline-flex items-center justify-center px-3 py-1 text-xs rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-600 transition-all mb-4"
       >
         Accéder au système

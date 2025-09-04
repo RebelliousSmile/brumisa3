@@ -17,9 +17,9 @@ interface RegisterData {
 }
 
 /**
- * Composable pour l'authentification
+ * Composable personnalisé pour l'authentification
  */
-export const useAuth = () => {
+export const useCustomAuth = () => {
   const { data: session, signIn, signOut } = useUserSession()
   
   const loading = ref(false)
