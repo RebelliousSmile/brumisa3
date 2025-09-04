@@ -268,160 +268,109 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const { obtenirSysteme, getCouleursPourSysteme, getIconPourSysteme } = useSystemes()
 
 const slug = route.params.slug as string
 const univers = route.params.univers as string
 
-// Configuration des systèmes et univers
-const systemConfigurations: Record<string, Record<string, any>> = {
-  'engrenages': {
-    'roue_du_temps': {
-      hero: {
-        gradient: 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900',
-        icone: 'ra ra-gear-hammer',
-        couleurIcone: 'text-emerald-300',
-        titre: 'Engrenages & Sortilèges',
-        description: 'Créez des aides de jeu immersives pour la Roue du Temps, l\'univers de fantasy épique de Robert Jordan.',
-        couleurTexte: 'text-emerald-200',
-        couleurBoutonPrimaire: 'bg-emerald-600 hover:bg-emerald-700',
-        couleurBoutonSecondaire: 'border-emerald-300 text-emerald-300 hover:bg-emerald-300 hover:text-emerald-900',
-        texteBoutonPrimaire: 'Créer un document',
-        texteBoutonSecondaire: 'Voir les oracles'
-      },
-      commentCreer: {
-        nomSysteme: 'Engrenages',
-        couleurBordure: 'border-emerald-500/20',
-        couleurFond: 'bg-emerald-600',
-        couleurIcone: 'text-emerald-400',
-        texteEtape1: 'Parcourez notre collection de templates pour la Roue du Temps et sélectionnez celui qui correspond à vos besoins.',
-        texteEtape2: 'Utilisez notre éditeur pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
-        texteEtape3: 'Cliquez sur "Générer" pour créer un PDF élégant dans le style parchemin médiéval.'
-      },
-      templates: [
-        {
-          titre: 'Document Générique',
-          description: 'Template flexible pour créer tout type de document avec structure hiérarchique.',
-          icone: 'ra ra-scroll-unfurled',
-          inclus: [
-            'Structure hiérarchique (sections/sous-sections)',
-            'Paragraphes et listes formatés',
-            'Encadrés spéciaux (conseils, exemples)',
-            'Mise en page style parchemin médiéval',
-            'Styles thématiques Roue du Temps',
-            'Export PDF haute qualité'
-          ]
-        }
-      ],
-      oracles: {
-        nomSysteme: 'Engrenages',
-        couleurBordure: 'border-emerald-500/30',
-        couleurIcone: 'text-emerald-400',
-        couleurBouton: 'bg-emerald-600 hover:bg-emerald-700',
-        lienOracles: '/oracles?systeme=engrenages',
-        descriptionOracles: 'Les oracles sont des outils essentiels pour enrichir vos parties dans l\'univers de la Roue du Temps. Ces tables aléatoires vous aident à générer des nations, des monstres et des PNJ de manière improvisée, ajoutant de la surprise et de la profondeur à vos campagnes épiques.',
-        oracles: [
-          { icone: 'ra ra-tower', nom: 'Nations', description: 'Peuples et royaumes de la Roue du Temps' },
-          { icone: 'ra ra-dragon', nom: 'Monstres', description: 'Créatures de l\'Ombre et servants du Ténébreux' },
-          { icone: 'ra ra-player', nom: 'PNJ Connus', description: 'Personnages célèbres de l\'univers' }
-        ]
-      },
-      downloads: {
-        nomSysteme: 'Engrenages',
-        couleurBordure: 'border-emerald-500/20',
-        couleurHover: 'emerald-400',
-        couleurBouton: 'bg-emerald-600 hover:bg-emerald-700',
-        downloads: [
-          {
-            titre: 'Aide-mémoire MJ',
-            description: 'Référence rapide des Voies du Pouvoir',
-            auteur: 'AesSedai_MJ',
-            telechargements: '856',
-            taille: '2.1 MB',
-            format: 'PDF'
-          }
-        ]
-      },
-      cta: {
-        gradient: 'from-emerald-600 to-green-600',
-        titreCTA: 'La Roue tisse comme la Roue veut',
-        descriptionCTA: 'Rejoignez la lutte contre le Ténébreux dans l\'univers de Robert Jordan.',
-        couleurTexte: 'text-emerald-100',
-        couleurTexteBouton: 'text-emerald-600',
-        couleurTexteBoutonSecondaire: 'hover:text-emerald-600'
-      }
-    }
-  },
-  'monsterhearts': {
-    'default': {
-      hero: {
-        gradient: 'bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900',
-        icone: '💜',
-        couleurIcone: 'text-purple-300',
-        titre: 'Monsterhearts',
-        description: 'Créez des fiches de personnages immersives pour Monsterhearts, le jeu de rôle des adolescents monstres modernes.',
-        couleurTexte: 'text-purple-200',
-        couleurBoutonPrimaire: 'bg-purple-600 hover:bg-purple-700',
-        couleurBoutonSecondaire: 'border-purple-300 text-purple-300 hover:bg-purple-300 hover:text-purple-900',
-        texteBoutonPrimaire: 'Créer un personnage',
-        texteBoutonSecondaire: 'Voir les exemples'
-      },
-      commentCreer: {
-        nomSysteme: 'Monsterhearts',
-        couleurBordure: 'border-purple-500/20',
-        couleurIcone: 'text-purple-400',
-        texteEtape1: 'Parcourez notre collection de templates pré-conçus pour Monsterhearts et sélectionnez celui qui correspond à vos besoins.',
-        texteEtape2: 'Utilisez notre éditeur intuitif pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
-        texteEtape3: 'Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager avec votre table.'
-      },
-      templates: [
-        {
-          titre: 'Fiche de Personnage',
-          description: 'Template complet pour créer des fiches de personnages avec tous les éléments du système Monsterhearts.',
-          icone: '⚔️',
-          inclus: [
-            'Caractéristiques (Hot, Cold, Volatile, Dark)',
-            'Archétypes de monstres complets',
-            'Actions spécifiques et sexuelles',
-            'Gestion des Cordes sur les autres PJ',
-            'Conditions et leur gestion',
-            'Expérience et évolution'
-          ]
-        }
-      ],
-      oracles: {
-        nomSysteme: 'Monsterhearts',
-        couleurBordure: 'border-purple-500/30',
-        couleurIcone: 'text-purple-400',
-        couleurBouton: 'bg-purple-600 hover:bg-purple-700',
-        lienOracles: '/oracles?systeme=monsterhearts',
-        descriptionOracles: 'Les oracles sont des outils essentiels pour le jeu en mode "solo" ou pour enrichir vos parties en tant que MJ.',
-        oracles: [
-          { icone: '🔮', nom: 'Révélations', description: 'Secrets qui éclatent au grand jour' },
-          { icone: '💔', nom: 'Relations', description: 'Complications romantiques et sociales' }
-        ]
-      },
-      cta: {
-        gradient: 'from-purple-600 to-pink-600',
-        titreCTA: 'Prêt à créer votre monstre adolescent ?',
-        descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
-        couleurTexte: 'text-purple-100',
-        couleurTexteBouton: 'text-purple-600',
-        couleurTexteBoutonSecondaire: 'hover:text-purple-600'
-      }
-    }
-  }
-}
+// Récupérer les données du système via API
+const { data: systemData, pending } = await useLazyAsyncData(`system-${slug}`, () => 
+  obtenirSysteme(slug)
+)
 
-// Récupération de la configuration
+// Récupérer les oracles pour ce système
+const { data: oracles } = await useLazyAsyncData(`oracles-${slug}`, () => 
+  $fetch(`/api/oracles?systeme=${slug}`)
+)
+
+// Récupérer les templates disponibles
+const { data: templates } = await useLazyAsyncData(`templates-${slug}`, () => 
+  $fetch(`/api/templates?systeme=${slug}`).catch(() => [])
+)
+
+// Configuration dynamique basée sur les données API
 const systemConfig = computed(() => {
-  const config = systemConfigurations[slug]?.[univers] || systemConfigurations[slug]?.['default']
-  
-  if (!config) {
-    return null
+  if (!systemData.value) return null
+
+  const colors = getCouleursPourSysteme(slug)
+  const system = systemData.value
+
+  // Configuration de base adaptée dynamiquement
+  const baseConfig = {
+    hero: {
+      gradient: getGradientForSystem(slug),
+      icone: getIconPourSysteme(slug),
+      couleurIcone: colors.classes.text,
+      titre: system.nomComplet,
+      description: system.description || `Créez des aides de jeu immersives pour ${system.nomComplet}.`,
+      couleurTexte: colors.classes.text.replace('400', '200'),
+      couleurBoutonPrimaire: colors.primary ? `bg-${colors.primary} hover:bg-${colors.primary}/80` : colors.classes.bg,
+      couleurBoutonSecondaire: `border-${colors.classes.text.split('-')[1]} text-${colors.classes.text.split('-')[1]} hover:bg-${colors.classes.text.split('-')[1]} hover:text-white`,
+      texteBoutonPrimaire: 'Créer un document',
+      texteBoutonSecondaire: 'Voir les oracles'
+    },
+    commentCreer: {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurIcone: colors.classes.text,
+      texteEtape1: `Parcourez notre collection de templates pour ${system.nomComplet} et sélectionnez celui qui correspond à vos besoins.`,
+      texteEtape2: 'Utilisez notre éditeur pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
+      texteEtape3: 'Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager.'
+    },
+    templates: Array.isArray(templates.value) ? templates.value : [],
+    oracles: oracles.value && Array.isArray(oracles.value) && oracles.value.length > 0 ? {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurIcone: colors.classes.text,
+      couleurBouton: colors.classes.bg.replace('/20', ''),
+      lienOracles: `/oracles?systeme=${slug}`,
+      descriptionOracles: `Découvrez nos générateurs d'oracles pour enrichir vos parties de ${system.nomComplet}.`,
+      oracles: (oracles.value as any[]).slice(0, 3).map((oracle: any) => ({
+        icone: 'ra ra-crystal-ball',
+        nom: oracle.nom,
+        description: oracle.description || 'Table aléatoire pour vos parties'
+      }))
+    } : null,
+    downloads: {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurBouton: colors.classes.bg.replace('/20', ''),
+      downloads: [] // À implémenter avec API téléchargements
+    },
+    cta: {
+      gradient: `from-${colors.classes.text.split('-')[1]}-600 to-${colors.classes.text.split('-')[1]}-800`,
+      titreCTA: `Prêt à créer pour ${system.nomComplet} ?`,
+      descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
+      couleurTexte: colors.classes.text.replace('400', '100'),
+      couleurTexteBouton: colors.classes.text.replace('400', '600'),
+      couleurTexteBoutonSecondaire: `hover:${colors.classes.text.replace('400', '600')}`
+    }
   }
-  
-  return config
+
+  // Configurations spécifiques par système pour préserver l'authenticité
+  if (slug === 'engrenages' && univers === 'roue_du_temps') {
+    baseConfig.hero.gradient = 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900'
+    baseConfig.hero.icone = 'ra ra-gear-hammer'
+    baseConfig.hero.titre = 'Engrenages & Sortilèges'
+    baseConfig.hero.description = 'Créez des aides de jeu immersives pour la Roue du Temps, l\'univers de fantasy épique de Robert Jordan.'
+    baseConfig.cta.titreCTA = 'La Roue tisse comme la Roue veut'
+    baseConfig.cta.descriptionCTA = 'Rejoignez la lutte contre le Ténébreux dans l\'univers de Robert Jordan.'
+  }
+
+  return baseConfig
 })
+
+// Fonction helper pour les gradients
+const getGradientForSystem = (systemSlug: string) => {
+  const gradients: Record<string, string> = {
+    'engrenages': 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900',
+    'monsterhearts': 'bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900',
+    'metro2033': 'bg-gradient-to-br from-red-900 via-gray-800 to-black',
+    'zombiology': 'bg-gradient-to-br from-yellow-900 via-orange-800 to-red-900',
+    'mistengine': 'bg-gradient-to-br from-pink-900 via-purple-800 to-indigo-900'
+  }
+  return gradients[systemSlug] || 'bg-gradient-to-br from-gray-900 via-blue-900 to-generique'
+}
 
 // SEO
 watchEffect(() => {
