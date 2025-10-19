@@ -25,7 +25,7 @@ Cree son personnage Legends in the Mist
     ↓
 Joue en solo, sauvegarde son avancement
     ↓
-Peut exporter ses donnees (JSON/PDF)
+Peut exporter ses donnees (JSON)
 ```
 
 ### Perimetre MUST HAVE
@@ -133,10 +133,10 @@ Peut exporter ses donnees (JSON/PDF)
 
 **Fonctionnalites minimales** :
 - [x] Exporter personnage en JSON
-- [x] Exporter personnage en PDF (fiche basique)
 
 **Hors perimetre MVP** :
-- ❌ Import JSON de personnages
+- ❌ Export personnage en PDF (reporte v2.0)
+- ❌ Import JSON de personnages (v1.3)
 - ❌ Export multi-personnages (ZIP)
 - ❌ Templates PDF personnalises
 - ❌ Export vers VTT (Foundry, Roll20)
@@ -263,7 +263,6 @@ Sprint 3-6 (8 sem) : Personnages LITM Complets
 
 Sprint 7 (2 sem) : Export & Polish
 ├── Export JSON personnages
-├── Export PDF basique
 ├── Tests end-to-end
 └── Corrections bugs
 
@@ -298,7 +297,7 @@ Sprint 9 (optionnel) : Beta Testing
 | Hero Card UI | Moyenne | 1-2 sem | P0 |
 | Trackers UI | Moyenne | 1 sem | P0 |
 | UI/UX Layout | Moyenne | 2 sem | P0 |
-| Export JSON/PDF | Moyenne | 1 sem | P0 |
+| Export JSON | Faible | 2-3 jours | P0 |
 | Tests & Debug | - | 2 sem | P0 |
 | **TOTAL MVP** | - | **13.5-15.5 sem** | - |
 
@@ -337,7 +336,7 @@ v0.3 (Sprint 6) : Personnages LITM complets
 └── Polish UI
 
 v0.4 (Sprint 7) : Export & Tests
-├── Export JSON/PDF
+├── Export JSON
 └── Tests end-to-end
 
 v1.0 (Sprint 8) : Feature-complete MVP

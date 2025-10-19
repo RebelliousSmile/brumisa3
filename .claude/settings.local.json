@@ -141,7 +141,8 @@
       "Bash(npx prisma migrate resolve --applied \"cleanup_non_mist_systems\")",
       "Bash(pnpm tsx scripts/test-litm-models.ts)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:sonofoak.com)"
+      "WebFetch(domain:sonofoak.com)",
+      "mcp__github__get_file_contents"
     ],
     "deny": []
   }

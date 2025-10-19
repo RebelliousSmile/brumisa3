@@ -7,16 +7,17 @@ Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architectur
 ### 🏗️ Stack technique
 - **Framework** : Nuxt 4 + Vue 3 Composition API
 - **Backend** : Nitro Server + PostgreSQL + Prisma ORM
-- **Frontend** : Vue 3 + Tailwind CSS + Pinia
-- **PDF** : PDFKit avec génération programmatique
-- **Auth** : @sidebase/nuxt-auth avec sessions
+- **Frontend** : Vue 3 + UnoCSS (Tailwind-style) + Pinia
+- **PDF** : PDFKit avec génération programmatique (v2.0+)
+- **Auth** : @sidebase/nuxt-auth avec sessions (mode guest + compte)
+- **Tests** : Playwright (100% E2E, pas de tests unitaires)
 
 ### 💻 Environnement de développement
 - **OS** : Windows 10/11 (commandes Windows uniquement)
 - **Shell** : cmd.exe / PowerShell
 - **Séparateurs** : Antislash `\` pour les chemins
 - **Commandes** : Windows natives (dir, mkdir, del, copy, etc.)
-- **Tests** : Vitest pour les tests unitaires, @nuxt/test-utils pour les tests d'intégration
+- **Tests** : Playwright pour tests E2E (100% couverture fonctionnelle, multi-navigateurs)
 - **Package Manager** : pnpm (recommandé pour Nuxt 4)
 
 ## Règles de développement
@@ -46,15 +47,29 @@ Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architectur
   - `DEVELOPPEMENT/*.md` pour les choix de développement
 - **Compléter** la documentation existante plutôt que de créer de nouveaux fichiers
 
-### 🧪 Tests du code métier
-- **Si possible, écrire des tests** pour le code métier (composables, services, API routes)
-- Prioriser les tests pour :
-  - Les composables Vue 3
-  - Les services PDFKit et authentification
-  - Les API routes Nitro
-  - Les stores Pinia
-- Utiliser Vitest et @nuxt/test-utils pour les tests Nuxt
-- Ne crée des mocks que si tu ne peux pas tester dans des conditions réelles (altération des données en production)
+### 🏛️ Architecture MVP v1.0
+- **Documentation complète** : `documentation/ARCHITECTURE/` (7 fichiers)
+- **Point d'entrée** : `00-SOMMAIRE.md` pour vue d'ensemble
+- **Récapitulatif** : `RECAPITULATIF-ANALYSE.md` pour résumé exécutif
+- **Scope MVP** : Playspaces + Characters LITM (Theme Cards, Hero Card, Trackers) + Auth + Export JSON
+- **Hors MVP** : Investigation Board (v2.0), Oracles customs (v1.2+), Jets de dés (v1.3), Multi-joueurs (v2.5)
+- **Modèle de données** : 9 tables Prisma (User, Playspace, Character, ThemeCard, Tag, HeroCard, Relationship, Trackers, Status/StoryTag/StoryTheme)
+- **API Routes** : 21 routes RESTful Nitro pour MVP
+- **Composants Vue** : 20 composants essentiels (Playspace, Character, ThemeCard, HeroCard, Trackers, Common)
+- **Stores Pinia** : 3 stores (playspace, character, ui)
+- **Roadmap MVP** : 10 semaines (Fondations 2s, Playspaces 2s, Characters 4s, Polish 2s)
+
+### 🧪 Tests End-to-End avec Playwright
+- **Stratégie** : 100% tests E2E, pas de tests unitaires
+- **Framework** : Playwright (multi-navigateurs : Chrome, Firefox, Safari, Mobile Chrome)
+- **Scope MVP** : 24 tests E2E couvrant toutes les fonctionnalités critiques
+- **Prioriser les tests pour** :
+  - Parcours utilisateur complets (création playspace + personnage)
+  - Workflows critiques (authentification, CRUD, export)
+  - Performance (basculement playspace < 2s, création < 60s)
+- **Configuration** : `playwright.config.ts` avec server Nuxt automatique
+- **Helpers** : Reset DB, fixtures utilisateurs, helpers auth/navigation
+- **Documentation** : `documentation/ARCHITECTURE/06-strategie-tests-e2e-playwright.md`
 
 ## Structure du projet
 - le répertoire scripts ne doit pas avoir de sous-répertoire
