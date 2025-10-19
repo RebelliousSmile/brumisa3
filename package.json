@@ -37,6 +37,7 @@
     "docs:clean": "rmdir /s /q documentation\\api 2>nul || rm -rf documentation/api/ 2>/dev/null || echo API docs cleaned"
   },
   "dependencies": {
+    "@nuxtjs/i18n": "10.1.1",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.2",
     "@prisma/client": "^6.15.0",

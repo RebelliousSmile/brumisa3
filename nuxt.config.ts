@@ -9,9 +9,10 @@ export default defineNuxtConfig({
   // Modules
   modules: [
     '@pinia/nuxt',
-    '@nuxtjs/tailwindcss', 
+    '@nuxtjs/tailwindcss',
     '@sidebase/nuxt-auth',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@nuxtjs/i18n'
   ],
   
   // Configuration Pinia pour shared/stores
@@ -75,6 +76,34 @@ export default defineNuxtConfig({
     serverBundle: {
       collections: ['heroicons', 'fa6-solid', 'game-icons', 'mdi']
     }
+  },
+
+  // i18n configuration
+  i18n: {
+    locales: [
+      {
+        code: 'fr',
+        name: 'Français',
+        file: 'fr/common.json'
+      },
+      {
+        code: 'en',
+        name: 'English',
+        file: 'en/common.json'
+      }
+    ],
+    lazy: true,
+    langDir: 'locales/',
+    defaultLocale: 'fr',
+    strategy: 'prefix_except_default',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'brumisater_locale',
+      redirectOn: 'root',
+      alwaysRedirect: false,
+      fallbackLocale: 'fr'
+    },
+    vueI18n: './i18n.config.ts'
   },
   
   // TypeScript config
