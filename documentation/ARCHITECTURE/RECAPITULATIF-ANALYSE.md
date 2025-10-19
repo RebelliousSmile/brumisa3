@@ -451,4 +451,4 @@ Philosophie : Valider l'expérience utilisateur complète avec Playwright
 **Scope** : MVP v1.0 Brumisa3 (Playspaces + LITM Characters)
 **Durée estimée MVP** : 10 semaines (2.5 mois)
 **Tests** : 24 tests E2E Playwright
-**Documentation** : 7 fichiers créés (500+ pages)
+**Documentation** : 9 fichiers créés (700+ pages)
