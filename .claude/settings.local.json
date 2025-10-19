@@ -142,7 +142,9 @@
       "Bash(pnpm tsx scripts/test-litm-models.ts)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:sonofoak.com)",
-      "mcp__github__get_file_contents"
+      "mcp__github__get_file_contents",
+      "mcp__github__search_repositories",
+      "mcp__github__search_code"
     ],
     "deny": []
   }

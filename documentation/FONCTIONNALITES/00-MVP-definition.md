@@ -52,10 +52,10 @@ Peut exporter ses donnees (JSON)
 
 ---
 
-#### 2. Gestion de Personnages LITM (CRITIQUE)
+#### 2. Gestion de Personnages (CRITIQUE)
 
 **Fonctionnalites minimales** :
-- [x] Modele de donnees Prisma pour personnages LITM
+- [x] Modele de donnees Prisma pour personnages (heritent du systeme via playspace)
 - [x] Creer un personnage :
   - Informations de base (nom, description)
   - Theme Cards (minimum 2-4 themes)
@@ -252,7 +252,7 @@ Sprint 1-2 (4 sem) : Fondations + Authentification
 ├── Authentification (email/password + mode guest)
 └── UI/UX basique (layout, navigation)
 
-Sprint 3-6 (8 sem) : Personnages LITM Complets
+Sprint 3-6 (8 sem) : Personnages Complets (Mist Engine)
 ├── Modeles Prisma personnages
 ├── CRUD personnages (Create, Read, Update, Delete)
 ├── Theme Cards (UI + logique)
@@ -325,12 +325,12 @@ v0.1 (Sprint 2) : Playspace + Authentification
 ├── Mode guest ou compte utilisateur
 └── Sauvegarde localStorage + BDD
 
-v0.2 (Sprint 4) : Personnages LITM basiques
+v0.2 (Sprint 4) : Personnages basiques
 ├── Creation de personnages
 ├── Theme Cards
 └── Hero Card
 
-v0.3 (Sprint 6) : Personnages LITM complets
+v0.3 (Sprint 6) : Personnages complets
 ├── Trackers
 ├── Tests complets
 └── Polish UI

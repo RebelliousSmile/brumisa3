@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe Mobile - Dashboard Dark</title>
+    <script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>
+    <style>
+        :root {
+            --navy-900: #0f1419;
+            --navy-800: #1a2332;
+            --navy-700: #1e2a47;
+            --navy-600: #2d3f5f;
+        }
+        body {
+            background: var(--navy-900);
+            color: #e5e7eb;
+            padding-bottom: 64px; /* Pour bottom nav */
+        }
+        .wf-placeholder {
+            background: repeating-linear-gradient(45deg, #2d3f5f, #2d3f5f 10px, #1e2a47 10px, #1e2a47 20px);
+            border: 2px dashed #4a90e2;
+        }
+        .wf-annotation {
+            position: relative;
+            border: 2px solid #8b5cf6;
+        }
+        .wf-annotation::before {
+            content: attr(data-note);
+            position: absolute;
+            top: -12px;
+            left: 8px;
+            background: #8b5cf6;
+            color: white;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .card-dark {
+            background: var(--navy-700);
+            border: 1px solid var(--navy-600);
+        }
+    </style>
+</head>
+<body>
+    <!-- MOBILE DASHBOARD - Bottom Nav + Drawer + FAB -->
+
+    <!-- Header Mobile 56px avec Hamburger -->
+    <header class="bg-navy-800 border-b border-navy-600 sticky top-0 z-50 wf-annotation" data-note="Header Mobile - Hamburger + Avatar">
+        <div class="h-14 px-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button class="w-12 h-12 flex items-center justify-center text-white text-2xl -ml-2">☰</button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">B</div>
+                    <span class="text-base font-bold text-white">brumisater</span>
+                </div>
+            </div>
+            <div class="wf-placeholder w-8 h-8 rounded-full"></div>
+        </div>
+    </header>
+
+    <!-- Drawer Playspaces (Toggle avec Hamburger) - Annotation -->
+    <div class="wf-annotation fixed inset-y-0 left-0 w-72 bg-navy-800 border-r border-navy-600 z-40 transform -translate-x-full transition-transform p-4" data-note="Drawer Playspaces avec kebab menu et badges role">
+        <!-- Bouton Nouveau Playspace en haut -->
+        <button class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 rounded-lg text-sm font-medium mb-4 shadow-lg shadow-green-500/30">
+            + Nouveau Playspace
+        </button>
+
+        <div class="text-xs font-bold text-gray-500 uppercase mb-3">Playspaces</div>
+
+        <!-- Playspace Actif avec badge role -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg mb-3 shadow-lg shadow-blue-500/30">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-medium text-sm">Workspace Aria</span>
+                        <span class="bg-blue-500/30 px-2 py-0.5 rounded text-xs">[PJ]</span>
+                    </div>
+                    <div class="text-xs opacity-90">LITM - Chicago Noir</div>
+                    <div class="text-xs opacity-75 mt-1">3 personnages</div>
+                </div>
+                <!-- Kebab menu -->
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="6" r="1.5"/>
+                        <circle cx="12" cy="12" r="1.5"/>
+                        <circle cx="12" cy="18" r="1.5"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Autres playspaces avec badges role -->
+        <div class="card-dark p-3 rounded-lg mb-2">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="font-medium text-white text-sm">Campaign Otherscape</div>
+                        <span class="bg-purple-900/50 border border-purple-500 text-purple-300 px-2 py-0.5 rounded text-xs">[MJ]</span>
+                    </div>
+                    <div class="text-xs text-gray-400">7 personnages</div>
+                </div>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-navy-600 transition-colors text-gray-400">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="6" r="1.5"/>
+                        <circle cx="12" cy="12" r="1.5"/>
+                        <circle cx="12" cy="18" r="1.5"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Mobile -->
+    <main class="px-4 py-6">
+        <!-- Breadcrumb Mobile simplifié (< 3 items) -->
+        <nav class="flex items-center space-x-2 text-xs mb-4 text-gray-400 wf-annotation" data-note="Breadcrumb Mobile simplifié">
+            <a href="/playspaces" class="text-blue-400">←</a>
+            <span class="font-medium text-white">Workspace Aria</span>
+        </nav>
+
+        <!-- Badge PJ tres visible sur mobile -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl p-6 mb-6 shadow-xl shadow-blue-500/30 wf-annotation" data-note="Badge MODE PJ tres visible mobile">
+            <div class="bg-white/20 backdrop-blur px-6 py-3 rounded-xl border-2 border-white/50 inline-block">
+                <div class="text-xs font-bold text-white/90 uppercase mb-1">Mode</div>
+                <div class="text-2xl font-extrabold text-white">JOUEUR [PJ]</div>
+            </div>
+            <h1 class="text-xl font-extrabold text-white mt-4 mb-1">Workspace Aria</h1>
+            <p class="text-xs text-white/80">Lost in the Mist - Chicago Noir</p>
+            <button class="mt-4 w-full bg-white/20 border border-white/50 text-white py-2 rounded-lg text-sm font-medium">
+                Modifier playspace
+            </button>
+        </div>
+
+        <!-- Section Personnages Mobile -->
+        <div class="mb-6 wf-annotation" data-note="Personnages Mobile - Stack vertical MODE PJ uniquement">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-extrabold text-white">Personnages (3)</h2>
+            </div>
+
+            <!-- Filtres Mobile compacts -->
+            <div class="mb-4">
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">🔍</span>
+                    <input
+                        type="text"
+                        placeholder="Rechercher un personnage..."
+                        class="w-full bg-navy-700 border border-navy-600 text-white rounded-lg pl-10 pr-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                    >
+                </div>
+            </div>
+
+            <!-- Personnages Stack Vertical -->
+            <div class="flex flex-col space-y-4">
+                <!-- Personnage 1 -->
+                <div class="card-dark rounded-2xl overflow-hidden">
+                    <div class="wf-placeholder h-36 flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">👤</div>
+                            <div class="text-xs">Avatar</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-extrabold text-base text-white">Aria the Mist Weaver</h3>
+                            <span class="bg-purple-900/50 border border-purple-500 text-purple-300 px-2 py-1 rounded-full text-xs font-bold">Niv. 3</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-3">🎴 4 Theme Cards · 2h</div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg text-sm font-medium">
+                                Modifier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personnage 2 -->
+                <div class="card-dark rounded-2xl overflow-hidden">
+                    <div class="wf-placeholder h-36 flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">👤</div>
+                            <div class="text-xs">Avatar</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-extrabold text-base text-white">Raven Nightshade</h3>
+                            <span class="bg-blue-900/50 border border-blue-500 text-blue-300 px-2 py-1 rounded-full text-xs font-bold">Niv. 2</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-3">🎴 3 Theme Cards · 5j</div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg text-sm font-medium">
+                                Modifier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personnage 3 -->
+                <div class="card-dark rounded-2xl overflow-hidden">
+                    <div class="wf-placeholder h-36 flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">👤</div>
+                            <div class="text-xs">Avatar</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-extrabold text-base text-white">Baron Vordak</h3>
+                            <span class="bg-gray-700 border border-gray-600 text-gray-300 px-2 py-1 rounded-full text-xs font-bold">PNJ</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-3">🎴 2 Theme Cards · 1 sem</div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg text-sm font-medium">
+                                Modifier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FAB (Floating Action Button) - Nouveau Personnage -->
+    <button class="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-2xl shadow-blue-500/50 flex items-center justify-center text-white text-2xl z-30 wf-annotation" data-note="FAB - Nouveau Personnage">
+        +
+    </button>
+
+    <!-- Bottom Navigation 64px (4 icônes) -->
+    <nav class="fixed bottom-0 left-0 right-0 h-16 bg-navy-800 border-t border-navy-600 flex justify-around items-center z-40 wf-annotation" data-note="Bottom Nav 64px - Navigation 4 sections (Solo et VTT grisés)">
+        <a href="/decouverte" class="flex flex-col items-center justify-center flex-1 text-gray-400 h-full">
+            <div class="w-6 h-6 mb-1 flex items-center justify-center text-xl">🔍</div>
+            <span class="text-xs font-medium">Decouverte</span>
+        </a>
+        <a href="/preparation" class="flex flex-col items-center justify-center flex-1 text-blue-400 h-full">
+            <div class="w-6 h-6 mb-1 flex items-center justify-center text-xl">📝</div>
+            <span class="text-xs font-medium">Preparation</span>
+        </a>
+        <a href="/solo" class="flex flex-col items-center justify-center flex-1 text-gray-500 h-full cursor-not-allowed" title="Disponible v1.3+">
+            <div class="w-6 h-6 mb-1 flex items-center justify-center text-xl">🎮</div>
+            <span class="text-xs font-medium">Solo</span>
+        </a>
+        <a href="/vtt" class="flex flex-col items-center justify-center flex-1 text-gray-500 h-full cursor-not-allowed" title="Disponible v2.0+">
+            <div class="w-6 h-6 mb-1 flex items-center justify-center text-xl">🗺️</div>
+            <span class="text-xs font-medium">VTT</span>
+        </a>
+    </nav>
+</body>
+</html>

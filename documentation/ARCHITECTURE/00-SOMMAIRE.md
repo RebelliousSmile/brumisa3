@@ -161,6 +161,86 @@ Gains attendus:
 - Chargement oracles : 400ms → 10ms (97% plus rapide)
 - Support offline complet (consultation + édition)
 
+### [09-architecture-multi-systemes-mist-engine.md](./09-architecture-multi-systemes-mist-engine.md)
+**Architecture Multi-Systèmes Mist Engine**
+
+Contenu:
+- Analyse détaillée du système Taragnor (city-of-mist)
+- Architecture modulaire orientée objet (Factory + Registry pattern)
+- Interface système (SystemModuleI) et types de thèmes
+- Configuration par défaut pour LITM, City of Mist, Otherscape
+- Implémentation technique complète:
+  - Schéma Prisma étendu (table System)
+  - Types TypeScript (`SystemConfig`, `ThemeTypeConfig`, etc.)
+  - Composable `useSystemConfig()` pour accès config
+  - Store Pinia `systemStore` pour gestion système actif
+  - API routes pour récupération config
+  - Seed DB avec 3 systèmes
+- Utilisation dans composants Vue (exemple `ThemeCard.vue`)
+- Intégration PDF multi-systèmes (layouts spécifiques)
+- Roadmap d'implémentation (8 semaines)
+- Comparaison Taragnor vs Brumisater
+
+Configuration incluse:
+- **LITM**: Origin/Adventure/Greatness/Fellowship/Backpack, milestones
+- **City of Mist**: Mythos/Mist/Logos/Crew/Loadout/Extra, attention
+- **Otherscape**: Mythos-OS/Noise/Self/Crew-OS/Loadout, upgrade/decay
+
+Avantages:
+- Extensibilité (nouveau système = 1 fichier config)
+- Type Safety (TypeScript strict end-to-end)
+- Performance (cache IndexedDB, SWR)
+- Maintenabilité (config déclarative vs code)
+- Cohérence (terminologie, PDF, UX adaptés)
+
+### [10-analyse-mist-hud-interface-donnees.md](./10-analyse-mist-hud-interface-donnees.md)
+**Analyse Mist HUD - Interface et Données**
+
+Contenu:
+- Analyse complète du module Mist HUD de Mordachai pour Foundry VTT
+- Architecture de stockage Actor-Item (Character/Danger avec Items: Theme, Tag, Status, Improvement)
+- Extraction de données avec fonctions getter:
+  - `getThemesAndTags()` - Récupération thèmes et tags groupés
+  - `getPowerTags()` / `getWeaknessTags()` - Filtrage par type avec subtags
+  - `applyBurnState()` - Gestion des états de burn (unburned/toBurn/burned)
+  - `getMysteryFromTheme()` - Mystery/Quest/Ritual par système
+  - `getActorStatuses()` - Statuses avec tier 1-6
+  - `getImprovements()` - Groupés par themebook
+  - `getJuiceAndClues()` - Help/Hurt/Clues (City of Mist)
+  - `getEssence()` - Calcul essence (Otherscape)
+- Présentation visuelle détaillée:
+  - HUD Personnages (mh-hud.hbs) avec Move Buttons, Themes, Loadout, Story Tags, Statuses, Crew, Right Panel
+  - HUD Dangers (npc-hud.hbs) avec Spectrums/Limits, Tags/Statuses, Collective Size, Threats/Consequences
+  - États interactifs: Burn (3 états), Inversion (weakness), Selection, Status Polarity
+- Fonctionnalités clés:
+  - Drag & Drop (tags/statuses sur tokens, moves vers hotbar)
+  - Quick Roll avec sélection tags/statuses
+  - Burning Tags (workflow complet)
+  - Help & Hurt avec activation checkbox (CoM)
+  - NPC Influence Viewer
+  - Milestones système (LITM)
+- Interactions API Foundry VTT (lecture, modification, flags, hooks)
+- Recommandations complètes pour Brumisater:
+  - Schéma Prisma étendu (Character, Theme, Tag, Status, Improvement avec enums et relations)
+  - API route `/api/characters/[id]/select-tags.post.ts` pour persistance sélection
+  - Composable `useTagSelection()` avec gestion complète (toggle, burn, inversion, calcul modificateurs)
+  - Composants Vue: `ThemeCardInteractive.vue`, `StatusList.vue`, `DangerCard.vue`
+  - Tests E2E Playwright pour sélection tags, burn state, inversion, polarité statuses
+
+Données analysées:
+- Templates Handlebars (30 KB total)
+- Scripts JavaScript (175+ KB total)
+- 800+ lignes de getter functions
+- Actor-Item model complet avec flags et relations
+
+Patterns identifiés:
+- État de sélection éphémère (Map<id, tag>)
+- Calcul modificateurs (+1 power, -1/+1 weakness, ±tier statuses)
+- Burn workflow (unburned → toBurn → burned)
+- Polarité cyclique pour statuses (neutral → positive → negative)
+- Groupement par themebook pour improvements
+- Essence dynamique calculée (Otherscape)
+
 ## Synthèse des Patterns Identifiés
 
 ### Pattern 1: Modèle Actor-Item (FoundryVTT)

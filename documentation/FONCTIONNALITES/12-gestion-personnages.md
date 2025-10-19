@@ -1,14 +1,14 @@
-# Gestion des Personnages LITM
+# Gestion des Personnages
 
 ## Vue d'Ensemble
-CRUD complet des personnages Legends in the Mist avec informations de base, isolation par playspace, et relations aux Theme Cards, Hero Card et Trackers. Chaque personnage appartient à un seul playspace.
+CRUD complet des personnages avec informations de base, isolation par playspace, et relations aux Theme Cards, Hero Card et Trackers. Chaque personnage appartient à un seul playspace et herite du systeme/hack/univers defini dans ce playspace (ex: Mist Engine > LITM > Chicago Noir).
 
 ## User Stories
 
-### US-120 : Créer un nouveau personnage LITM
+### US-120 : Créer un nouveau personnage
 **En tant que** Léa
-**Je veux** créer un personnage LITM avec nom, description et avatar
-**Afin de** commencer à jouer avec un nouveau héros
+**Je veux** créer un personnage avec nom, description et avatar
+**Afin de** commencer à jouer avec un nouveau héros dans mon playspace actif
 
 **Contexte** : Léa vient de créer son playspace "Workspace Aria" et veut créer son premier personnage.
 
@@ -18,7 +18,7 @@ CRUD complet des personnages Legends in the Mist avec informations de base, isol
 - [ ] Avatar par défaut si non fourni (placeholder image)
 - [ ] Personnage créé dans le playspace actif uniquement
 - [ ] Redirection automatique vers page d'édition du personnage après création
-- [ ] Création de 2 Theme Cards vides par défaut (minimum LITM)
+- [ ] Création de 2 Theme Cards vides par défaut (minimum requis pour Mist Engine)
 
 **Exemples** :
 ```
