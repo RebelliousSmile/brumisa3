@@ -57,13 +57,9 @@ defineEmits<{
 
 const getSystemClasses = (system: string) => {
   const systemClasses = {
-    'Monsterhearts': 'bg-pink-500/20 text-pink-400 border-pink-500',
-    'Engrenages': 'bg-emerald-500/20 text-emerald-400 border-emerald-500',
-    'Metro 2033': 'bg-red-500/20 text-red-400 border-red-500',
-    'Mist Engine': 'bg-purple-500/20 text-purple-400 border-purple-500',
-    'Zombiology': 'bg-orange-500/20 text-orange-400 border-orange-500'
+    'Mist Engine': 'bg-purple-500/20 text-purple-400 border-purple-500'
   }
-  
+
   return systemClasses[system as keyof typeof systemClasses] || 'bg-gray-700 text-gray-300 border-gray-600'
 }
 

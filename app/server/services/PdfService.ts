@@ -387,25 +387,9 @@ export class PdfService {
    */
   private getCouleursPourSysteme(systeme: string) {
     const couleursSystmes: Record<string, any> = {
-      monsterhearts: {
-        primary: '#ec4899', // pink-500
-        secondary: '#be185d' // pink-700
-      },
-      engrenages: {
-        primary: '#f59e0b', // amber-500
-        secondary: '#d97706' // amber-600
-      },
-      metro2033: {
-        primary: '#10b981', // emerald-500
-        secondary: '#059669' // emerald-600
-      },
       mistengine: {
         primary: '#8b5cf6', // violet-500
         secondary: '#7c3aed' // violet-600
-      },
-      zombiology: {
-        primary: '#ef4444', // red-500
-        secondary: '#dc2626' // red-600
       }
     }
 
@@ -420,11 +404,7 @@ export class PdfService {
    */
   private getSystemeNomComplet(systeme: string): string {
     const noms: Record<string, string> = {
-      monsterhearts: 'Monsterhearts',
-      engrenages: 'Engrenages & Sortilèges',
-      metro2033: 'Metro 2033',
-      mistengine: 'Mist Engine',
-      zombiology: 'Zombiology'
+      mistengine: 'Mist Engine'
     }
     return noms[systeme] || systeme
   }

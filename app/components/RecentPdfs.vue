@@ -46,28 +46,28 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Example PDFs for fallback
+// Example PDFs for fallback (Mist Engine only)
 const examplePdfs = [
   {
     id: 'example-1',
-    personnageNom: 'Véra Blackthorne',
-    systemeJeu: 'Monsterhearts',
+    personnageNom: 'Elena Voss',
+    systemeJeu: 'Mist Engine',
     auteurNom: 'Alex M.',
     dateCreation: '2024-01-15',
     nombreTelechargements: 23
   },
   {
     id: 'example-2',
-    personnageNom: 'Capitaine Hartwell',
-    systemeJeu: 'Engrenages',
+    personnageNom: 'Marcus Kane',
+    systemeJeu: 'Mist Engine',
     auteurNom: 'Marie L.',
     dateCreation: '2024-01-12',
     nombreTelechargements: 31
   },
   {
     id: 'example-3',
-    personnageNom: 'Dmitri Volkov',
-    systemeJeu: 'Metro 2033',
+    personnageNom: 'Akira Tanaka',
+    systemeJeu: 'Mist Engine',
     auteurNom: 'Pierre K.',
     dateCreation: '2024-01-10',
     nombreTelechargements: 18

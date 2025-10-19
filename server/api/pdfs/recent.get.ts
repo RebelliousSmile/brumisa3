@@ -66,12 +66,8 @@ export default defineEventHandler(async (event) => {
 
 function formatSystemName(systemId: string): string {
   const systemNames: Record<string, string> = {
-    monsterhearts: 'Monsterhearts',
-    engrenages: 'Engrenages',
-    metro2033: 'Metro 2033',
-    mistengine: 'Mist Engine',
-    zombiology: 'Zombiology'
+    mistengine: 'Mist Engine'
   }
-  
+
   return systemNames[systemId] || systemId
 }

@@ -120,39 +120,6 @@ export const useSystemes = () => {
    */
   const getCouleursPourSysteme = (systemeId: string) => {
     const couleursSystmes: Record<string, { primary: string; secondary: string; classes: any }> = {
-      monsterhearts: {
-        primary: '#ec4899', // pink-500
-        secondary: '#be185d', // pink-700
-        classes: {
-          bg: 'bg-pink-500/20',
-          border: 'border-pink-500/30',
-          text: 'text-pink-400',
-          badgeBg: 'bg-pink-500/20',
-          badgeBorder: 'border-pink-500/30'
-        }
-      },
-      engrenages: {
-        primary: '#f59e0b', // amber-500
-        secondary: '#d97706', // amber-600
-        classes: {
-          bg: 'bg-amber-500/20',
-          border: 'border-amber-500/30',
-          text: 'text-amber-400',
-          badgeBg: 'bg-amber-500/20',
-          badgeBorder: 'border-amber-500/30'
-        }
-      },
-      metro2033: {
-        primary: '#10b981', // emerald-500
-        secondary: '#059669', // emerald-600
-        classes: {
-          bg: 'bg-emerald-500/20',
-          border: 'border-emerald-500/30',
-          text: 'text-emerald-400',
-          badgeBg: 'bg-emerald-500/20',
-          badgeBorder: 'border-emerald-500/30'
-        }
-      },
       mistengine: {
         primary: '#8b5cf6', // violet-500
         secondary: '#7c3aed', // violet-600
@@ -162,17 +129,6 @@ export const useSystemes = () => {
           text: 'text-violet-400',
           badgeBg: 'bg-violet-500/20',
           badgeBorder: 'border-violet-500/30'
-        }
-      },
-      zombiology: {
-        primary: '#ef4444', // red-500
-        secondary: '#dc2626', // red-600
-        classes: {
-          bg: 'bg-red-500/20',
-          border: 'border-red-500/30',
-          text: 'text-red-400',
-          badgeBg: 'bg-red-500/20',
-          badgeBorder: 'border-red-500/30'
         }
       }
     }
@@ -195,11 +151,7 @@ export const useSystemes = () => {
    */
   const getIconPourSysteme = (systemeId: string): string => {
     const icons: Record<string, string> = {
-      monsterhearts: 'ra:ra-heart',
-      engrenages: 'ra:ra-gear',
-      metro2033: 'ra:ra-tunnel',
-      mistengine: 'ra:ra-fog',
-      zombiology: 'ra:ra-skull'
+      mistengine: 'ra:ra-fog'
     }
     return icons[systemeId] || 'ra:ra-dice'
   }
@@ -209,11 +161,7 @@ export const useSystemes = () => {
    */
   const getNomCompletSysteme = (systemeId: string): string => {
     const noms: Record<string, string> = {
-      monsterhearts: 'Monsterhearts',
-      engrenages: 'Engrenages & Sortilèges',
-      metro2033: 'Metro 2033',
-      mistengine: 'Mist Engine',
-      zombiology: 'Zombiology'
+      mistengine: 'Mist Engine'
     }
     return noms[systemeId] || systemeId
   }
@@ -222,7 +170,7 @@ export const useSystemes = () => {
    * Vérifie si un système est supporté
    */
   const estSystemeSupporte = (systemeId: string): boolean => {
-    return ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'].includes(systemeId)
+    return ['mistengine'].includes(systemeId)
   }
 
   /**

@@ -83,54 +83,6 @@ export default defineEventHandler(async (event) => {
 
 function getStaticSystemData() {
   return {
-    pbta: {
-      id: 'pbta',
-      nomComplet: 'PBTA (Powered by the Apocalypse)',
-      description: 'Système narratif basé sur les mouvements et les conséquences.',
-      actif: true,
-      univers: [
-        {
-          id: 'monsterhearts',
-          nomComplet: 'Monsterhearts',
-          description: 'Jeu de rôle sur les adolescents monstres et leurs relations complexes.',
-          actif: true
-        }
-      ]
-    },
-    engrenages: {
-      id: 'engrenages',
-      nomComplet: 'Engrenages & Sortilèges',
-      description: 'Système de jeu steampunk-fantasy mêlant magie et technologie.',
-      actif: true,
-      univers: [
-        {
-          id: 'roue_du_temps',
-          nomComplet: 'La Roue du Temps',
-          description: 'Adaptation du célèbre univers de fantasy de Robert Jordan.',
-          actif: true
-        },
-        {
-          id: 'ecryme',
-          nomComplet: 'Ecryme',
-          description: 'Univers steampunk original avec magie et technologie.',
-          actif: true
-        }
-      ]
-    },
-    myz: {
-      id: 'myz',
-      nomComplet: 'Mutant Year Zero Engine',
-      description: 'Système post-apocalyptique axé sur la survie et la reconstruction.',
-      actif: true,
-      univers: [
-        {
-          id: 'metro2033',
-          nomComplet: 'Metro 2033',
-          description: 'Survie dans les tunnels du métro moscovite post-apocalyptique.',
-          actif: true
-        }
-      ]
-    },
     mistengine: {
       id: 'mistengine',
       nomComplet: 'Mist Engine',
@@ -138,21 +90,15 @@ function getStaticSystemData() {
       actif: true,
       univers: [
         {
+          id: 'city-of-mist',
+          nomComplet: 'City of Mist',
+          description: 'Enquêtes urbaines dans une cité embrumée où légendes et réalité se mêlent.',
+          actif: true
+        },
+        {
           id: 'obojima',
           nomComplet: 'Obojima',
-          description: 'Île mystérieuse aux secrets ancestraux.',
-          actif: true
-        },
-        {
-          id: 'zamanora',
-          nomComplet: 'Zamanora',
-          description: 'Monde de magie et de mystères.',
-          actif: true
-        },
-        {
-          id: 'post_mortem',
-          nomComplet: 'Post-Mortem',
-          description: 'Enquêtes surnaturelles dans l\'au-delà.',
+          description: 'Île mystérieuse aux secrets ancestraux (Legends in the Mist).',
           actif: true
         },
         {
@@ -160,19 +106,17 @@ function getStaticSystemData() {
           nomComplet: 'Tokyo: Otherscape',
           description: 'Tokyo moderne avec des éléments surnaturels.',
           actif: true
-        }
-      ]
-    },
-    zombiology: {
-      id: 'zombiology',
-      nomComplet: 'Zombiology d100 System',
-      description: 'Système d100 dédié à la survie zombie et post-apocalyptique.',
-      actif: true,
-      univers: [
+        },
         {
-          id: 'zombiology',
-          nomComplet: 'Zombiology',
-          description: 'Survie dans un monde envahi par les zombies.',
+          id: 'post_mortem',
+          nomComplet: 'Post-Mortem',
+          description: 'Enquêtes surnaturelles dans l\'au-delà (City of Mist hack).',
+          actif: true
+        },
+        {
+          id: 'zamanora',
+          nomComplet: 'Zamanora',
+          description: 'Monde de magie et de mystères (Legends in the Mist).',
           actif: true
         }
       ]

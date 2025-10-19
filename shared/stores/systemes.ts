@@ -25,7 +25,7 @@ export const useSystemesStore = defineStore('systemes', {
     
     systemesSupportes: () => {
       const { estSystemeSupporte } = useSystemes()
-      return ['monsterhearts', 'engrenages', 'metro2033', 'mistengine', 'zombiology'].filter(estSystemeSupporte)
+      return ['mistengine'].filter(estSystemeSupporte)
     },
 
     systemeParId: (state) => (id: string) => 
