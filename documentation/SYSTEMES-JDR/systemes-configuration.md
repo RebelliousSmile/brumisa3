@@ -2,444 +2,343 @@
 
 ## Vue d'ensemble
 
-Les systèmes de jeu supportés par brumisater suivent une architecture de données unifiée qui permet de créer des fiches de personnages immersives pour chaque univers de jeu. Chaque système définit ses propres types de données, règles de présentation et style visuel.
+Les systèmes de jeu supportés par Brumisater suivent une architecture de données unifiée qui permet de créer des fiches de personnages immersives pour chaque univers de jeu. Chaque système définit ses propres types de données, règles de présentation et style visuel.
+
+**Systèmes supportés** : Mist Engine uniquement (avec ses variantes et univers)
 
 ## Architecture des Données
 
 ### Types de données universels
 
-Les personnages sont définis par quatre types de données :
+Les personnages et documents sont définis par plusieurs types de données :
 
-- **Traits** : Hiérarchiques avec valeurs chiffrées ou non, catégories spécifiques au système, règles liées
-- **Réserves** : Valeur minimum, maximum et courante (jauges)
-- **Descriptions** : Paragraphes avec markdown, catégories système
-- **Images** : Chemin, nom, ordre et légende
+- **Informations de base** : Nom, concept, description
+- **Caractéristiques** : Attributs, compétences, talents
+- **Réserves** : Jauges (santé, stress, momentum, etc.) avec valeur min, max et courante
+- **Équipement & Ressources** : Objets, argent, véhicules
+- **Relations** : Liens avec d'autres personnages ou organisations
+- **Métadonnées** : Système, univers, version, auteur
 
-### Structure des fichiers de configuration
+### Structure actuelle (Nuxt 4 + Prisma)
 
 ```
-src/config/dataTypes/
-├── index.js           # Export centralisé et fonctions utilitaires
-├── monsterhearts.js   # Configuration Monsterhearts
-├── engrenages.js      # Configuration Engrenages (Roue du Temps)
-├── metro2033.js       # Configuration Metro 2033
-├── mistengine.js      # Configuration Mist Engine
-└── zombiology.js      # Configuration Zombiology
-```
-
-### Structure type d'un fichier de configuration
-
-```javascript
-const [system]DataTypes = {
-  traits: {        // Caractéristiques avec valeurs
-    attributs: {},
-    competences: {},
-    // ...
-  },
-  reserves: {      // Jauges avec min/max/courante
-    sante: {},
-    stress: {},
-    // ...
-  },
-  descriptions: {  // Éléments textuels
-    identite: {},
-    equipement: {},
-    // ...
-  },
-  images: {        // Types d'images supportées
-    portrait: {},
-    // ...
-  },
-  categories: {    // Organisation hiérarchique
-    // ...
-  }
-};
+Project Root/
+├── prisma/
+│   └── schema.prisma          # Modèles de données (SystemeJeu, UniversJeu, Document, Oracle)
+├── server/
+│   └── api/
+│       ├── systems/           # API des systèmes
+│       └── pdf/               # Génération PDF
+├── app/
+│   ├── composables/
+│   │   └── useSystemes.ts     # Logique métier systèmes
+│   └── server/services/
+│       └── PdfService.ts      # Génération PDF avec PDFKit
+└── shared/
+    └── stores/
+        └── systemes.ts        # State management Pinia
 ```
 
 ## Systèmes JDR Supportés
 
-### 🩸 Monsterhearts (Powered by the Apocalypse)
+### 🌫️ Mist Engine
 
 #### Vue d'ensemble
-Jeu de rôle gothique romantique sur les monstres adolescents naviguant entre amour, pouvoir et identité (2e édition).
+
+Le **Mist Engine** est un moteur de jeu narratif créé par Son of Oak Game Studio. Il sert de base à plusieurs univers de jeu, dont **City of Mist**, **Tokyo: Otherscape**, et **Legends in the Mist**.
+
+**Philosophie** : Jeu narratif où la fiction prime sur les mécaniques, avec un accent sur les mystères, les légendes et l'atmosphère.
+
+#### Univers supportés
+
+1. **City of Mist** (2017)
+   - Jeu d'investigation urbain où légendes et réalité se mêlent
+   - Les personnages sont des Rifts : des humains possédés par des archétypes mythologiques
+   - Thèmes : Identité duale, mystères urbains, enquêtes surnaturelles
+
+2. **Tokyo: Otherscape** (2020)
+   - Variante de City of Mist dans le Tokyo moderne
+   - Fusion de légendes japonaises et de la culture urbaine contemporaine
+   - Thèmes : Tradition vs modernité, yokai urbains, cyber-mysticisme
+
+3. **Post-Mortem** (City of Mist hack)
+   - Enquêtes surnaturelles dans l'au-delà
+   - Les personnages sont morts et enquêtent sur des mystères de l'après-vie
+   - Thèmes : Mort, justice posthume, mystères de l'au-delà
+
+4. **Legends in the Mist** (2024)
+   - Évolution fantasy du Mist Engine
+   - Exploration d'îles mystérieuses et de mondes fantastiques
+   - Univers disponibles : **Obojima** (île mystérieuse) et **Zamanora** (monde de magie)
 
 #### Configuration des données
-- **Traits** : 4 attributs principaux avec valeurs de -1 à +3
-  - Hot : Charisme et séduction
-  - Cold : Froideur et contrôle
-  - Volatile : Impulsivité et violence
-  - Dark : Mystère et manipulation
-- **Réserves** : 
-  - Harm (0-4) : Niveaux de blessure (Faint, Injured, Wounded, Dying)
-  - Experience (0-5) : Points d'expérience gagnés sur échecs et conditions
-  - Strings (0-4) : Liens émotionnels entre personnages
-  - Darkness : Points de corruption menant à une transformation finale
-- **Descriptions** :
-  - Skins : 10 archétypes (Vampire, Loup-Garou, Fée, Fantôme, Goule, Hollow, Infernal, Mortel, Reine, Sorcière)
-  - Moves basiques : 6 actions principales liées aux attributs
-  - Sex Move : Varie selon la Skin sélectionnée
-  - Conditions : 5 états émotionnels (Apeuré, Furieux, Honteux, Brisé, Perdu)
+
+Les personnages Mist Engine utilisent une structure commune avec des variations selon l'univers :
+
+- **Themes** (Thèmes) : 4 cartes maximum
+  - Power Tags : Capacités liées au thème légendaire
+  - Weakness Tags : Vulnérabilités narratives
+  - Mystery (City of Mist) ou Quest (Legends in the Mist)
+
+- **Statuses** : États temporaires (positifs ou négatifs)
+  - Tiers 1-6 : Intensité de l'état
+  - Burn pour retirer un status
+
+- **Spectrum** (City of Mist / Otherscape) :
+  - Mythos ↔ Logos : Équilibre entre nature légendaire et identité humaine
+  - Narrative pacing : Risque de Crack (perte de contrôle) ou Fade (perte de pouvoir)
+
+- **Build-Up** : Compteurs narratifs
+  - Attention : Visibilité par les autorités
+  - Fade : Risque de perdre ses pouvoirs
+  - Crack : Risque de perdre son humanité
+
+- **Moves** : Actions narratives du système
+  - Investigate, Convince, Change the Game, Face Danger, etc.
+  - Jets : 2d6 + Power Tags pertinents
 
 #### Mécaniques de jeu
-- **Système** : 2d6 + Attribut
-- **Concepts clés** : 
-  - Skins (archétypes de monstres)
-  - Moves (actions spéciales liées aux attributs)
-  - Conditions (états émotionnels affectant le roleplay)
-  - Strings (influence sur les autres personnages)
-  - Harm (blessures physiques et émotionnelles)
 
-#### Configuration de présentation
-```javascript
-const monsterhearts = {
-    system: 'purple-600',      // #8b5cf6
-    accent: 'pink-600',        // #ec4899
-    heroGradient: 'from-purple-900 via-purple-800 to-pink-900',
-    ctaGradient: 'from-gray-900 via-purple-900 to-purple-600',
-    image: '/images/monsterhearts-character.png',
-    imageFilter: 'gothic-character-filter',
-    titre: 'EXPLOREZ VOS DÉSIRS',
-    sousTitre: 'DANS LES TÉNÈBRES',
-    description: 'Des histoires de romance sombre et de pouvoir surnaturel dans un lycée hanté.'
-}
-```
+- **Système** : 2d6 + bonus (Power Tags pertinents)
+- **Résolution** :
+  - 10+ : Succès complet
+  - 7-9 : Succès avec complication
+  - 6- : Échec (le MC fait un Move)
 
-#### Style visuel PDF
-- **Thème** : Gothique romantique
-- **Couleurs** : Rouges profonds, noirs, dorés
-- **Éléments** : Cœurs, roses, dentelle
-- **Typographie** : Serif élégante
-
----
-
-### ⚙️ Roue du Temps (Engrenages)
-
-#### Vue d'ensemble
-Adaptation de l'univers de la Roue du Temps avec le système Engrenages (3ème édition).
-
-#### Configuration des données
-- **Traits** : 3 attributs principaux avec valeurs de 1 à 5
-  - Corps : Puissance physique et santé
-  - Esprit : Intelligence et logique
-  - Âme : Intuition et force spirituelle
-- **Réserves** :
-  - Santé (0-15) : 4 niveaux (Égratignure, Blessure Légère, Grave, Critique)
-  - Équilibre Mental (0-15) : Santé mentale face à l'horreur et au surnaturel
-  - Corruption : Conséquences de l'usage de magie noire (mutations, folie)
-- **Descriptions** :
-  - Spécialisations Science : 9 domaines (Alchimie, Anatomie, Ingénierie, etc.)
-  - Spécialisations Magie : 8 écoles (Divination, Évocation, Illusion, etc.)
-  - Spécialisations Générales : 8 compétences (Combat, Discrétion, Survie, etc.)
-  - Inventions : Processus en 3 étapes (Conception, Fabrication, Test)
-
-#### Mécaniques de jeu
-- **Système** : Pool de d10
 - **Concepts clés** :
-  - Spécialisations Magie/Science/Générales
-  - Santé physique et Équilibre Mental
-  - Expérience : Gagnée sur succès critique, échec dramatique et roleplay
-  - Corruption magique
-  - Création d'inventions steampunk
+  - **Tags** : Descripteurs narratifs qui donnent des bonus
+  - **Themes** : 4 cartes qui définissent le personnage (2 Mythos, 2 Logos en City of Mist)
+  - **Spectrum** : Équilibre entre nature légendaire et identité humaine
+  - **Statuses** : États temporaires avec tiers d'intensité
+  - **Moves** : Actions possibles dans le jeu
 
-#### Configuration de présentation
-```javascript
-const engrenages = {
-    system: 'emerald-600',     // #10b981
-    accent: 'green-600',       // #16a34a
-    heroGradient: 'from-emerald-900 via-emerald-800 to-green-900',
-    ctaGradient: 'from-gray-900 via-emerald-900 to-emerald-600',
-    image: '/images/engrenages-character.png',
-    imageFilter: 'fantasy-character-filter',
-    titre: 'LA ROUE TISSE',
-    sousTitre: 'VOTRE DESTIN',
-    description: 'Aventures épiques dans l\'univers de la Roue du Temps avec magie et politique.'
+#### Configuration de présentation (Code)
+
+```typescript
+// app/composables/useSystemes.ts
+const getCouleursPourSysteme = (systemeId: string) => {
+  const couleursSystmes = {
+    mistengine: {
+      primary: '#8b5cf6',      // violet-500
+      secondary: '#7c3aed',     // violet-600
+      classes: {
+        bg: 'bg-violet-500/20',
+        border: 'border-violet-500/30',
+        text: 'text-violet-400',
+        badgeBg: 'bg-violet-500/20',
+        badgeBorder: 'border-violet-500/30'
+      }
+    }
+  }
+  return couleursSystmes[systemeId] || defaultColors
 }
 ```
 
 #### Style visuel PDF
-- **Thème** : Steampunk victorien
-- **Couleurs** : Cuivres, bronzes, sépias
-- **Éléments** : Engrenages, vapeur, machinerie
-- **Typographie** : Sans-serif industrielle
 
----
-
-### ☢️ Metro 2033
-
-#### Vue d'ensemble
-JDR post-apocalyptique basé sur l'univers de Dmitry Glukhovsky, dans les tunnels du métro de Moscou après une guerre nucléaire (Official RPG).
-
-#### Configuration des données
-- **Traits** : 4 attributs principaux avec valeurs de 3 à 18
-  - Might : Force physique et constitution
-  - Agility : Dextérité et réflexes
-  - Wits : Intelligence et perception
-  - Empathy : Charisme et intuition sociale
-- **Réserves** :
-  - Radiation : Niveau d'exposition (maladie, mutation, mort)
-  - Moralité : Santé mentale et karma (impacte les choix narratifs)
-  - Munitions : Monnaie d'échange du métro
-  - Filtres : Durée limitée pour les masques à gaz
-- **Descriptions** :
-  - Factions : 10 groupes (Hansa, Red Line, Fourth Reich, Polis, Rangers, etc.)
-  - Compétences : 12 skills (Athletics, Firearms, Stealth, Survival, etc.)
-  - Mutants : 5 types principaux (Nosalis, Demons, Watchers, Lurkers)
-  - Équipement : Sujet à dégradation, réparable avec Crafting
-
-#### Mécaniques de jeu
-- **Système** : d20 + Attribut
-- **Concepts clés** :
-  - Factions du métro et alliances
-  - Radiation et mutations
-  - Moralité et karma (fins multiples)
-  - Équipement dégradable
-  - Survie en environnement hostile
-
-#### Configuration de présentation
-```javascript
-const metro2033 = {
-    system: 'red-600',         // #dc2626
-    accent: 'orange-600',      // #ea580c
-    heroGradient: 'from-gray-900 via-red-900 to-red-600',
-    ctaGradient: 'from-gray-900 via-red-900 to-red-600',
-    image: '/images/metro-character.png',
-    imageFilter: 'post-apo-character-filter',
-    titre: 'SURVIVEZ DANS',
-    sousTitre: 'LES TUNNELS',
-    description: 'Exploration des métros post-apocalyptiques de Moscou avec horreur et survie.'
-}
-```
-
-#### Style visuel PDF
-- **Thème** : Post-apocalyptique sombre
-- **Couleurs** : Gris, verts radioactifs, rouilles
-- **Éléments** : Masques à gaz, radiation, tunnels
-- **Typographie** : Monospace militaire
-
----
-
-### 🌫️ Mist Engine (Legend in the Mist / Tokyo:Otherscape)
-
-#### Vue d'ensemble
-Moteur de jeu narratif et mystique pour des histoires atmosphériques où le brouillard cache des mystères surnaturels (Core System).
-
-#### Configuration des données
-- **Traits** : 5 attributs principaux avec valeurs de 1 à 4
-  - Edge : Violence et détermination
-  - Heart : Empathie et passion
-  - Iron : Courage et constitution
-  - Shadow : Ruse et mystère
-  - Wits : Intellect et perception
-- **Réserves** :
-  - Momentum (-6 à +10) : Élan narratif utilisé comme bonus aux jets
-  - Health/Spirit : Points de vie physique et mentale
-- **Descriptions** :
-  - Moves : 4 catégories (Adventure, Relationship, Combat, Suffer)
-  - Assets : 4 types max 3 (Companion, Path, Combat Talent, Ritual)
-  - Debilities : Conditions temporaires et permanentes
-  - Vows : 5 rangs de serments (Troublesome à Epic)
-  - Oracles : Tables narratives (Action, Theme, Location, Character)
-
-#### Mécaniques de jeu
-- **Système** : Narratif avec dés d6
-- **Concepts clés** :
-  - Assets (avantages temporaires limités à 3)
-  - Debilities (handicaps temporaires ou permanents)
-  - Momentum (élan narratif de -6 à +10)
-  - Vows (serments narratifs donnant de l'XP)
-  - Oracles (inspiration narrative aléatoire)
-
-#### Configuration de présentation
-```javascript
-const mistengine = {
-    system: 'pink-500',        // #ec4899
-    accent: 'purple-500',      // #8b5cf6
-    heroGradient: 'from-pink-900 via-pink-800 to-purple-900',
-    ctaGradient: 'from-gray-900 via-pink-900 to-pink-500',
-    image: '/images/mist-character.png',
-    imageFilter: 'mystical-character-filter',
-    titre: 'NAVIGUEZ DANS',
-    sousTitre: 'LA BRUME',
-    description: 'Histoires oniriques et poétiques où la narration prime sur les mécaniques.'
-}
-```
-
-#### Style visuel PDF
-- **Thème** : Mystique atmosphérique
-- **Couleurs** : Bleus profonds, blancs voilés, violets
-- **Éléments** : Brouillard, lanternes, symboles ésotériques
-- **Typographie** : Serif mystérieuse
-
----
-
-### ☣️ Zombiology (d100)
-
-#### Vue d'ensemble
-JDR de survie zombie avec système d100, où les joueurs incarnent des survivants dans un monde post-apocalyptique face à une épidémie zombie (2e édition).
-
-#### Configuration des données
-- **Traits** : 8 caractéristiques principales (10-80)
-  - Physiques : Force, Constitution, Dextérité, Rapidité
-  - Mentales : Logique, Volonté, Perception, Charisme
-  - Traits de caractère : 18 types avec 3 localisations émotionnelles chacun
-- **Réserves** :
-  - Santé Physique : Base + PP (4-8 points supplémentaires)
-  - Santé Mentale : Base + PM (4-8 points + 2 par trait de caractère)
-  - Stress : Adrénaline et Panique (usage limité par scène)
-  - Infection : Progression en 4 étapes jusqu'à réanimation
-- **Descriptions** :
-  - Compétences : 3 formations (Sociale, Professionnelle, Loisirs)
-  - Catégories : 10 types (Combat, Survie, Bricolage, etc.)
-  - Localisations physiques : 4 zones (Tête, Torse, Bras, Jambes)
-  - Localisations mentales : 6 émotions (Anxiété, Colère, Culpabilité, etc.)
-
-#### Mécaniques de jeu
-- **Système** : d100 sous compétence% + caractéristique%
-- **Concepts clés** :
-  - Succès critiques sur doubles (11, 22, 33...)
-  - Qualité de réussite selon dizaine (0-9)
-  - 4 phases de jeu (Aventure, Rôle, Combat, Gestion)
-  - Santé localisée (physique et mentale)
-  - Stress comme bonus/malus temporaire
-  - Infection virale avec test CON% vs Virus%
-
-#### Configuration de présentation
-```javascript
-const zombiology = {
-    system: 'yellow-600',      // #d4af37 (or)
-    accent: 'red-600',         // #dc2626
-    heroGradient: 'from-gray-900 via-yellow-900 to-red-900',
-    ctaGradient: 'from-gray-900 via-yellow-900 to-yellow-600',
-    image: '/images/zombie-character.png',
-    imageFilter: 'horror-character-filter',
-    titre: 'SURVIVEZ À',
-    sousTitre: 'L\'APOCALYPSE',
-    description: 'Combat pour la survie dans un monde ravagé par l\'infection zombie.'
-}
-```
-
-#### Style visuel PDF
-- **Thème** : Survival horror biologique
-- **Couleurs** : Rouges profonds, verts toxiques, noirs
-- **Éléments** : Biohazard, zombies, barricades, virus
-- **Typographie** : Sans-serif technique/militaire
+- **Thème** : Mystique atmosphérique, urbain ou fantasy selon l'univers
+- **Couleurs** :
+  - City of Mist : Violets profonds, gris urbains
+  - Legends in the Mist : Teintes fantastiques, brumes colorées
+- **Éléments** : Brouillard, symboles ésotériques, motifs géométriques
+- **Typographie** : Sans-serif moderne pour City of Mist, serif mystérieuse pour Legends
 
 ---
 
 ## Utilisation dans le Code
 
 ### API de base
-```javascript
-const { getDataTypesForSystem } = require('./src/config/dataTypes');
 
-// Obtenir la configuration d'un système
-const mhData = getDataTypesForSystem('monsterhearts');
+```typescript
+// Récupérer tous les systèmes disponibles
+const systemes = await $fetch('/api/systems')
 
-// Valider des données de personnage
-const { validateCharacterData } = require('./src/config/dataTypes');
-const validation = validateCharacterData('zombiology', characterData);
+// Récupérer un système spécifique avec ses univers
+const mistEngine = await $fetch('/api/systems/mistengine')
+
+// Utiliser le composable
+const {
+  chargerSystemes,
+  obtenirSysteme,
+  getCouleursPourSysteme
+} = useSystemes()
+
+await chargerSystemes()
+const couleurs = getCouleursPourSysteme('mistengine')
 ```
 
 ### Exemples d'utilisation
 
-#### Créer un personnage Monsterhearts
-```javascript
-const { monsterheartsDataTypes } = require('./src/config/dataTypes');
+#### Créer un personnage City of Mist
 
+```typescript
 const personnage = {
-  traits: {
-    // Attributs
-    hot: 2,
-    cold: -1,
-    volatile: 1,
-    dark: 0,
-    // Conditions
-    afraid: false,
-    angry: true
-  },
-  reserves: {
-    harm: { current: 1, max: 4 },
-    experience: { current: 3, max: 5 },
-    strings: {
-      'Sarah': 2,
-      'Marcus': 1
+  nom: 'Elena Voss',
+  concept: 'Détective hanté par le mythe de Sherlock Holmes',
+  themes: [
+    {
+      type: 'mythos',
+      title: 'Détective Légendaire',
+      mystery: 'Qui était Sherlock Holmes réellement ?',
+      powerTags: ['Déduction Infaillible', 'Réseau d\'Informateurs', 'Maître du Déguisement'],
+      weaknessTags: ['Obsédé par l\'Énigme', 'Distant Émotionnellement']
+    },
+    {
+      type: 'logos',
+      title: 'Ancienne Profileuse du FBI',
+      identity: 'Agent fédéral en congé sabbatique',
+      powerTags: ['Formation FBI', 'Arme de Service', 'Contacts Officiels'],
+      weaknessTags: ['Paperasse Bureaucratique', 'PTSD des Cas Passés']
     }
+  ],
+  spectrum: {
+    mythos: 2,
+    logos: 2
   },
-  descriptions: {
-    skin: 'vampire',
-    nom: 'Lilith',
-    look: 'Peau pâle, yeux rouges, style gothique'
+  buildUp: {
+    attention: 0,
+    fade: 0,
+    crack: 0
   }
-};
+}
 ```
 
-#### Calculer la santé en Zombiology
-```javascript
-const { zombiologyDataTypes } = require('./src/config/dataTypes');
+#### Générer un PDF
 
-function calculerSantePhysique(caracteristiques) {
-  let pp = 4; // Base
-  // +1 par caractéristique physique >= 40%
-  ['for', 'con', 'dex', 'rap'].forEach(carac => {
-    if (caracteristiques[carac] >= 40) pp++;
-  });
-  
-  return {
-    tete: 6 + pp,
-    torse: 10 + pp,
-    bras: 8 + pp,
-    jambes: 8 + pp
-  };
-}
+```typescript
+// Appel API pour générer le PDF
+const result = await $fetch('/api/pdf/generate', {
+  method: 'POST',
+  body: {
+    type: 'CHARACTER',
+    systeme: 'mistengine',
+    univers: 'city-of-mist',
+    donnees: personnage
+  }
+})
+
+// Télécharger le PDF
+window.location.href = result.downloadUrl
 ```
 
 ### Validation et règles de calcul
 
 Les types de données supportent plusieurs mécanismes :
 
-1. **Validation automatique** : Min/max pour les valeurs numériques
-2. **Relations entre traits** : Attributs liés aux compétences
-3. **Calculs dérivés** : Santé basée sur les caractéristiques
-4. **Règles conditionnelles** : Bonus selon les traits de caractère
+1. **Validation automatique** :
+   - Maximum 4 themes par personnage
+   - Spectrum entre 0 et 4 pour chaque côté
+   - Tags formatés correctement
 
-### Étendre un système existant
-```javascript
-// Ajouter un nouveau move custom à Monsterhearts
-const customMove = {
-  code: 'blood-bond',
-  nom: 'Lien de Sang',
-  description: 'Créer un lien vampirique',
-  attributLie: 'dark',
-  categorie: 'move-skin'
-};
+2. **Calculs dérivés** :
+   - Build-Up accumulé selon les actions
+   - Risque de Crack/Fade selon le Spectrum
+
+3. **Règles conditionnelles** :
+   - Bonus aux jets selon les Power Tags pertinents
+   - Malus selon les Weakness Tags invoqués
+
+## Base de Données (Prisma)
+
+### Modèles principaux
+
+```prisma
+model SystemeJeu {
+  id                String   @id
+  nomComplet        String
+  description       String?
+  actif             Boolean  @default(true)
+  couleurPrimaire   String?
+  couleurSecondaire String?
+  pictogramme       String?
+  univers_jeu       UniversJeu[]
+}
+
+model UniversJeu {
+  id                String      @id
+  nomComplet        String
+  description       String?
+  statut            StatutUnivers @default(ACTIF)
+  systemeJeuId      String
+  systeme_jeu       SystemeJeu  @relation(fields: [systemeJeuId])
+  oracles           Oracle[]
+}
+
+model Document {
+  id              Int       @id @default(autoincrement())
+  titre           String
+  type            TypeDocument
+  systemeJeu      String
+  contenu         Json
+  statut          StatutDocument
+  utilisateurId   Int?
+}
 ```
 
-## Extensions Futures Prévues
+### Requêtes courantes
 
-### 🗡️ 7ème Mer (2e édition)
-- **Statut** : En développement
-- **Thème** : Pirates et aventure maritime
-- **Attributs** : Might, Grace, Wits, Resolve, Panache
+```typescript
+// Récupérer tous les systèmes actifs avec leurs univers
+const systemes = await prisma.systemeJeu.findMany({
+  where: { actif: true },
+  include: {
+    univers_jeu: {
+      where: { statut: 'ACTIF' },
+      orderBy: { ordreAffichage: 'asc' }
+    }
+  }
+})
 
-### 🐉 Autres systèmes envisagés
-- **L5R** : Samouraïs et honneur japonais
-- **Vampire la Mascarade** : Horreur gothique moderne
-- **Shadowrun** : Cyberpunk fantastique
-- **FATE** : Système générique narratif
+// Récupérer les oracles d'un univers
+const oracles = await prisma.oracle.findMany({
+  where: {
+    universJeu: 'city-of-mist',
+    actif: true
+  },
+  include: { items: true }
+})
+```
+
+## Extensions Futures
+
+### Intégration complète Legends in the Mist
+
+- **Statut** : En cours
+- **Univers** : Obojima, Zamanora
+- **Fonctionnalités** :
+  - Création de personnage complète
+  - Oracles spécifiques aux univers
+  - Templates PDF thématiques
+  - Gestion des quêtes et progressions
+
+### Autres variantes Mist Engine possibles
+
+- **Streets of Avalon** : Légendes arthuriennes urbaines
+- **Nights of Payne Town** : Horreur lovecraftienne urbaine
+- Univers custom créés par la communauté
 
 ## Contribution
 
-### Ajouter un nouveau système
-1. Créer le fichier de configuration dans `src/config/dataTypes/[system].js`
-2. Définir les 4 types de données (traits, réserves, descriptions, images)
-3. Ajouter l'export dans `src/config/dataTypes/index.js`
-4. Mettre à jour `systemesJeu.js` avec les infos de base
-5. Développer le template PDF thématique
+### Ajouter un nouvel univers Mist Engine
+
+1. Ajouter l'univers dans la base de données via Prisma
+2. Créer les oracles spécifiques dans `prisma/seeds/`
+3. Adapter le template PDF si nécessaire dans `app/server/services/PdfService.ts`
+4. Ajouter la configuration visuelle dans `app/composables/useSystemes.ts`
+5. Créer les pages spécifiques dans `app/pages/systemes/[slug]/[univers].vue`
 6. Tester avec des personnages d'exemple
 
 ### Guidelines design
-- Chaque système doit avoir sa propre identité visuelle
-- Les couleurs doivent refléter l'ambiance du jeu
-- Les templates doivent être optimisés pour l'impression
-- L'ergonomie mobile doit être préservée
-- Les types de données doivent être exhaustifs et bien documentés
+
+- L'identité visuelle doit rester cohérente avec le Mist Engine
+- Les couleurs violettes/mystiques sont la signature visuelle
+- Les templates PDF doivent privilégier la lisibilité
+- L'ergonomie mobile-first est prioritaire
+- La documentation des mécaniques doit être exhaustive
+
+## Références
+
+- [City of Mist Official](https://cityofmist.co/)
+- [Son of Oak Game Studio](https://sonofoakgames.com/)
+- [Legends in the Mist Kickstarter](https://www.kickstarter.com/projects/sonofoakgames/legends-in-the-mist)
+- [Mist Engine SRD](https://sonofoakgames.com/mist-engine-srd)
