@@ -130,7 +130,18 @@
       "Read(/C:\\Users\\fxgui\\Documents\\Projets\\generateur-pdf-jdr\\server\\api/**)",
       "Read(/C:\\Users\\fxgui\\Documents\\Projets\\generateur-pdf-jdr\\server\\api\\systems/**)",
       "Read(/C:\\Users\\fxgui\\Documents\\Projets\\generateur-pdf-jdr\\server\\api\\systems/**)",
-      "Read(/C:\\Users\\fxgui\\Documents\\Projets\\generateur-pdf-jdr\\server\\api/**)"
+      "Read(/C:\\Users\\fxgui\\Documents\\Projets\\generateur-pdf-jdr\\server\\api/**)",
+      "Read(//c/Users/fxgui/AppData/Roaming/Claude/**)",
+      "Read(//c/Users/fxgui/AppData/Roaming/Code/User/**)",
+      "Bash(gh api users/RebelliousSmile/starred --jq '.[0:2] | .[] | {name: .full_name, description: .description, updated: .updated_at}')",
+      "Bash(PGPASSWORD='9rN95%^V4Ph&' psql -h postgresql-jdrspace.alwaysdata.net -p 5432 -U jdrspace_pg -d jdrspace_pdf -c \"SELECT id, nom_complet, actif FROM systemes_jeu ORDER BY id;\")",
+      "Bash(npx prisma db pull --force)",
+      "Bash(tee documentation/MIGRATION/2025-01-19-cleanup-execution-log.txt)",
+      "Bash(npx prisma migrate dev --create-only --name cleanup_non_mist_systems)",
+      "Bash(npx prisma migrate resolve --applied \"cleanup_non_mist_systems\")",
+      "Bash(pnpm tsx scripts/test-litm-models.ts)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:sonofoak.com)"
     ],
     "deny": []
   }
