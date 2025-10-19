@@ -84,12 +84,28 @@ export default defineNuxtConfig({
       {
         code: 'fr',
         name: 'Français',
-        file: 'fr/common.json'
+        files: [
+          'fr/common.json',
+          'fr/litm-characters.json',
+          'fr/litm-cards.json',
+          'fr/litm-trackers.json',
+          'fr/litm-themebooks.json',
+          'fr/litm-ui.json',
+          'fr/litm-errors.json'
+        ]
       },
       {
         code: 'en',
         name: 'English',
-        file: 'en/common.json'
+        files: [
+          'en/common.json',
+          'en/litm-characters.json',
+          'en/litm-cards.json',
+          'en/litm-trackers.json',
+          'en/litm-themebooks.json',
+          'en/litm-ui.json',
+          'en/litm-errors.json'
+        ]
       }
     ],
     lazy: true,

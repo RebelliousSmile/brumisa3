@@ -1,0 +1,44 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "characterSheet": {
+    "loading": "Chargement du Personnage...",
+    "newCharacterName": "Nouveau Personnage",
+    "characterNamePlaceholder": "Nom du Personnage...",
+    "addCard": "Ajouter une Carte",
+    "dropToLoadCharacter": "Deposez un Objet Fiche de Personnage ici pour charger le personnage entier. Soyez prudent, cette action remplacera votre personnage actif.",
+    "dropToImport": "Deposez votre fichier ici pour importer le composant dans votre fiche de personnage active. Si le fichier est une fiche de personnage entiere, elle remplacera votre personnage actif."
+  },
+
+  "heroCard": {
+    "title": "Carte de Heros",
+    "noName": "SANS NOM",
+    "characterNamePlaceholder": "Nom du Personnage...",
+
+    "relationships": "Relations de Compagnie",
+    "addRelationship": "Creer une relation",
+    "companion": "Compagnon",
+    "companionPlaceholder": "Camarade",
+    "relationship": "Relation",
+    "relationshipCompanionNoName": "SANS NOM",
+    "relationshipPlaceholder": "Relation",
+    "relationshipRelationNoName": "SANS NOM",
+
+    "quintessences": "Quintessences",
+    "addQuintessence": "Creer une Quintessence"
+  },
+
+  "backpack": {
+    "title": "Sac a dos",
+    "addItem": "Ajouter un Objet",
+    "noName": "SANS OBJET",
+    "placeholder": "Entrez votre objet..."
+  },
+
+  "quintessences": {
+    "placeholder": "Entrez votre quintessence...",
+    "noName": "SANS NOM"
+  }
+}

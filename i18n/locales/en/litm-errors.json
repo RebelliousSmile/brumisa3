@@ -1,0 +1,34 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "notifications": {
+    "general": {
+      "importFailed": "File import failed. The data may be incorrect or corrupted.",
+      "exportSuccess": "File exported.",
+      "invalidExportType": "This object cannot be exported.",
+      "appReset": "Application successfully reset. Reloading..."
+    },
+    "character": {
+      "savedToDrawer": "Current character has been saved to Drawer root.",
+      "exported": "Current character has been exported to downloads.",
+      "exportFailedNoChar": "Export failed, No character found.",
+      "imported": "Character file imported successfully.",
+      "reset": "Character sheet successfully reset.",
+      "componentImported": "Component file imported successfully."
+    },
+    "card": {
+      "created": "Card created successfully.",
+      "updated": "Card updated successfully."
+    },
+    "tracker": {
+      "created": "Tracker created successfully."
+    }
+  },
+
+  "errors": {
+    "localStorageDisabled_title": "Critical Storage Error",
+    "localStorageDisabled_description": "It seems that for one reason or another, your browser's local storage is not accessible for the App. Characters of the Mist relies solely on browser local storage for data management and persistance, and does not use a server at all. This means that in your case, it cannot run."
+  }
+}

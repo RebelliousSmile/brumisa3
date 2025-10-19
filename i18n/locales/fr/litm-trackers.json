@@ -1,0 +1,21 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "trackers": {
+    "addStatus": "Ajouter un Statut",
+    "addStoryTag": "Ajouter un Trait Narratif",
+    "statusPlaceholder": "Votre statut...",
+    "statusNoName": "SANS NOM",
+    "storyTagPlaceholder": "Votre Trait Narratif...",
+    "storyTagNoName": "SANS NOM"
+  },
+
+  "pipTracker": {
+    "abandon": "ABANDON",
+    "improve": "AMELIORE",
+    "milestone": "JALON",
+    "promise": "PROMESSE"
+  }
+}

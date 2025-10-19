@@ -1,0 +1,59 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "themeCard": {
+    "fellowshipTitle": "Fellowship Theme",
+    "placeholderName": "Write your main tag...",
+    "noName": "NO NAME",
+    "power": "POWER",
+    "weakness": "WEAKNESS",
+
+    "questTitle": "Quest",
+    "noQuest": "EMPTY QUEST TEXT",
+    "questPlaceholder": "Write your quest text here...",
+
+    "addPowerTag": "Add Power Tag",
+    "addWeaknessTag": "Add Weakness Tag",
+
+    "improvements": "Special Improvements",
+    "addImprovement": "Add Improvement"
+  },
+
+  "tagItem": {
+    "placeholder": "Write your tag...",
+    "noName": "NO TAG"
+  },
+
+  "improvements": {
+    "placeholder": "Write your improvement...",
+    "noName": "NO IMPROVEMENT"
+  },
+
+  "createCardDialog": {
+    "title": "Create a Theme Card",
+    "editTitle": "Edit a Theme Card",
+    "description": "Use the following options to create a Theme Card. You can create a custom themebook if you wish.",
+    "editDescription": "Use the following options to modify the themebook or theme type of your Theme Card. You can create a custom themebook if you wish.",
+    "createButton": "Confirm Card",
+    "updateButton": "Confirm Modifications",
+
+    "selectPlaceholder": "Card type...",
+    "cardTypeLabel": "Card type",
+    "themeCard": "Hero Theme",
+    "fellowshipCard": "Fellowship Theme",
+
+    "selectThemeTypePlaceholder": "Select theme type...",
+    "themeTypeLabel": "Theme Type",
+
+    "selectThemebookPlaceholder": "Select or write a themebook...",
+    "searchThemebookPlaceholder": "Search or create a themebook...",
+    "noThemebookFound": "Themebook not found in defaults. You can still use it as a custom themebook!",
+    "themebookLabel": "Themebook",
+
+    "startingTagsLabel": "Starting Tags",
+    "powerTagCountLabel": "Power Tags",
+    "weaknessTagCountLabel": "Weakness Tags"
+  }
+}
