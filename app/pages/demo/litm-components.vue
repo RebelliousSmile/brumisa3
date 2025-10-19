@@ -9,6 +9,7 @@ import type { ThemeCardTag, ThemeCardQuest } from '~/components/litm/ThemeCard.v
 import type { Relationship } from '~/components/litm/RelationshipList.vue'
 import type { Quintessence } from '~/components/litm/QuintessenceList.vue'
 import type { BackpackItem } from '~/components/litm/BackpackList.vue'
+import type { Tracker } from '~/components/litm/TrackerList.vue'
 
 definePageMeta({
   layout: 'default',
@@ -77,6 +78,14 @@ const sampleHeroCard = ref({
     { id: 'item-3', name: 'Carnet de voyage' },
   ] as BackpackItem[],
 })
+
+// Sample data for Trackers
+const sampleTrackers = ref<Tracker[]>([
+  { id: 'status-1', type: 'status', name: 'Blessé', totalPips: 3, activePips: 2 },
+  { id: 'status-2', type: 'status', name: 'Épuisé', totalPips: 3, activePips: 1 },
+  { id: 'tag-1', type: 'storyTag', name: 'Hanté par le passé', totalPips: 3, activePips: 3 },
+  { id: 'tag-2', type: 'storyTag', name: 'Protecteur des innocents', totalPips: 3, activePips: 2 },
+])
 </script>
 
 <template>
@@ -260,6 +269,41 @@ const sampleHeroCard = ref({
             @update:backpack-items="(items) => sampleHeroCard.backpackItems = items"
             @delete="() => console.log('Delete hero card')"
           />
+        </div>
+      </section>
+
+      <!-- Trackers Demo -->
+      <section class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          Trackers (Status & Story Tags)
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Status Trackers -->
+          <div class="bg-white p-6 rounded-lg shadow">
+            <LitmTrackerList
+              :trackers="sampleTrackers"
+              tracker-type="status"
+              title="Status"
+              add-button-label="Ajouter un Statut"
+              placeholder="Votre statut..."
+              :editable="true"
+              @update:trackers="sampleTrackers = $event"
+            />
+          </div>
+
+          <!-- Story Tag Trackers -->
+          <div class="bg-white p-6 rounded-lg shadow">
+            <LitmTrackerList
+              :trackers="sampleTrackers"
+              tracker-type="storyTag"
+              title="Traits Narratifs"
+              add-button-label="Ajouter un Trait Narratif"
+              placeholder="Votre trait narratif..."
+              :editable="true"
+              @update:trackers="sampleTrackers = $event"
+            />
+          </div>
         </div>
       </section>
     </div>
