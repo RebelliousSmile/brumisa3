@@ -6,6 +6,9 @@
  */
 
 import type { ThemeCardTag, ThemeCardQuest } from '~/components/litm/ThemeCard.vue'
+import type { Relationship } from '~/components/litm/RelationshipList.vue'
+import type { Quintessence } from '~/components/litm/QuintessenceList.vue'
+import type { BackpackItem } from '~/components/litm/BackpackList.vue'
 
 definePageMeta({
   layout: 'default',
@@ -53,6 +56,27 @@ const handleUpdateQuest = (quest: ThemeCardQuest) => {
 const handleDelete = () => {
   console.log('Delete card:', sampleThemeCard.value.id)
 }
+
+// Sample data for HeroCard
+const sampleHeroCard = ref({
+  id: 'hero-1',
+  name: 'Aelara Brume-Argent',
+  backstory: 'Née dans les brumes éternelles, Aelara a toujours eu un lien étrange avec les esprits.',
+  birthright: 'Vision des esprits: Peut percevoir et communiquer avec les entités des brumes.',
+  relationships: [
+    { id: 'rel-1', name: 'Theron', description: 'Compagnon de route, frère d\'armes' },
+    { id: 'rel-2', name: 'Maître Elwin', description: 'Mentor, guide spirituel' },
+  ] as Relationship[],
+  quintessences: [
+    { id: 'quint-1', name: 'Courage inébranlable', description: '' },
+    { id: 'quint-2', name: 'Empathie profonde', description: '' },
+  ] as Quintessence[],
+  backpackItems: [
+    { id: 'item-1', name: 'Épée des brumes' },
+    { id: 'item-2', name: 'Amulette protectrice' },
+    { id: 'item-3', name: 'Carnet de voyage' },
+  ] as BackpackItem[],
+})
 </script>
 
 <template>
@@ -215,6 +239,26 @@ const handleDelete = () => {
             @update:weakness-tags="(tags) => console.log('Weakness tags:', tags)"
             @update:quest="(quest) => console.log('Quest:', quest)"
             @delete="() => console.log('Delete expertise card')"
+          />
+        </div>
+      </section>
+
+      <!-- HeroCard Demo -->
+      <section class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          Carte de Héros (HeroCard)
+        </h2>
+
+        <div class="flex justify-center">
+          <LitmHeroCard
+            v-bind="sampleHeroCard"
+            @update:name="(name) => sampleHeroCard.name = name"
+            @update:backstory="(backstory) => sampleHeroCard.backstory = backstory"
+            @update:birthright="(birthright) => sampleHeroCard.birthright = birthright"
+            @update:relationships="(relationships) => sampleHeroCard.relationships = relationships"
+            @update:quintessences="(quintessences) => sampleHeroCard.quintessences = quintessences"
+            @update:backpack-items="(items) => sampleHeroCard.backpackItems = items"
+            @delete="() => console.log('Delete hero card')"
           />
         </div>
       </section>
