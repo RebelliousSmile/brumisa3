@@ -26,6 +26,9 @@ export default defineConfig({
     testTimeout: 10000,
     typecheck: {
       enabled: false
+    },
+    deps: {
+      inline: ['pinia']
     }
   },
   esbuild: {
