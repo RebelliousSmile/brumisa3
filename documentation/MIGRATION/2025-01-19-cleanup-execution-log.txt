@@ -1,0 +1,62 @@
+=== NETTOYAGE DE LA BASE DE DONNEES ===
+ATTENTION: Cette opération est IRREVERSIBLE !
+
+⚠️  AVERTISSEMENT ⚠️
+Ce script va supprimer:
+  - 6 systèmes de jeu
+  - 6 univers
+  - 7 oracles (Monsterhearts: 4, Roue du Temps: 3)
+  - 233 items d'oracles
+
+Backup disponible: documentation/MIGRATION/2025-01-19-backup-before-cleanup.json
+
+Exécution dans 3 secondes...
+
+=== DEBUT DU NETTOYAGE ===
+
+1. Suppression des oracles des univers non-Mist...
+   ✓ 7 oracles supprimés
+2. Suppression des documents des systèmes non-Mist...
+   ✓ 0 documents supprimés
+3. Suppression des PDFs des systèmes non-Mist...
+   ✓ 0 PDFs supprimés
+4. Suppression des personnages des systèmes non-Mist...
+   ✓ 0 personnages supprimés
+5. Suppression des univers non-Mist...
+   ✓ 6 univers supprimés
+6. Suppression des systèmes non-Mist...
+   ✓ 6 systèmes supprimés
+
+7. Ajout de City of Mist...
+   ✓ City of Mist ajouté (id: city-of-mist)
+
+=== VERIFICATION POST-SUPPRESSION ===
+
+Systèmes restants: 1
+  - mistengine: Mist Engine
+
+Univers restants: 5
+  - city-of-mist: City of Mist [mistengine]
+  - obojima: Obojima [mistengine]
+  - otherscape: Tokyo:Otherscape [mistengine]
+  - post_mortem: Post-Mortem [mistengine]
+  - zamanora: Zamanora [mistengine]
+
+=== VERIFICATION INTEGRITE ===
+Personnages orphelins: 0
+PDFs orphelins: 0
+Oracles orphelins: 0
+
+✅ Aucune donnée orpheline détectée
+
+=== RESUME DES SUPPRESSIONS ===
+Oracles supprimés: 7
+Documents supprimés: 0
+PDFs supprimés: 0
+Personnages supprimés: 0
+Univers supprimés: 6
+Systèmes supprimés: 6
+
+City of Mist ajouté: ✅
+
+✅ NETTOYAGE TERMINE AVEC SUCCES !
