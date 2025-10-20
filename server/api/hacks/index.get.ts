@@ -4,7 +4,7 @@
  * GET /api/hacks
  */
 
-import { getAllHacks } from '~/server/config/hacks'
+import { getAllHacks } from '../../config/hacks'
 
 export default defineEventHandler(() => {
   const hacks = getAllHacks()

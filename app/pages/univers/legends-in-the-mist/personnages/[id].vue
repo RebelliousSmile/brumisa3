@@ -34,6 +34,9 @@ onMounted(async () => {
 // Personnage actif
 const character = computed(() => store.activeCharacter)
 
+// Mode développement
+const isDev = computed(() => process.dev)
+
 // Créer une hero card
 const createHeroCard = async () => {
   if (!character.value) return
@@ -227,7 +230,7 @@ const deleteCharacter = async () => {
       </section>
 
       <!-- Debug info (dev only) -->
-      <details v-if="import.meta.dev" class="mt-8">
+      <details v-if="isDev" class="mt-8">
         <summary class="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
           Debug Info
         </summary>

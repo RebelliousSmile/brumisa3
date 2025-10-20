@@ -3,7 +3,7 @@ import { prisma } from '~/server/utils/prisma'
 export default defineEventHandler(async (event) => {
   try {
     // Récupération des systèmes avec leurs univers
-    const systemes = await prisma.systemeJeu.findMany({
+    const systemes = await prisma.systemes_jeu.findMany({
       where: {
         actif: true
       },
@@ -13,25 +13,25 @@ export default defineEventHandler(async (event) => {
             statut: 'ACTIF'
           },
           orderBy: {
-            ordreAffichage: 'asc'
+            ordre_affichage: 'asc'
           }
         }
       },
       orderBy: {
-        ordreAffichage: 'asc'
+        ordre_affichage: 'asc'
       }
     })
-    
+
     // Mapping des données pour l'affichage
     const systemCards = systemes.map(systeme => ({
       code: systeme.id,
-      nom: systeme.nomComplet,
+      nom: systeme.nom_complet,
       description: systeme.description || '',
       icon: getSystemIcon(systeme.id),
       classes: getSystemClasses(systeme.id),
       univers: systeme.univers_jeu.map(univers => ({
         code: univers.id,
-        nom: univers.nomComplet,
+        nom: univers.nom_complet,
         icon: getUniversIcon(univers.id)
       }))
     }))

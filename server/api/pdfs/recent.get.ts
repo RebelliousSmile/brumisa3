@@ -3,19 +3,19 @@ import { prisma } from '~/server/utils/prisma'
 export default defineEventHandler(async (event) => {
   try {
     // Récupération des documents récents publiés
-    const recentDocuments = await prisma.document.findMany({
+    const recentDocuments = await prisma.documents.findMany({
       where: {
         statut: 'PUBLIE'
       },
       include: {
-        utilisateur: {
+        utilisateurs_documents_utilisateur_idToutilisateurs: {
           select: {
             email: true // Nous utiliserons l'email pour générer un nom d'affichage
           }
         }
       },
       orderBy: {
-        dateCreation: 'desc'
+        date_creation: 'desc'
       },
       take: 6 // Limite à 6 résultats
     })
@@ -36,17 +36,17 @@ export default defineEventHandler(async (event) => {
       }
       
       // Génération d'un nom d'auteur anonymisé
-      const auteurEmail = doc.utilisateur.email
-      const auteurNom = auteurEmail.split('@')[0].charAt(0).toUpperCase() + 
+      const auteurEmail = doc.utilisateurs_documents_utilisateur_idToutilisateurs?.email || 'anonymous@example.com'
+      const auteurNom = auteurEmail.split('@')[0].charAt(0).toUpperCase() +
                        auteurEmail.split('@')[0].slice(1, 3) + '.'
-      
+
       return {
         id: doc.id.toString(),
         personnageNom: personnageNom || doc.titre,
-        systemeJeu: formatSystemName(doc.systemeJeu),
+        systemeJeu: formatSystemName(doc.systeme_jeu),
         auteurNom,
-        dateCreation: doc.dateCreation.toISOString(),
-        nombreTelechargements: doc.nombreUtilisations
+        dateCreation: doc.date_creation?.toISOString() || new Date().toISOString(),
+        nombreTelechargements: doc.nombre_utilisations || 0
       }
     })
     

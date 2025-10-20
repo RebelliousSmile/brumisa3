@@ -4,7 +4,7 @@
  * GET /api/hacks/:id
  */
 
-import { getHackConfig, isValidHackId } from '~/server/config/hacks'
+import { getHackConfig, isValidHackId } from '../../config/hacks'
 
 export default defineEventHandler((event) => {
   const hackId = getRouterParam(event, 'id')

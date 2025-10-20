@@ -3,20 +3,20 @@ import { prisma } from '~/server/utils/prisma'
 export default defineEventHandler(async (event) => {
   try {
     // Récupération des témoignages approuvés
-    const testimonials = await prisma.temoignage.findMany({
+    const testimonials = await prisma.temoignages.findMany({
       where: {
         statut: 'APPROUVE'
       },
       orderBy: {
-        dateCreation: 'desc'
+        date_creation: 'desc'
       },
       take: 10, // Limite à 10 témoignages
       select: {
         id: true,
-        auteurNom: true,
+        auteur_nom: true,
         contenu: true,
         note: true,
-        dateCreation: true
+        date_creation: true
       }
     })
     

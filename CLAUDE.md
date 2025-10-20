@@ -80,6 +80,8 @@ Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architectur
 - lorsque nous terminons la fin d'une feature et que l'utilisateur valide que le résultat est correct, pousse les modifications dans une branche git pour sauvegarde. 
 -  n'utilise pas d'emoji comme caractère. jamais. 
 - un problème de configuration ne doit pas empêcher l'application de fonctionner.
+- ne crée pas de nouvelles versions, met à jour les fichiers concernés
+- ne crée pas de rapport d'exécution, sauf si cela t'es demandé
 
 ### Base de données
 - PostgreSQL avec Prisma ORM pour la génération automatique des requêtes

@@ -144,7 +144,11 @@
       "WebFetch(domain:sonofoak.com)",
       "mcp__github__get_file_contents",
       "mcp__github__search_repositories",
-      "mcp__github__search_code"
+      "mcp__github__search_code",
+      "Bash($env:PGPASSWORD='9rN95%^V4Ph&')",
+      "Bash(pnpm tsx scriptsaudit-legacy-systems.ts)",
+      "Bash(pnpm tsx scripts/audit-legacy-systems.ts)",
+      "Bash(netstat -ano)"
     ],
     "deny": []
   }
