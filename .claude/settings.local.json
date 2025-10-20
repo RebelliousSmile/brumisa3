@@ -148,7 +148,8 @@
       "Bash($env:PGPASSWORD='9rN95%^V4Ph&')",
       "Bash(pnpm tsx scriptsaudit-legacy-systems.ts)",
       "Bash(pnpm tsx scripts/audit-legacy-systems.ts)",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(tree /F app /A)"
     ],
     "deny": []
   }
