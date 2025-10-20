@@ -759,154 +759,216 @@ model utilisateurs {
   @@index([token_expiration], map: "idx_utilisateurs_token_expiration")
   @@index([token_recuperation], map: "idx_utilisateurs_token_recuperation")
   @@index([type_compte], map: "idx_utilisateurs_type_compte")
-  LitmCharacter LitmCharacter[]
 }
 
 // ==============================================
-// Modèles Legends in the Mist
+// Modèles MVP - Brumisater v1.0
 // ==============================================
 
-/// Personnage LITM (Legends in the Mist)
-model LitmCharacter {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int
+/// User - Utilisateur avec authentification
+model User {
+  id            String  @id @default(cuid())
+  email         String  @unique
+  password_hash String
+  name          String?
+  avatar_url    String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  last_login DateTime?
+
+  playspaces Playspace[]
+
+  @@index([email])
+  @@map("users")
+}
+
+/// Playspace - Contexte de jeu isolé par joueur
+model Playspace {
+  id          String  @id @default(cuid())
+  name        String
+  description String? @db.Text
+
+  user_id   String
+  system_id String // "litm", "city-of-mist", etc.
+  hack_id   String? // Future : "cyberpunk-city", etc.
+
+  settings Json @default("{}") // Configuration playspace
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  characters Character[]
+  dangers    Danger[]
+
+  @@index([user_id])
+  @@index([system_id])
+  @@map("playspaces")
+}
+
+/// Character - Personnage LITM (Player Character)
+model Character {
+  id           String @id @default(cuid())
+  playspace_id String
+
+  name     String
+  pronouns String?
+  mythos   String? @db.Text
+  logos    String? @db.Text
+  crew     String? @db.Text
+
+  improvement_tracker Json @default("[]") // Array de bools
+  crack_tracker       Json @default("[]") // Array de bools
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  playspace     Playspace      @relation(fields: [playspace_id], references: [id], onDelete: Cascade)
+  theme_cards   ThemeCard[]
+  hero_card     HeroCard?
+  relationships Relationship[]
+  statuses      Status[]
+
+  @@index([playspace_id])
+  @@map("characters")
+}
+
+/// ThemeCard - Carte de thème (Mythos ou Logos)
+enum ThemeCardType {
+  MYTHOS
+  LOGOS
+}
+
+model ThemeCard {
+  id           String @id @default(cuid())
+  character_id String
+
+  type    ThemeCardType
+  title   String
+  mystery String?       @db.Text
+
+  attention Int @default(0) // 0-3
+  fade      Int @default(0) // 0-3
+
+  locked Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  character Character @relation(fields: [character_id], references: [id], onDelete: Cascade)
+  tags      Tag[]
+
+  @@index([character_id])
+  @@index([type])
+  @@map("theme_cards")
+}
+
+/// Tag - Tags polymorphiques (power/weakness/story)
+enum TagType {
+  POWER
+  WEAKNESS
+  STORY
+}
+
+model Tag {
+  id            String  @id @default(cuid())
+  theme_card_id String? // Nullable car STORY tags peuvent être sur Character
+  character_id  String? // Pour STORY tags globaux
+
+  type      TagType
   name      String
-  gameType  String   @default("litm") // 'litm' ou 'cotm'
+  burned    Boolean @default(false)
+  temporary Boolean @default(false)
 
-  // Relations
-  user      utilisateurs     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  heroCard  LitmHeroCard?
-  themeCards LitmThemeCard[]
-  trackers  LitmTracker[]
+  created_at DateTime @default(now())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  theme_card ThemeCard? @relation(fields: [theme_card_id], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([gameType])
-}
-
-/// Carte de Héros LITM
-model LitmHeroCard {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  characterId   String   @unique @db.Uuid
-  name          String
-  backstory     String?  @db.Text
-  birthright    String?  @db.Text
-
-  // Relations
-  character     LitmCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  relationships LitmRelationship[]
-  quintessences LitmQuintessence[]
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([characterId])
-}
-
-/// Carte de Thème LITM
-model LitmThemeCard {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  characterId   String   @db.Uuid
-  type          String   // 'origin', 'fellowship', 'expertise', 'mythos'
-  themebook     String   // Nom du themebook
-  title         String
-  mainTagText   String?
-
-  // Relations
-  character     LitmCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  tags          LitmTag[]
-  quest         LitmQuest?
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([characterId])
+  @@index([theme_card_id])
+  @@index([character_id])
   @@index([type])
+  @@map("tags")
 }
 
-/// Tag (Power/Weakness) LITM
-model LitmTag {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  text            String
-  isPower         Boolean  @default(true)
-  themeCardId     String   @db.Uuid
+/// HeroCard - Carte centrale du héros
+model HeroCard {
+  id           String @id @default(cuid())
+  character_id String @unique
 
-  // Relations
-  themeCard     LitmThemeCard @relation(fields: [themeCardId], references: [id], onDelete: Cascade)
+  defining_trait        String?
+  defining_relationship String?
+  mission               String? @db.Text
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  quintessence Json @default("[]") // Array d'items {name, burned}
+  backpack     Json @default("[]") // Array d'items {name}
 
-  @@index([themeCardId])
-  @@index([isPower])
+  hurt          Int  @default(0) // 0-5
+  story_tracker Json @default("[]") // Array de bools
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  character Character @relation(fields: [character_id], references: [id], onDelete: Cascade)
+
+  @@map("hero_cards")
 }
 
-/// Quête LITM (associée à une carte de thème)
-model LitmQuest {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  themeCardId   String   @unique @db.Uuid
-  text          String   @db.Text
-  totalPips     Int      @default(9)
-  progressPips  Int      @default(0)
+/// Relationship - Relations entre personnages
+model Relationship {
+  id           String @id @default(cuid())
+  character_id String
 
-  // Relations
-  themeCard     LitmThemeCard @relation(fields: [themeCardId], references: [id], onDelete: Cascade)
+  name        String
+  description String? @db.Text
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  @@index([themeCardId])
+  character Character @relation(fields: [character_id], references: [id], onDelete: Cascade)
+
+  @@index([character_id])
+  @@map("relationships")
 }
 
-/// Tracker LITM (Status, Story Tag, Story Theme)
-model LitmTracker {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  characterId   String   @db.Uuid
-  type          String   // 'status', 'storyTag', 'storyTheme'
-  name          String
-  totalPips     Int      @default(3)
-  activePips    Int      @default(0)
+/// Status - Statuts temporaires du personnage
+model Status {
+  id           String @id @default(cuid())
+  character_id String
 
-  // Relations
-  character     LitmCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name     String
+  tier     Int // 1-6 (spectrum)
+  positive Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  created_at DateTime  @default(now())
+  expires_at DateTime?
 
-  @@index([characterId])
-  @@index([type])
+  character Character @relation(fields: [character_id], references: [id], onDelete: Cascade)
+
+  @@index([character_id])
+  @@map("statuses")
 }
 
-/// Relation de Compagnie LITM
-model LitmRelationship {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  heroCardId    String   @db.Uuid
-  name          String
-  description   String?  @db.Text
+/// Danger - Adversaires/PNJ du MJ (Mist Engine)
+model Danger {
+  id           String @id @default(cuid())
+  playspace_id String
 
-  // Relations
-  heroCard      LitmHeroCard @relation(fields: [heroCardId], references: [id], onDelete: Cascade)
+  name        String
+  description String? @db.Text
+  tier        Int // 1-6 (spectrum Danger)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  power_tags    Json @default("[]") // Array de {name, burned, temporary}
+  weakness_tags Json @default("[]") // Array de {name, burned, temporary}
 
-  @@index([heroCardId])
-}
+  notes String? @db.Text // Notes MJ
 
-/// Quintessence LITM
-model LitmQuintessence {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  heroCardId    String   @db.Uuid
-  name          String
-  description   String?  @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  // Relations
-  heroCard      LitmHeroCard @relation(fields: [heroCardId], references: [id], onDelete: Cascade)
+  playspace Playspace @relation(fields: [playspace_id], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([heroCardId])
+  @@index([playspace_id])
+  @@index([tier])
+  @@map("dangers")
 }
