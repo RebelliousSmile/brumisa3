@@ -2,7 +2,9 @@
 
 ## Métadonnées
 - **ID**: TASK-2025-01-19-011
-- **Priorité**: Moyenne | **Temps estimé**: 6h | **Statut**: À faire
+- **Priorité**: P1 (Post-MVP) | **Temps estimé**: 6h | **Statut**: REPORTÉ v1.4
+- **Version cible**: v1.4
+- **Raison report**: Hors scope MVP - Fonctionnalité avancée non critique pour v1.0
 
 ## Description
 Créer le système de "Tiroir" pour organiser plusieurs personnages avec dossiers, import/export.

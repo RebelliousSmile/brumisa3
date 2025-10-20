@@ -2,13 +2,29 @@
 
 ## Vue d'ensemble
 
-Cette documentation compile l'analyse de 5 repositories open-source City of Mist / Legends in the Mist et propose une architecture adaptée au **MVP v1.0 de Brumisa3** avec notre stack Nuxt 4.
+Cette documentation compile l'analyse de 5 repositories open-source City of Mist / Legends in the Mist et propose une architecture technique adaptée au **MVP v1.0 de Brumisa3** avec notre stack Nuxt 4.
 
-**Scope MVP v1.0** : Playspaces + Gestion personnages LITM (Theme Cards, Hero Card, Trackers) + Auth + Export JSON
+**Terminologie** : Consultez [00-GLOSSAIRE.md](./00-GLOSSAIRE.md) pour la définition officielle de Système/Hack/Univers/Playspace
+
+**Important** : Ce dossier contient uniquement la documentation **ARCHITECTURE TECHNIQUE** (COMMENT c'est construit). Pour le **SCOPE MVP et la ROADMAP** (QUOI et QUAND), consultez :
+
+→ **[../DEVELOPPEMENT/01-mvp-v1.0-scope.md](../DEVELOPPEMENT/01-mvp-v1.0-scope.md)** - Source de vérité unique pour le périmètre et planning MVP
+
+**Résumé Scope MVP v1.0** : Playspaces + Gestion personnages LITM (Theme Cards, Hero Card, Trackers) + Auth + Export JSON
 
 **Hors MVP v1.0** : Investigation Board (v2.0), Oracles customs (v1.2+), Jets de dés (v1.3), Multi-joueurs (v2.5)
 
 ## Fichiers de Documentation
+
+### [00-GLOSSAIRE.md](./00-GLOSSAIRE.md)
+**Terminologie officielle et définitions**
+
+Contenu:
+- Hiérarchie Système → Hack → Univers
+- Définitions : Mist Engine, LITM, Otherscape, City of Mist
+- Univers disponibles par hack
+- Clarifications et terminologie à éviter
+- Source de vérité pour toute la documentation
 
 ### [01-analyse-repos-city-of-mist.md](./01-analyse-repos-city-of-mist.md)
 **Analyse comparative des 5 repositories**
@@ -162,7 +178,7 @@ Gains attendus:
 - Support offline complet (consultation + édition)
 
 ### [09-architecture-multi-systemes-mist-engine.md](./09-architecture-multi-systemes-mist-engine.md)
-**Architecture Multi-Systèmes Mist Engine**
+**Architecture Multi-Hacks Mist Engine**
 
 Contenu:
 - Analyse détaillée du système Taragnor (city-of-mist)
@@ -187,7 +203,7 @@ Configuration incluse:
 - **Otherscape**: Mythos-OS/Noise/Self/Crew-OS/Loadout, upgrade/decay
 
 Avantages:
-- Extensibilité (nouveau système = 1 fichier config)
+- Extensibilité (nouveau hack = 1 fichier config)
 - Type Safety (TypeScript strict end-to-end)
 - Performance (cache IndexedDB, SWR)
 - Maintenabilité (config déclarative vs code)
@@ -295,7 +311,7 @@ Contenu:
 - Architecture TypeScript-first pour modèles de données (Option C)
 - Types de base et enums (Role, StatutDocument, StatutUtilisateur, etc.)
 - Modèles génériques (User, Document, Character, ThemeCard, Tracker)
-- **Character générique fonctionnant pour tous systèmes Mist Engine**
+- **Character générique fonctionnant pour tous hacks du Mist Engine**
 - Génération automatique schémas Zod depuis ModelDefinition
 - Validation runtime dans API routes avec `validateBody()`
 - Workflow de développement et tests
@@ -326,9 +342,9 @@ Architecture clé:
 
 Avantages:
 - Type Safety end-to-end
-- Réutilisabilité (un modèle pour tous systèmes)
+- Réutilisabilité (un modèle pour tous les hacks)
 - Maintenabilité (séparation structure/règles)
-- Extensibilité (nouveau système = nouvelle config seulement)
+- Extensibilité (nouveau hack = nouvelle config seulement)
 
 ### [15-playspace-contexte-unique.md](./15-playspace-contexte-unique.md)
 **Le Playspace comme Contexte Unique**
@@ -364,56 +380,80 @@ Avantages:
 
 ## Synthèse des Patterns Identifiés
 
-### Pattern 1: Modèle Actor-Item (FoundryVTT)
+### Pattern 1: Modèle Actor-Item (FoundryVTT) ✅ MVP
 **Source**: `taragnor/city-of-mist`
 
-Architecture hiérarchique:
+Architecture hiérarchique adaptée en schéma Prisma relationnel :
 ```
-Actor (Character/Danger/Crew)
-  └─ Items (Theme, Tag, Status, Move, etc.)
+Character (1) → ThemeCard (N) → Tag (N)
+Character (1) → HeroCard (0..1) → Relationship (N)
+Character (1) → Trackers (1) → Status (N)
 ```
 
-**Adaptation Nuxt 4**: Schéma Prisma avec relations 1-N via foreign keys
+**Statut**: Implémenté dans 02-modele-donnees-prisma.md
 
-### Pattern 2: State avec Undo/Redo
+### Pattern 2: State avec Undo/Redo ❌ v1.1
 **Source**: `Altervayne/characters-of-the-mist`
 
-Zustand + temporal middleware pour historique complet.
+Historique des modifications avec Pinia + VueUse `useRefHistory()` (50 étapes).
 
-**Adaptation Nuxt 4**: Pinia + VueUse `useRefHistory()` (50 étapes)
+**Statut**: Reporté v1.1 (amélioration UX, pas critique pour MVP)
 
-### Pattern 3: Sélection de Tags/Statuts
+### Pattern 3: Sélection de Tags/Statuts ⚠️ v1.3
 **Source**: `taragnor/city-of-mist` + `mordachai/mist-hud`
 
 Système de sélection avec polarité (+1/-1/0) pour modificateurs de jets.
 
-**Adaptation Nuxt 4**: Composable `useRollModifiers()` avec state réactif
+**Statut**: Reporté v1.3 avec système de jets complet
 
-### Pattern 4: Système de Fichiers/Drawer
+### Pattern 4: Système de Fichiers/Drawer ❌ v1.4
 **Source**: `Altervayne/characters-of-the-mist`
 
-Organisation des personnages en dossiers avec drag & drop.
+Organisation personnages en dossiers avec drag & drop.
 
-**Adaptation Nuxt 4**: Composable + API routes + table Folder en DB
+**Statut**: Reporté v1.4 (organisation avancée)
 
-### Pattern 5: Jets de Dés avec Historique
+### Pattern 5: Jets de Dés avec Historique ⚠️ v1.3
 **Source**: Tous les repositories
 
-Génération 2d6, calcul outcome, enregistrement historique.
+Génération 2d6, calcul outcome, enregistrement historique via API route sécurisée.
 
-**Adaptation Nuxt 4**:
-- API route `/api/rolls/execute` (serveur pour aléatoire sécurisé)
-- Table `RollHistory` avec relations
-- Store Pinia pour cache local (50 derniers jets)
+**Statut**: Reporté v1.3 (mécanique de jeu, focus MVP sur gestion personnages)
 
-### Pattern 6: WebSocket Temps Réel
+### Pattern 6: WebSocket Temps Réel ❌ v2.5
 **Source**: `mikerees/litm-player`
 
-Socket.io pour synchronisation multi-joueurs.
+WebSockets Nitro (h3) pour synchronisation multi-joueurs.
 
-**Adaptation Nuxt 4**: WebSockets Nitro (h3) - Priorité basse, pour v2
+**Statut**: Reporté v2.5 (mode solo prioritaire)
+
+### Pattern 7: Caching IndexedDB ✅ MVP v1.0
+**Source**: Approche moderne web (PWA, offline-first)
+
+Cache IndexedDB côté client avec stratégie Stale-While-Revalidate (SWR) pour données statiques.
+
+**Statut**: Implémenté dans 08-caching-indexeddb-donnees-statiques.md
+
+**Gains**: Basculement playspace 89% plus rapide (1800ms → 200ms)
+
+### Priorisation des Patterns
+
+**Priorité P0 (MVP v1.0)** :
+- Pattern 1: Modèle Actor-Item (Prisma)
+- Pattern 7: Caching IndexedDB (performance)
+
+**Priorité P1 (v1.1-v1.4)** :
+- Pattern 2: Undo/Redo (v1.1)
+- Pattern 3: Sélection Tags/Statuts (v1.3)
+- Pattern 5: Jets de Dés (v1.3)
+- Pattern 4: Drawer System (v1.4)
+
+**Priorité P2 (v2.0+)** :
+- Pattern 6: WebSocket Temps Réel (v2.5)
 
 ## Roadmap d'Implémentation MVP v1.0
+
+**Scope complet et planning** : Voir [../DEVELOPPEMENT/01-mvp-v1.0-scope.md](../DEVELOPPEMENT/01-mvp-v1.0-scope.md)
 
 ### Phase 1 - Fondations (2 semaines)
 - [ ] Setup Nuxt 4 + Prisma + PostgreSQL

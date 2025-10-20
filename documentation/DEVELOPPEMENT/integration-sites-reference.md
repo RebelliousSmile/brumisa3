@@ -1,10 +1,16 @@
-# Intégration Legends in the Mist - Plan de Développement
+# Intégration des Sites de Référence - Plan de Développement
 
 ## Vue d'Ensemble
 
-Intégration des fonctionnalités et traductions des repositories "characters-of-the-mist" et "litm-player" dans Brumisater pour supporter le système de jeu "Legends in the Mist".
+Plan d'intégration des fonctionnalités provenant des repositories open-source de référence pour enrichir Brumisater, en particulier pour supporter le **hack LITM du Mist Engine**.
 
-### Repositories Sources
+**Hiérarchie** : Mist Engine (système) → LITM (hack) → Zamanora/HOR (univers)
+
+**Scope MVP v1.0** : Voir [../ARCHITECTURE/00-GLOSSAIRE.md](../ARCHITECTURE/00-GLOSSAIRE.md) pour la terminologie officielle et [01-mvp-v1.0-scope.md](./01-mvp-v1.0-scope.md) pour le périmètre.
+
+### Repositories de Référence
+
+Les fonctionnalités documentées ici sont inspirées ou adaptées de :
 
 - **Altervayne/characters-of-the-mist** (Next.js + TypeScript)
   - Gestionnaire de fiches de personnages
@@ -17,15 +23,25 @@ Intégration des fonctionnalités et traductions des repositories "characters-of
   - Chat temps réel, lanceur de dés
   - License: MIT
 
+**Note** : Ces repositories analysés dans [../ARCHITECTURE/01-analyse-repos-city-of-mist.md](../ARCHITECTURE/01-analyse-repos-city-of-mist.md) servent de référence pour les patterns et fonctionnalités, mais sont adaptés à notre stack Nuxt 4.
+
 ## Architecture Globale
 
 ```
 Brumisater (Nuxt 4 + Prisma + PostgreSQL)
-├── Phase 1: Traductions FR/EN
-├── Phase 2: Composants Fiche de Personnage
-├── Phase 3: Fonctionnalités Avancées
-└── Phase 4: Multi-Joueurs (Optionnel)
+├── Phase 1: Configuration Playspace & Hack LITM (MVP v1.0)
+├── Phase 2: Composants Fiche de Personnage LITM (MVP v1.0)
+├── Phase 3: Export JSON (MVP v1.0)
+├── Phase 4: Fonctionnalités Avancées (v1.1-v1.4)
+└── Phase 5: Multi-Joueurs (v2.5 - Hors MVP)
 ```
+
+**Note importante** : Conformément au scope MVP défini dans [01-mvp-v1.0-scope.md](./01-mvp-v1.0-scope.md) :
+- **Investigation Board** : Reporté v2.0 (PAS dans MVP)
+- **Système de jets** : Reporté v1.3 (PAS dans MVP)
+- **Drawer System** : Reporté v1.4 (PAS dans MVP)
+- **Undo/Redo** : Reporté v1.1 (PAS dans MVP)
+- **Multi-joueurs** : Reporté v2.5 (PAS dans MVP)
 
 ## Crédits & Licences
 
@@ -36,7 +52,7 @@ Conformément aux licences des projets sources :
 
 ---
 
-# Phase 1 : Système de Traduction
+# Phase 1 : Configuration Playspace & Hack LITM (MVP v1.0)
 
 **Priorité** : HAUTE
 **Temps estimé** : 8-12h
@@ -44,7 +60,7 @@ Conformément aux licences des projets sources :
 
 ## Objectif
 
-Intégrer le système de traduction i18n avec les traductions FR/EN de "Legends in the Mist" provenant de characters-of-the-mist.
+Configurer le système de playspace pour supporter le hack LITM avec ses univers (Zamanora, HOR) et intégrer les traductions FR/EN.
 
 ## Tasks de la Phase 1
 
@@ -119,7 +135,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-003-composable-i18n.md](../tasks/TAS
 
 ---
 
-# Phase 2 : Composants Fiche de Personnage
+# Phase 2 : Composants Fiche de Personnage LITM (MVP v1.0)
 
 **Priorité** : HAUTE
 **Temps estimé** : 34h (ajusté)
@@ -127,7 +143,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-003-composable-i18n.md](../tasks/TAS
 
 ## Objectif
 
-Adapter les composants React/Next.js de characters-of-the-mist en composants Vue 3 pour Brumisater, en créant un système de fiche de personnage pour "Legends in the Mist".
+Adapter les composants React/Next.js de characters-of-the-mist en composants Vue 3 pour Brumisater, en créant un système de fiche de personnage pour le hack LITM du Mist Engine.
 
 ## Tasks de la Phase 2
 
@@ -317,7 +333,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-010-page-character-create.md](../tas
 - Tests end-to-end
 
 **Fichiers** :
-- `app/pages/univers/legends-in-the-mist/personnages/nouveau.vue` (nouveau)
+- `app/pages/playspace/[id]/personnages/nouveau.vue` (nouveau)
 - `tests/e2e/litm-character-creation.spec.ts` (nouveau)
 
 **Bloqueurs** :
@@ -338,15 +354,15 @@ Voir : [documentation/tasks/TASK-2025-01-19-010-page-character-create.md](../tas
 
 ---
 
-# Phase Migration : Import de Données
+# Phase 3 : Export JSON (MVP v1.0)
 
-**Priorité** : CRITIQUE
+**Priorité** : HAUTE
 **Temps estimé** : 3h
 **Statut** : À faire
 
 ## Objectif
 
-Permettre aux utilisateurs d'importer des personnages existants depuis characters-of-the-mist ou d'autres sources JSON.
+Permettre l'export des personnages LITM en format JSON pour sauvegarde et partage. L'import depuis characters-of-the-mist est également supporté pour migration.
 
 ## Tasks de Migration
 
@@ -363,7 +379,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-019-migration-donnees.md](../tasks/T
 **Fichiers** :
 - `server/utils/litm/migration.ts` (nouveau)
 - `server/api/litm/import.post.ts` (nouveau)
-- `app/pages/univers/legends-in-the-mist/personnages/importer.vue` (nouveau)
+- `app/pages/playspace/[id]/personnages/importer.vue` (nouveau)
 
 **Bloqueurs** :
 - TASK-004 (Modèle Prisma)
@@ -407,8 +423,8 @@ Voir : [documentation/tasks/TASK-2025-01-19-020-documentation-utilisateur.md](..
 - Documentation FR et EN
 
 **Fichiers** :
-- `documentation/UTILISATEUR/legends-in-the-mist/*.md` (nouveaux)
-- `app/pages/univers/legends-in-the-mist/aide/*.vue` (nouveaux)
+- `documentation/UTILISATEUR/hack-litm/*.md` (nouveaux)
+- `app/pages/playspace/[id]/aide/*.vue` (nouveaux)
 
 **Bloqueurs** :
 - TASK-010 (Page création) pour screenshots
@@ -425,15 +441,18 @@ Voir : [documentation/tasks/TASK-2025-01-19-020-documentation-utilisateur.md](..
 
 ---
 
-# Phase 3 : Fonctionnalités Avancées
+# Phase 4 : Fonctionnalités Avancées (Post-MVP v1.1-v1.4)
 
-**Priorité** : MOYENNE
+**Priorité** : BASSE (Hors MVP)
 **Temps estimé** : 18h
-**Statut** : À faire
+**Statut** : Reporté post-MVP
 
 ## Objectif
 
-Intégrer les fonctionnalités avancées de characters-of-the-mist : système de drawer, undo/redo, command palette, et drag & drop.
+Intégrer les fonctionnalités avancées de characters-of-the-mist après validation du MVP :
+- **v1.1** : Undo/Redo, Dark mode, Mobile responsive
+- **v1.3** : Système de jets de dés
+- **v1.4** : Drawer system, Drag & drop
 
 ## Tasks de la Phase 3
 
@@ -526,15 +545,19 @@ Voir : [documentation/tasks/TASK-2025-01-19-014-drag-drop.md](../tasks/TASK-2025
 
 ---
 
-# Phase 4 : Multi-Joueurs (Optionnel)
+# Phase 5 : Multi-Joueurs (v2.5 - Hors MVP)
 
-**Priorité** : BASSE
+**Priorité** : TRÈS BASSE (Reporté v2.5)
 **Temps estimé** : 30-40h
-**Statut** : À faire (optionnel)
+**Statut** : Hors scope MVP
 
 ## Objectif
 
-Intégrer les fonctionnalités multi-joueurs de litm-player : sessions de jeu, chat temps réel, et lanceur de dés.
+Intégrer les fonctionnalités multi-joueurs de litm-player pour la version 2.5 (après Investigation Board v2.0) :
+- Sessions de jeu collaboratives
+- Chat temps réel
+- Lanceur de dés synchronisé
+- Investigation Board collaboratif
 
 ## Tasks de la Phase 4
 
@@ -607,8 +630,8 @@ Voir : [documentation/tasks/TASK-2025-01-19-018-sessions.md](../tasks/TASK-2025-
 - Rôles (MJ/Joueur)
 
 **Fichiers** :
-- `app/pages/univers/legends-in-the-mist/sessions/index.vue` (nouveau)
-- `app/pages/univers/legends-in-the-mist/sessions/[id].vue` (nouveau)
+- `app/pages/playspace/[id]/sessions/index.vue` (nouveau)
+- `app/pages/playspace/[id]/sessions/[sessionId].vue` (nouveau)
 - `server/api/sessions/[id].get.ts` (nouveau)
 - `prisma/schema.prisma` (modification - table Session)
 
@@ -630,53 +653,70 @@ Voir : [documentation/tasks/TASK-2025-01-19-018-sessions.md](../tasks/TASK-2025-
 
 ---
 
-# Tableau Récapitulatif des Tasks (RÉVISÉ)
+# Tableau Récapitulatif des Tasks MVP v1.0
 
-| ID | Nom | Phase | Priorité | Temps | Statut | Bloqueurs |
-|----|-----|-------|----------|-------|--------|-----------|
-| 001 | Config i18n | 1 | Haute | 2h | À faire | - |
-| 002 | Traductions LITM | 1 | Haute | 4h | À faire | 001 |
-| 003 | Composable i18n | 1 | Haute | 2h | À faire | 002 |
-| 004 | Modèle Prisma | 2 | Haute | 4h | À faire | - |
-| **004-bis** | **Composants UI Base** | **2** | **Haute** | **3h** | **À faire** | **001** |
-| 005 | ThemeCard.vue | 2 | Haute | 6h | À faire | 001, 004, 004-bis |
-| 006 | HeroCard.vue | 2 | Haute | 5h | À faire | 005 |
-| 007 | Trackers | 2 | Haute | 4h | À faire | 004, 004-bis |
-| 008 | Store Pinia | 2 | Haute | 3h | À faire | 004 |
-| **009A** | **API Characters** | **2** | **Haute** | **3h** | **À faire** | **008** |
-| **009B** | **API Cards & Trackers** | **2** | **Haute** | **3h** | **À faire** | **009A** |
-| 010 | Page création | 2 | Haute | 6h | À faire | 005-009B |
-| **010-bis** | **Tests E2E** | **2** | **Haute** | **4h** | **À faire** | **010** |
-| 011 | Drawer | 3 | Moyenne | 6h | À faire | Phase 2 |
-| 012 | Undo/Redo | 3 | Moyenne | 4h | À faire | 008 |
-| 013 | Command Palette | 3 | Moyenne | 3h | À faire | - |
-| 014 | Drag & Drop | 3 | Moyenne | 5h | À faire | 011 |
-| 015 | WebSocket | 4 | Basse | 8h | À faire | - |
-| 016 | Chat | 4 | Basse | 6h | À faire | 015 |
-| 017 | Lanceur Dés | 4 | Basse | 5h | À faire | 015 |
-| 018 | Sessions | 4 | Basse | 8h | À faire | 016, 017 |
-| **019** | **Migration Données** | **Migration** | **Critique** | **3h** | **À faire** | **004, 009A** |
-| **020** | **Doc Utilisateur** | **Doc** | **Important** | **2h** | **À faire** | **010** |
+## Tasks MVP v1.0 (Phases 1-3)
+
+| ID | Nom | Phase | Priorité | Temps | Statut | Version |
+|----|-----|-------|----------|-------|--------|---------|
+| 001 | Config Playspace/Hack | 1 | P0 | 2h | À faire | MVP |
+| 002 | Traductions LITM | 1 | P0 | 4h | À faire | MVP |
+| 003 | Composable i18n | 1 | P0 | 2h | À faire | MVP |
+| 004 | Modèle Prisma | 2 | P0 | 4h | À faire | MVP |
+| 004-bis | Composants UI Base | 2 | P0 | 3h | À faire | MVP |
+| 005 | ThemeCard.vue | 2 | P0 | 6h | À faire | MVP |
+| 006 | HeroCard.vue | 2 | P0 | 5h | À faire | MVP |
+| 007 | Trackers | 2 | P0 | 4h | À faire | MVP |
+| 008 | Store Pinia | 2 | P0 | 3h | À faire | MVP |
+| 009A | API Characters | 2 | P0 | 3h | À faire | MVP |
+| 009B | API Cards & Trackers | 2 | P0 | 3h | À faire | MVP |
+| 010 | Page création | 2 | P0 | 6h | À faire | MVP |
+| 010-bis | Tests E2E | 2 | P0 | 4h | À faire | MVP |
+| 019 | Export/Import JSON | 3 | P0 | 3h | À faire | MVP |
+| 020 | Doc Utilisateur | 3 | P0 | 2h | À faire | MVP |
+
+**Total MVP** : 54h
+
+## Tasks Post-MVP (Phases 4-5)
+
+| ID | Nom | Phase | Priorité | Temps | Version |
+|----|-----|-------|----------|-------|---------|
+| 011 | Drawer System | 4 | P1 | 6h | v1.4 |
+| 012 | Undo/Redo | 4 | P1 | 4h | v1.1 |
+| 013 | Command Palette | 4 | P2 | 3h | v1.1 |
+| 014 | Drag & Drop | 4 | P1 | 5h | v1.4 |
+| 015 | WebSocket | 5 | P2 | 8h | v2.5 |
+| 016 | Chat | 5 | P2 | 6h | v2.5 |
+| 017 | Lanceur Dés | 5 | P1 | 5h | v1.3 |
+| 018 | Sessions | 5 | P2 | 8h | v2.5 |
 
 **Total révisé** : 102h (au lieu de 86-102h)
 
-### Changements par Phase
+### Répartition par Version
 
-| Phase | Avant | Après | Delta |
-|-------|-------|-------|-------|
-| Phase 1 | 8h (3 tasks) | 8h (3 tasks) | - |
-| Phase 2 | 33h (7 tasks) | 44h (10 tasks) | +11h |
-| Phase 3 | 18h (4 tasks) | 18h (4 tasks) | - |
-| Phase 4 | 27h (4 tasks) | 27h (4 tasks) | - |
-| Migration | - | 3h (1 task) | +3h |
-| Documentation | - | 2h (1 task) | +2h |
-| **TOTAL** | **86h (18 tasks)** | **102h (23 tasks)** | **+16h** |
+| Version | Phases | Temps | Description |
+|---------|--------|-------|-------------|
+| **MVP v1.0** | 1-3 | 54h | Playspace, Personnages LITM, Export JSON |
+| **v1.1** | - | 7h | Undo/Redo, Dark mode, Command Palette |
+| **v1.3** | - | 5h | Système de jets de dés |
+| **v1.4** | - | 11h | Drawer System, Drag & Drop |
+| **v2.0** | - | Non estimé | Investigation Board |
+| **v2.5** | 5 | 28h | Multi-joueurs, WebSocket, Chat |
+| **TOTAL** | - | **105h** | Toutes fonctionnalités |
 
 ---
 
 # Notes de Développement
 
 ## Décisions Architecturales
+
+### Architecture Playspace et Univers LITM
+
+Le hack LITM du Mist Engine propose deux univers officiels :
+- **Zamanora** : Royaume fantastique classique, forêts enchantées, contes de fées
+- **HOR (Hearts of Ravensdale)** : Académie de magie, intrigues adolescentes, urban fantasy
+
+Les personnages LITM héritent automatiquement leur contexte système/hack/univers du playspace actif. Voir [../ARCHITECTURE/15-playspace-contexte-unique.md](../ARCHITECTURE/15-playspace-contexte-unique.md) pour l'architecture détaillée.
 
 ### Pourquoi Vue 3 au lieu de React ?
 
@@ -707,12 +747,14 @@ Les traductions sont organisées par domaine :
 | Scalabilité WebSocket (Phase 4) | Élevé | Architecture modulaire, possibilité d'utiliser un service externe |
 | Volume de traductions à gérer | Faible | Système i18n robuste, validation automatique |
 
-## Prochaines Étapes Immédiates
+## Prochaines Étapes Immédiates (MVP v1.0)
 
-1. Créer les fichiers de task individuels dans `documentation/tasks/`
-2. Commencer par TASK-001 (Config i18n)
-3. Valider chaque phase avant de passer à la suivante
-4. Documenter les décisions techniques au fur et à mesure
+1. **Phase 1** : Configurer le playspace avec hack LITM et univers disponibles (Zamanora, HOR)
+2. **Phase 2** : Implémenter les composants de personnages LITM (Theme Cards, Hero Card, Trackers)
+3. **Phase 3** : Ajouter l'export/import JSON pour sauvegarde et migration
+4. **Tests E2E** : Valider l'ensemble du workflow de création de personnage
+
+**Note** : Les fonctionnalités avancées (Drawer, Undo/Redo, Jets de dés, Multi-joueurs) sont **reportées post-MVP** conformément au scope défini dans [01-mvp-v1.0-scope.md](./01-mvp-v1.0-scope.md).
 
 ## Références
 
@@ -721,3 +763,9 @@ Les traductions sont organisées par domaine :
 - [Legends in the Mist - Son of Oak](https://cityofmist.co)
 - [Documentation Nuxt i18n](https://i18n.nuxtjs.org/)
 - [Documentation Prisma](https://www.prisma.io/docs)
+
+---
+
+**Dernière mise à jour** : 2025-01-20
+**Alignement** : Architecture Système/Hack/Univers (voir [../ARCHITECTURE/00-GLOSSAIRE.md](../ARCHITECTURE/00-GLOSSAIRE.md))
+**Scope MVP** : Phases 1-3 uniquement (voir [01-mvp-v1.0-scope.md](./01-mvp-v1.0-scope.md))

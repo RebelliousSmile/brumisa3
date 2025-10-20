@@ -34,6 +34,7 @@ output/
 uploads/
 tmp/
 temp/
+documentation/SOURCES/
 
 # IDE
 .DS_Store

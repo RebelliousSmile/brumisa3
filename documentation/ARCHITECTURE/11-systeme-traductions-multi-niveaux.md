@@ -5,11 +5,14 @@
 Architecture de traductions internationalisees (i18n) avec heritage en cascade pour supporter les personnalisations a trois niveaux hierarchiques :
 
 ```
-SYSTEME (City of Mist, LITM, Otherscape)
+SYSTEME (Mist Engine - base commune)
   |
-  +-- HACK (Night's Black Agents, Cyberpunk City)
+  +-- HACK (LITM, Otherscape, City of Mist - variantes mecaniques)
       |
-      +-- UNIVERS / PLAYSPACE (New York 2099, Victorian London)
+      +-- UNIVERS / PLAYSPACE (settings narratifs specifiques)
+          - LITM : Zamanora, HOR (Hearts of Ravensdale)
+          - Otherscape : Tokyo:Otherscape, Cairo:2001
+          - City of Mist : The City (defaut)
 ```
 
 Chaque niveau peut surcharger les traductions du niveau parent, permettant des adaptations de terminologie specifiques sans dupliquer les donnees.
@@ -18,11 +21,14 @@ Chaque niveau peut surcharger les traductions du niveau parent, permettant des a
 
 ### Besoin Fonctionnel
 
-Le Mist Engine supporte plusieurs systemes de jeu (City of Mist, LITM, Otherscape) qui peuvent etre hackables et personnalises :
+Le Mist Engine est le systeme de base qui supporte plusieurs hacks (City of Mist, LITM, Otherscape) qui peuvent etre personnalises avec des univers specifiques :
 
-- **Systeme** : Terminologie de base du jeu (ex: "Mythos", "Logos", "Power Tags")
-- **Hack** : Adaptation thematique (ex: "Runner" au lieu de "Character" pour Cyberpunk)
-- **Univers** : Customisation specifique a un playspace (ex: "Operative" pour un univers d'espionnage)
+- **Systeme (Mist Engine)** : Terminologie de base commune (ex: "Tags", "Themes", "Status")
+- **Hack** : Adaptation mecanique et thematique (ex: "Power Tags" vs "Gift Tags" pour LITM)
+  - LITM : Fantasy heroique avec milestones
+  - Otherscape : Cyberpunk avec essence
+  - City of Mist : Noir urbain avec Mythos/Logos
+- **Univers** : Settings narratifs specifiques (ex: Zamanora pour LITM, Tokyo pour Otherscape)
 
 ### Contraintes Techniques
 

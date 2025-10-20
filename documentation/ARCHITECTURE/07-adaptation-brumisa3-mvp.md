@@ -5,7 +5,11 @@
 **Hiérarchie Système → Hack → Univers** :
 - **Système** : Mist Engine (base commune)
 - **Hack** : LITM, Otherscape (variantes mécaniques du Mist Engine)
-- **Univers** : Chicago Noir, Londres Victorien (settings narratifs)
+  - LITM : Fantasy héroïque, quêtes épiques
+  - Otherscape : Cyberpunk, réalités alternatives
+- **Univers** : Settings narratifs spécifiques à chaque hack
+  - LITM : Zamanora, HOR (Hearts of Ravensdale)
+  - Otherscape : Tokyo:Otherscape, Cairo:2001
 
 **Important** : LITM (Legends in the Mist) est un **hack du Mist Engine**, pas un système distinct.
 

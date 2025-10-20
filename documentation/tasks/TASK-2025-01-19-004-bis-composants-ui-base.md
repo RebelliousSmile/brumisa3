@@ -1,327 +1,457 @@
-# Task - Composants UI de Base LITM
+# Task - Composants UI de Base Génériques
 
 ## Métadonnées
 
 - **ID**: TASK-2025-01-19-004-bis
-- **Date de création**: 2025-01-19
-- **Créé par**: Claude
-- **Priorité**: Haute
+- **Date de création**: 2025-01-20
+- **Priorité**: P0 (MVP)
 - **Statut**: À faire
 - **Temps estimé**: 3h
-- **Temps réel**: -
+- **Version cible**: MVP v1.0
 
 ## Description
 
 ### Objectif
 
-Créer les composants UI de base réutilisables pour tout le système LITM, afin d'éviter la duplication de code dans les cartes, trackers et autres composants.
+Créer les composants UI de base réutilisables pour tous les hacks, avec adaptation automatique selon le contexte du playspace.
 
 ### Contexte
 
-Les composants ThemeCard, HeroCard, et Trackers partagent beaucoup de patterns communs : édition de tags, système de pips, mode édition/lecture, etc. Créer ces composants de base en premier réduit la duplication et assure la cohérence UI.
+Les différents hacks (LITM, City of Mist, Otherscape) partagent des patterns UI communs mais avec des variations dans la terminologie et les styles. Les composants de base doivent être génériques tout en supportant ces variations.
 
 ### Périmètre
 
 **Inclus dans cette tâche**:
-- Composant CardBase.vue (wrapper réutilisable pour toutes les cartes)
-- Composant EditableTag.vue (tag éditable utilisé partout)
-- Composant PipIndicator.vue (système de pips/points)
-- Composant EditModeToggle.vue (bascule édition/lecture)
-- Composant FlipCard.vue (animation flip recto/verso)
-- Helpers et composables partagés
+- Composant CardBase.vue (wrapper pour toutes les cartes)
+- Composant EditableTag.vue (tags adaptables)
+- Composant PipIndicator.vue (progression universelle)
+- Composant EditModeToggle.vue (mode édition)
+- Composant FlipCard.vue (animation générique)
+- Composables partagés avec contexte
 
-**Exclu de cette tâche** (à traiter séparément):
-- Logique métier spécifique aux cartes de thème
-- Logique métier spécifique aux trackers
-- Intégration avec Prisma (sera dans les tasks suivantes)
+**Exclu de cette tâche**:
+- Logique métier spécifique aux hacks
+- Intégration avec Prisma
 
-## Spécifications Techniques
+## Architecture
 
-### Stack & Technologies
-
-- **Framework**: Nuxt 4 + Vue 3 Composition API
-- **Langage**: TypeScript
-- **Styling**: Tailwind CSS
-- **Tests**: Vitest + @nuxt/test-utils
-
-### Architecture
+### Structure des Composants
 
 ```
-app/components/litm/base/
-├── CardBase.vue           # Wrapper pour cartes
-├── EditableTag.vue        # Tag éditable
-├── PipIndicator.vue       # Système de pips
+app/components/ui/
+├── CardBase.vue           # Wrapper universel pour cartes
+├── EditableTag.vue        # Tag avec styles selon hack
+├── PipIndicator.vue       # Indicateur de progression
 ├── EditModeToggle.vue     # Toggle édition/lecture
-├── FlipCard.vue           # Animation flip
-└── LitmButton.vue         # Bouton stylisé LITM
+├── FlipCard.vue           # Animation flip générique
+└── BaseButton.vue         # Bouton avec thème adaptatif
 
-app/composables/litm/
-├── useEditMode.ts         # Gestion mode édition
-└── usePips.ts             # Gestion des pips
+app/composables/
+├── useEditMode.ts         # Mode édition global
+├── usePips.ts             # Gestion des progressions
+└── useTheme.ts            # Thème selon le hack
 ```
-
-### Fichiers Concernés
-
-**Nouveaux fichiers**:
-- [ ] `app/components/litm/base/CardBase.vue`
-- [ ] `app/components/litm/base/EditableTag.vue`
-- [ ] `app/components/litm/base/PipIndicator.vue`
-- [ ] `app/components/litm/base/EditModeToggle.vue`
-- [ ] `app/components/litm/base/FlipCard.vue`
-- [ ] `app/components/litm/base/LitmButton.vue`
-- [ ] `app/composables/litm/useEditMode.ts`
-- [ ] `app/composables/litm/usePips.ts`
-- [ ] `tests/components/litm/base/BaseComponents.spec.ts`
 
 ## Plan d'Implémentation
 
-### Étape 1: CardBase.vue
+### Étape 1: CardBase.vue Générique
 
-**Objectif**: Créer le wrapper de base pour toutes les cartes
+```vue
+<!-- app/components/ui/CardBase.vue -->
+<template>
+  <div
+    class="card-base"
+    :class="`card-base--${hackTheme}`"
+    :data-test="'card-base'"
+  >
+    <header v-if="title || subtitle" class="card-base__header">
+      <h3 v-if="title" class="card-base__title">
+        {{ title }}
+      </h3>
+      <span v-if="subtitle" class="card-base__subtitle">
+        {{ subtitle }}
+      </span>
+    </header>
 
-**Fonctionnalités**:
-- Props: title, subtitle, flippable
-- Slots: front, back, actions
-- Gestion du flip si activé
-- Classes Tailwind communes
+    <div class="card-base__content">
+      <slot name="content" />
+    </div>
 
-**Critères de validation**:
-- Le composant s'affiche correctement
-- Les slots fonctionnent
-- Le flip est optionnel
+    <footer v-if="$slots.actions" class="card-base__actions">
+      <slot name="actions" />
+    </footer>
+  </div>
+</template>
 
-### Étape 2: EditableTag.vue
+<script setup lang="ts">
+import { computed } from 'vue';
+import { usePlayspaceStore } from '@/stores/playspace';
 
-**Objectif**: Tag éditable réutilisable
-
-**Fonctionnalités**:
-- Props: modelValue, editable, type (power/weakness)
-- Events: update:modelValue, delete
-- Mode lecture: affichage simple
-- Mode édition: input inline
-- Bouton de suppression (si editable)
-
-**Critères de validation**:
-- v-model fonctionne
-- L'édition inline fonctionne
-- Les styles power/weakness sont appliqués
-
-### Étape 3: PipIndicator.vue
-
-**Objectif**: Indicateur de progression avec pips
-
-**Fonctionnalités**:
-- Props: current, max, labels (Abandon, Améliorer, etc.)
-- Events: update
-- Cliquable pour modifier
-- Affichage visuel des états
-
-**Critères de validation**:
-- Les pips s'affichent correctement
-- Le clic fonctionne
-- Les labels sont affichés aux bons endroits
-
-### Étape 4: EditModeToggle.vue & Composable
-
-**Objectif**: Gestion globale du mode édition
-
-**Fonctionnalités**:
-- Composable `useEditMode()` avec état global
-- Toggle button
-- Raccourci clavier (optionnel)
-- Persistance de la préférence
-
-**Critères de validation**:
-- Le mode édition se propage à tous les composants
-- La préférence est sauvegardée
-- Le toggle fonctionne
-
-### Étape 5: FlipCard.vue
-
-**Objectif**: Animation de flip pour les cartes
-
-**Fonctionnalités**:
-- Slots: front, back
-- Animation CSS smooth
-- Support touch mobile
-- Props: flipped (v-model)
-
-**Critères de validation**:
-- L'animation est fluide
-- Fonctionne sur mobile
-- Pas de glitch visuel
-
-### Étape 6: Composable usePips.ts
-
-**Objectif**: Logique réutilisable pour les pips
-
-**Fonctionnalités**:
-```typescript
-export const usePips = (initialValue = 0, max = 4) => {
-  const pips = ref(initialValue)
-
-  const increment = () => { /* ... */ }
-  const decrement = () => { /* ... */ }
-  const setPips = (value: number) => { /* ... */ }
-  const getLabel = () => { /* Abandon/Améliorer/etc */ }
-
-  return { pips, increment, decrement, setPips, getLabel }
+interface CardBaseProps {
+  title?: string;
+  subtitle?: string;
 }
+
+defineProps<CardBaseProps>();
+
+const playspaceStore = usePlayspaceStore();
+const hackTheme = computed(() =>
+  playspaceStore.currentPlayspace?.hack?.slug || 'default'
+);
+</script>
+
+<style scoped>
+/* Styles de base */
+.card-base {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4;
+}
+
+/* Variations par hack */
+.card-base--litm {
+  @apply border-2 border-amber-300;
+}
+
+.card-base--city-of-mist {
+  @apply border-2 border-gray-500;
+}
+
+.card-base--otherscape {
+  @apply border-2 border-purple-500;
+}
+</style>
 ```
 
-**Critères de validation**:
-- Les fonctions fonctionnent
-- Les limites sont respectées (0-max)
-- Les labels sont corrects
+### Étape 2: EditableTag.vue Adaptatif
 
-### Étape 7: Tests unitaires
+```vue
+<!-- app/components/ui/EditableTag.vue -->
+<template>
+  <div
+    class="tag"
+    :class="tagClasses"
+    :data-test="`tag-${type}`"
+  >
+    <input
+      v-if="editable && isEditing"
+      v-model="localValue"
+      @blur="save"
+      @keyup.enter="save"
+      @keyup.escape="cancel"
+      class="tag__input"
+      :aria-label="t('ui.tag.edit')"
+    />
+    <span
+      v-else
+      @click="editable && startEdit()"
+      class="tag__content"
+    >
+      {{ modelValue }}
+    </span>
 
-**Objectif**: Tester tous les composants de base
+    <button
+      v-if="editable && !isEditing"
+      @click="$emit('delete')"
+      class="tag__delete"
+      :aria-label="t('ui.tag.delete')"
+    >
+      ×
+    </button>
+  </div>
+</template>
 
-**Actions**:
-- [ ] Tester CardBase
-- [ ] Tester EditableTag (v-model, delete)
-- [ ] Tester PipIndicator (clicks, états)
-- [ ] Tester EditModeToggle
-- [ ] Tester FlipCard (animation)
-- [ ] Tester usePips composable
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
+import { usePlayspaceStore } from '@/stores/playspace';
 
-**Critères de validation**:
-- Tous les tests passent
-- Couverture > 85%
+interface TagProps {
+  modelValue: string;
+  type?: 'power' | 'weakness' | 'neutral';
+  editable?: boolean;
+}
 
-## Tests
+const props = defineProps<TagProps>();
+const emit = defineEmits(['update:modelValue', 'delete']);
 
-### Tests Unitaires
+const { t } = useTranslations();
+const playspaceStore = usePlayspaceStore();
+
+const isEditing = ref(false);
+const localValue = ref(props.modelValue);
+
+// Classes adaptées selon le hack
+const tagClasses = computed(() => {
+  const hack = playspaceStore.currentPlayspace?.hack?.slug;
+  const base = ['tag', `tag--${props.type}`];
+
+  if (hack) {
+    base.push(`tag--${hack}`);
+  }
+
+  return base;
+});
+
+const startEdit = () => {
+  isEditing.value = true;
+  localValue.value = props.modelValue;
+};
+
+const save = () => {
+  emit('update:modelValue', localValue.value);
+  isEditing.value = false;
+};
+
+const cancel = () => {
+  localValue.value = props.modelValue;
+  isEditing.value = false;
+};
+</script>
+```
+
+### Étape 3: PipIndicator.vue Universel
+
+```vue
+<!-- app/components/ui/PipIndicator.vue -->
+<template>
+  <div class="pip-indicator" :data-test="'pip-indicator'">
+    <span class="pip-indicator__label">
+      {{ getLabel(current) }}
+    </span>
+
+    <div class="pip-indicator__pips">
+      <button
+        v-for="i in max"
+        :key="i"
+        @click="editable && setPip(i)"
+        class="pip"
+        :class="{ 'pip--filled': i <= current }"
+        :disabled="!editable"
+        :aria-label="`${t('ui.pip.set')} ${i}`"
+        :data-test="`pip-${i}`"
+      >
+        <span class="pip__icon">{{ getPipIcon(i) }}</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useTranslations } from '@/composables/useTranslations';
+import { usePlayspaceStore } from '@/stores/playspace';
+
+interface PipProps {
+  current: number;
+  max?: number;
+  editable?: boolean;
+  labels?: string[];
+}
+
+const props = withDefaults(defineProps<PipProps>(), {
+  max: 4,
+  editable: false
+});
+
+const emit = defineEmits(['update']);
+const { t } = useTranslations();
+const playspaceStore = usePlayspaceStore();
+
+// Labels adaptatifs selon le hack
+const getLabel = (value: number) => {
+  if (props.labels?.[value]) {
+    return props.labels[value];
+  }
+
+  // Traduction contextuelle selon le hack
+  return t(`progress.level.${value}`, `Level ${value}`);
+};
+
+// Icônes selon le hack
+const getPipIcon = (index: number) => {
+  const hack = playspaceStore.currentPlayspace?.hack?.slug;
+
+  switch (hack) {
+    case 'litm':
+      return '●'; // Point simple
+    case 'city-of-mist':
+      return '◆'; // Diamant
+    case 'otherscape':
+      return '▲'; // Triangle
+    default:
+      return '●';
+  }
+};
+
+const setPip = (value: number) => {
+  emit('update', value);
+};
+</script>
+```
+
+### Étape 4: Composable useEditMode
 
 ```typescript
-describe('EditableTag', () => {
-  it('should display value in read mode', () => {
-    const wrapper = mount(EditableTag, {
-      props: { modelValue: 'Test Tag', editable: false }
-    })
-    expect(wrapper.text()).toContain('Test Tag')
-  })
+// app/composables/useEditMode.ts
+import { ref, readonly } from 'vue';
 
-  it('should emit update on change in edit mode', async () => {
-    const wrapper = mount(EditableTag, {
-      props: { modelValue: 'Test', editable: true }
-    })
-    await wrapper.find('input').setValue('New Value')
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-  })
-})
+const globalEditMode = ref(false);
 
-describe('usePips', () => {
-  it('should increment pips correctly', () => {
-    const { pips, increment } = usePips(0, 4)
-    increment()
-    expect(pips.value).toBe(1)
-  })
+export const useEditMode = () => {
+  const isEditMode = readonly(globalEditMode);
 
-  it('should not exceed max', () => {
-    const { pips, increment } = usePips(3, 4)
-    increment()
-    increment() // Should not go beyond 4
-    expect(pips.value).toBe(4)
-  })
-})
+  const toggleEditMode = () => {
+    globalEditMode.value = !globalEditMode.value;
+
+    // Sauvegarder la préférence
+    localStorage.setItem('editMode', String(globalEditMode.value));
+  };
+
+  const setEditMode = (value: boolean) => {
+    globalEditMode.value = value;
+    localStorage.setItem('editMode', String(value));
+  };
+
+  // Restaurer la préférence au chargement
+  const initEditMode = () => {
+    const saved = localStorage.getItem('editMode');
+    if (saved !== null) {
+      globalEditMode.value = saved === 'true';
+    }
+  };
+
+  return {
+    isEditMode,
+    toggleEditMode,
+    setEditMode,
+    initEditMode
+  };
+};
 ```
 
-## Dépendances
+### Étape 5: Composable useTheme
 
-### Bloqueurs
+```typescript
+// app/composables/useTheme.ts
+import { computed } from 'vue';
+import { usePlayspaceStore } from '@/stores/playspace';
 
-- [ ] TASK-001 (i18n config) pour les traductions des labels
+export const useTheme = () => {
+  const playspaceStore = usePlayspaceStore();
 
-### Dépendances Externes
+  const hackSlug = computed(() =>
+    playspaceStore.currentPlayspace?.hack?.slug || 'default'
+  );
 
-Aucune librairie externe requise (utilise Vue 3 + Tailwind)
+  const themeColors = computed(() => {
+    switch (hackSlug.value) {
+      case 'litm':
+        return {
+          primary: 'amber',
+          secondary: 'orange',
+          accent: 'yellow'
+        };
+      case 'city-of-mist':
+        return {
+          primary: 'gray',
+          secondary: 'slate',
+          accent: 'zinc'
+        };
+      case 'otherscape':
+        return {
+          primary: 'purple',
+          secondary: 'violet',
+          accent: 'indigo'
+        };
+      default:
+        return {
+          primary: 'blue',
+          secondary: 'indigo',
+          accent: 'cyan'
+        };
+    }
+  });
 
-### Tâches Liées
+  const getComponentClass = (base: string) => {
+    return `${base} ${base}--${hackSlug.value}`;
+  };
 
-- **TASK-001**: Bloqueur (pour i18n)
-- **TASK-005, 006, 007**: Utiliseront ces composants de base
-- **TASK-004**: Peut être fait en parallèle (DB indépendant)
+  return {
+    hackSlug: readonly(hackSlug),
+    themeColors: readonly(themeColors),
+    getComponentClass
+  };
+};
+```
+
+### Étape 6: Tests E2E
+
+```typescript
+// tests/e2e/components/ui-base.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('UI Base Components', () => {
+  test('should adapt styles based on playspace hack', async ({ page }) => {
+    // Créer playspace LITM
+    await setupPlayspace(page, 'litm', 'zamanora');
+    await page.goto('/character/create');
+
+    // Vérifier le thème LITM
+    const card = page.locator('.card-base');
+    await expect(card).toHaveClass(/card-base--litm/);
+
+    // Changer vers playspace Otherscape
+    await switchPlayspace(page, 'otherscape', 'tokyo');
+
+    // Vérifier le thème Otherscape
+    await expect(card).toHaveClass(/card-base--otherscape/);
+  });
+
+  test('should use correct translations for tags', async ({ page }) => {
+    await setupPlayspace(page, 'litm', 'zamanora');
+    await page.goto('/character/create');
+
+    // Les labels devraient être traduits selon le hack
+    await expect(page.locator('.tag__label'))
+      .toContainText('Gift Tag'); // Traduction LITM
+  });
+
+  test('should toggle edit mode globally', async ({ page }) => {
+    await page.goto('/character/create');
+
+    // Activer le mode édition
+    await page.click('[data-test="edit-mode-toggle"]');
+
+    // Tous les composants devraient être éditables
+    await expect(page.locator('.tag')).toHaveClass(/tag--editable/);
+    await expect(page.locator('.pip')).not.toBeDisabled();
+  });
+});
+```
 
 ## Critères d'Acceptation
 
-- [ ] Le code respecte les principes SOLID et DRY
-- [ ] Les tests passent avec >85% de couverture
-- [ ] La documentation inline est complète
-- [ ] Le code suit les conventions du projet (CLAUDE.md)
-- [ ] Tous les composants sont réutilisables
-- [ ] Le TypeScript est strict (pas de `any`)
-- [ ] Les composants sont accessibles (a11y basique)
-- [ ] Les composants fonctionnent sur mobile
+- [ ] Composants s'adaptent au hack du playspace
+- [ ] Traductions contextuelles fonctionnent
+- [ ] Mode édition global se propage
+- [ ] Styles différenciés par hack
+- [ ] Accessible (ARIA labels)
+- [ ] Tests E2E passent
+- [ ] Performance <50ms pour render
 
-## Risques & Contraintes
+## Dépendances
 
-### Risques Identifiés
+- **Bloqué par**: TASK-001 (Système traductions)
+- **Bloque**: TASK-005, 006, 007 (Composants spécifiques)
 
-| Risque | Impact | Probabilité | Mitigation |
-|--------|--------|-------------|------------|
-| Composants trop génériques | Moyen | Moyen | Tester avec cas réels, ajuster si nécessaire |
-| Performance animation flip | Faible | Faible | Utiliser CSS transforms, pas de JS |
-| Complexité des props | Moyen | Faible | Garder l'API simple, documenter |
+## Notes
 
-### Contraintes
-
-- **Technique**: Doit être compatible SSR (Nuxt)
-- **Temporelle**: Maximum 3h
-- **Réutilisabilité**: Doit être utilisable par TOUS les autres composants LITM
-
-## Documentation
-
-### Documentation à Créer
-
-- [ ] README dans `app/components/litm/base/README.md`
-- [ ] Exemples d'utilisation pour chaque composant
-- [ ] Storybook ou documentation visuelle (optionnel)
-
-### Documentation à Mettre à Jour
-
-- [ ] Ajouter dans CLAUDE.md la convention d'utiliser ces composants de base
-
-## Notes de Développement
-
-### Décisions Techniques
-
-**2025-01-19**: Création de composants de base AVANT les composants métier
-- **Raison**: Éviter la duplication, assurer cohérence UI
-- **Gain estimé**: -4h sur Phase 2, meilleure maintenabilité
-
-**2025-01-19**: Utilisation de Composition API pour les composables
-- **Raison**: Meilleure réutilisabilité, typage TypeScript
-- **Alternative**: Options API (trop verbeux)
-
-### Design Patterns Utilisés
-
-- **Composant Wrapper** (CardBase): Inversion of Control via slots
-- **Composable Pattern** (useEditMode, usePips): Logique réutilisable
-- **V-Model Pattern** (EditableTag): Two-way binding
-
-## Résultat Final
-
-(À remplir une fois la tâche terminée)
-
-### Ce qui a été accompli
-
-- [À remplir]
-
-### Déviations par rapport au plan initial
-
-[À remplir]
-
-### Prochaines Étapes Suggérées
-
-- Utiliser ces composants dans TASK-005 (ThemeCard)
-- Créer des variants si nécessaire
-- Documenter les patterns d'utilisation
+Cette approche permet :
+- Réutilisabilité maximale entre hacks
+- Adaptation automatique au contexte
+- Extension facile pour nouveaux hacks
+- Cohérence UI à travers l'application
 
 ## Références
 
 - [Vue 3 Composition API](https://vuejs.org/guide/extras/composition-api-faq.html)
-- [Vue Component v-model](https://vuejs.org/guide/components/v-model.html)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [Accessible Components](https://www.w3.org/WAI/ARIA/apg/)
+- [Architecture Composants](../ARCHITECTURE/04-composants-vue-essentiels.md)

@@ -1,376 +1,376 @@
-# Task - Extraction et adaptation des traductions LITM
+# Task - Import des Traductions Multi-Niveaux dans PostgreSQL
 
 ## Métadonnées
 
 - **ID**: TASK-2025-01-19-002
-- **Date de création**: 2025-01-19
-- **Créé par**: Claude
-- **Priorité**: Haute
+- **Date de création**: 2025-01-20
+- **Priorité**: P0 (MVP)
 - **Statut**: À faire
 - **Temps estimé**: 4h
-- **Temps réel**: -
+- **Version cible**: MVP v1.0
 
 ## Description
 
 ### Objectif
 
-Extraire les traductions FR/EN du repository characters-of-the-mist et les adapter pour l'architecture Nuxt 4 de Brumisater.
+Importer les traductions depuis characters-of-the-mist dans la base de données PostgreSQL selon la hiérarchie **Système → Hack → Univers** définie dans l'architecture.
 
 ### Contexte
 
-Le projet characters-of-the-mist dispose de traductions complètes et de qualité pour "Legends in the Mist" (35 860 caractères en FR, 32 089 en EN). Ces traductions couvrent tous les aspects du jeu : cartes de thème, suivis, quêtes, interface utilisateur, etc.
+Suite à l'implémentation du système de traductions multi-niveaux (TASK-001), nous devons importer les traductions existantes dans la table `TranslationEntry` avec la bonne hiérarchie :
+
+- **Niveau SYSTEM** : Traductions communes Mist Engine
+- **Niveau HACK** : Traductions spécifiques LITM
+- **Niveau UNIVERSE** : Traductions pour Zamanora et HOR
 
 ### Périmètre
 
 **Inclus dans cette tâche**:
-- Téléchargement des fichiers messages/fr.json et messages/en.json
-- Extraction des sections pertinentes pour Brumisater
-- Adaptation de la structure JSON pour Nuxt i18n
-- Organisation par domaines (character, cards, trackers, ui, etc.)
-- Validation des fichiers JSON
+- Téléchargement des traductions depuis characters-of-the-mist
+- Analyse et catégorisation (System vs Hack vs Universe)
+- Script d'import dans PostgreSQL via Prisma
+- Validation de l'héritage en cascade
 
-**Exclu de cette tâche** (à traiter séparément):
-- Composable d'accès aux traductions (TASK-003)
-- Interface de changement de langue
-- Traductions pour d'autres systèmes de jeu
+**Exclu de cette tâche**:
+- Configuration i18n (TASK-001)
+- Traductions pour autres hacks (Otherscape, City of Mist)
+- Interface d'édition (Post-MVP)
 
-## Spécifications Techniques
+## Architecture
 
-### Stack & Technologies
+### Modèle de Données (depuis TASK-001)
 
-- **Framework**: Nuxt 4
-- **Module i18n**: @nuxtjs/i18n
-- **Format**: JSON
-- **Source**: GitHub API / MCP GitHub
+```prisma
+model TranslationEntry {
+  id          String              @id @default(cuid())
+  key         String
+  value       String              @db.Text
+  locale      String
+  category    TranslationCategory
+  description String?             @db.Text
 
-### Architecture
+  level       TranslationLevel    // SYSTEM, HACK, UNIVERSE
+  priority    Int                 // 1=System, 2=Hack, 3=Universe
 
-```
-app/locales/
-├── fr/
-│   ├── common.json              # Traductions communes
-│   ├── litm/
-│   │   ├── characters.json      # Personnages
-│   │   ├── cards.json           # Cartes de thème
-│   │   ├── trackers.json        # Suivis
-│   │   ├── ui.json              # Interface
-│   │   ├── themebooks.json      # Livres de thèmes
-│   │   └── errors.json          # Messages d'erreur
-└── en/
-    ├── common.json
-    └── litm/
-        ├── characters.json
-        ├── cards.json
-        ├── trackers.json
-        ├── ui.json
-        ├── themebooks.json
-        └── errors.json
+  systemId    String?
+  hackId      String?
+  universeId  String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 ```
 
-### Fichiers Concernés
+### Structure des Données
 
-**Nouveaux fichiers**:
-- [ ] `app/locales/fr/litm/characters.json`
-- [ ] `app/locales/fr/litm/cards.json`
-- [ ] `app/locales/fr/litm/trackers.json`
-- [ ] `app/locales/fr/litm/ui.json`
-- [ ] `app/locales/fr/litm/themebooks.json`
-- [ ] `app/locales/fr/litm/errors.json`
-- [ ] `app/locales/en/litm/` (même structure)
+```typescript
+// Catégorisation des traductions
+const SYSTEM_KEYS = [
+  'common.*',          // Termes génériques
+  'ui.buttons.*',      // Boutons standard
+  'errors.generic.*',  // Erreurs système
+  'auth.*'            // Authentification
+];
 
-**Fichiers à modifier**:
-- [ ] `app/i18n.config.ts` - Import des nouveaux fichiers
+const HACK_KEYS = [
+  'character.*',       // Mécaniques de personnage
+  'theme.*',          // Thèmes (LITM specific)
+  'moves.*',          // Actions de jeu
+  'status.*'          // États
+];
+
+const UNIVERSE_KEYS = [
+  'lore.*',           // Histoire du monde
+  'locations.*',      // Lieux spécifiques
+  'npcs.*',           // Personnages non-joueurs
+  'campaigns.*'       // Campagnes
+];
+```
 
 ## Plan d'Implémentation
 
-### Étape 1: Téléchargement des fichiers sources
+### Étape 1: Récupération des Traductions Source
 
-**Objectif**: Récupérer les fichiers de traduction depuis GitHub
+```typescript
+// scripts/import-translations.ts
+import { Octokit } from '@octokit/rest';
 
-**Actions**:
-- [ ] Utiliser MCP GitHub pour télécharger `messages/fr.json`
-- [ ] Utiliser MCP GitHub pour télécharger `messages/en.json`
-- [ ] Sauvegarder temporairement dans `documentation/sources/`
-- [ ] Vérifier l'intégrité des fichiers JSON
+async function fetchTranslations() {
+  const octokit = new Octokit();
 
-**Fichiers**:
-- `documentation/sources/characters-of-the-mist-fr.json` (temporaire)
-- `documentation/sources/characters-of-the-mist-en.json` (temporaire)
+  const frContent = await octokit.repos.getContent({
+    owner: 'Altervayne',
+    repo: 'characters-of-the-mist',
+    path: 'messages/fr.json'
+  });
 
-**Critères de validation**:
-- Les fichiers sont téléchargés sans erreur
-- Le JSON est valide et parsable
+  const enContent = await octokit.repos.getContent({
+    owner: 'Altervayne',
+    repo: 'characters-of-the-mist',
+    path: 'messages/en.json'
+  });
 
-### Étape 2: Analyse de la structure source
+  return {
+    fr: JSON.parse(Buffer.from(frContent.data.content, 'base64').toString()),
+    en: JSON.parse(Buffer.from(enContent.data.content, 'base64').toString())
+  };
+}
+```
 
-**Objectif**: Comprendre l'organisation des traductions source
+### Étape 2: Catégorisation des Traductions
 
-**Actions**:
-- [ ] Analyser la structure du fichier fr.json
-- [ ] Identifier les sections pertinentes pour Brumisater
-- [ ] Identifier les sections non pertinentes (à exclure)
-- [ ] Créer un mapping des clés vers les nouveaux fichiers
+```typescript
+function categorizeTranslations(translations: Record<string, any>) {
+  const entries: TranslationEntry[] = [];
 
-**Sections pertinentes identifiées**:
-- `CharacterSheetPage` → `characters.json`
-- `ThemeCard`, `HeroCard` → `cards.json`
-- `Trackers`, `PipTracker` → `trackers.json`
-- `LegendsData`, `ThemeTypes` → `themebooks.json`
-- `Errors`, `Notifications` → `errors.json`
-- Interface générale → `ui.json`
+  // Récupérer les IDs depuis la DB
+  const mistEngine = await prisma.system.findUnique({
+    where: { slug: 'mist-engine' }
+  });
+  const litm = await prisma.hack.findUnique({
+    where: { slug: 'litm' }
+  });
+  const zamanora = await prisma.universe.findUnique({
+    where: { slug: 'zamanora' }
+  });
 
-**Critères de validation**:
-- Toutes les sections sont catégorisées
-- Le mapping est documenté
+  function processKeys(obj: any, prefix = '') {
+    Object.entries(obj).forEach(([key, value]) => {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
 
-### Étape 3: Création de la structure de dossiers
+      if (typeof value === 'string') {
+        // Déterminer le niveau
+        let level: TranslationLevel;
+        let systemId = null;
+        let hackId = null;
+        let universeId = null;
+        let priority = 1;
 
-**Objectif**: Créer l'arborescence pour les traductions LITM
+        if (isSystemKey(fullKey)) {
+          level = 'SYSTEM';
+          systemId = mistEngine.id;
+          priority = 1;
+        } else if (isUniverseKey(fullKey)) {
+          level = 'UNIVERSE';
+          universeId = zamanora.id;
+          priority = 3;
+        } else {
+          level = 'HACK';
+          hackId = litm.id;
+          priority = 2;
+        }
 
-**Actions**:
-- [ ] Créer `app/locales/fr/litm/`
-- [ ] Créer `app/locales/en/litm/`
-- [ ] Créer les fichiers JSON vides avec structure de base
+        entries.push({
+          key: fullKey,
+          value,
+          locale: 'fr',
+          category: determineCategory(fullKey),
+          level,
+          priority,
+          systemId,
+          hackId,
+          universeId
+        });
+      } else if (typeof value === 'object') {
+        processKeys(value, fullKey);
+      }
+    });
+  }
 
-**Fichiers**: Tous les fichiers listés dans "Fichiers Concernés"
+  processKeys(translations);
+  return entries;
+}
+```
 
-**Critères de validation**:
-- La structure est créée
-- Les fichiers JSON sont valides (au moins `{}`)
+### Étape 3: Import dans PostgreSQL
 
-### Étape 4: Extraction et organisation - Français
+```typescript
+async function importToDatabase(entries: TranslationEntry[]) {
+  // Utiliser upsert pour éviter les doublons
+  const operations = entries.map(entry =>
+    prisma.translationEntry.upsert({
+      where: {
+        key_locale_level_systemId_hackId_universeId: {
+          key: entry.key,
+          locale: entry.locale,
+          level: entry.level,
+          systemId: entry.systemId,
+          hackId: entry.hackId,
+          universeId: entry.universeId
+        }
+      },
+      update: {
+        value: entry.value,
+        category: entry.category,
+        priority: entry.priority,
+        updatedAt: new Date()
+      },
+      create: entry
+    })
+  );
 
-**Objectif**: Extraire et organiser les traductions françaises
+  // Batch operations pour performance
+  await prisma.$transaction(operations);
 
-**Actions**:
-- [ ] Extraire les traductions de personnages → `characters.json`
-- [ ] Extraire les traductions de cartes → `cards.json`
-- [ ] Extraire les traductions de suivis → `trackers.json`
-- [ ] Extraire les traductions d'UI → `ui.json`
-- [ ] Extraire les traductions de themebooks → `themebooks.json`
-- [ ] Extraire les messages d'erreur → `errors.json`
+  console.log(`Imported ${entries.length} translations`);
+}
+```
 
-**Fichiers**: `app/locales/fr/litm/*.json`
+### Étape 4: Script Principal
 
-**Critères de validation**:
-- Toutes les traductions pertinentes sont extraites
-- La structure JSON est cohérente
-- Pas de traductions en double
+```typescript
+// scripts/import-translations.ts
+async function main() {
+  console.log('📥 Fetching translations from GitHub...');
+  const { fr, en } = await fetchTranslations();
 
-### Étape 5: Extraction et organisation - Anglais
+  console.log('🔍 Categorizing French translations...');
+  const frEntries = await categorizeTranslations(fr, 'fr');
 
-**Objectif**: Extraire et organiser les traductions anglaises
+  console.log('🔍 Categorizing English translations...');
+  const enEntries = await categorizeTranslations(en, 'en');
 
-**Actions**:
-- [ ] Répéter l'étape 4 pour l'anglais
-- [ ] Vérifier la correspondance des clés FR/EN
-- [ ] Documenter les clés manquantes dans une langue
+  console.log('💾 Importing to database...');
+  await importToDatabase([...frEntries, ...enEntries]);
 
-**Fichiers**: `app/locales/en/litm/*.json`
+  // Nettoyer le cache Redis
+  await redis.del('translations:*');
 
-**Critères de validation**:
-- Les clés FR et EN correspondent
-- Aucune clé orpheline
-- Les deux langues ont la même structure
+  console.log('✅ Import completed successfully!');
 
-### Étape 6: Adaptation pour Nuxt i18n
+  // Stats
+  const stats = await prisma.translationEntry.groupBy({
+    by: ['level', 'locale'],
+    _count: true
+  });
+  console.table(stats);
+}
 
-**Objectif**: Adapter la structure pour être compatible avec Nuxt i18n
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
+```
 
-**Actions**:
-- [ ] Aplatir les structures imbriquées si nécessaire
-- [ ] Adapter les placeholders (ex: `{name}` reste `{name}`)
-- [ ] Vérifier la syntaxe des pluriels
-- [ ] Ajouter des métadonnées (version, source, license)
+### Étape 5: Validation de la Cascade
 
-**Fichiers**: Tous les fichiers de traduction
+```typescript
+// tests/translations-cascade.test.ts
+test('Translation cascade resolution', async () => {
+  const service = new TranslationService();
 
-**Critères de validation**:
-- La syntaxe est compatible vue-i18n
-- Les placeholders fonctionnent
-- Les pluriels sont corrects
+  // Créer un playspace Zamanora
+  const playspace = await prisma.playspace.create({
+    data: {
+      name: 'Test Zamanora',
+      hackId: 'litm-id',
+      universeId: 'zamanora-id'
+    }
+  });
 
-### Étape 7: Configuration i18n
+  // Résoudre les traductions
+  const translations = await service.resolveTranslations(
+    'fr',
+    playspace.id
+  );
 
-**Objectif**: Intégrer les nouveaux fichiers dans la config i18n
+  // Vérifier la cascade
+  expect(translations.get('common.save')).toBe('Sauvegarder'); // System
+  expect(translations.get('character.name')).toBe('Nom du Héros'); // Hack (LITM)
+  expect(translations.get('lore.city')).toBe('Zamanora'); // Universe
+});
+```
 
-**Actions**:
-- [ ] Modifier `app/i18n.config.ts` pour importer les fichiers LITM
-- [ ] Tester le lazy loading
-- [ ] Vérifier que les traductions sont accessibles
+### Étape 6: Migration depuis l'Ancien Système
 
-**Fichiers**: `app/i18n.config.ts`
+Si des traductions existent déjà dans `app/locales/` :
 
-**Critères de validation**:
-- Les traductions LITM sont chargées
-- Le lazy loading fonctionne
-- Pas d'erreur au runtime
+```typescript
+async function migrateExistingTranslations() {
+  const files = glob.sync('app/locales/**/*.json');
 
-### Étape 8: Validation et tests
+  for (const file of files) {
+    const content = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    const locale = path.basename(path.dirname(file));
 
-**Objectif**: Valider que toutes les traductions fonctionnent
+    // Convertir et importer
+    const entries = flattenToEntries(content, locale);
+    await importToDatabase(entries);
+  }
 
-**Actions**:
-- [ ] Créer une page de test affichant des traductions LITM
-- [ ] Tester le changement de langue FR/EN
-- [ ] Vérifier les placeholders
-- [ ] Vérifier le fallback
-
-**Fichiers**: `app/pages/test-litm-i18n.vue` (temporaire)
-
-**Critères de validation**:
-- Toutes les traductions s'affichent
-- Le changement de langue fonctionne
-- Les placeholders sont remplacés correctement
+  console.log('🔄 Migration completed');
+}
+```
 
 ## Tests
 
-### Tests Unitaires
+### Tests d'Import
 
-- [ ] Test de parsing des fichiers JSON
-- [ ] Test de la correspondance des clés FR/EN
+- [ ] Test import traductions FR
+- [ ] Test import traductions EN
+- [ ] Test détection niveau (System/Hack/Universe)
+- [ ] Test upsert (pas de doublons)
 
-### Tests d'Intégration
+### Tests de Cascade
 
-- [ ] Test du chargement des traductions LITM
-- [ ] Test des placeholders avec valeurs dynamiques
+- [ ] Test résolution System → Hack → Universe
+- [ ] Test surcharge Hack sur System
+- [ ] Test surcharge Universe sur Hack
+- [ ] Test avec différents playspaces
 
-### Tests Manuels
+### Tests de Performance
 
-- [ ] Vérifier visuellement un échantillon de traductions
-- [ ] Tester le changement de langue
-- [ ] Vérifier la qualité des traductions françaises
+- [ ] Import de 1000+ traductions < 10s
+- [ ] Résolution avec cache < 50ms
+- [ ] Résolution sans cache < 150ms
 
-## Dépendances
+## Exemple d'Utilisation
 
-### Bloqueurs
+Après import, les traductions sont disponibles via le composable :
 
-- [ ] TASK-001 (Config i18n) doit être terminée
+```vue
+<template>
+  <div>
+    <!-- Résolu selon le playspace actif -->
+    <h1>{{ t('character.title') }}</h1>
 
-### Dépendances Externes
+    <!-- System: "Save", LITM: "Sauvegarder l'Alter" -->
+    <button>{{ t('common.save') }}</button>
 
-- [ ] Accès au repository Altervayne/characters-of-the-mist via MCP GitHub
+    <!-- Zamanora: "Les rues de Zamanora" -->
+    <p>{{ t('lore.city.description') }}</p>
+  </div>
+</template>
 
-### Tâches Liées
-
-- **TASK-001**: Bloqueur (config i18n)
-- **TASK-003**: Suivante (composable i18n)
+<script setup>
+const { t } = useTranslations();
+</script>
+```
 
 ## Critères d'Acceptation
 
-- [ ] Le code respecte les principes SOLID et DRY
-- [ ] Les tests passent avec succès
-- [ ] La documentation est à jour
-- [ ] Le code suit les conventions du projet (CLAUDE.md)
-- [ ] Toutes les traductions FR/EN sont extraites et organisées
-- [ ] La structure JSON est cohérente et maintenable
-- [ ] Les traductions sont accessibles via $t() et useI18n()
-- [ ] Le lazy loading fonctionne correctement
-- [ ] Crédits ajoutés dans les fichiers (source: Altervayne, license CC BY-NC-SA 4.0)
+- [ ] Import réussi des traductions FR et EN
+- [ ] Catégorisation correcte (System/Hack/Universe)
+- [ ] Pas de doublons dans la DB
+- [ ] Résolution en cascade fonctionne
+- [ ] Cache invalidé après import
+- [ ] Crédits Altervayne présents (CC BY-NC-SA 4.0)
+- [ ] Performance respectée (<10s import, <150ms résolution)
 
-## Risques & Contraintes
+## Dépendances
 
-### Risques Identifiés
+- **Bloqué par**: TASK-001 (Système de traductions multi-niveaux)
+- **Bloque**: TASK-003 (Composable useTranslations)
 
-| Risque | Impact | Probabilité | Mitigation |
-|--------|--------|-------------|------------|
-| Structure JSON incompatible avec vue-i18n | Moyen | Faible | Tests précoces, adaptation si nécessaire |
-| Traductions manquantes EN | Faible | Très faible | Utiliser FR comme fallback |
-| Volume important de traductions | Faible | Certain | Lazy loading, fichiers séparés par domaine |
+## Notes
 
-### Contraintes
-
-- **Légal**: Respecter la license CC BY-NC-SA 4.0 (attribution requise)
-- **Technique**: Fichiers JSON doivent être valides
-- **Temporelle**: Maximum 4h
-- **Qualité**: Préserver la qualité des traductions originales
-
-## Documentation
-
-### Documentation à Créer
-
-- [ ] Fichier `app/locales/README.md` expliquant la structure
-- [ ] Commentaires dans chaque fichier JSON (source, license, version)
-- [ ] Mapping des clés original → nouveau dans la doc
-
-### Documentation à Mettre à Jour
-
-- [ ] Ajouter les crédits à Altervayne dans le README principal
-- [ ] Documenter la structure des traductions LITM
-
-## Revue & Validation
-
-### Checklist avant Review
-
-- [ ] Tous les fichiers JSON sont valides
-- [ ] Les clés FR et EN correspondent
-- [ ] Les crédits sont présents
-- [ ] La structure est documentée
-- [ ] Les tests passent
-
-### Reviewers
-
-- [ ] Validation technique (structure JSON correcte)
-- [ ] Validation linguistique (qualité des traductions)
-
-### Critères de Validation
-
-- [ ] Code review approuvée
-- [ ] Structure validée
-- [ ] Traductions vérifiées (échantillon)
-
-## Notes de Développement
-
-### Décisions Techniques
-
-**2025-01-19**: Organisation par domaines plutôt qu'un seul fichier
-- **Raison**: 35 000+ caractères, trop volumineux pour un seul fichier
-- **Avantage**: Lazy loading plus granulaire, meilleure maintenabilité
-
-**2025-01-19**: Préservation de la structure originale autant que possible
-- **Raison**: Facilite les futures mises à jour depuis la source
-- **Avantage**: Traçabilité, simplicité
-
-### Sections de characters-of-the-mist à exclure
-
-- `Drawer` : Fonctionnalité spécifique à leur app (Phase 3)
-- `CommandPalette` : Fonctionnalité spécifique (Phase 3)
-- `MigrationDialog` : Non pertinent pour Brumisater
-- `Tutorial` : À adapter si on crée un tutorial
-
-### Problèmes Rencontrés
-
-(À remplir pendant l'implémentation)
-
-### Questions & Réponses
-
-**Q**: Faut-il préserver la structure imbriquée complexe ?
-**R**: Simplifier si nécessaire pour vue-i18n, documenter les changements
-
-**Q**: Comment gérer les mises à jour futures des traductions source ?
-**R**: Documenter le mapping, créer un script de synchronisation si besoin
-
-## Résultat Final
-
-(À remplir une fois la tâche terminée)
-
-### Ce qui a été accompli
-
-- [À remplir]
-
-### Déviations par rapport au plan initial
-
-[À remplir]
-
-### Prochaines Étapes Suggérées
-
-- Passer à TASK-003 (Composable i18n)
-- Créer un script de synchronisation avec la source
+Cette approche permet :
+- Import unique des traductions existantes
+- Évolution future vers d'autres hacks/univers
+- Surcharge granulaire par niveau
+- Performance optimale avec cache
 
 ## Références
 
-- [characters-of-the-mist - Repository source](https://github.com/Altervayne/characters-of-the-mist)
-- [messages/fr.json](https://github.com/Altervayne/characters-of-the-mist/blob/master/messages/fr.json)
-- [messages/en.json](https://github.com/Altervayne/characters-of-the-mist/blob/master/messages/en.json)
+- [Architecture Traductions](../ARCHITECTURE/11-systeme-traductions-multi-niveaux.md)
+- [characters-of-the-mist](https://github.com/Altervayne/characters-of-the-mist)
 - [License CC BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/)
-- [Vue I18n - Message Format Syntax](https://vue-i18n.intlify.dev/guide/essentials/syntax.html)

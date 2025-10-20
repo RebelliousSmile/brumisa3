@@ -1,5 +1,11 @@
 # Definition du MVP - Brumisa3 v1.0
 
+**Note** : Ce document décrit les **FONCTIONNALITES DETAILLEES** du MVP. Pour le scope global et la roadmap, consultez :
+
+→ **[../DEVELOPPEMENT/01-mvp-v1.0-scope.md](../DEVELOPPEMENT/01-mvp-v1.0-scope.md)** - Source de vérité unique
+
+---
+
 ## Philosophie du MVP
 
 **Objectif** : Livrer la version minimale qui permet aux utilisateurs de **jouer en mode solo** avec le systeme Mist Engine / City of Mist.
