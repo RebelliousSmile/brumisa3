@@ -1,0 +1,44 @@
+/**
+ * EXEMPLE : API route pour créer un utilisateur
+ * avec validation basée sur le modèle TypeScript
+ */
+
+import { validateBody } from '~/server/utils/model-validator'
+import { USER_MODEL } from '~/server/config/models'
+import { Role } from '~/server/config/models/types'
+
+export default defineEventHandler(async (event) => {
+  // Validation automatique du body selon USER_MODEL
+  const validatedData = await validateBody(event, 'User', 'create')
+
+  // validatedData est maintenant typé et validé !
+  // Les champs requis sont garantis présents
+  // Les enums sont vérifiés
+  // Les longueurs max sont respectées
+  // Etc.
+
+  try {
+    // Créer l'utilisateur en DB avec Prisma
+    const user = await prisma.utilisateurs.create({
+      data: {
+        nom: validatedData.nom,
+        email: validatedData.email,
+        motDePasse: validatedData.motDePasse,
+        role: validatedData.role || Role.UTILISATEUR,
+        statut: validatedData.statut,
+        // ... autres champs
+      }
+    })
+
+    return {
+      success: true,
+      data: user
+    }
+  } catch (error: any) {
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to create user',
+      data: error.message
+    })
+  }
+})

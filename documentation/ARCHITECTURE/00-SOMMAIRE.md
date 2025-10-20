@@ -241,6 +241,65 @@ Patterns identifiés:
 - Groupement par themebook pour improvements
 - Essence dynamique calculée (Otherscape)
 
+### [11-systeme-traductions-multi-niveaux.md](./11-systeme-traductions-multi-niveaux.md)
+**Système de Traductions Multi-Niveaux avec Héritage en Cascade**
+
+### [12-configuration-systemes-jeu.md](./12-configuration-systemes-jeu.md)
+**Configuration des Systèmes de Jeu (Mist et City of Mist)**
+
+Contenu:
+- Architecture TypeScript pour systèmes et hacks
+- Définition programmatique (thèmes, progression, validation)
+- Registry central et helpers
+- Utilisation dans composables et composants Vue
+
+### [13-modeles-typescript-validation.md](./13-modeles-typescript-validation.md)
+**Modèles TypeScript et Validation Runtime**
+
+Contenu:
+- Architecture TypeScript-first pour modèles de données
+- Types de base et enums (Role, StatutDocument, etc.)
+- Modèles génériques (User, Document, Character, ThemeCard, Tracker)
+- Génération automatique schémas Zod
+- Validation runtime dans API routes
+- Workflow de développement et tests
+
+### [14-integration-modeles-systemes.md](./14-integration-modeles-systemes.md)
+**Intégration Modèles TypeScript et Systèmes de Jeu**
+
+Contenu:
+- Problématique : Personnalisation terminologie par niveau hiérarchique
+- Schéma Prisma unifié avec modèle polymorphique (élimine duplication)
+- Service de résolution en cascade avec 1 seule requête PostgreSQL
+- API routes Nitro (resolve, hierarchy, override)
+- Composable Vue `useTranslations()` avec cache client automatique
+- Composant d'édition `TranslationEditor.vue` avec visualisation hiérarchie
+- Stratégie cache multi-niveaux (Client → Redis → PostgreSQL)
+- Tests E2E Playwright pour cascade d'héritage
+- Roadmap implémentation (4 semaines)
+- Métriques performance (~50ms PostgreSQL, ~3ms Redis, <1ms cache client)
+
+Architecture clé:
+- **Modèle unifié** : 1 table `TranslationEntry` avec `level` (SYSTEM/HACK/UNIVERSE) et `priority` (1/2/3)
+- **Relations polymorphiques** : `systemId`, `hackId`, `universeId` (une seule active)
+- **Résolution optimisée** : 1 requête avec OR + tri par priorité + résolution mémoire O(n)
+- **Cache global partagé** : Vue composable avec Map réactive
+
+Catégories supportées:
+- CHARACTER, PLAYSPACE, GAME_MECHANICS, UI, THEMES, MOVES, STATUSES
+
+Exemple d'héritage:
+- SYSTEM (LITM) : `character.name = "Name"`
+- HACK (Cyberpunk) : `character.name = "Runner Name"` (override)
+- UNIVERSE (Neo Tokyo) : `character.name = "Operative Codename"` (override final)
+
+Avantages:
+- Performance : 50x plus rapide avec cache (150ms → 3ms)
+- DRY : Pas de duplication de structure
+- Traçabilité : Visualisation complète de l'arbre d'héritage
+- Rollback : Suppression override = retour au parent
+- Scalabilité : Support milliers de traductions sans dégradation
+
 ## Synthèse des Patterns Identifiés
 
 ### Pattern 1: Modèle Actor-Item (FoundryVTT)
@@ -433,4 +492,4 @@ Cette documentation doit être mise à jour lors de:
 - Ajout de nouvelles fonctionnalités complexes
 - Retours d'expérience d'implémentation
 
-Dernière mise à jour: 2025-01-19 (Adaptation MVP v1.0 Brumisa3)
+Dernière mise à jour: 2025-01-20 (Système de Traductions Multi-Niveaux)

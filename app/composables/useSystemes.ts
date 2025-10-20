@@ -1,3 +1,6 @@
+import type { SystemConfig } from '~/server/config/systems'
+import type { HackConfig } from '~/server/config/hacks'
+
 interface SystemeJeu {
   id: string
   nomComplet: string
@@ -9,6 +12,7 @@ interface SystemeJeu {
   couleurSecondaire?: string
   pictogramme?: string
   univers?: UniversJeu[]
+  config?: SystemConfig
 }
 
 interface UniversJeu {
@@ -223,6 +227,44 @@ export const useSystemes = () => {
   }
 
   /**
+   * Récupère la configuration programmatique d'un système
+   */
+  const getSystemConfig = (systemeId: string): SystemConfig | undefined => {
+    const systeme = systemes.value.find(s => s.id === systemeId)
+    return systeme?.config
+  }
+
+  /**
+   * Récupère la configuration d'un hack
+   * Note: Un hack hérite de la config de son système parent avec des overrides
+   */
+  const getHackConfig = async (hackId: string): Promise<HackConfig | null> => {
+    try {
+      const hack = await $fetch(`/api/hacks/${hackId}`)
+      return hack
+    } catch (err: any) {
+      console.error('Erreur récupération hack:', err)
+      return null
+    }
+  }
+
+  /**
+   * Récupère les types de thèmes pour un système
+   */
+  const getThemeTypes = (systemeId: string) => {
+    const config = getSystemConfig(systemeId)
+    return config?.themeTypes || []
+  }
+
+  /**
+   * Récupère les règles de validation pour un système
+   */
+  const getValidationRules = (systemeId: string) => {
+    const config = getSystemConfig(systemeId)
+    return config?.validation
+  }
+
+  /**
    * Reset de tous les états
    */
   const reset = () => {
@@ -253,7 +295,14 @@ export const useSystemes = () => {
     getIconPourSysteme,
     getNomCompletSysteme,
     estSystemeSupporte,
+    getSystemConfig,
+    getHackConfig,
+    getThemeTypes,
+    getValidationRules,
     clearError,
     reset
   }
 }
+
+// Export des types pour utilisation externe
+export type { SystemeJeu, UniversJeu, SystemCard }

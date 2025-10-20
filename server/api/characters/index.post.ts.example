@@ -1,0 +1,62 @@
+/**
+ * EXEMPLE : Création d'un personnage avec validation système-aware
+ */
+
+import { validateBody } from '~/server/utils/model-validator'
+import { getSystemConfig } from '~/server/config/systems'
+
+export default defineEventHandler(async (event) => {
+  // 1. Validation de base avec le modèle Character
+  const validatedData = await validateBody(event, 'Character', 'create')
+
+  // 2. Validation spécifique au système
+  const systemConfig = getSystemConfig(validatedData.systemId)
+
+  if (!systemConfig) {
+    throw createError({
+      statusCode: 400,
+      message: `Invalid system: ${validatedData.systemId}`
+    })
+  }
+
+  // 3. Vérifier que le hack est compatible avec le système
+  if (validatedData.hackId) {
+    // Pour LITM, vérifier qu'il est basé sur Mist
+    if (validatedData.hackId === 'litm' && validatedData.systemId !== 'mist') {
+      throw createError({
+        statusCode: 400,
+        message: 'LITM hack requires Mist system'
+      })
+    }
+  }
+
+  try {
+    // 4. Créer le personnage
+    const character = await prisma.characters.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: validatedData.userId,
+        playspaceId: validatedData.playspaceId,
+        systemId: validatedData.systemId,
+        hackId: validatedData.hackId,
+        name: validatedData.name,
+        description: validatedData.description,
+        avatar: validatedData.avatar,
+        data: validatedData.data || {},
+        dateCreation: new Date(),
+        dateModification: new Date()
+      }
+    })
+
+    return {
+      success: true,
+      data: character
+    }
+  } catch (error: any) {
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to create character',
+      data: error.message
+    })
+  }
+})
