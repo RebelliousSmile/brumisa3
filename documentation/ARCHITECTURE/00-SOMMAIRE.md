@@ -244,35 +244,12 @@ Patterns identifiés:
 ### [11-systeme-traductions-multi-niveaux.md](./11-systeme-traductions-multi-niveaux.md)
 **Système de Traductions Multi-Niveaux avec Héritage en Cascade**
 
-### [12-configuration-systemes-jeu.md](./12-configuration-systemes-jeu.md)
-**Configuration des Systèmes de Jeu (Mist et City of Mist)**
-
 Contenu:
-- Architecture TypeScript pour systèmes et hacks
-- Définition programmatique (thèmes, progression, validation)
-- Registry central et helpers
-- Utilisation dans composables et composants Vue
-
-### [13-modeles-typescript-validation.md](./13-modeles-typescript-validation.md)
-**Modèles TypeScript et Validation Runtime**
-
-Contenu:
-- Architecture TypeScript-first pour modèles de données
-- Types de base et enums (Role, StatutDocument, etc.)
-- Modèles génériques (User, Document, Character, ThemeCard, Tracker)
-- Génération automatique schémas Zod
-- Validation runtime dans API routes
-- Workflow de développement et tests
-
-### [14-integration-modeles-systemes.md](./14-integration-modeles-systemes.md)
-**Intégration Modèles TypeScript et Systèmes de Jeu**
-
-Contenu:
-- Problématique : Personnalisation terminologie par niveau hiérarchique
+- Problématique : Personnalisation terminologie par niveau hiérarchique (Système → Hack → Univers)
 - Schéma Prisma unifié avec modèle polymorphique (élimine duplication)
 - Service de résolution en cascade avec 1 seule requête PostgreSQL
 - API routes Nitro (resolve, hierarchy, override)
-- Composable Vue `useTranslations()` avec cache client automatique
+- **Composable Vue `useTranslations()` avec contexte automatique depuis playspace actif**
 - Composant d'édition `TranslationEditor.vue` avec visualisation hiérarchie
 - Stratégie cache multi-niveaux (Client → Redis → PostgreSQL)
 - Tests E2E Playwright pour cascade d'héritage
@@ -280,6 +257,7 @@ Contenu:
 - Métriques performance (~50ms PostgreSQL, ~3ms Redis, <1ms cache client)
 
 Architecture clé:
+- **Playspace comme contexte unique** : `useTranslations()` sans paramètres utilise le playspace actif
 - **Modèle unifié** : 1 table `TranslationEntry` avec `level` (SYSTEM/HACK/UNIVERSE) et `priority` (1/2/3)
 - **Relations polymorphiques** : `systemId`, `hackId`, `universeId` (une seule active)
 - **Résolution optimisée** : 1 requête avec OR + tri par priorité + résolution mémoire O(n)
@@ -289,9 +267,9 @@ Catégories supportées:
 - CHARACTER, PLAYSPACE, GAME_MECHANICS, UI, THEMES, MOVES, STATUSES
 
 Exemple d'héritage:
-- SYSTEM (LITM) : `character.name = "Name"`
-- HACK (Cyberpunk) : `character.name = "Runner Name"` (override)
-- UNIVERSE (Neo Tokyo) : `character.name = "Operative Codename"` (override final)
+- SYSTEM (Mist) : `character.name = "Name"`
+- HACK (LITM) : `character.name = "Hero Name"` (override)
+- UNIVERSE (New York 2099) : `character.name = "Operative Codename"` (override final)
 
 Avantages:
 - Performance : 50x plus rapide avec cache (150ms → 3ms)
@@ -299,6 +277,90 @@ Avantages:
 - Traçabilité : Visualisation complète de l'arbre d'héritage
 - Rollback : Suppression override = retour au parent
 - Scalabilité : Support milliers de traductions sans dégradation
+
+### [12-configuration-systemes-jeu.md](./12-configuration-systemes-jeu.md)
+**Configuration des Systèmes de Jeu (Mist et City of Mist)**
+
+Contenu:
+- Architecture TypeScript pour systèmes et hacks
+- Définition programmatique (thèmes, progression, validation)
+- Registry central et helpers
+- Utilisation dans composables et composants Vue
+- **Intégration avec playspace comme source de vérité**
+
+### [13-modeles-typescript-validation.md](./13-modeles-typescript-validation.md)
+**Modèles TypeScript et Validation Runtime**
+
+Contenu:
+- Architecture TypeScript-first pour modèles de données (Option C)
+- Types de base et enums (Role, StatutDocument, StatutUtilisateur, etc.)
+- Modèles génériques (User, Document, Character, ThemeCard, Tracker)
+- **Character générique fonctionnant pour tous systèmes Mist Engine**
+- Génération automatique schémas Zod depuis ModelDefinition
+- Validation runtime dans API routes avec `validateBody()`
+- Workflow de développement et tests
+- Séparation claire : Models = structure, Systems = règles métier
+
+Principe clé:
+- **Pas de modèles spécifiques par système** (pas de LitmCharacter, MistCharacter)
+- **Un seul CHARACTER_MODEL** avec `playspaceId` qui hérite système du playspace parent
+- **Validation adaptative** : Base (Zod) + Système (config) + Métier (helpers)
+
+### [14-integration-modeles-systemes.md](./14-integration-modeles-systemes.md)
+**Intégration Modèles TypeScript et Systèmes de Jeu**
+
+Contenu:
+- Comment modèles génériques s'intègrent avec configurations systèmes
+- **Rôle central du playspace comme source de vérité pour systemId/hackId**
+- Workflow validation : Modèle (structure) → Système (règles) → Métier (cohérence)
+- Exemples complets : création personnage, création thème, validation complète
+- Helpers réutilisables (`validateCharacter`, `validateTheme`)
+- **Personnages héritent contexte du playspace parent**
+- Tests validation modèle vs validation système
+
+Architecture clé:
+- **Playspace définit le système** : Character récupère system via `character.playspace.systemId`
+- **Cohérence garantie** : Impossible de créer personnage City of Mist dans playspace Mist
+- **Validation contextuelle** : Config système déterminée par playspace
+- **Performance** : Include playspace dans requêtes pour éviter N+1
+
+Avantages:
+- Type Safety end-to-end
+- Réutilisabilité (un modèle pour tous systèmes)
+- Maintenabilité (séparation structure/règles)
+- Extensibilité (nouveau système = nouvelle config seulement)
+
+### [15-playspace-contexte-unique.md](./15-playspace-contexte-unique.md)
+**Le Playspace comme Contexte Unique**
+
+Contenu:
+- **Principe fondamental** : Le playspace est le contexte unique de travail
+- Responsabilités du playspace (source vérité système, contexte personnages, contexte traductions)
+- Workflow utilisateur (sélection playspace actif, switch, store Pinia)
+- **Intégration avec architectures** : System Configs, i18n, Validation
+- Avantages : cohérence garantie, simplicité, performance, UX intuitive
+- Cas particuliers : personnages orphelins, tâches admin multi-playspaces
+- Schéma d'architecture complet
+- Workflow de développement (création playspace, personnage, récupération)
+- Tests E2E (cohérence système-personnage, switch playspace)
+
+Principe clé:
+- **Un playspace à la fois** : L'utilisateur travaille toujours dans un seul playspace (sauf admin)
+- **Composables simplifiés** : `useTranslations()`, `useSystemConfig()` sans paramètres
+- **Héritage automatique** : `character.playspace.systemId` au lieu de `character.systemId`
+
+Règles d'or:
+1. ✅ Toujours récupérer systemId/hackId depuis le playspace
+2. ✅ Jamais stocker systemId directement sur Character (ou dénormalisation seulement)
+3. ✅ Utiliser playspace actif par défaut dans composables
+4. ✅ Valider cohérence playspace ↔ système à la création
+5. ✅ Exposer playspaceId optionnel pour tâches admin
+
+Avantages:
+- **Cohérence** : Impossible de créer données incohérentes
+- **Simplicité** : Un seul contexte à gérer
+- **Performance** : Cache optimisé par playspace
+- **UX** : Modèle mental clair (je travaille sur mon univers X)
 
 ## Synthèse des Patterns Identifiés
 
@@ -492,4 +554,4 @@ Cette documentation doit être mise à jour lors de:
 - Ajout de nouvelles fonctionnalités complexes
 - Retours d'expérience d'implémentation
 
-Dernière mise à jour: 2025-01-20 (Système de Traductions Multi-Niveaux)
+Dernière mise à jour: 2025-01-20 (Architecture Playspace Contexte Unique)

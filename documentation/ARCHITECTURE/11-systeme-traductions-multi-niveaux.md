@@ -509,6 +509,15 @@ export default defineEventHandler(async (event) => {
 
 ## Composable Vue avec Cache Client
 
+### Principe : Le Playspace comme Contexte Unique
+
+Dans l'application, **le playspace actif définit le contexte complet** :
+- Système (Mist, City of Mist)
+- Hack optionnel (LITM, etc.)
+- Univers (le playspace lui-même)
+
+L'utilisateur ne travaille **jamais sur plusieurs playspaces simultanément** (sauf tâches admin rares). Le composable utilise donc le playspace actif par défaut.
+
 ### Composable useTranslations
 
 ```typescript
@@ -529,20 +538,47 @@ interface TranslationCache {
   }
 }
 
+interface TranslationContext {
+  systemId: string
+  hackId?: string
+  playspaceId: string
+}
+
 // Cache global partage entre composants
 const translationCache = ref<TranslationCache>({})
 const loadingCategories = ref<Set<string>>(new Set())
 
-export function useTranslations(context: {
-  systemId: string
-  hackId?: string
-  playspaceId?: string
-}) {
+/**
+ * Hook de traductions avec contexte automatique depuis le playspace actif
+ *
+ * @param playspaceId - ID du playspace (optionnel, utilise le playspace actif par défaut)
+ */
+export function useTranslations(playspaceId?: string) {
+  const playspaceStore = usePlayspaceStore()
+
+  // Utiliser le playspace actif si non spécifié
+  const contextPlayspaceId = playspaceId || playspaceStore.current?.id
+
+  if (!contextPlayspaceId) {
+    throw new Error('[useTranslations] No active playspace. Please select a playspace first.')
+  }
+
+  // Récupérer le playspace pour obtenir systemId et hackId
+  const { data: playspace } = useFetch(`/api/playspaces/${contextPlayspaceId}`)
+
+  // Construction du contexte depuis le playspace
+  const context = computed<TranslationContext>(() => ({
+    systemId: playspace.value?.systemId || '',
+    hackId: playspace.value?.hackId,
+    playspaceId: contextPlayspaceId
+  }))
+
   /**
    * Fonction de traduction avec auto-loading
    */
   const t = async (key: string, category: TranslationCategory): Promise<string> => {
-    const cacheKey = `${context.systemId}_${context.hackId}_${context.playspaceId}_${category}`
+    const ctx = context.value
+    const cacheKey = `${ctx.systemId}_${ctx.hackId}_${ctx.playspaceId}_${category}`
 
     // Cache hit
     if (translationCache.value[cacheKey]?.[key]) {
@@ -562,7 +598,8 @@ export function useTranslations(context: {
    * Chargement d'une categorie complete
    */
   const loadCategory = async (category: TranslationCategory) => {
-    const cacheKey = `${context.systemId}_${context.hackId}_${context.playspaceId}_${category}`
+    const ctx = context.value
+    const cacheKey = `${ctx.systemId}_${ctx.hackId}_${ctx.playspaceId}_${category}`
 
     if (loadingCategories.value.has(cacheKey)) {
       // Deja en cours de chargement
@@ -574,9 +611,9 @@ export function useTranslations(context: {
     try {
       const response = await $fetch('/api/translations/resolve', {
         params: {
-          systemId: context.systemId,
-          hackId: context.hackId,
-          playspaceId: context.playspaceId,
+          systemId: ctx.systemId,
+          hackId: ctx.hackId,
+          playspaceId: ctx.playspaceId,
           category,
         },
       })
@@ -607,6 +644,8 @@ export function useTranslations(context: {
     level: 'HACK' | 'UNIVERSE',
     description?: string
   ) => {
+    const ctx = context.value
+
     await $fetch('/api/translations/override', {
       method: 'POST',
       body: {
@@ -615,14 +654,14 @@ export function useTranslations(context: {
         category,
         level,
         description,
-        systemId: context.systemId,
-        hackId: context.hackId,
-        playspaceId: context.playspaceId,
+        systemId: ctx.systemId,
+        hackId: ctx.hackId,
+        playspaceId: ctx.playspaceId,
       },
     })
 
     // Invalider le cache pour cette categorie
-    const cacheKey = `${context.systemId}_${context.hackId}_${context.playspaceId}_${category}`
+    const cacheKey = `${ctx.systemId}_${ctx.hackId}_${ctx.playspaceId}_${category}`
     delete translationCache.value[cacheKey]
 
     await loadCategory(category)
@@ -636,20 +675,22 @@ export function useTranslations(context: {
     category: TranslationCategory,
     level: 'HACK' | 'UNIVERSE'
   ) => {
+    const ctx = context.value
+
     await $fetch('/api/translations/override', {
       method: 'DELETE',
       body: {
         key,
         category,
         level,
-        systemId: context.systemId,
-        hackId: context.hackId,
-        playspaceId: context.playspaceId,
+        systemId: ctx.systemId,
+        hackId: ctx.hackId,
+        playspaceId: ctx.playspaceId,
       },
     })
 
     // Invalider le cache
-    const cacheKey = `${context.systemId}_${context.hackId}_${context.playspaceId}_${category}`
+    const cacheKey = `${ctx.systemId}_${ctx.hackId}_${ctx.playspaceId}_${category}`
     delete translationCache.value[cacheKey]
 
     await loadCategory(category)
@@ -659,13 +700,15 @@ export function useTranslations(context: {
    * Recuperation de la hierarchie pour l'UI
    */
   const getHierarchy = async (key: string, category: TranslationCategory) => {
+    const ctx = context.value
+
     return await $fetch('/api/translations/hierarchy', {
       params: {
         key,
         category,
-        systemId: context.systemId,
-        hackId: context.hackId,
-        playspaceId: context.playspaceId,
+        systemId: ctx.systemId,
+        hackId: ctx.hackId,
+        playspaceId: ctx.playspaceId,
       },
     })
   }
@@ -674,8 +717,10 @@ export function useTranslations(context: {
    * Invalidation manuelle du cache (utile pour refresh)
    */
   const invalidateCache = (category?: TranslationCategory) => {
+    const ctx = context.value
+
     if (category) {
-      const cacheKey = `${context.systemId}_${context.hackId}_${context.playspaceId}_${category}`
+      const cacheKey = `${ctx.systemId}_${ctx.hackId}_${ctx.playspaceId}_${category}`
       delete translationCache.value[cacheKey]
     } else {
       translationCache.value = {}
@@ -690,11 +735,16 @@ export function useTranslations(context: {
     removeOverride,
     getHierarchy,
     invalidateCache,
+    context, // Exposer le contexte pour debug/admin
   }
 }
 ```
 
 ### Exemple d'Utilisation dans un Composant
+
+#### Utilisation Simplifiée (Cas Courant)
+
+Le composant utilise automatiquement le playspace actif :
 
 ```vue
 <!-- components/Character/CharacterForm.vue -->
@@ -702,18 +752,8 @@ export function useTranslations(context: {
 <script setup lang="ts">
 import { useTranslations } from '~/composables/useTranslations'
 
-const props = defineProps<{
-  playspaceId: string
-}>()
-
-// Recuperer le contexte du playspace (systemId, hackId)
-const { data: playspace } = await useFetch(`/api/playspaces/${props.playspaceId}`)
-
-const { t, preloadCategories } = useTranslations({
-  systemId: playspace.value.systemId,
-  hackId: playspace.value.hackId,
-  playspaceId: props.playspaceId,
-})
+// ✅ Simple : contexte automatique depuis le playspace actif
+const { t, preloadCategories } = useTranslations()
 
 // Precharger les categories necessaires
 await preloadCategories(['CHARACTER', 'THEMES'])
@@ -734,6 +774,35 @@ const mythosLabel = await t('character.mythos', 'CHARACTER')
 </template>
 ```
 
+#### Utilisation avec Playspace Explicite (Tâches Admin)
+
+Pour les rares cas où on doit travailler sur un playspace différent de l'actif :
+
+```vue
+<!-- components/Admin/PlayspaceComparison.vue -->
+
+<script setup lang="ts">
+const props = defineProps<{
+  playspaceId1: string
+  playspaceId2: string
+}>()
+
+// Comparer deux playspaces différents
+const { t: t1 } = useTranslations(props.playspaceId1)
+const { t: t2 } = useTranslations(props.playspaceId2)
+
+const label1 = await t1('character.name', 'CHARACTER')
+const label2 = await t2('character.name', 'CHARACTER')
+</script>
+
+<template>
+  <div class="comparison">
+    <div>Playspace 1: {{ label1 }}</div>
+    <div>Playspace 2: {{ label2 }}</div>
+  </div>
+</template>
+```
+
 ## Composant d'Edition des Traductions
 
 ### Composant TranslationEditor
@@ -748,14 +817,11 @@ import { useTranslations } from '~/composables/useTranslations'
 const props = defineProps<{
   translationKey: string
   category: string
-  context: {
-    systemId: string
-    hackId?: string
-    playspaceId?: string
-  }
+  playspaceId?: string // Optionnel, utilise le playspace actif par défaut
 }>()
 
-const { getHierarchy, createOverride, removeOverride } = useTranslations(props.context)
+// Utilise le playspace actif ou celui fourni
+const { getHierarchy, createOverride, removeOverride, context } = useTranslations(props.playspaceId)
 
 const hierarchy = ref([])
 const isLoading = ref(false)
@@ -832,7 +898,7 @@ onMounted(() => {
 
     <div v-if="!editMode" class="actions">
       <button
-        v-if="context.hackId"
+        v-if="context.value.hackId"
         @click="editMode = 'HACK'"
         class="btn-primary"
       >
@@ -840,7 +906,6 @@ onMounted(() => {
       </button>
 
       <button
-        v-if="context.playspaceId"
         @click="editMode = 'UNIVERSE'"
         class="btn-primary"
       >

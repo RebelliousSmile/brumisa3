@@ -6,6 +6,8 @@ Comment les **modèles TypeScript génériques** (Character, ThemeCard, Tracker)
 
 **Principe clé** : Les modèles sont génériques, la validation s'adapte au système via la configuration.
 
+**Contexte unifié** : Le **playspace définit le système et le hack** utilisés. Les personnages héritent ce contexte de leur playspace parent.
+
 ---
 
 ## Architecture
@@ -43,6 +45,87 @@ export const CITY_OF_MIST_SYSTEM = {
   ]
 }
 ```
+
+---
+
+## Rôle du Playspace comme Source de Vérité
+
+### Principe
+
+Le **playspace est le contexte unique** qui définit :
+- Le système utilisé (Mist, City of Mist)
+- Le hack optionnel (LITM, etc.)
+- L'univers (le playspace lui-même)
+
+**Les personnages héritent ce contexte de leur playspace** :
+
+```typescript
+// Prisma schema (simplifié)
+model Playspace {
+  id          String   @id
+  systemId    String   // "mist", "city-of-mist"
+  hackId      String?  // "litm" ou null
+
+  characters  Character[]
+}
+
+model Character {
+  id           String    @id
+  playspaceId  String
+
+  playspace    Playspace @relation(...)
+
+  // systemId et hackId hérités du playspace
+  // (peuvent être dénormalisés pour performance/validation)
+}
+```
+
+### Validation Cohérente
+
+Lors de la création d'un personnage, on récupère le système depuis le playspace :
+
+```typescript
+// API: POST /api/characters
+
+export default defineEventHandler(async (event) => {
+  const data = await validateBody(event, 'Character', 'create')
+
+  // 1. Récupérer le playspace pour connaître le système
+  const playspace = await prisma.playspace.findUnique({
+    where: { id: data.playspaceId }
+  })
+
+  if (!playspace) {
+    throw createError({ statusCode: 404, message: 'Playspace not found' })
+  }
+
+  // 2. Le système vient du playspace (source unique de vérité)
+  const systemConfig = getSystemConfig(playspace.systemId)
+
+  if (playspace.hackId) {
+    const hackConfig = getHackConfig(playspace.hackId)
+    // Appliquer les overrides du hack
+  }
+
+  // 3. Créer le personnage avec cohérence garantie
+  const character = await prisma.character.create({
+    data: {
+      ...data,
+      playspaceId: playspace.id
+      // systemId/hackId peuvent être dénormalisés ici pour performance
+    }
+  })
+
+  return { success: true, data: character }
+})
+```
+
+### Avantages
+
+1. **Cohérence garantie** : Impossible de créer un personnage City of Mist dans un playspace Mist
+2. **Simplicité** : Un seul contexte à gérer (le playspace actif)
+3. **Performance** : Cache par playspace, invalidation simple
+4. **UX intuitive** : L'utilisateur change de playspace → tout le contexte change
 
 ---
 
@@ -138,16 +221,27 @@ export default defineEventHandler(async (event) => {
 export default defineEventHandler(async (event) => {
   const characterId = getRouterParam(event, 'id')
 
-  // 1. Récupérer personnage pour connaître le système
+  // 1. Récupérer personnage avec son playspace pour connaître le système
   const character = await prisma.characters.findUnique({
-    where: { id: characterId }
+    where: { id: characterId },
+    include: { playspace: true }
   })
+
+  if (!character || !character.playspace) {
+    throw createError({ statusCode: 404, message: 'Character or playspace not found' })
+  }
 
   // 2. Validation modèle
   const data = await validateBody(event, 'ThemeCard', 'create')
 
-  // 3. Récupérer config système
-  const systemConfig = getSystemConfig(character.systemId)
+  // 3. Récupérer config système depuis le playspace (source de vérité)
+  const systemConfig = getSystemConfig(character.playspace.systemId)
+
+  // Appliquer hack si applicable
+  if (character.playspace.hackId) {
+    const hackConfig = getHackConfig(character.playspace.hackId)
+    // Merge configurations
+  }
 
   // 4. Valider type de thème selon système
   const themeTypeConfig = systemConfig.themeTypes.find(
@@ -158,7 +252,7 @@ export default defineEventHandler(async (event) => {
     const validTypes = systemConfig.themeTypes.map(t => t.code).join(', ')
     throw createError({
       statusCode: 400,
-      message: `Invalid theme type. Valid types for ${character.systemId}: ${validTypes}`
+      message: `Invalid theme type. Valid types for ${character.playspace.systemId}: ${validTypes}`
     })
   }
 
@@ -202,23 +296,24 @@ Exemple de validation complète lors de la sauvegarde/publication :
 export default defineEventHandler(async (event) => {
   const characterId = getRouterParam(event, 'id')
 
-  // Récupérer personnage avec tous ses thèmes
+  // Récupérer personnage avec tous ses thèmes et son playspace
   const character = await prisma.characters.findUnique({
     where: { id: characterId },
     include: {
       themeCards: true,
-      trackers: true
+      trackers: true,
+      playspace: true
     }
   })
 
-  if (!character) {
-    throw createError({ statusCode: 404, message: 'Character not found' })
+  if (!character || !character.playspace) {
+    throw createError({ statusCode: 404, message: 'Character or playspace not found' })
   }
 
-  // Récupérer config système (ou hack si applicable)
-  const config = character.hackId
-    ? await getHackConfig(character.hackId)
-    : getSystemConfig(character.systemId)
+  // Récupérer config système depuis le playspace (source unique de vérité)
+  const config = character.playspace.hackId
+    ? await getHackConfig(character.playspace.hackId)
+    : getSystemConfig(character.playspace.systemId)
 
   const errors: string[] = []
 
@@ -280,12 +375,17 @@ import { getSystemConfig } from '~/server/config/systems'
 import { getHackConfig } from '~/server/config/hacks'
 
 export async function validateCharacter(character: any) {
-  const config = character.hackId
-    ? await getHackConfig(character.hackId)
-    : getSystemConfig(character.systemId)
+  // Le character doit inclure son playspace
+  if (!character.playspace) {
+    throw new Error('Character must include playspace relation')
+  }
+
+  const config = character.playspace.hackId
+    ? await getHackConfig(character.playspace.hackId)
+    : getSystemConfig(character.playspace.systemId)
 
   if (!config) {
-    throw new Error(`Invalid system/hack: ${character.systemId}/${character.hackId}`)
+    throw new Error(`Invalid system/hack: ${character.playspace.systemId}/${character.playspace.hackId}`)
   }
 
   const errors: string[] = []
