@@ -47,6 +47,7 @@ const getRoleBadgeClass = (role: string) => {
     ? 'bg-orange-100 text-orange-800 border-orange-300'
     : 'bg-blue-100 text-blue-800 border-blue-300'
 }
+</script>
 
 <template>
   <aside

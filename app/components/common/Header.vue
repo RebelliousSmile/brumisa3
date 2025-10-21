@@ -68,6 +68,7 @@ const handleLogout = async () => {
   // await authStore.logout()
   // navigateTo('/auth/login')
 }
+</script>
 
 <template>
   <header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
