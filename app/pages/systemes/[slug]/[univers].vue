@@ -1,3 +1,122 @@
+<script setup lang="ts">
+const route = useRoute()
+const { obtenirSysteme, getCouleursPourSysteme, getIconPourSysteme } = useSystemes()
+
+const slug = route.params.slug as string
+const univers = route.params.univers as string
+
+// Récupérer les données du système via API
+const { data: systemData, pending } = await useLazyAsyncData(`system-${slug}`, () => 
+  obtenirSysteme(slug)
+)
+
+// Récupérer les oracles pour ce système
+const { data: oracles } = await useLazyAsyncData(`oracles-${slug}`, () => 
+  $fetch(`/api/oracles?systeme=${slug}`)
+)
+
+// Récupérer les templates disponibles
+const { data: templates } = await useLazyAsyncData(`templates-${slug}`, () => 
+  $fetch(`/api/templates?systeme=${slug}`).catch(() => [])
+)
+
+// Configuration dynamique basée sur les données API
+const systemConfig = computed(() => {
+  if (!systemData.value) return null
+
+  const colors = getCouleursPourSysteme(slug)
+  const system = systemData.value
+
+  // Configuration de base adaptée dynamiquement
+  const baseConfig = {
+    hero: {
+      gradient: getGradientForSystem(slug),
+      icone: getIconPourSysteme(slug),
+      couleurIcone: colors.classes.text,
+      titre: system.nomComplet,
+      description: system.description || `Créez des aides de jeu immersives pour ${system.nomComplet}.`,
+      couleurTexte: colors.classes.text.replace('400', '200'),
+      couleurBoutonPrimaire: colors.primary ? `bg-${colors.primary} hover:bg-${colors.primary}/80` : colors.classes.bg,
+      couleurBoutonSecondaire: `border-${colors.classes.text.split('-')[1]} text-${colors.classes.text.split('-')[1]} hover:bg-${colors.classes.text.split('-')[1]} hover:text-white`,
+      texteBoutonPrimaire: 'Créer un document',
+      texteBoutonSecondaire: 'Voir les oracles'
+    },
+    commentCreer: {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurIcone: colors.classes.text,
+      texteEtape1: `Parcourez notre collection de templates pour ${system.nomComplet} et sélectionnez celui qui correspond à vos besoins.`,
+      texteEtape2: 'Utilisez notre éditeur pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
+      texteEtape3: 'Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager.'
+    },
+    templates: Array.isArray(templates.value) ? templates.value : [],
+    oracles: oracles.value && Array.isArray(oracles.value) && oracles.value.length > 0 ? {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurIcone: colors.classes.text,
+      couleurBouton: colors.classes.bg.replace('/20', ''),
+      lienOracles: `/oracles?systeme=${slug}`,
+      descriptionOracles: `Découvrez nos générateurs d'oracles pour enrichir vos parties de ${system.nomComplet}.`,
+      oracles: (oracles.value as any[]).slice(0, 3).map((oracle: any) => ({
+        icone: 'ra ra-crystal-ball',
+        nom: oracle.nom,
+        description: oracle.description || 'Table aléatoire pour vos parties'
+      }))
+    } : null,
+    downloads: {
+      nomSysteme: system.nomComplet,
+      couleurBordure: colors.classes.border,
+      couleurBouton: colors.classes.bg.replace('/20', ''),
+      downloads: [] // À implémenter avec API téléchargements
+    },
+    cta: {
+      gradient: `from-${colors.classes.text.split('-')[1]}-600 to-${colors.classes.text.split('-')[1]}-800`,
+      titreCTA: `Prêt à créer pour ${system.nomComplet} ?`,
+      descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
+      couleurTexte: colors.classes.text.replace('400', '100'),
+      couleurTexteBouton: colors.classes.text.replace('400', '600'),
+      couleurTexteBoutonSecondaire: `hover:${colors.classes.text.replace('400', '600')}`
+    }
+  }
+
+  // Configurations spécifiques par système pour préserver l'authenticité
+  if (slug === 'engrenages' && univers === 'roue_du_temps') {
+    baseConfig.hero.gradient = 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900'
+    baseConfig.hero.icone = 'ra ra-gear-hammer'
+    baseConfig.hero.titre = 'Engrenages & Sortilèges'
+    baseConfig.hero.description = 'Créez des aides de jeu immersives pour la Roue du Temps, l\'univers de fantasy épique de Robert Jordan.'
+    baseConfig.cta.titreCTA = 'La Roue tisse comme la Roue veut'
+    baseConfig.cta.descriptionCTA = 'Rejoignez la lutte contre le Ténébreux dans l\'univers de Robert Jordan.'
+  }
+
+  return baseConfig
+})
+
+// Fonction helper pour les gradients
+const getGradientForSystem = (systemSlug: string) => {
+  const gradients: Record<string, string> = {
+    'engrenages': 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900',
+    'monsterhearts': 'bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900',
+    'metro2033': 'bg-gradient-to-br from-red-900 via-gray-800 to-black',
+    'zombiology': 'bg-gradient-to-br from-yellow-900 via-orange-800 to-red-900',
+    'mistengine': 'bg-gradient-to-br from-pink-900 via-purple-800 to-indigo-900'
+  }
+  return gradients[systemSlug] || 'bg-gradient-to-br from-gray-900 via-blue-900 to-generique'
+}
+
+// SEO
+watchEffect(() => {
+  if (systemConfig.value) {
+    useSeoMeta({
+      title: `${systemConfig.value.hero.titre} - Brumisater`,
+      description: systemConfig.value.hero.description
+    })
+  }
+})
+
+// Configuration complète - page prête
+</script>
+
 <template>
   <div class="min-h-screen bg-black" v-if="systemConfig">
     <!-- Hero Section avec thématique dynamique -->
@@ -265,122 +384,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-const route = useRoute()
-const { obtenirSysteme, getCouleursPourSysteme, getIconPourSysteme } = useSystemes()
-
-const slug = route.params.slug as string
-const univers = route.params.univers as string
-
-// Récupérer les données du système via API
-const { data: systemData, pending } = await useLazyAsyncData(`system-${slug}`, () => 
-  obtenirSysteme(slug)
-)
-
-// Récupérer les oracles pour ce système
-const { data: oracles } = await useLazyAsyncData(`oracles-${slug}`, () => 
-  $fetch(`/api/oracles?systeme=${slug}`)
-)
-
-// Récupérer les templates disponibles
-const { data: templates } = await useLazyAsyncData(`templates-${slug}`, () => 
-  $fetch(`/api/templates?systeme=${slug}`).catch(() => [])
-)
-
-// Configuration dynamique basée sur les données API
-const systemConfig = computed(() => {
-  if (!systemData.value) return null
-
-  const colors = getCouleursPourSysteme(slug)
-  const system = systemData.value
-
-  // Configuration de base adaptée dynamiquement
-  const baseConfig = {
-    hero: {
-      gradient: getGradientForSystem(slug),
-      icone: getIconPourSysteme(slug),
-      couleurIcone: colors.classes.text,
-      titre: system.nomComplet,
-      description: system.description || `Créez des aides de jeu immersives pour ${system.nomComplet}.`,
-      couleurTexte: colors.classes.text.replace('400', '200'),
-      couleurBoutonPrimaire: colors.primary ? `bg-${colors.primary} hover:bg-${colors.primary}/80` : colors.classes.bg,
-      couleurBoutonSecondaire: `border-${colors.classes.text.split('-')[1]} text-${colors.classes.text.split('-')[1]} hover:bg-${colors.classes.text.split('-')[1]} hover:text-white`,
-      texteBoutonPrimaire: 'Créer un document',
-      texteBoutonSecondaire: 'Voir les oracles'
-    },
-    commentCreer: {
-      nomSysteme: system.nomComplet,
-      couleurBordure: colors.classes.border,
-      couleurIcone: colors.classes.text,
-      texteEtape1: `Parcourez notre collection de templates pour ${system.nomComplet} et sélectionnez celui qui correspond à vos besoins.`,
-      texteEtape2: 'Utilisez notre éditeur pour remplir les champs, ajuster les valeurs et personnaliser votre aide de jeu.',
-      texteEtape3: 'Cliquez sur "Générer" pour créer un PDF professionnel prêt à imprimer ou à partager.'
-    },
-    templates: Array.isArray(templates.value) ? templates.value : [],
-    oracles: oracles.value && Array.isArray(oracles.value) && oracles.value.length > 0 ? {
-      nomSysteme: system.nomComplet,
-      couleurBordure: colors.classes.border,
-      couleurIcone: colors.classes.text,
-      couleurBouton: colors.classes.bg.replace('/20', ''),
-      lienOracles: `/oracles?systeme=${slug}`,
-      descriptionOracles: `Découvrez nos générateurs d'oracles pour enrichir vos parties de ${system.nomComplet}.`,
-      oracles: (oracles.value as any[]).slice(0, 3).map((oracle: any) => ({
-        icone: 'ra ra-crystal-ball',
-        nom: oracle.nom,
-        description: oracle.description || 'Table aléatoire pour vos parties'
-      }))
-    } : null,
-    downloads: {
-      nomSysteme: system.nomComplet,
-      couleurBordure: colors.classes.border,
-      couleurBouton: colors.classes.bg.replace('/20', ''),
-      downloads: [] // À implémenter avec API téléchargements
-    },
-    cta: {
-      gradient: `from-${colors.classes.text.split('-')[1]}-600 to-${colors.classes.text.split('-')[1]}-800`,
-      titreCTA: `Prêt à créer pour ${system.nomComplet} ?`,
-      descriptionCTA: 'Rejoignez notre communauté et commencez à créer des histoires inoubliables.',
-      couleurTexte: colors.classes.text.replace('400', '100'),
-      couleurTexteBouton: colors.classes.text.replace('400', '600'),
-      couleurTexteBoutonSecondaire: `hover:${colors.classes.text.replace('400', '600')}`
-    }
-  }
-
-  // Configurations spécifiques par système pour préserver l'authenticité
-  if (slug === 'engrenages' && univers === 'roue_du_temps') {
-    baseConfig.hero.gradient = 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900'
-    baseConfig.hero.icone = 'ra ra-gear-hammer'
-    baseConfig.hero.titre = 'Engrenages & Sortilèges'
-    baseConfig.hero.description = 'Créez des aides de jeu immersives pour la Roue du Temps, l\'univers de fantasy épique de Robert Jordan.'
-    baseConfig.cta.titreCTA = 'La Roue tisse comme la Roue veut'
-    baseConfig.cta.descriptionCTA = 'Rejoignez la lutte contre le Ténébreux dans l\'univers de Robert Jordan.'
-  }
-
-  return baseConfig
-})
-
-// Fonction helper pour les gradients
-const getGradientForSystem = (systemSlug: string) => {
-  const gradients: Record<string, string> = {
-    'engrenages': 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900',
-    'monsterhearts': 'bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900',
-    'metro2033': 'bg-gradient-to-br from-red-900 via-gray-800 to-black',
-    'zombiology': 'bg-gradient-to-br from-yellow-900 via-orange-800 to-red-900',
-    'mistengine': 'bg-gradient-to-br from-pink-900 via-purple-800 to-indigo-900'
-  }
-  return gradients[systemSlug] || 'bg-gradient-to-br from-gray-900 via-blue-900 to-generique'
-}
-
-// SEO
-watchEffect(() => {
-  if (systemConfig.value) {
-    useSeoMeta({
-      title: `${systemConfig.value.hero.titre} - Brumisater`,
-      description: systemConfig.value.hero.description
-    })
-  }
-})
-
-// Configuration complète - page prête
-</script>
