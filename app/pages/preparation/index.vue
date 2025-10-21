@@ -21,3 +21,10 @@ useSeoMeta({
   title: 'Preparation - Brumisater',
   description: 'Dashboard de preparation : gerez vos personnages, dangers et lieux selon votre role MJ ou PJ'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

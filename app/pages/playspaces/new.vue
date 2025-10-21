@@ -29,3 +29,10 @@ useSeoMeta({
   title: 'Nouveau Playspace - Brumisater',
   description: 'Creez un nouveau playspace : choisissez votre role MJ/PJ, systeme, hack et univers'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

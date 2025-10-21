@@ -21,3 +21,10 @@ useSeoMeta({
   title: 'Mon Profil - Brumisater',
   description: 'Gerez votre profil utilisateur : informations, statistiques et parametres'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

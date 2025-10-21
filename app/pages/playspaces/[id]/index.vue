@@ -35,3 +35,10 @@ useSeoMeta({
   title: 'Playspace - Brumisater',
   description: 'Dashboard de votre playspace'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

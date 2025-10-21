@@ -31,3 +31,10 @@ useSeoMeta({
   title: 'Editer Personnage - Brumisater',
   description: 'Editez votre personnage : informations, Theme Cards, Hero Card'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

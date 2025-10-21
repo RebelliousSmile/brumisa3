@@ -16,3 +16,10 @@ useSeoMeta({
   title: 'Exemples de Personnages - Brumisater',
   description: 'Galerie d\'exemples Brumisater : personnages LITM, Otherscape et templates de Theme Cards'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

@@ -16,3 +16,10 @@ useSeoMeta({
   title: 'Tutoriels Interactifs - Brumisater',
   description: 'Tutoriels pas-a-pas Brumisater : creer un playspace, un personnage et exporter en JSON'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

@@ -26,3 +26,10 @@ useSeoMeta({
   title: 'Personnage - Brumisater',
   description: 'Vue detaillee de votre personnage'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

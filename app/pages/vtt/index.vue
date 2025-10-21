@@ -23,3 +23,10 @@ useSeoMeta({
   title: 'Table VTT - Brumisater (v2.0+)',
   description: 'Interface VTT multi-joueurs Mist Engine - Investigation Board et sync temps reel (disponible v2.0+)'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

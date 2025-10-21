@@ -14,3 +14,10 @@ useSeoMeta({
   title: 'Decouvrir Brumisater - Guide et Tutoriels',
   description: 'Apprenez a utiliser Brumisater : guides, tutoriels interactifs, FAQ et exemples de personnages Mist Engine'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

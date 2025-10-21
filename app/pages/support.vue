@@ -16,3 +16,10 @@ useSeoMeta({
   title: 'Support et Dons - Brumisater',
   description: 'Soutenez Brumisater : dons OpenCollective, sponsors et FAQ'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

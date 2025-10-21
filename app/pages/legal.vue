@@ -16,3 +16,10 @@ useSeoMeta({
   title: 'Mentions Legales - Brumisater',
   description: 'Mentions legales : RGPD, licences et CGU'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

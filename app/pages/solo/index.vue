@@ -21,3 +21,10 @@ useSeoMeta({
   title: 'Jouer en Solo - Brumisater (v1.3+)',
   description: 'Interface de jeu solo Mist Engine - Sessions, trackers, oracles et des (disponible v1.3+)'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

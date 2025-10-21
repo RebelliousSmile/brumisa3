@@ -32,3 +32,10 @@ useSeoMeta({
   title: 'Modifier Playspace - Brumisater',
   description: 'Modifiez votre playspace : role, hack, univers et nom'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

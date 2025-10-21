@@ -23,3 +23,10 @@ useSeoMeta({
   title: 'Mes Personnages - Brumisater',
   description: 'Liste de vos personnages pour le playspace actif'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

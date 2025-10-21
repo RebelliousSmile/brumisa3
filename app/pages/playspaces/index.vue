@@ -20,3 +20,10 @@ useSeoMeta({
   title: 'Mes Playspaces - Brumisater',
   description: 'Gerez tous vos playspaces Mist Engine : creation, modification, suppression'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

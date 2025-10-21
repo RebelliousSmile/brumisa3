@@ -20,3 +20,10 @@ useSeoMeta({
   title: 'Parametres - Brumisater',
   description: 'Parametres de l\'application : theme, preferences et options'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

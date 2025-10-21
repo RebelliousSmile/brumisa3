@@ -30,3 +30,10 @@ useSeoMeta({
   title: 'Nouveau Personnage - Brumisater',
   description: 'Creez un nouveau personnage dans votre playspace actif'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>

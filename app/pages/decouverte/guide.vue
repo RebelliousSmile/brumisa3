@@ -18,3 +18,10 @@ useSeoMeta({
   title: 'Guide Complet - Brumisater',
   description: 'Guide complet Brumisater : Playspaces, roles MJ/PJ, creation personnage, Theme Cards et export'
 })
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>
