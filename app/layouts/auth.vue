@@ -19,7 +19,7 @@
     <!-- Header Simplifie -->
     <div class="flex items-center justify-center py-8">
       <NuxtLink to="/" class="flex items-center space-x-2">
-        <span class="text-3xl font-bold text-brand-violet">Brumisater</span>
+        <span class="text-3xl font-bold text-brand-violet">Brumisa3</span>
       </NuxtLink>
     </div>
 

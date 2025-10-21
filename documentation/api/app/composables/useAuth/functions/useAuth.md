@@ -1,14 +1,14 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [app/composables/useAuth](../README.md) / useAuth
+[Brumisa3 - Documentation API](../../../../README.md) / [app/composables/useAuth](../README.md) / useAuth
 
 # Function: useAuth()
 
 > **useAuth**(): `object`
 
-Defined in: [app/composables/useAuth.ts:22](https://github.com/your-repo/brumisater-nuxt4/blob/main/app/composables/useAuth.ts#L22)
+Defined in: [app/composables/useAuth.ts:22](https://github.com/your-repo/brumisa3-nuxt4/blob/main/app/composables/useAuth.ts#L22)
 
 Composable pour l'authentification
 

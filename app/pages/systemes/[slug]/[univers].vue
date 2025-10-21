@@ -108,7 +108,7 @@ const getGradientForSystem = (systemSlug: string) => {
 watchEffect(() => {
   if (systemConfig.value) {
     useSeoMeta({
-      title: `${systemConfig.value.hero.titre} - Brumisater`,
+      title: `${systemConfig.value.hero.titre} - Brumisa3`,
       description: systemConfig.value.hero.description
     })
   }

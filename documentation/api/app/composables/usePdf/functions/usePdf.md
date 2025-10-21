@@ -1,14 +1,14 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [app/composables/usePdf](../README.md) / usePdf
+[Brumisa3 - Documentation API](../../../../README.md) / [app/composables/usePdf](../README.md) / usePdf
 
 # Function: usePdf()
 
 > **usePdf**(): `object`
 
-Defined in: [app/composables/usePdf.ts:17](https://github.com/your-repo/brumisater-nuxt4/blob/main/app/composables/usePdf.ts#L17)
+Defined in: [app/composables/usePdf.ts:17](https://github.com/your-repo/brumisa3-nuxt4/blob/main/app/composables/usePdf.ts#L17)
 
 Composable pour la génération et gestion des PDFs
 

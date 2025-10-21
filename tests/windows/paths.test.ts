@@ -135,7 +135,7 @@ describe('Windows Compatibility - File Paths', () => {
 
   it('should handle Nitro storage paths correctly', () => {
     // Test Nitro storage configuration from nuxt.config.ts
-    const baseDir = process.platform === 'win32' ? 'C:\\temp\\brumisater' : '/tmp/brumisater'
+    const baseDir = process.platform === 'win32' ? 'C:\\temp\\brumisa3' : '/tmp/brumisa3'
     
     expect(typeof baseDir).toBe('string')
     expect(baseDir.length).toBeGreaterThan(0)

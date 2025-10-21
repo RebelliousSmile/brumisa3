@@ -1,12 +1,12 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [server/services/UtilisateurService](../README.md) / UtilisateurService
+[Brumisa3 - Documentation API](../../../../README.md) / [server/services/UtilisateurService](../README.md) / UtilisateurService
 
 # Class: UtilisateurService
 
-Defined in: [server/services/UtilisateurService.ts:20](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L20)
+Defined in: [server/services/UtilisateurService.ts:20](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L20)
 
 Service pour la gestion des utilisateurs
 
@@ -26,7 +26,7 @@ Service pour la gestion des utilisateurs
 
 > **creerUtilisateur**(`data`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:25](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L25)
+Defined in: [server/services/UtilisateurService.ts:25](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L25)
 
 Crée un nouveau utilisateur
 
@@ -46,7 +46,7 @@ Crée un nouveau utilisateur
 
 > **authentifierUtilisateur**(`email`, `password`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:68](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L68)
+Defined in: [server/services/UtilisateurService.ts:68](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L68)
 
 Authentifie un utilisateur
 
@@ -70,7 +70,7 @@ Authentifie un utilisateur
 
 > **obtenirUtilisateur**(`id`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:106](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L106)
+Defined in: [server/services/UtilisateurService.ts:106](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L106)
 
 Récupère un utilisateur par ID
 
@@ -90,7 +90,7 @@ Récupère un utilisateur par ID
 
 > **mettreAJourUtilisateur**(`id`, `data`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:129](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L129)
+Defined in: [server/services/UtilisateurService.ts:129](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L129)
 
 Met à jour un utilisateur
 
@@ -114,7 +114,7 @@ Met à jour un utilisateur
 
 > **supprimerUtilisateur**(`id`): `Promise`\<\{ `success`: `boolean`; `message`: `string`; \}\>
 
-Defined in: [server/services/UtilisateurService.ts:179](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L179)
+Defined in: [server/services/UtilisateurService.ts:179](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L179)
 
 Supprime un utilisateur
 
@@ -134,7 +134,7 @@ Supprime un utilisateur
 
 > **obtenirStatistiquesUtilisateur**(`id`): `Promise`\<\{ `totalDocuments`: `number`; `documentsPublics`: `number`; `documentsBrouillon`: `number`; `parType`: `Record`\<`string`, `number`\>; `totalVues`: `number`; \}\>
 
-Defined in: [server/services/UtilisateurService.ts:201](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L201)
+Defined in: [server/services/UtilisateurService.ts:201](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L201)
 
 Récupère les statistiques d'un utilisateur
 
@@ -154,7 +154,7 @@ Récupère les statistiques d'un utilisateur
 
 > **obtenirListeUtilisateurs**(`page`, `limit`): `Promise`\<\{ `utilisateurs`: `any`; `total`: `any`; `page`: `number`; `totalPages`: `number`; \}\>
 
-Defined in: [server/services/UtilisateurService.ts:248](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L248)
+Defined in: [server/services/UtilisateurService.ts:248](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L248)
 
 Récupère la liste des utilisateurs (admin uniquement)
 
@@ -178,7 +178,7 @@ Récupère la liste des utilisateurs (admin uniquement)
 
 > **changerRoleUtilisateur**(`id`, `nouveauRole`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:287](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L287)
+Defined in: [server/services/UtilisateurService.ts:287](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L287)
 
 Change le rôle d'un utilisateur (admin uniquement)
 
@@ -202,7 +202,7 @@ Change le rôle d'un utilisateur (admin uniquement)
 
 > **utilisateurExiste**(`email`): `Promise`\<`boolean`\>
 
-Defined in: [server/services/UtilisateurService.ts:309](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L309)
+Defined in: [server/services/UtilisateurService.ts:309](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L309)
 
 Vérifie si un utilisateur existe par email
 
@@ -222,7 +222,7 @@ Vérifie si un utilisateur existe par email
 
 > **obtenirDocumentsRecentsUtilisateur**(`id`, `limit`): `Promise`\<`any`\>
 
-Defined in: [server/services/UtilisateurService.ts:326](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/UtilisateurService.ts#L326)
+Defined in: [server/services/UtilisateurService.ts:326](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/UtilisateurService.ts#L326)
 
 Récupère les documents récents d'un utilisateur
 

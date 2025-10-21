@@ -1,8 +1,8 @@
-# Arborescence et Architecture du Projet - Brumisater v1.0
+# Arborescence et Architecture du Projet - Brumisa3 v1.0
 
 ## Vue d'Ensemble
 
-Ce document décrit l'organisation complète du projet Brumisater, basé sur **Nuxt 4** avec architecture moderne.
+Ce document décrit l'organisation complète du projet Brumisa3, basé sur **Nuxt 4** avec architecture moderne.
 
 ### Stack Technique
 

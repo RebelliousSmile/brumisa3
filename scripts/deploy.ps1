@@ -1,4 +1,4 @@
-# Brumisater Nuxt 4 - Script de déploiement PowerShell
+# Brumisa3 Nuxt 4 - Script de déploiement PowerShell
 param(
     [switch]$SkipTests,
     [switch]$SkipMigration,
@@ -6,7 +6,7 @@ param(
 )
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host " Brumisater Nuxt 4 - Déploiement Windows" -ForegroundColor Cyan  
+Write-Host " Brumisa3 Nuxt 4 - Déploiement Windows" -ForegroundColor Cyan  
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -30,8 +30,8 @@ foreach ($envVar in $requiredEnvVars) {
 
 try {
     Write-Host "[1/9] Arrêt des processus existants..." -ForegroundColor Yellow
-    pm2 stop brumisater-nuxt4 2>$null
-    pm2 delete brumisater-nuxt4 2>$null
+    pm2 stop brumisa3-nuxt4 2>$null
+    pm2 delete brumisa3-nuxt4 2>$null
 
     Write-Host "[2/9] Nettoyage des caches..." -ForegroundColor Yellow
     pnpm run clean

@@ -1,8 +1,8 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / server/api/auth/login.post
+[Brumisa3 - Documentation API](../../../../README.md) / server/api/auth/login.post
 
 # server/api/auth/login.post
 

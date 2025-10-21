@@ -1,6 +1,6 @@
 @echo off
 echo =========================================
-echo  Brumisater Nuxt 4 - Script de deploiement Windows
+echo  Brumisa3 Nuxt 4 - Script de deploiement Windows
 echo =========================================
 echo.
 
@@ -16,8 +16,8 @@ if "%SESSION_SECRET%"=="" (
 )
 
 echo [1/8] Arret des processus existants...
-pm2 stop brumisater-nuxt4 2>nul
-pm2 delete brumisater-nuxt4 2>nul
+pm2 stop brumisa3-nuxt4 2>nul
+pm2 delete brumisa3-nuxt4 2>nul
 
 echo [2/8] Nettoyage des caches...
 call pnpm run clean

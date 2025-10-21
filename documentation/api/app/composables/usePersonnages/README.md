@@ -1,8 +1,8 @@
-[**Brumisater - Documentation API**](../../../README.md)
+[**Brumisa3 - Documentation API**](../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../README.md) / app/composables/usePersonnages
+[Brumisa3 - Documentation API](../../../README.md) / app/composables/usePersonnages
 
 # app/composables/usePersonnages
 

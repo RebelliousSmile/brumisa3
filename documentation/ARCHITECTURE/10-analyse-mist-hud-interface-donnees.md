@@ -7,7 +7,7 @@ Cette documentation analyse le module **Mist HUD** de Mordachai pour Foundry VTT
 1. **Les données présentées** dans les HUDs (PJ et NPC)
 2. **La structure de stockage** des informations (Actor-Item model de Foundry)
 3. **La présentation visuelle** et l'organisation de l'interface
-4. **Les recommandations** pour adapter ces patterns à Brumisater
+4. **Les recommandations** pour adapter ces patterns à Brumisa3
 
 **Repository analysé** : [mordachai/mist-hud](https://github.com/mordachai/mist-hud)
 
@@ -1093,7 +1093,7 @@ Hooks.on('createItem', (item, options, userId) => {
 
 ---
 
-## Recommandations pour Brumisater
+## Recommandations pour Brumisa3
 
 ### 1. Structure de Données Adaptée
 
@@ -1877,9 +1877,9 @@ test.describe('Tag Selection', () => {
 
 ---
 
-## Comparaison : Mist HUD vs Brumisater
+## Comparaison : Mist HUD vs Brumisa3
 
-| Aspect | Mist HUD (Foundry VTT) | Brumisater (Nuxt 4) |
+| Aspect | Mist HUD (Foundry VTT) | Brumisa3 (Nuxt 4) |
 |--------|------------------------|---------------------|
 | **Plateforme** | Foundry VTT (desktop app) | Web app (browser) |
 | **Storage** | NeDB (Actor-Item model) | PostgreSQL + Prisma |

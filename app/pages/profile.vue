@@ -18,7 +18,7 @@ definePageMeta({
 // const { user } = storeToRefs(authStore)
 
 useSeoMeta({
-  title: 'Mon Profil - Brumisater',
+  title: 'Mon Profil - Brumisa3',
   description: 'Gerez votre profil utilisateur : informations, statistiques et parametres'
 })
 </script>

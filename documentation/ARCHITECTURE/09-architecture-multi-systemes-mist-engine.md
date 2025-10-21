@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Cette documentation détaille l'architecture permettant de supporter **plusieurs hacks du Mist Engine** (City of Mist, Legends in the Mist, Otherscape) dans Brumisater, avec un design extensible pour de futurs hacks.
+Cette documentation détaille l'architecture permettant de supporter **plusieurs hacks du Mist Engine** (City of Mist, Legends in the Mist, Otherscape) dans Brumisa3, avec un design extensible pour de futurs hacks.
 
 **Scope MVP v1.0** : Legends in the Mist (LITM) uniquement, mais architecture préparée pour extension
 
@@ -216,7 +216,7 @@ static setActiveStyle(system: SystemModuleI) {
 
 ---
 
-## Architecture Proposée pour Brumisater
+## Architecture Proposée pour Brumisa3
 
 ### Objectifs
 
@@ -1112,13 +1112,13 @@ export const useSystemStore = defineStore('system', () => {
 
     // Persiste dans localStorage
     if (import.meta.client) {
-      localStorage.setItem('brumisater:system', slug);
+      localStorage.setItem('brumisa3:system', slug);
     }
   }
 
   function loadPersistedSystem() {
     if (import.meta.client) {
-      const persisted = localStorage.getItem('brumisater:system') as SystemSlug;
+      const persisted = localStorage.getItem('brumisa3:system') as SystemSlug;
       if (persisted && availableSystems.value.includes(persisted)) {
         currentSystemSlug.value = persisted;
       }
@@ -1590,7 +1590,7 @@ export const testSystems = {
 
 ## Comparaison avec Taragnor
 
-| Aspect | Taragnor (FoundryVTT) | Brumisater (Nuxt 4) |
+| Aspect | Taragnor (FoundryVTT) | Brumisa3 (Nuxt 4) |
 |--------|----------------------|---------------------|
 | **Architecture** | Classes OOP + Héritage | Config JSON + Composables |
 | **Storage** | NeDB (embedded) | PostgreSQL + Prisma |

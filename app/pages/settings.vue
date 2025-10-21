@@ -17,7 +17,7 @@ definePageMeta({
 // const { theme, preferences } = storeToRefs(uiStore)
 
 useSeoMeta({
-  title: 'Parametres - Brumisater',
+  title: 'Parametres - Brumisa3',
   description: 'Parametres de l\'application : theme, preferences et options'
 })
 </script>

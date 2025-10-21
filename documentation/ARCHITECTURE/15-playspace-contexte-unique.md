@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Dans Brumisater, le **playspace** est le **contexte unique** qui définit l'environnement de jeu complet. Tous les composants de l'application (personnages, traductions, validation, UI) héritent de ce contexte.
+Dans Brumisa3, le **playspace** est le **contexte unique** qui définit l'environnement de jeu complet. Tous les composants de l'application (personnages, traductions, validation, UI) héritent de ce contexte.
 
 **Principe fondamental** : L'utilisateur travaille toujours dans **un seul playspace à la fois** (sauf tâches admin rares).
 

@@ -195,7 +195,7 @@ Contenu:
 - Utilisation dans composants Vue (exemple `ThemeCard.vue`)
 - Intégration PDF multi-systèmes (layouts spécifiques)
 - Roadmap d'implémentation (8 semaines)
-- Comparaison Taragnor vs Brumisater
+- Comparaison Taragnor vs Brumisa3
 
 Configuration incluse:
 - **LITM**: Origin/Adventure/Greatness/Fellowship/Backpack, milestones
@@ -236,7 +236,7 @@ Contenu:
   - NPC Influence Viewer
   - Milestones système (LITM)
 - Interactions API Foundry VTT (lecture, modification, flags, hooks)
-- Recommandations complètes pour Brumisater:
+- Recommandations complètes pour Brumisa3:
   - Schéma Prisma étendu (Character, Theme, Tag, Status, Improvement avec enums et relations)
   - API route `/api/characters/[id]/select-tags.post.ts` pour persistance sélection
   - Composable `useTagSelection()` avec gestion complète (toggle, burn, inversion, calcul modificateurs)

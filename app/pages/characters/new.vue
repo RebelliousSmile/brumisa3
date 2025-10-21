@@ -27,7 +27,7 @@ definePageMeta({
 // })
 
 useSeoMeta({
-  title: 'Nouveau Personnage - Brumisater',
+  title: 'Nouveau Personnage - Brumisa3',
   description: 'Creez un nouveau personnage dans votre playspace actif'
 })
 </script>

@@ -1,4 +1,4 @@
-# Organisation des Sections - Brumisater MVP v1.0
+# Organisation des Sections - Brumisa3 MVP v1.0
 
 Date: 2025-01-19
 Version: 1.0
@@ -8,7 +8,7 @@ Auteur: Agent UI/UX Designer
 
 ## Vue d'ensemble
 
-Brumisater organise son interface en **4 grandes sections** pour separer clairement les differentes phases d'utilisation de l'application :
+Brumisa3 organise son interface en **4 grandes sections** pour separer clairement les differentes phases d'utilisation de l'application :
 
 1. **Decouverte** : Comprendre l'application et ses concepts
 2. **Preparation** : Creer et gerer personnages/dangers avant la partie
@@ -25,7 +25,7 @@ Cette separation repond a un besoin identifie : les utilisateurs ont des besoins
 Faciliter l'onboarding et reduire la friction d'apprentissage pour les nouveaux utilisateurs.
 
 ### Public cible
-- Nouveaux utilisateurs jamais venus sur Brumisater
+- Nouveaux utilisateurs jamais venus sur Brumisa3
 - Utilisateurs cherchant de l'aide sur des concepts specifiques
 - Utilisateurs voulant decouvrir les fonctionnalites futures
 

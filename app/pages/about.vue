@@ -3,7 +3,7 @@
  * Page A Propos
  *
  * Sections :
- * - Vision Brumisater
+ * - Vision Brumisa3
  * - Credits (Son of Oak, City of Mist Garage)
  * - Roadmap
  */
@@ -13,8 +13,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'A Propos - Brumisater',
-  description: 'Decouvrez Brumisater : vision, credits et roadmap du projet'
+  title: 'A Propos - Brumisa3',
+  description: 'Decouvrez Brumisa3 : vision, credits et roadmap du projet'
 })
 </script>
 

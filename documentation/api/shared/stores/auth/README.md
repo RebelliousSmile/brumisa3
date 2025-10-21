@@ -1,8 +1,8 @@
-[**Brumisater - Documentation API**](../../../README.md)
+[**Brumisa3 - Documentation API**](../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../README.md) / shared/stores/auth
+[Brumisa3 - Documentation API](../../../README.md) / shared/stores/auth
 
 # shared/stores/auth
 

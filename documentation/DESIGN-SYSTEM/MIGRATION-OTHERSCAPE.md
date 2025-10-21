@@ -2,7 +2,7 @@
 
 ## Résumé Exécutif
 
-La charte graphique de Brumisater a été adaptée pour adopter un style **cyberpunk minimaliste dystopien** inspiré de la page Otherscape (https://sonofoak.com/pages/otherscape). Cette migration privilégie la **clarté**, la **performance** et l'**immersion** tout en conservant l'identité JDR du projet.
+La charte graphique de Brumisa3 a été adaptée pour adopter un style **cyberpunk minimaliste dystopien** inspiré de la page Otherscape (https://sonofoak.com/pages/otherscape). Cette migration privilégie la **clarté**, la **performance** et l'**immersion** tout en conservant l'identité JDR du projet.
 
 ## Changements Majeurs
 

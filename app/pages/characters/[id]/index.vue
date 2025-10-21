@@ -23,7 +23,7 @@ const characterId = route.params.id as string
 // const character = computed(() => characterStore.getCharacterById(characterId))
 
 useSeoMeta({
-  title: 'Personnage - Brumisater',
+  title: 'Personnage - Brumisa3',
   description: 'Vue detaillee de votre personnage'
 })
 </script>

@@ -127,7 +127,7 @@ const handleRegister = async () => {
 }
 
 useSeoMeta({
-  title: 'Inscription - Brumisater',
-  description: 'Créez votre compte Brumisater'
+  title: 'Inscription - Brumisa3',
+  description: 'Créez votre compte Brumisa3'
 })
 </script>

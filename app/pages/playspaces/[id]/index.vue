@@ -32,7 +32,7 @@ const playspaceId = route.params.id as string
 // })
 
 useSeoMeta({
-  title: 'Playspace - Brumisater',
+  title: 'Playspace - Brumisa3',
   description: 'Dashboard de votre playspace'
 })
 </script>

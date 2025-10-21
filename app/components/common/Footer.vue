@@ -16,9 +16,9 @@ const currentYear = new Date().getFullYear()
   <footer class="border-t border-gray-200 bg-gray-50">
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
-        <!-- Brumisater -->
+        <!-- Brumisa3 -->
         <div>
-          <h3 class="text-lg font-bold text-brand-violet">Brumisater</h3>
+          <h3 class="text-lg font-bold text-brand-violet">Brumisa3</h3>
           <p class="mt-2 text-sm text-gray-600">
             L'outil de creation de personnages pour le Mist Engine
           </p>
@@ -95,7 +95,7 @@ const currentYear = new Date().getFullYear()
       <div class="mt-8 border-t border-gray-200 pt-6">
         <div class="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
           <p class="text-sm text-gray-600">
-            © {{ currentYear }} Brumisater. Cree avec passion pour la communaute Mist Engine.
+            © {{ currentYear }} Brumisa3. Cree avec passion pour la communaute Mist Engine.
           </p>
           <div class="flex space-x-4">
             <a href="#" class="text-gray-400 hover:text-brand-violet">

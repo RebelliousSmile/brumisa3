@@ -15,8 +15,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Guide Complet - Brumisater',
-  description: 'Guide complet Brumisater : Playspaces, roles MJ/PJ, creation personnage, Theme Cards et export'
+  title: 'Guide Complet - Brumisa3',
+  description: 'Guide complet Brumisa3 : Playspaces, roles MJ/PJ, creation personnage, Theme Cards et export'
 })
 </script>
 

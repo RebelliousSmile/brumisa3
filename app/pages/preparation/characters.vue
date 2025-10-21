@@ -20,7 +20,7 @@ definePageMeta({
 // const characterTypeFilter = ref<'all' | 'pc' | 'npc'>('all')
 
 useSeoMeta({
-  title: 'Mes Personnages - Brumisater',
+  title: 'Mes Personnages - Brumisa3',
   description: 'Liste de vos personnages pour le playspace actif'
 })
 </script>

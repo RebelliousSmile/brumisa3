@@ -17,7 +17,7 @@ definePageMeta({
 // const { playspaces, isLoading } = storeToRefs(playspaceStore)
 
 useSeoMeta({
-  title: 'Mes Playspaces - Brumisater',
+  title: 'Mes Playspaces - Brumisa3',
   description: 'Gerez tous vos playspaces Mist Engine : creation, modification, suppression'
 })
 </script>

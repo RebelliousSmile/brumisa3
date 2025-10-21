@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-// Configuration globale de l'application Brumisater
+// Configuration globale de l'application Brumisa3
 useHead({
-  title: 'Brumisater - Générateur PDF JDR',
+  title: 'Brumisa3 - Générateur PDF JDR',
   meta: [
     {
       name: 'description', 

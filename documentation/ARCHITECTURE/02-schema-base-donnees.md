@@ -1,4 +1,4 @@
-# Schéma de Base de Données MVP - Brumisater v1.0
+# Schéma de Base de Données MVP - Brumisa3 v1.0
 
 ## Vue d'Ensemble
 

@@ -80,7 +80,7 @@ const handleForgotPassword = async () => {
 }
 
 useSeoMeta({
-  title: 'Mot de passe oublié - Brumisater',
+  title: 'Mot de passe oublié - Brumisa3',
   description: 'Réinitialisez votre mot de passe'
 })
 </script>

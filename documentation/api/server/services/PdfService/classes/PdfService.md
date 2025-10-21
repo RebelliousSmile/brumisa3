@@ -1,12 +1,12 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [server/services/PdfService](../README.md) / PdfService
+[Brumisa3 - Documentation API](../../../../README.md) / [server/services/PdfService](../README.md) / PdfService
 
 # Class: PdfService
 
-Defined in: [server/services/PdfService.ts:27](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L27)
+Defined in: [server/services/PdfService.ts:27](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L27)
 
 Service pour la génération et gestion des PDFs avec Nitro
 
@@ -16,7 +16,7 @@ Service pour la génération et gestion des PDFs avec Nitro
 
 > **new PdfService**(): `PdfService`
 
-Defined in: [server/services/PdfService.ts:31](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L31)
+Defined in: [server/services/PdfService.ts:31](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L31)
 
 #### Returns
 
@@ -28,7 +28,7 @@ Defined in: [server/services/PdfService.ts:31](https://github.com/your-repo/brum
 
 > `private` **outputDir**: `string`
 
-Defined in: [server/services/PdfService.ts:28](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L28)
+Defined in: [server/services/PdfService.ts:28](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L28)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [server/services/PdfService.ts:28](https://github.com/your-repo/brum
 
 > `private` **templatesDir**: `string`
 
-Defined in: [server/services/PdfService.ts:29](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L29)
+Defined in: [server/services/PdfService.ts:29](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L29)
 
 ## Methods
 
@@ -44,7 +44,7 @@ Defined in: [server/services/PdfService.ts:29](https://github.com/your-repo/brum
 
 > `private` **initialiserDossierSortie**(): `Promise`\<`void`\>
 
-Defined in: [server/services/PdfService.ts:42](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L42)
+Defined in: [server/services/PdfService.ts:42](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L42)
 
 Initialise le dossier de sortie
 
@@ -58,7 +58,7 @@ Initialise le dossier de sortie
 
 > **genererDocument**(`options`): `Promise`\<`GeneratedDocument`\>
 
-Defined in: [server/services/PdfService.ts:55](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L55)
+Defined in: [server/services/PdfService.ts:55](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L55)
 
 Génère un document PDF selon le type et le système
 Méthode principale pour la génération de documents
@@ -79,7 +79,7 @@ Méthode principale pour la génération de documents
 
 > `private` **genererPdfAvecPDFKit**(`type`, `donnees`, `systeme`, `cheminSortie`): `Promise`\<`void`\>
 
-Defined in: [server/services/PdfService.ts:112](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L112)
+Defined in: [server/services/PdfService.ts:112](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L112)
 
 Génère un PDF avec PDFKit
 
@@ -111,7 +111,7 @@ Génère un PDF avec PDFKit
 
 > `private` **genererContenuPersonnage**(`doc`, `donnees`, `couleurs`, `yPosition`): `Promise`\<`number`\>
 
-Defined in: [server/services/PdfService.ts:190](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L190)
+Defined in: [server/services/PdfService.ts:190](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L190)
 
 Génère le contenu pour un personnage
 
@@ -143,7 +143,7 @@ Génère le contenu pour un personnage
 
 > `private` **genererContenuOrganisation**(`doc`, `donnees`, `couleurs`, `yPosition`): `Promise`\<`number`\>
 
-Defined in: [server/services/PdfService.ts:249](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L249)
+Defined in: [server/services/PdfService.ts:249](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L249)
 
 Génère le contenu pour une organisation
 
@@ -175,7 +175,7 @@ Génère le contenu pour une organisation
 
 > `private` **genererContenuLieu**(`doc`, `donnees`, `couleurs`, `yPosition`): `Promise`\<`number`\>
 
-Defined in: [server/services/PdfService.ts:312](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L312)
+Defined in: [server/services/PdfService.ts:312](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L312)
 
 Génère le contenu pour un lieu
 
@@ -207,7 +207,7 @@ Génère le contenu pour un lieu
 
 > `private` **genererContenuGenerique**(`doc`, `donnees`, `couleurs`, `yPosition`): `Promise`\<`number`\>
 
-Defined in: [server/services/PdfService.ts:350](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L350)
+Defined in: [server/services/PdfService.ts:350](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L350)
 
 Génère le contenu générique
 
@@ -239,7 +239,7 @@ Génère le contenu générique
 
 > `private` **getCouleursPourSysteme**(`systeme`): `any`
 
-Defined in: [server/services/PdfService.ts:388](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L388)
+Defined in: [server/services/PdfService.ts:388](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L388)
 
 Obtient les couleurs pour un système donné
 
@@ -259,7 +259,7 @@ Obtient les couleurs pour un système donné
 
 > `private` **getSystemeNomComplet**(`systeme`): `string`
 
-Defined in: [server/services/PdfService.ts:421](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L421)
+Defined in: [server/services/PdfService.ts:421](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L421)
 
 Obtient le nom complet du système
 
@@ -279,7 +279,7 @@ Obtient le nom complet du système
 
 > `private` **genererNomFichierUnique**(`type`, `systeme`, `documentId`): `string`
 
-Defined in: [server/services/PdfService.ts:435](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L435)
+Defined in: [server/services/PdfService.ts:435](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L435)
 
 Génère un nom de fichier unique
 
@@ -307,7 +307,7 @@ Génère un nom de fichier unique
 
 > **obtenirPdf**(`documentId`): `Promise`\<`string`\>
 
-Defined in: [server/services/PdfService.ts:448](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PdfService.ts#L448)
+Defined in: [server/services/PdfService.ts:448](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PdfService.ts#L448)
 
 Récupère un PDF existant par ID de document
 

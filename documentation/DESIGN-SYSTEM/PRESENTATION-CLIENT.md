@@ -1,10 +1,10 @@
-# Presentation Client - Nouveau Design System Brumisater
+# Presentation Client - Nouveau Design System Brumisa3
 
 ## Introduction
 
 Bonjour,
 
-Nous avons adapte la charte graphique de Brumisater pour adopter un style **cyberpunk minimaliste dystopien** inspire de la page Tokyo:Otherscape (https://sonofoak.com/pages/otherscape). Ce nouveau design privilegie la **clarte**, la **performance** et l'**immersion** tout en conservant l'identite JDR de votre projet.
+Nous avons adapte la charte graphique de Brumisa3 pour adopter un style **cyberpunk minimaliste dystopien** inspire de la page Tokyo:Otherscape (https://sonofoak.com/pages/otherscape). Ce nouveau design privilegie la **clarte**, la **performance** et l'**immersion** tout en conservant l'identite JDR de votre projet.
 
 ## Ce qui Change (en un Coup d'Oeil)
 
@@ -246,7 +246,7 @@ Pour valider, ajuster ou annuler la migration :
 
 **Merci de votre confiance !**
 
-L'equipe Brumisater
+L'equipe Brumisa3
 2025-10-21
 
 **P.S.** : Ouvrez `wireframe-exemple-otherscape.html` dans votre navigateur pour voir le nouveau style immediatement !

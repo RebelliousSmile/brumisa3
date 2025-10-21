@@ -17,6 +17,9 @@
 // Collapsed state
 const isCollapsed = ref(false)
 
+// Dropdown state
+const openDropdownId = ref<string | null>(null)
+
 // Mock data pour dev
 const mockPlayspaces = ref([
   {
@@ -41,12 +44,54 @@ const switchPlayspace = (playspaceId: string) => {
   console.log('Switch to playspace:', playspaceId)
 }
 
+// Toggle dropdown
+const toggleDropdown = (playspaceId: string, event: Event) => {
+  event.stopPropagation()
+  openDropdownId.value = openDropdownId.value === playspaceId ? null : playspaceId
+}
+
+// Close dropdown when clicking outside
+const closeDropdown = () => {
+  openDropdownId.value = null
+}
+
+// Playspace actions
+const editPlayspace = (playspaceId: string, event: Event) => {
+  event.stopPropagation()
+  console.log('Edit playspace:', playspaceId)
+  closeDropdown()
+  // TODO: Navigate to edit page
+}
+
+const duplicatePlayspace = (playspaceId: string, event: Event) => {
+  event.stopPropagation()
+  console.log('Duplicate playspace:', playspaceId)
+  closeDropdown()
+  // TODO: Implement duplication
+}
+
+const deletePlayspace = (playspaceId: string, event: Event) => {
+  event.stopPropagation()
+  console.log('Delete playspace:', playspaceId)
+  closeDropdown()
+  // TODO: Show confirmation modal
+}
+
 // Role badge colors
 const getRoleBadgeClass = (role: string) => {
   return role === 'MJ'
     ? 'bg-orange-100 text-orange-800 border-orange-300'
     : 'bg-blue-100 text-blue-800 border-blue-300'
 }
+
+// Close dropdown on outside click
+onMounted(() => {
+  document.addEventListener('click', closeDropdown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown)
+})
 </script>
 
 <template>
@@ -75,6 +120,18 @@ const getRoleBadgeClass = (role: string) => {
         <div v-if="!isCollapsed" class="mb-4 flex items-center justify-between">
           <h2 class="text-sm font-semibold text-gray-700">Playspaces</h2>
         </div>
+
+        <!-- Nouveau Playspace Button (En haut) -->
+        <NuxtLink
+          to="/playspaces/new"
+          :class="[
+            'mb-4 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-3 text-sm font-medium text-gray-600 transition-colors hover:border-brand-violet hover:text-brand-violet',
+            isCollapsed ? '' : ''
+          ]"
+        >
+          <Icon name="heroicons:plus" class="h-5 w-5" />
+          <span v-if="!isCollapsed" class="ml-2">Nouveau Playspace</span>
+        </NuxtLink>
 
         <!-- Liste Playspaces -->
         <div class="space-y-2">
@@ -105,23 +162,26 @@ const getRoleBadgeClass = (role: string) => {
 
             <!-- Expanded View -->
             <template v-else>
-              <div class="flex items-start justify-between">
+              <div class="flex w-full gap-1">
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2">
-                    <span class="truncate text-sm font-medium">
-                      {{ playspace.name }}
-                    </span>
+                  <!-- Titre -->
+                  <div class="flex items-center gap-1 mb-1">
                     <span
                       v-if="playspace.isActive"
                       class="flex-shrink-0"
                     >
-                      <Icon name="heroicons:star-solid" class="h-4 w-4" />
+                      <Icon name="heroicons:star-solid" class="h-3.5 w-3.5" />
                     </span>
+                    <h3 class="text-sm font-medium truncate">
+                      {{ playspace.name }}
+                    </h3>
                   </div>
-                  <div class="mt-1 flex items-center space-x-2 text-xs">
+
+                  <!-- Badges -->
+                  <div class="flex items-center gap-2 text-xs">
                     <span
                       :class="[
-                        'inline-flex items-center rounded-full border px-2 py-0.5 font-medium',
+                        'inline-flex items-center rounded-full border px-2 py-0.5 font-medium flex-shrink-0',
                         playspace.isActive
                           ? 'bg-white text-brand-violet border-white'
                           : getRoleBadgeClass(playspace.role)
@@ -129,27 +189,66 @@ const getRoleBadgeClass = (role: string) => {
                     >
                       {{ playspace.role }}
                     </span>
-                    <span :class="playspace.isActive ? 'text-white/80' : 'text-gray-500'">
+                    <span :class="['truncate', playspace.isActive ? 'text-white/80' : 'text-gray-500']">
                       {{ playspace.characterCount }} perso{{ playspace.characterCount > 1 ? 's' : '' }}
                     </span>
+                  </div>
+                </div>
+
+                <!-- Menu Actions -->
+                <div class="relative flex-shrink-0 self-start">
+                  <button
+                    :class="[
+                      'rounded p-1 transition-colors',
+                      playspace.isActive
+                        ? 'hover:bg-white/20'
+                        : 'hover:bg-gray-200'
+                    ]"
+                    @click="toggleDropdown(playspace.id, $event)"
+                  >
+                    <Icon
+                      name="heroicons:ellipsis-vertical"
+                      :class="[
+                        'h-5 w-5',
+                        playspace.isActive ? 'text-white' : 'text-gray-600'
+                      ]"
+                    />
+                  </button>
+
+                  <!-- Dropdown Menu -->
+                  <div
+                    v-if="openDropdownId === playspace.id"
+                    class="absolute right-0 top-8 z-50 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-1"
+                    @click.stop
+                  >
+                    <button
+                      class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      @click="editPlayspace(playspace.id, $event)"
+                    >
+                      <Icon name="heroicons:pencil" class="mr-2 h-4 w-4" />
+                      Modifier
+                    </button>
+                    <button
+                      class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      @click="duplicatePlayspace(playspace.id, $event)"
+                    >
+                      <Icon name="heroicons:document-duplicate" class="mr-2 h-4 w-4" />
+                      Dupliquer
+                    </button>
+                    <hr class="my-1 border-gray-200">
+                    <button
+                      class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      @click="deletePlayspace(playspace.id, $event)"
+                    >
+                      <Icon name="heroicons:trash" class="mr-2 h-4 w-4" />
+                      Supprimer
+                    </button>
                   </div>
                 </div>
               </div>
             </template>
           </button>
         </div>
-
-        <!-- Nouveau Playspace Button -->
-        <NuxtLink
-          to="/playspaces/new"
-          :class="[
-            'mt-4 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-3 text-sm font-medium text-gray-600 transition-colors hover:border-brand-violet hover:text-brand-violet',
-            isCollapsed ? '' : ''
-          ]"
-        >
-          <Icon name="heroicons:plus" class="h-5 w-5" />
-          <span v-if="!isCollapsed" class="ml-2">Nouveau Playspace</span>
-        </NuxtLink>
       </div>
 
       <!-- Section Raccourcis (v1.1+) -->

@@ -93,7 +93,7 @@ const handleLogin = async () => {
 }
 
 useSeoMeta({
-  title: 'Connexion - Brumisater',
-  description: 'Connectez-vous à votre compte Brumisater'
+  title: 'Connexion - Brumisa3',
+  description: 'Connectez-vous à votre compte Brumisa3'
 })
 </script>

@@ -1,17 +1,22 @@
 <script setup lang="ts">
 /**
- * Layout Playspace - Layout avec contexte playspace
+ * Layout Playspace Radial - Layout immersif avec navigation radiale
  *
- * Structure :
- * - Header (navigation principale)
- * - Sidebar (liste playspaces avec role MJ/PJ)
- * - Slot (contenu page)
+ * Structure:
+ * - Header (navigation principale en haut)
+ * - Menus radiaux flottants:
+ *   - RadialPlayspaceMenu (bottom-left)
+ *   - RadialActionMenu (bottom-right)
+ * - Slot (contenu page plein écran)
  * - Footer (liens utilitaires)
  *
- * Utilise par :
- * - Pages preparation (/preparation, /preparation/characters)
- * - Pages playspaces detail (/playspaces/[id])
- * - Pages characters (/characters/[id], /characters/[id]/edit)
+ * Remplace: playspace.vue (sidebar classique)
+ *
+ * Avantages:
+ * - Plus d'espace pour le contenu (pas de sidebar fixe)
+ * - Navigation immersive (arbre de compétences)
+ * - Responsive mobile (modales full-screen)
+ * - Accessibilité complète (keyboard + screen reader)
  */
 </script>
 
@@ -20,18 +25,34 @@
     <!-- Header -->
     <CommonHeader />
 
-    <!-- Layout avec Sidebar -->
-    <div class="flex flex-1">
-      <!-- Sidebar -->
-      <CommonSidebar />
-
-      <!-- Main Content (avec margin-left pour sidebar) -->
-      <main class="ml-64 flex-1 bg-gray-50 p-6">
+    <!-- Main Content (plein écran, pas de margin-left) -->
+    <main class="flex-1 bg-gray-50 relative">
+      <!-- Page content -->
+      <div class="min-h-full">
         <slot />
-      </main>
-    </div>
+      </div>
+
+      <!-- Radial Navigation Menus (flottants) -->
+      <CommonRadialPlayspaceMenu position="bottom-left" />
+      <CommonRadialActionMenu position="bottom-right" />
+    </main>
 
     <!-- Footer -->
     <CommonFooter />
   </div>
 </template>
+
+<style scoped>
+/* Ensure main content can use full viewport */
+main {
+  /* Reserve space for radial menus on desktop (optional) */
+  /* padding-bottom: 6rem; */
+}
+
+/* Mobile: ensure menus don't overlap content */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 5rem;
+  }
+}
+</style>

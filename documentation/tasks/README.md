@@ -2,7 +2,7 @@
 
 ## Vue d'Ensemble
 
-Ce dossier contient toutes les tasks détaillées pour l'intégration de "Legends in the Mist" dans Brumisater.
+Ce dossier contient toutes les tasks détaillées pour l'intégration de "Legends in the Mist" dans Brumisa3.
 
 **Total : 23 tasks | 102h estimées**
 

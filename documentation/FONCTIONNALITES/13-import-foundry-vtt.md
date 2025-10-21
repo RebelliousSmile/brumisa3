@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Cette fonctionnalité permet d'importer des personnages depuis Foundry VTT (système City of Mist / Legends in the Mist / Otherscape) vers Brumisater via une interface d'administration.
+Cette fonctionnalité permet d'importer des personnages depuis Foundry VTT (système City of Mist / Legends in the Mist / Otherscape) vers Brumisa3 via une interface d'administration.
 
 **Version** : v1.2+ (Post-MVP)
 
@@ -15,13 +15,13 @@ Cette fonctionnalité permet d'importer des personnages depuis Foundry VTT (syst
 ## Cas d'Usage
 
 ### 1. Migration depuis Foundry VTT
-Un utilisateur a des personnages créés dans Foundry VTT et souhaite les migrer vers Brumisater sans tout ressaisir manuellement.
+Un utilisateur a des personnages créés dans Foundry VTT et souhaite les migrer vers Brumisa3 sans tout ressaisir manuellement.
 
 ### 2. Import de personnages exemples
 L'administrateur souhaite importer des personnages pré-créés (exemples, prétirés) pour faciliter l'onboarding.
 
 ### 3. Backup et restauration
-Un utilisateur exporte ses personnages depuis Brumisater (JSON), les modifie avec un éditeur externe, puis les réimporte.
+Un utilisateur exporte ses personnages depuis Brumisa3 (JSON), les modifie avec un éditeur externe, puis les réimporte.
 
 ---
 
@@ -112,7 +112,7 @@ Foundry VTT exporte les Actors au format JSON :
 
 ### Types d'Items supportés
 
-| Type Foundry | Type Brumisater | Mapping |
+| Type Foundry | Type Brumisa3 | Mapping |
 |--------------|-----------------|---------|
 | `theme` | `Theme` | Thème avec mystery/attention/crack |
 | `tag` (power) | `Tag` (POWER) | Tag de pouvoir |
@@ -732,7 +732,7 @@ textarea {
 
 ### 1. Themebooks manquants
 
-Si le `themebook_id` référencé n'existe pas dans Brumisater :
+Si le `themebook_id` référencé n'existe pas dans Brumisa3 :
 - **Option 1** : Créer le themebook automatiquement (requiert données themebook)
 - **Option 2** : Assigner au themebook "Generic" du système
 - **Option 3** : Ajouter un warning et demander mapping manuel
@@ -885,7 +885,7 @@ test.describe('Foundry VTT Import', () => {
 
 ### v2.0+ - Export/Import complet
 
-- [ ] Export personnages Brumisater → JSON Foundry
+- [ ] Export personnages Brumisa3 → JSON Foundry
 - [ ] Import/Export Clues, Juice, Moves
 - [ ] Synchronisation bidirectionnelle (avancé)
 
@@ -905,7 +905,7 @@ Exposer endpoint public `/api/public/import/foundry` pour permettre à des outil
 
 ### 3. Plugin Foundry VTT
 
-Créer un plugin Foundry qui exporte directement vers Brumisater (POST API).
+Créer un plugin Foundry qui exporte directement vers Brumisa3 (POST API).
 
 ---
 
@@ -928,6 +928,6 @@ Créer un plugin Foundry qui exporte directement vers Brumisater (POST API).
 Mettre à jour cette documentation lors de :
 - Nouvelles versions de Foundry VTT modifiant les structures
 - Ajout de nouveaux types d'items supportés
-- Changements dans le schéma Prisma de Brumisater
+- Changements dans le schéma Prisma de Brumisa3
 
 **Dernière mise à jour** : 2025-01-19 (Spécification fonctionnalité d'import)

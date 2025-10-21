@@ -1,4 +1,4 @@
-# Arborescence Navigation - Brumisater
+# Arborescence Navigation - Brumisa3
 
 Date: 2025-01-19
 Version: 2.0 (MVP - Navigation restructuree)
@@ -64,7 +64,7 @@ La navigation principale est organisee en 4 grandes sections contextuelles :
 BRUMISATER APP
 │
 ├── [HEADER PERSISTANT]
-│   ├── Logo Brumisater (lien vers /)
+│   ├── Logo Brumisa3 (lien vers /)
 │   ├── Navigation principale (4 sections)
 │   │   ├── Decouverte          → /decouverte
 │   │   ├── Preparation         → /preparation (context-sensitive MJ/PJ)
@@ -354,7 +354,7 @@ BRUMISATER APP
 │       │   └── FAQ
 │       │
 │       ├── /about (A Propos)
-│       │   ├── Vision Brumisater
+│       │   ├── Vision Brumisa3
 │       │   ├── Credits (Son of Oak, City of Mist Garage)
 │       │   └── Roadmap
 │       │
@@ -379,7 +379,7 @@ BRUMISATER MOBILE (v1.1+)
 │
 ├── [HEADER MOBILE]
 │   ├── [☰] Menu Burger (toggle sidebar)
-│   ├── Logo Brumisater (centre)
+│   ├── Logo Brumisa3 (centre)
 │   └── [Avatar/Login] (droite)
 │
 ├── [SIDEBAR DRAWER - Swipe/Hamburger]
@@ -584,7 +584,7 @@ Vue : Interface interactive (style Foundry VTT)
 ### Flow 1 : CREATION PREMIER PLAYSPACE + PERSONNAGE (Guest)
 
 ```
-[Lea arrive sur Brumisater]
+[Lea arrive sur Brumisa3]
     ↓
 / (Landing Page)
     ↓ CTA "Commencer sans compte"
@@ -724,7 +724,7 @@ Temps estime : < 5 secondes
 ### Flow 5 : DECOUVERTE ONBOARDING NOUVEAU UTILISATEUR
 
 ```
-[Thomas arrive sur Brumisater, jamais utilise]
+[Thomas arrive sur Brumisa3, jamais utilise]
     ↓
 / (Landing Page)
     ↓ CTA "Decouvrir l'application"

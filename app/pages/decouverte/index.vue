@@ -11,8 +11,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Decouvrir Brumisater - Guide et Tutoriels',
-  description: 'Apprenez a utiliser Brumisater : guides, tutoriels interactifs, FAQ et exemples de personnages Mist Engine'
+  title: 'Decouvrir Brumisa3 - Guide et Tutoriels',
+  description: 'Apprenez a utiliser Brumisa3 : guides, tutoriels interactifs, FAQ et exemples de personnages Mist Engine'
 })
 </script>
 

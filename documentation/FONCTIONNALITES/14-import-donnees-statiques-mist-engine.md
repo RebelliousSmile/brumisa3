@@ -1191,7 +1191,7 @@ async function applyStatus() {
 - Propose import sélectif des nouveautés
 
 **Option 2 : GitHub Webhook (v2.0+)**
-- Webhook notifie Brumisater des nouveaux commits
+- Webhook notifie Brumisa3 des nouveaux commits
 - Import automatique des modifications
 - Notification admin
 

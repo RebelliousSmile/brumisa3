@@ -1,5 +1,5 @@
 {
-  "name": "Brumisater - Documentation API",
+  "name": "Brumisa3 - Documentation API",
   "entryPoints": [
     "./server/services/",
     "./server/api/",
@@ -56,7 +56,7 @@
   ],
   "gitRevision": "main",
   "gitRemote": "origin",
-  "sourceLinkTemplate": "https://github.com/your-repo/brumisater-nuxt4/blob/{gitRevision}/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/your-repo/brumisa3-nuxt4/blob/{gitRevision}/{path}#L{line}",
   "navigation": {
     "includeCategories": true,
     "includeGroups": true

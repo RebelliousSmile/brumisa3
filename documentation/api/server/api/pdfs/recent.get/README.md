@@ -1,8 +1,8 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / server/api/pdfs/recent.get
+[Brumisa3 - Documentation API](../../../../README.md) / server/api/pdfs/recent.get
 
 # server/api/pdfs/recent.get
 

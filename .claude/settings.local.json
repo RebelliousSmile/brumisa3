@@ -149,7 +149,8 @@
       "Bash(pnpm tsx scriptsaudit-legacy-systems.ts)",
       "Bash(pnpm tsx scripts/audit-legacy-systems.ts)",
       "Bash(netstat -ano)",
-      "Bash(tree /F app /A)"
+      "Bash(tree /F app /A)",
+      "Bash(start wireframe-otherscape-authentique.html)"
     ],
     "deny": []
   }

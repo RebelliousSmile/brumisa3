@@ -1,4 +1,4 @@
-# Audit du Code Existant - Brumisater v1.0 MVP
+# Audit du Code Existant - Brumisa3 v1.0 MVP
 
 ## Métadonnées
 
@@ -11,7 +11,7 @@
 
 ## Vue d'Ensemble
 
-Cet audit analyse le code existant de Brumisater pour déterminer son alignement avec l'architecture MVP v1.0 définie dans `documentation/ARCHITECTURE/`.
+Cet audit analyse le code existant de Brumisa3 pour déterminer son alignement avec l'architecture MVP v1.0 définie dans `documentation/ARCHITECTURE/`.
 
 ### Critères d'Évaluation
 

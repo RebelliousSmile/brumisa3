@@ -11,7 +11,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Brumisater - Createur de fiches Mist Engine',
+  title: 'Brumisa3 - Createur de fiches Mist Engine',
   description: 'Creez et gerez vos fiches de personnages pour Legends in the Mist et autres jeux Mist Engine'
 })
 </script>
@@ -23,7 +23,7 @@ useSeoMeta({
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="text-center">
           <h1 class="mb-6 text-5xl font-bold text-white md:text-6xl">
-            Brumisater
+            Brumisa3
           </h1>
           <p class="mb-8 text-xl text-purple-100">
             Createur de fiches de personnages pour Mist Engine
@@ -44,7 +44,7 @@ useSeoMeta({
     <section class="py-16">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 class="mb-12 text-center text-3xl font-bold text-gray-900">
-          Explorez Brumisater
+          Explorez Brumisa3
         </h2>
 
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">

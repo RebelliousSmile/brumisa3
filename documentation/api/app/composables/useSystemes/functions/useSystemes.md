@@ -1,14 +1,14 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [app/composables/useSystemes](../README.md) / useSystemes
+[Brumisa3 - Documentation API](../../../../README.md) / [app/composables/useSystemes](../README.md) / useSystemes
 
 # Function: useSystemes()
 
 > **useSystemes**(): `object`
 
-Defined in: [app/composables/useSystemes.ts:47](https://github.com/your-repo/brumisater-nuxt4/blob/main/app/composables/useSystemes.ts#L47)
+Defined in: [app/composables/useSystemes.ts:47](https://github.com/your-repo/brumisa3-nuxt4/blob/main/app/composables/useSystemes.ts#L47)
 
 Composable pour la gestion des systèmes de jeu
 

@@ -1,8 +1,8 @@
-# Design System - Brumisater
+# Design System - Brumisa3
 
 ## Vue d'Ensemble
 
-Le design system de Brumisater suit une philosophie **cyberpunk minimaliste dystopien** inspiree de Tokyo:Otherscape, privilegiant la clarte, la performance et l'immersion.
+Le design system de Brumisa3 suit une philosophie **cyberpunk minimaliste dystopien** inspiree de Tokyo:Otherscape, privilegiant la clarte, la performance et l'immersion.
 
 ## Fichiers du Design System
 

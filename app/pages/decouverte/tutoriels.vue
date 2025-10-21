@@ -13,8 +13,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Tutoriels Interactifs - Brumisater',
-  description: 'Tutoriels pas-a-pas Brumisater : creer un playspace, un personnage et exporter en JSON'
+  title: 'Tutoriels Interactifs - Brumisa3',
+  description: 'Tutoriels pas-a-pas Brumisa3 : creer un playspace, un personnage et exporter en JSON'
 })
 </script>
 

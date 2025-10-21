@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'brumisater-nuxt4',
+      name: 'brumisa3-nuxt4',
       exec_mode: 'cluster',
       instances: 'max',
       script: './.output/server/index.mjs',
@@ -59,7 +59,7 @@ module.exports = {
       host: 'SERVER_IP',
       ref: 'origin/main',
       repo: 'GIT_REPOSITORY',
-      path: '/var/www/brumisater-nuxt4',
+      path: '/var/www/brumisa3-nuxt4',
       'post-deploy': 'pnpm install && pnpm run deploy:build && pm2 reload ecosystem.config.js --env production',
       env: {
         NODE_ENV: 'production'
@@ -70,7 +70,7 @@ module.exports = {
       host: 'STAGING_SERVER_IP',
       ref: 'origin/develop',
       repo: 'GIT_REPOSITORY',
-      path: '/var/www/brumisater-nuxt4-staging',
+      path: '/var/www/brumisa3-nuxt4-staging',
       'post-deploy': 'pnpm install && pnpm run deploy:build && pm2 reload ecosystem.config.js --env staging',
       env: {
         NODE_ENV: 'staging'

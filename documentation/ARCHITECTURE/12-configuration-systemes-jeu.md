@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Architecture simple et pragmatique pour définir le fonctionnement programmatique des systèmes de jeu (Mist et City of Mist) dans Brumisater.
+Architecture simple et pragmatique pour définir le fonctionnement programmatique des systèmes de jeu (Mist et City of Mist) dans Brumisa3.
 
 **Principe** : Fichiers de configuration TypeScript pour les systèmes de base, avec possibilité d'extension via hacks.
 

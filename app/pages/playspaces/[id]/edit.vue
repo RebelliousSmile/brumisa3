@@ -29,7 +29,7 @@ const playspaceId = route.params.id as string
 // })
 
 useSeoMeta({
-  title: 'Modifier Playspace - Brumisater',
+  title: 'Modifier Playspace - Brumisa3',
   description: 'Modifiez votre playspace : role, hack, univers et nom'
 })
 </script>

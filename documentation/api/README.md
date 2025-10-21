@@ -1,8 +1,8 @@
-**Brumisater - Documentation API**
+**Brumisa3 - Documentation API**
 
 ***
 
-# Brumisater - Documentation API
+# Brumisa3 - Documentation API
 
 ## Modules
 

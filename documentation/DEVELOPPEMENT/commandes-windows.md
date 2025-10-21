@@ -16,13 +16,13 @@ winget install PostgreSQL.PostgreSQL
 psql -U postgres
 
 # Créer base de données
-CREATE DATABASE brumisater_dev;
-CREATE DATABASE brumisater_test;
+CREATE DATABASE brumisa3_dev;
+CREATE DATABASE brumisa3_test;
 
 # Créer utilisateur dédié
-CREATE USER brumisater_user WITH PASSWORD 'dev_password';
-GRANT ALL PRIVILEGES ON DATABASE brumisater_dev TO brumisater_user;
-GRANT ALL PRIVILEGES ON DATABASE brumisater_test TO brumisater_user;
+CREATE USER brumisa3_user WITH PASSWORD 'dev_password';
+GRANT ALL PRIVILEGES ON DATABASE brumisa3_dev TO brumisa3_user;
+GRANT ALL PRIVILEGES ON DATABASE brumisa3_test TO brumisa3_user;
 ```
 
 ### Installation Node.js et pnpm
@@ -63,7 +63,7 @@ pnpm run db:migrate
 pnpm run db:reset
 
 # Sauvegarde
-pg_dump -U brumisater_user -d brumisater_dev > backup.sql
+pg_dump -U brumisa3_user -d brumisa3_dev > backup.sql
 ```
 
 ## PowerShell - Remplacement de texte dans les fichiers

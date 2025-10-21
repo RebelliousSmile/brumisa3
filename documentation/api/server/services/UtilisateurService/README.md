@@ -1,8 +1,8 @@
-[**Brumisater - Documentation API**](../../../README.md)
+[**Brumisa3 - Documentation API**](../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../README.md) / server/services/UtilisateurService
+[Brumisa3 - Documentation API](../../../README.md) / server/services/UtilisateurService
 
 # server/services/UtilisateurService
 

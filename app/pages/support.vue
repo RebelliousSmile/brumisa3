@@ -13,8 +13,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Support et Dons - Brumisater',
-  description: 'Soutenez Brumisater : dons OpenCollective, sponsors et FAQ'
+  title: 'Support et Dons - Brumisa3',
+  description: 'Soutenez Brumisa3 : dons OpenCollective, sponsors et FAQ'
 })
 </script>
 

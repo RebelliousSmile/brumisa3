@@ -5,7 +5,7 @@
 - **Priorité**: Importante | **Temps estimé**: 2h | **Statut**: À faire
 
 ## Description
-Créer la documentation utilisateur complète pour l'utilisation du système "Legends in the Mist" dans Brumisater.
+Créer la documentation utilisateur complète pour l'utilisation du système "Legends in the Mist" dans Brumisa3.
 
 ## Fichiers
 - `documentation/UTILISATEUR/legends-in-the-mist-guide.md`

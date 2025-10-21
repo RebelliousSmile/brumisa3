@@ -26,7 +26,7 @@ definePageMeta({
 // })
 
 useSeoMeta({
-  title: 'Nouveau Playspace - Brumisater',
+  title: 'Nouveau Playspace - Brumisa3',
   description: 'Creez un nouveau playspace : choisissez votre role MJ/PJ, systeme, hack et univers'
 })
 </script>

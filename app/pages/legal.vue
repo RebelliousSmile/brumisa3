@@ -13,7 +13,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Mentions Legales - Brumisater',
+  title: 'Mentions Legales - Brumisa3',
   description: 'Mentions legales : RGPD, licences et CGU'
 })
 </script>

@@ -1,4 +1,4 @@
-Brumisater - Documentation Technique
+Brumisa3 - Documentation Technique
 
 ## Vue d'ensemble
 
@@ -77,8 +77,12 @@ Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architectur
 - le fichier CLAUDE.md ne devrait pas comporter plus de 500 lignes. 
 
 ## Notes techniques
-- lorsque nous terminons la fin d'une feature et que l'utilisateur valide que le résultat est correct, pousse les modifications dans une branche git pour sauvegarde. 
--  n'utilise pas d'emoji comme caractère. jamais. 
+- **Git et commits** : Commiter UNIQUEMENT dans ces deux cas:
+  1. L'utilisateur demande explicitement de commiter
+  2. Une feature COMPLETE est terminée ET validée par l'utilisateur
+  - NE PAS commiter après chaque petite modification
+  - Regrouper tous les changements logiques en UN seul commit
+-  n'utilise pas d'emoji comme caractère. jamais.
 - un problème de configuration ne doit pas empêcher l'application de fonctionner.
 - ne crée pas de nouvelles versions, met à jour les fichiers concernés
 - ne crée pas de rapport d'exécution, sauf si cela t'es demandé

@@ -1,4 +1,4 @@
-# Regles de Creation des Wireframes - Brumisater
+# Regles de Creation des Wireframes - Brumisa3
 
 Date: 2025-01-19
 Version: 2.0 (MVP - Multi-device)
@@ -24,7 +24,7 @@ Version: 2.0 (MVP - Multi-device)
 
 ### Pourquoi UnoCSS pour les Wireframes ?
 
-**UnoCSS est deja utilise dans le projet Brumisater**, donc l'utiliser pour les wireframes offre plusieurs avantages :
+**UnoCSS est deja utilise dans le projet Brumisa3**, donc l'utiliser pour les wireframes offre plusieurs avantages :
 
 1. **Coherence** : Memes classes que le code final (transition wireframe → code simplifiee)
 2. **Rapidite** : Pas besoin de creer un systeme CSS custom
@@ -364,7 +364,7 @@ Version: 2.0 (MVP - Multi-device)
 
 ### Differences avec CSS Custom (Section 3+)
 
-Les sections suivantes documentent l'approche CSS custom **pour reference** ou si UnoCSS n'est pas disponible. **L'approche UnoCSS est recommandee pour Brumisater.**
+Les sections suivantes documentent l'approche CSS custom **pour reference** ou si UnoCSS n'est pas disponible. **L'approche UnoCSS est recommandee pour Brumisa3.**
 
 ---
 
@@ -731,7 +731,7 @@ Avant de considerer un wireframe multi-device termine :
 
 ### Objectifs des Wireframes
 
-Les wireframes Brumisater doivent :
+Les wireframes Brumisa3 doivent :
 
 1. **Communiquer la structure** sans distraire avec le design visuel
 2. **Valider l'architecture** de l'information rapidement
@@ -759,7 +759,7 @@ Les wireframes Brumisater doivent :
 - Annotations et specifications
 - Pret pour handoff developpeurs
 
-**Pour Brumisater MVP, nous visons Mid-to-High Fidelity.**
+**Pour Brumisa3 MVP, nous visons Mid-to-High Fidelity.**
 
 ---
 
@@ -1562,7 +1562,7 @@ Les wireframes Brumisater doivent :
             <a href="#">Legal</a>
             <a href="#">Sponsors</a>
         </nav>
-        <p class="text-sm text-muted">2025 Brumisater - Tous droits reserves</p>
+        <p class="text-sm text-muted">2025 Brumisa3 - Tous droits reserves</p>
     </footer>
 </body>
 </html>
@@ -1706,7 +1706,7 @@ Les wireframes Brumisater doivent :
         <!-- Footer -->
         <footer class="app-footer" style="padding: 16px 24px; border-top: 1px solid #ccc; background: #f5f5f5;">
             <div class="flex justify-between items-center text-sm">
-                <div>2025 Brumisater</div>
+                <div>2025 Brumisa3</div>
                 <div class="flex gap-4">
                     <a href="#">Support</a>
                     <a href="#">Legal</a>
@@ -1863,7 +1863,7 @@ Les wireframes Brumisater doivent :
         <!-- Footer (identique) -->
         <footer class="app-footer" style="padding: 16px 24px; border-top: 1px solid #ccc; background: #f5f5f5;">
             <div class="flex justify-between items-center text-sm">
-                <div>2025 Brumisater</div>
+                <div>2025 Brumisa3</div>
                 <div class="flex gap-4">
                     <a href="#">Support</a>
                     <a href="#">Legal</a>
@@ -2155,7 +2155,7 @@ Exemples:
 3. **Sketch** : Mid-to-High fi, Mac only
 4. **Adobe XD** : Mid-to-High fi, Adobe suite
 
-**Pour Wireframes HTML (Brumisater)**
+**Pour Wireframes HTML (Brumisa3)**
 1. **VS Code** + Live Server : Developpement rapide
 2. **CodePen** : Prototypage en ligne
 3. **Tailwind Play** : Rapid prototyping avec Tailwind

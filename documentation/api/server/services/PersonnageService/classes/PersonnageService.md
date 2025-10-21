@@ -1,12 +1,12 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [server/services/PersonnageService](../README.md) / PersonnageService
+[Brumisa3 - Documentation API](../../../../README.md) / [server/services/PersonnageService](../README.md) / PersonnageService
 
 # Class: PersonnageService
 
-Defined in: [server/services/PersonnageService.ts:19](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L19)
+Defined in: [server/services/PersonnageService.ts:19](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L19)
 
 Service pour la gestion des personnages
 
@@ -26,7 +26,7 @@ Service pour la gestion des personnages
 
 > **creerPersonnage**(`data`, `utilisateurId?`): `Promise`\<`any`\>
 
-Defined in: [server/services/PersonnageService.ts:24](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L24)
+Defined in: [server/services/PersonnageService.ts:24](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L24)
 
 Crée un nouveau personnage
 
@@ -50,7 +50,7 @@ Crée un nouveau personnage
 
 > **obtenirPersonnage**(`id`, `utilisateurId?`): `Promise`\<`any`\>
 
-Defined in: [server/services/PersonnageService.ts:58](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L58)
+Defined in: [server/services/PersonnageService.ts:58](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L58)
 
 Récupère un personnage par ID
 
@@ -74,7 +74,7 @@ Récupère un personnage par ID
 
 > **mettreAJourPersonnage**(`id`, `data`, `utilisateurId`): `Promise`\<`any`\>
 
-Defined in: [server/services/PersonnageService.ts:109](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L109)
+Defined in: [server/services/PersonnageService.ts:109](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L109)
 
 Met à jour un personnage
 
@@ -102,7 +102,7 @@ Met à jour un personnage
 
 > **supprimerPersonnage**(`id`, `utilisateurId`): `Promise`\<\{ `success`: `boolean`; `message`: `string`; \}\>
 
-Defined in: [server/services/PersonnageService.ts:138](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L138)
+Defined in: [server/services/PersonnageService.ts:138](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L138)
 
 Supprime un personnage
 
@@ -126,7 +126,7 @@ Supprime un personnage
 
 > **obtenirPersonnagesUtilisateur**(`utilisateurId`, `page`, `limit`): `Promise`\<\{ `data`: `any`; `total`: `any`; `page`: `number`; `totalPages`: `number`; \}\>
 
-Defined in: [server/services/PersonnageService.ts:162](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L162)
+Defined in: [server/services/PersonnageService.ts:162](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L162)
 
 Liste les personnages d'un utilisateur
 
@@ -154,7 +154,7 @@ Liste les personnages d'un utilisateur
 
 > **rechercherPersonnages**(`terme`, `systemeJeu?`, `utilisateurId?`): `Promise`\<\{ `data`: `any`; \}\>
 
-Defined in: [server/services/PersonnageService.ts:208](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L208)
+Defined in: [server/services/PersonnageService.ts:208](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L208)
 
 Recherche des personnages
 
@@ -182,7 +182,7 @@ Recherche des personnages
 
 > **obtenirPersonnagesPublics**(`systemeJeu`, `page`, `limit`): `Promise`\<\{ `data`: `any`; `total`: `any`; `page`: `number`; `totalPages`: `number`; \}\>
 
-Defined in: [server/services/PersonnageService.ts:261](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L261)
+Defined in: [server/services/PersonnageService.ts:261](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L261)
 
 Récupère les personnages publics par système
 
@@ -210,7 +210,7 @@ Récupère les personnages publics par système
 
 > **changerVisibilitePersonnage**(`id`, `estPublic`, `utilisateurId`): `Promise`\<`any`\>
 
-Defined in: [server/services/PersonnageService.ts:315](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L315)
+Defined in: [server/services/PersonnageService.ts:315](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L315)
 
 Change la visibilité d'un personnage
 
@@ -238,7 +238,7 @@ Change la visibilité d'un personnage
 
 > **obtenirStatistiquesPersonnages**(`utilisateurId`): `Promise`\<\{ `totalPersonnages`: `number`; `personnagesPublics`: `number`; `personnagesBrouillon`: `number`; `totalVues`: `number`; `parSysteme`: `Record`\<`string`, `number`\>; \}\>
 
-Defined in: [server/services/PersonnageService.ts:342](https://github.com/your-repo/brumisater-nuxt4/blob/main/server/services/PersonnageService.ts#L342)
+Defined in: [server/services/PersonnageService.ts:342](https://github.com/your-repo/brumisa3-nuxt4/blob/main/server/services/PersonnageService.ts#L342)
 
 Récupère les statistiques des personnages d'un utilisateur
 

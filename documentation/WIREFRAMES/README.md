@@ -1,4 +1,4 @@
-# Wireframes Brumisater - Design Dark Immersif
+# Wireframes Brumisa3 - Design Dark Immersif
 
 Date: 2025-01-19
 Version: 2.0 (MVP - Multi-device)
@@ -11,7 +11,7 @@ Pour tester l'application actuelle en production : [brumisa3.fr](https://brumisa
 
 ## Vue d'ensemble
 
-Ce repertoire contient les **wireframes multi-device** pour l'application Brumisater avec un design dark immersif qui colle parfaitement au theme "brume/mystere" du Mist Engine.
+Ce repertoire contient les **wireframes multi-device** pour l'application Brumisa3 avec un design dark immersif qui colle parfaitement au theme "brume/mystere" du Mist Engine.
 
 ### Approche Multi-Device
 

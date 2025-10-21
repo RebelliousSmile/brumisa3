@@ -171,7 +171,7 @@ export class PdfService {
     const hauteurPage = 792 // A4 height in points
     doc.fillColor('#888888')
        .fontSize(10)
-       .text('Généré avec brumisater', 50, hauteurPage - 30)
+       .text('Généré avec brumisa3', 50, hauteurPage - 30)
        .text(new Date().toLocaleDateString('fr-FR'), 400, hauteurPage - 30)
 
     // Finaliser le document

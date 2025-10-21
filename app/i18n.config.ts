@@ -2,7 +2,7 @@
  * Configuration centrale pour i18n (internationalisation)
  *
  * Ce fichier configure Vue I18n pour supporter le multilinguisme
- * dans l'application Brumisater.
+ * dans l'application Brumisa3.
  *
  * Langues supportees: FR (par defaut), EN
  *

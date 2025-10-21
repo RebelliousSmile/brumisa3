@@ -230,7 +230,7 @@ const handleGeneratePdf = async (id: number) => {
 }
 
 useSeoMeta({
-  title: 'Tableau de bord - Brumisater',
-  description: 'Votre espace personnel Brumisater'
+  title: 'Tableau de bord - Brumisa3',
+  description: 'Votre espace personnel Brumisa3'
 })
 </script>

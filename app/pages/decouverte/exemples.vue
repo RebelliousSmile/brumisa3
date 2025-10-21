@@ -13,8 +13,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Exemples de Personnages - Brumisater',
-  description: 'Galerie d\'exemples Brumisater : personnages LITM, Otherscape et templates de Theme Cards'
+  title: 'Exemples de Personnages - Brumisa3',
+  description: 'Galerie d\'exemples Brumisa3 : personnages LITM, Otherscape et templates de Theme Cards'
 })
 </script>
 

@@ -1,8 +1,8 @@
-# Guide du Design System - Brumisater
+# Guide du Design System - Brumisa3
 
 ## Vue d'ensemble
 
-Le Design System de Brumisater est un système cohérent et modulaire qui permet de créer des interfaces utilisateur adaptées aux différents systèmes JDR tout en maintenant une expérience utilisateur cohérente. Il intègre parfaitement l'architecture **MVC-CS** du projet.
+Le Design System de Brumisa3 est un système cohérent et modulaire qui permet de créer des interfaces utilisateur adaptées aux différents systèmes JDR tout en maintenant une expérience utilisateur cohérente. Il intègre parfaitement l'architecture **MVC-CS** du projet.
 
 ### 🎨 Philosophie du Design
 

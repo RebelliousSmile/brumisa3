@@ -206,7 +206,7 @@ const createPersonnage = async () => {
 }
 
 useSeoMeta({
-  title: 'Nouveau Personnage - Brumisater',
+  title: 'Nouveau Personnage - Brumisa3',
   description: 'Créez un nouveau personnage JDR'
 })
 </script>

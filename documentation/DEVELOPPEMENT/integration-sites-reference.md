@@ -2,7 +2,7 @@
 
 ## Vue d'Ensemble
 
-Plan d'intégration des fonctionnalités provenant des repositories open-source de référence pour enrichir Brumisater, en particulier pour supporter le **hack LITM du Mist Engine**.
+Plan d'intégration des fonctionnalités provenant des repositories open-source de référence pour enrichir Brumisa3, en particulier pour supporter le **hack LITM du Mist Engine**.
 
 **Hiérarchie** : Mist Engine (système) → LITM (hack) → Zamanora/HOR (univers)
 
@@ -28,7 +28,7 @@ Les fonctionnalités documentées ici sont inspirées ou adaptées de :
 ## Architecture Globale
 
 ```
-Brumisater (Nuxt 4 + Prisma + PostgreSQL)
+Brumisa3 (Nuxt 4 + Prisma + PostgreSQL)
 ├── Phase 1: Configuration Playspace & Hack LITM (MVP v1.0)
 ├── Phase 2: Composants Fiche de Personnage LITM (MVP v1.0)
 ├── Phase 3: Export JSON (MVP v1.0)
@@ -90,7 +90,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-002-traductions-litm.md](../tasks/TA
 
 **Résumé** :
 - Télécharger les fichiers `messages/fr.json` et `messages/en.json`
-- Extraire les sections pertinentes pour Brumisater
+- Extraire les sections pertinentes pour Brumisa3
 - Adapter la structure JSON pour l'architecture Nuxt
 - Organiser par domaines (character, cards, trackers, etc.)
 
@@ -143,7 +143,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-003-composable-i18n.md](../tasks/TAS
 
 ## Objectif
 
-Adapter les composants React/Next.js de characters-of-the-mist en composants Vue 3 pour Brumisater, en créant un système de fiche de personnage pour le hack LITM du Mist Engine.
+Adapter les composants React/Next.js de characters-of-the-mist en composants Vue 3 pour Brumisa3, en créant un système de fiche de personnage pour le hack LITM du Mist Engine.
 
 ## Tasks de la Phase 2
 
@@ -407,7 +407,7 @@ Voir : [documentation/tasks/TASK-2025-01-19-019-migration-donnees.md](../tasks/T
 
 ## Objectif
 
-Créer une documentation utilisateur complète pour faciliter l'utilisation de "Legends in the Mist" dans Brumisater.
+Créer une documentation utilisateur complète pour faciliter l'utilisation de "Legends in the Mist" dans Brumisa3.
 
 ## Tasks de Documentation
 
@@ -720,7 +720,7 @@ Les personnages LITM héritent automatiquement leur contexte système/hack/unive
 
 ### Pourquoi Vue 3 au lieu de React ?
 
-Brumisater utilise déjà Nuxt 4 + Vue 3. Plutôt que d'intégrer React, nous adaptons les composants React de characters-of-the-mist en composants Vue 3, ce qui assure :
+Brumisa3 utilise déjà Nuxt 4 + Vue 3. Plutôt que d'intégrer React, nous adaptons les composants React de characters-of-the-mist en composants Vue 3, ce qui assure :
 - Cohérence avec le reste de l'application
 - Pas de dépendances React inutiles
 - Meilleure performance (pas de double framework)

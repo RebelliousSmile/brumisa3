@@ -3,7 +3,7 @@
 ## 🎯 Vision Design (style cyberpunk minimaliste Otherscape)
 
 ### Philosophie générale
-Brumisater adopte un style **cyberpunk minimaliste dystopien** inspiré de Tokyo:Otherscape, privilégiant la clarté, la performance et l'immersion. Le design web suit une approche épurée (98% noir/blanc, 2% bleu cyberpunk) tandis que les PDFs conservent une liberté créative totale pour l'immersion thématique.
+Brumisa3 adopte un style **cyberpunk minimaliste dystopien** inspiré de Tokyo:Otherscape, privilégiant la clarté, la performance et l'immersion. Le design web suit une approche épurée (98% noir/blanc, 2% bleu cyberpunk) tandis que les PDFs conservent une liberté créative totale pour l'immersion thématique.
 
 ### Principes directeurs
 1. **Minimalisme radical** : Noir/blanc dominant, bleu accent uniquement au hover/focus

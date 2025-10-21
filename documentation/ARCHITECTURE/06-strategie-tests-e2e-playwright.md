@@ -290,7 +290,7 @@ test.describe('Parcours Léa : Première visite', () => {
   test('Léa crée son premier playspace et personnage', async ({ page }) => {
     // 1. Arrivée sur Brumisa3
     await page.goto('/');
-    await expect(page.locator('h1')).toContainText('Brumisater');
+    await expect(page.locator('h1')).toContainText('Brumisa3');
 
     // 2. Onboarding : Créer premier playspace
     await page.click('button:has-text("Créer votre premier playspace")');

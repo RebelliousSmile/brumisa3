@@ -204,7 +204,7 @@ const deletePersonnage = async (id: number) => {
 }
 
 useSeoMeta({
-  title: 'Mes Personnages - Brumisater',
+  title: 'Mes Personnages - Brumisa3',
   description: 'Gérez vos personnages JDR et générez leurs fiches PDF'
 })
 </script>

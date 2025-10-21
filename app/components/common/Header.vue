@@ -3,7 +3,7 @@
  * Header Principal - Navigation Persistante
  *
  * Structure :
- * - Logo Brumisater (lien vers /)
+ * - Logo Brumisa3 (lien vers /)
  * - Navigation principale (4 sections) :
  *   1. Decouverte
  *   2. Preparation (context-sensitive MJ/PJ)
@@ -42,15 +42,17 @@ const navItems = [
     label: 'Jouer en solo',
     path: '/solo',
     icon: 'i-heroicons-user',
-    enabled: false, // v1.3+
-    badge: 'v1.3+'
+    enabled: true, // Page placeholder accessible
+    badge: 'v1.3+',
+    comingSoon: true
   },
   {
     label: 'Table VTT',
     path: '/vtt',
     icon: 'i-heroicons-users',
-    enabled: false, // v2.0+
-    badge: 'v2.0+'
+    enabled: true, // Page placeholder accessible
+    badge: 'v2.0+',
+    comingSoon: true
   }
 ]
 
@@ -75,7 +77,7 @@ const handleLogout = async () => {
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center space-x-2">
-        <span class="text-2xl font-bold text-brand-violet">Brumisater</span>
+        <span class="text-2xl font-bold text-brand-violet">Brumisa3</span>
       </NuxtLink>
 
       <!-- Navigation Principale (4 sections) -->
@@ -83,16 +85,13 @@ const handleLogout = async () => {
         <NuxtLink
           v-for="item in navItems"
           :key="item.path"
-          :to="item.enabled ? item.path : '#'"
+          :to="item.path"
           :class="[
             'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
             isActive(item.path)
               ? 'bg-brand-violet text-white'
-              : item.enabled
-                ? 'text-gray-700 hover:bg-gray-100'
-                : 'text-gray-400 cursor-not-allowed',
+              : 'text-gray-700 hover:bg-gray-100',
           ]"
-          @click.prevent="!item.enabled && $event.preventDefault()"
         >
           {{ item.label }}
           <span

@@ -1,8 +1,8 @@
-# Stratégie de développement - brumisater
+# Stratégie de développement - brumisa3
 
 ## Vue d'ensemble
 
-Document de référence pour définir la stratégie de développement du projet brumisater selon l'architecture MVC-CS (Models, Views, Controllers, Components, Services) définie.
+Document de référence pour définir la stratégie de développement du projet brumisa3 selon l'architecture MVC-CS (Models, Views, Controllers, Components, Services) définie.
 
 ### Objectifs stratégiques
 - **Architecture MVC-CS** : Respecter l'architecture définie dans ARCHITECTURE/
@@ -272,13 +272,13 @@ for (const migration of migrations) {
 NODE_ENV=development
 PORT=3000
 POSTGRES_HOST=localhost
-POSTGRES_DB=brumisater_dev
+POSTGRES_DB=brumisa3_dev
 LOG_LEVEL=debug
 
 # .env.production
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=postgresql://user:pass@prod-host:5432/brumisater
+DATABASE_URL=postgresql://user:pass@prod-host:5432/brumisa3
 LOG_LEVEL=info
 FORCE_HTTPS=true
 ```
@@ -295,7 +295,7 @@ class ConfigService {
     loadConfig() {
         const baseConfig = {
             app: {
-                name: 'brumisater',
+                name: 'brumisa3',
                 version: process.env.npm_package_version
             },
             database: {
@@ -369,7 +369,7 @@ jobs:
         image: postgres:13
         env:
           POSTGRES_PASSWORD: test
-          POSTGRES_DB: brumisater_test
+          POSTGRES_DB: brumisa3_test
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -446,8 +446,8 @@ const templatePath = path.join(__dirname, '..', 'templates', 'pdf', 'monsterhear
 ### Variables d'environnement Windows
 ```bash
 # .env pour Windows
-TEMP_DIR=C:\temp\brumisater
-LOG_DIR=C:\ProgramData\brumisater\logs
+TEMP_DIR=C:\temp\brumisa3
+LOG_DIR=C:\ProgramData\brumisa3\logs
 ASSETS_PATH=.\public\assets
 
 # Pas de chemins Unix hardcodés
@@ -479,4 +479,4 @@ ASSETS_PATH=.\public\assets
 
 ---
 
-Cette stratégie de développement fournit le cadre complet pour coder brumisater selon l'architecture MVC-CS définie, en respectant les contraintes Windows et les principes SOLID/DRY du projet.
+Cette stratégie de développement fournit le cadre complet pour coder brumisa3 selon l'architecture MVC-CS définie, en respectant les contraintes Windows et les principes SOLID/DRY du projet.

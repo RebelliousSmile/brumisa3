@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     
     // Public keys (exposed to client-side)
     public: {
-      appName: 'brumisater',
+      appName: 'brumisa3',
       appUrl: process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3074'
     }
   },
@@ -46,7 +46,7 @@ export default defineNuxtConfig({
     storage: {
       fs: {
         driver: 'fs',
-        base: process.platform === 'win32' ? 'C:\\temp\\brumisater' : '/tmp/brumisater'
+        base: process.platform === 'win32' ? 'C:\\temp\\brumisa3' : '/tmp/brumisa3'
       }
     },
     experimental: {
@@ -114,7 +114,7 @@ export default defineNuxtConfig({
     strategy: 'prefix_except_default',
     detectBrowserLanguage: {
       useCookie: true,
-      cookieKey: 'brumisater_locale',
+      cookieKey: 'brumisa3_locale',
       redirectOn: 'root',
       alwaysRedirect: false,
       fallbackLocale: 'fr'

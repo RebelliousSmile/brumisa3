@@ -28,7 +28,7 @@ const characterId = route.params.id as string
 // const activeSection = ref<'informations' | 'theme-cards' | 'hero-card'>('informations')
 
 useSeoMeta({
-  title: 'Editer Personnage - Brumisater',
+  title: 'Editer Personnage - Brumisa3',
   description: 'Editez votre personnage : informations, Theme Cards, Hero Card'
 })
 </script>

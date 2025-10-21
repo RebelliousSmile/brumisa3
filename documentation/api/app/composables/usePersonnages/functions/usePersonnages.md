@@ -1,14 +1,14 @@
-[**Brumisater - Documentation API**](../../../../README.md)
+[**Brumisa3 - Documentation API**](../../../../README.md)
 
 ***
 
-[Brumisater - Documentation API](../../../../README.md) / [app/composables/usePersonnages](../README.md) / usePersonnages
+[Brumisa3 - Documentation API](../../../../README.md) / [app/composables/usePersonnages](../README.md) / usePersonnages
 
 # Function: usePersonnages()
 
 > **usePersonnages**(): `object`
 
-Defined in: [app/composables/usePersonnages.ts:32](https://github.com/your-repo/brumisater-nuxt4/blob/main/app/composables/usePersonnages.ts#L32)
+Defined in: [app/composables/usePersonnages.ts:32](https://github.com/your-repo/brumisa3-nuxt4/blob/main/app/composables/usePersonnages.ts#L32)
 
 Composable pour la gestion des personnages
 
