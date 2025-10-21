@@ -1,128 +1,132 @@
 <script setup lang="ts">
-// Meta tags SEO
-useSeoMeta({
-  title: 'Générateur PDF JDR - Créez vos fiches de personnages',
-  description: 'Créez et partagez des fiches de personnages pour Monsterhearts, Engrenages & Sortilèges, Metro 2033 et Mist Engine',
-  ogTitle: 'Générateur PDF JDR - brumisater',
-  ogDescription: 'Créez vos fiches de personnages JDR immersives',
-  ogImage: '/images/og-image.png',
-  twitterCard: 'summary_large_image',
-})
+/**
+ * Page Accueil - MVP v1.0
+ *
+ * Version simplifiee pointant vers les sections principales
+ * Les composants legacy (HeroSection, SystemCards, etc.) seront reimplementes en v1.1+
+ */
 
-// Layout
 definePageMeta({
   layout: 'default'
 })
 
-// State
-const showTestimonialForm = ref(false)
-const showBackToTop = ref(false)
-
-// Scroll to top functionality
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  })
-}
-
-// Watch scroll position
-onMounted(() => {
-  const handleScroll = () => {
-    showBackToTop.value = window.pageYOffset > 300
-  }
-  
-  window.addEventListener('scroll', handleScroll)
-  
-  onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-  })
+useSeoMeta({
+  title: 'Brumisater - Createur de fiches Mist Engine',
+  description: 'Creez et gerez vos fiches de personnages pour Legends in the Mist et autres jeux Mist Engine'
 })
-
-// Data fetching
-const { data: statistics } = await $fetch('/api/statistics')
-const { data: systemCards } = await $fetch('/api/systems/cards')
-const { data: recentPdfs } = await $fetch('/api/pdfs/recent')
-
-// User session - éviter l'hydration mismatch
-const user = ref(null)
-
-// Charger la session côté client uniquement
-onMounted(async () => {
-  try {
-    const { data: session } = await $fetch('/api/auth/session')
-    user.value = session?.user || null
-  } catch (error) {
-    console.warn('Erreur chargement session:', error)
-    user.value = null
-  }
-})
-
-// Provide testimonial form state to child components
-provide('showTestimonialForm', showTestimonialForm)
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <HeroSection
-    :statistics="statistics"
-  />
+  <div class="min-h-screen bg-gray-50">
+    <!-- Hero Section Simplifie -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-brand-violet via-purple-700 to-indigo-900 py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+          <h1 class="mb-6 text-5xl font-bold text-white md:text-6xl">
+            Brumisater
+          </h1>
+          <p class="mb-8 text-xl text-purple-100">
+            Createur de fiches de personnages pour Mist Engine
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <UiButton to="/decouverte" variant="primary" size="lg">
+              Decouvrir
+            </UiButton>
+            <UiButton to="/preparation" variant="secondary" size="lg">
+              Commencer
+            </UiButton>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Game Systems Section -->
-  <SystemCards
-    :systemCards="systemCards"
-  />
+    <!-- Sections Principales -->
+    <section class="py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="mb-12 text-center text-3xl font-bold text-gray-900">
+          Explorez Brumisater
+        </h2>
 
-  <!-- Recent PDFs Section -->
-  <RecentPdfs
-    :pdfs="recentPdfs"
-  />
+        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <!-- Decouverte -->
+          <NuxtLink
+            to="/decouverte"
+            class="group rounded-lg border border-gray-200 bg-white p-6 transition-all hover:border-brand-violet hover:shadow-lg"
+          >
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 text-2xl">
+              💡
+            </div>
+            <h3 class="mb-2 text-xl font-semibold text-gray-900 group-hover:text-brand-violet">
+              Decouverte
+            </h3>
+            <p class="text-gray-600">
+              Guides, tutoriels et exemples pour bien demarrer
+            </p>
+          </NuxtLink>
 
-  <!-- Newsletter + Join Adventure -->
-  <NewsletterJoin
-    :statistics="statistics"
-    :user="user"
-  />
+          <!-- Preparation -->
+          <NuxtLink
+            to="/preparation"
+            class="group rounded-lg border border-gray-200 bg-white p-6 transition-all hover:border-brand-violet hover:shadow-lg"
+          >
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-2xl">
+              ✏️
+            </div>
+            <h3 class="mb-2 text-xl font-semibold text-gray-900 group-hover:text-brand-violet">
+              Preparation
+            </h3>
+            <p class="text-gray-600">
+              Creez et gerez vos playspaces et personnages
+            </p>
+          </NuxtLink>
 
-  <!-- Testimonials CTA -->
-  <TestimonialsCta />
+          <!-- Solo (v1.3+) -->
+          <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 opacity-60">
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 text-2xl">
+              🎮
+            </div>
+            <h3 class="mb-2 text-xl font-semibold text-gray-500">
+              Jouer en solo
+            </h3>
+            <p class="text-gray-400">
+              HUD de jeu solo (disponible v1.3+)
+            </p>
+          </div>
 
-  <!-- Testimonial Form -->
-  <TestimonialForm
-    v-show="showTestimonialForm"
-    @close="showTestimonialForm = false"
-  />
+          <!-- VTT (v2.0+) -->
+          <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 opacity-60">
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 text-2xl">
+              👥
+            </div>
+            <h3 class="mb-2 text-xl font-semibold text-gray-500">
+              Table VTT
+            </h3>
+            <p class="text-gray-400">
+              Interface multi-joueurs (disponible v2.0+)
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Features -->
-  <FeaturesSection />
-
-  <!-- Boutons flottants -->
-  <div class="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-40 hidden md:flex">
-    <div class="relative">
-      <button
-        class="w-10 h-10 bg-generique/20 border border-generique/30 rounded-full flex items-center justify-center hover:border-generique transition-all duration-300"
-        title="Soutenir le projet"
-      >
-        <i class="ra ra-crowned-heart text-generique text-xl"></i>
-      </button>
-    </div>
+    <!-- CTA Section -->
+    <section class="bg-brand-violet py-16">
+      <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+        <h2 class="mb-4 text-3xl font-bold text-white">
+          Pret a creer vos personnages ?
+        </h2>
+        <p class="mb-8 text-xl text-purple-100">
+          Rejoignez la communaute Mist Engine et donnez vie a vos histoires
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <UiButton to="/auth/register" variant="secondary" size="lg">
+            Creer un compte
+          </UiButton>
+          <UiButton to="/decouverte/guide" variant="ghost" size="lg" class="text-white hover:bg-white/10">
+            En savoir plus
+          </UiButton>
+        </div>
+      </div>
+    </section>
   </div>
-
-  <!-- Version mobile en bas -->
-  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-row gap-3 z-40 md:hidden bg-gray-900/70 backdrop-blur-sm px-4 py-3 rounded-full border border-gray-700">
-    <button class="w-10 h-10 bg-generique/20 border border-generique/30 rounded-full flex items-center justify-center hover:border-generique transition-all">
-      <i class="ra ra-crowned-heart text-generique text-xl"></i>
-    </button>
-  </div>
-
-  <!-- Bouton retour en haut -->
-  <button
-    v-show="showBackToTop"
-    @click="scrollToTop"
-    class="fixed bottom-6 right-6 w-10 h-10 bg-generique rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 hover:-translate-y-1 transition-all duration-300 z-50 shadow-lg"
-  >
-    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-    </svg>
-  </button>
 </template>

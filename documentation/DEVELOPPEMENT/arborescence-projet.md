@@ -36,8 +36,8 @@ app/
 │   │   ├── PlayspaceList.vue
 │   │   ├── PlayspaceForm.vue
 │   │   └── ...
-│   └── litm/           # Composants spécifiques LITM (Mist Engine)
-│       ├── base/       # Composants de base LITM
+│   └── mist/           # Composants spécifiques mist (Mist Engine)
+│       ├── base/       # Composants de base mist
 │       │   ├── CardBase.vue
 │       │   ├── TrackerBase.vue
 │       │   └── ...
