@@ -1,30 +1,58 @@
 # Charte Graphique - Générateur PDF JDR
 
+## 🎯 Vision Design (style cyberpunk minimaliste Otherscape)
+
+### Philosophie générale
+Brumisater adopte un style **cyberpunk minimaliste dystopien** inspiré de Tokyo:Otherscape, privilégiant la clarté, la performance et l'immersion. Le design web suit une approche épurée (98% noir/blanc, 2% bleu cyberpunk) tandis que les PDFs conservent une liberté créative totale pour l'immersion thématique.
+
+### Principes directeurs
+1. **Minimalisme radical** : Noir/blanc dominant, bleu accent uniquement au hover/focus
+2. **Performance-first** : Ombres minimes (blur 5px), transitions 0.4s, angles droits (pas d'arrondi)
+3. **Accessibilité WCAG AAA** : Contraste 7:1, textures plates, typographie bold
+4. **Mobile-responsive** : Breakpoint 768px (Otherscape), espacements 36px/27px
+5. **Cohérence système** : UnoCSS/Tailwind avec palette cyberpunk unifiée
+
+### Design web vs PDF
+| Aspect | Site Web | PDFs Thématiques |
+|--------|----------|------------------|
+| **Style** | Cyberpunk minimaliste | Immersion totale par système |
+| **Couleurs** | 98% noir/blanc + 2% bleu | Palettes complètes thématiques |
+| **Dégradés** | Aucun | Autorisés pour immersion |
+| **Effets** | Hover simple (scale, translateY) | Effets thématiques libres |
+| **Opacité** | 0% ou 100% uniquement | Variations autorisées |
+| **Typographie** | Assistant (sans-serif) unique | Polices thématiques variées |
+
+### Inspiration Otherscape
+- **Palette** : Noir (#121212) / Blanc (#ffffff) / Bleu (#334fb4)
+- **Espacements** : 36px desktop / 27px mobile / 8px grilles
+- **Transitions** : 0.4s ease (fluide, performant)
+- **Hover** : translateY(-4px) + scale(1.02)
+- **Layout** : max-width 120rem, angles droits, ombres subtiles
+
 ## 🎨 Palette de couleurs
 
-### Couleurs principales
+### Couleurs principales (style cyberpunk minimaliste)
 
 | Couleur | Hex | RGB | Usage |
 |---------|-----|-----|-------|
-| **Brand violet** | `#7641d3` | rgb(118, 65, 211) | Couleur principale, CTAs primaires, liens actifs |
-| **Brand violet foncé** | `#5c28ae` | rgb(92, 40, 174) | États hover, focus, variantes sombres |
-| **Noir** | `#000000` | rgb(0, 0, 0) | Arrière-plans principaux |
-| **Noir charbon** | `#1e1e1e` | rgb(30, 30, 30) | Arrière-plans secondaires, cartes |
-| **Blanc** | `#ffffff` | rgb(255, 255, 255) | Textes sur fond sombre, contraste |
+| **Noir profond** | `#121212` | rgb(18, 18, 18) | Arrière-plans principaux, boutons, éléments sombres |
+| **Noir charbon** | `#242833` | rgb(36, 40, 51) | Arrière-plans secondaires, cartes, conteneurs |
+| **Blanc pur** | `#ffffff` | rgb(255, 255, 255) | Textes principaux, contraste maximal |
+| **Gris texte** | `#e5e5e5` | rgb(229, 229, 229) | Textes secondaires, descriptions |
 
-### Couleurs d'accent
+### Couleurs d'accent (minimalisme moderne)
 
 | Couleur | Hex | RGB | Usage |
 |---------|-----|-----|-------|
-| **Gris foncé** | `#32373c` | rgb(50, 55, 60) | Boutons secondaires, bordures |
-| **Gris clair** | `#abb8c3` | rgb(171, 184, 195) | Textes secondaires, placeholders |
-| **Violet électrique** | `#9b51e0` | rgb(155, 81, 224) | Highlights, effets hover spéciaux |
+| **Bleu cyberpunk** | `#334fb4` | rgb(51, 79, 180) | Accent principal, CTAs, liens actifs, hover interactif |
+| **Gris bordure** | `#3a3f4a` | rgb(58, 63, 74) | Bordures subtiles, séparateurs |
+| **Gris hover** | `#4a5060` | rgb(74, 80, 96) | États hover sur éléments neutres |
 
 ### Couleur principale du site
 
 | Couleur | Hex | Tailwind | Usage |
 |---------|-----|----------|-------|
-| **Brumisa Bleu** | `#3b82f6` | `blue-500` | **Couleur principale de brumisa3** - Navigation, boutons primaires, liens, authentification, contenu générique |
+| **Brumisa Bleu** | `#334fb4` | Personnalisé | **Couleur principale de brumisa3** - Navigation, boutons primaires, liens, authentification, contenu générique |
 
 ### Couleurs de différenciation JDR
 
@@ -62,136 +90,176 @@ Chaque système utilise des icônes RPG Awesome spécifiques pour renforcer son 
 | **Avertissement** | `#eab308` | `yellow-500` | Alertes, warnings |
 | **Information** | `#06b6d4` | `cyan-500` | Infos, aide (distinct du bleu brumisa3) |
 
-### Principes d'opacité simplifiés
+### Principes de simplicité visuelle (approche minimaliste)
 
-**IMPORTANT** : Pour éviter la confusion visuelle, limiter les variations d'opacité :
+**IMPORTANT** : Moins d'effets, plus de clarté - philosophie Otherscape
 
-| Usage | Opacité | Exemple |
-|-------|---------|---------|
-| **Éléments principaux** | 100% | `text-generique`, `bg-generique` |
-| **Fonds subtils** | Couleur grise | `bg-gray-800` au lieu de `bg-generique/20` |
-| **Dégradés hero** | Pleine couleur | `from-generique to-blue-600` |
-| **Effets de glow** | 20-30% max | `bg-generique/20` (uniquement pour effets spéciaux) |
+| Principe | Règle | Application |
+|----------|-------|-------------|
+| **Opacité minimale** | 0% ou 100% uniquement | Pas d'opacité intermédiaire sauf ombres |
+| **Ombres subtiles** | Blur 5px, opacity 0.05 max | `shadow-sm` uniquement |
+| **Pas de dégradés** | Couleurs plates | Sauf contexte système JDR (PDF) |
+| **Contraste franc** | Noir/Blanc dominant | Bleu accent uniquement sur interactions |
 
-**Éviter** : `/10`, `/40`, `/50`, `/60`, `/70`, `/80`, `/90` - trop de nuances créent de la confusion.
+**Éviter absolument** :
+- Dégradés sur le site web (réservés aux PDFs thématiques)
+- Opacités multiples (`/10`, `/20`, `/50`, etc.)
+- Effets de glow ou néons
+- Ombres prononcées
 
-### Utilisation des dégradés
+### Approche épurée
 
-Les dégradés sont réservés aux **zones d'impact visuel** :
+**Zones sans effets** (98% du site) :
+- Cartes : Fond plat `#242833`, bordure `#3a3f4a` de 1px
+- Boutons : Fond plat `#121212`, texte blanc, transition hover simple
+- Navigation : Aucun dégradé, liens blancs avec hover bleu
+- Formulaires : Inputs plats avec bordure fine
 
-| Zone | Type de dégradé | Exemple |
-|------|----------------|---------|
-| **Hero sections** | Fond immersif | `bg-gradient-to-br from-gray-900 via-blue-900 to-generique` |
-| **Boutons CTA principaux** | Action impactante | `bg-gradient-to-r from-generique to-blue-600` |
-| **Sections importantes** | Mise en valeur | `bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900` |
-
-**Zones sobres** (pas de dégradés) :
-- Cartes de contenu
-- Listes d'éléments  
-- Formulaires
-- Navigation secondaire
-
-### Variables CSS
+### Variables CSS (style cyberpunk minimaliste)
 ```css
 :root {
-  /* Couleurs principales */
-  --brand-violet: #7641d3;
-  --brand-violet-dark: #5c28ae;
-  --noir: #000000;
-  --noir-charbon: #1e1e1e;
-  --blanc: #ffffff;
-  
-  /* Couleurs d'accent */
-  --gris-fonce: #32373c;
-  --gris-clair: #abb8c3;
-  --violet-electrique: #9b51e0;
-  
-  /* Couleurs système JDR (uniquement pour différenciation visuelle) */
-  --monsterhearts: #8b5cf6;  /* purple-500 */
-  --engrenages: #d97706;     /* amber-600 */
-  --metro2033: #dc2626;      /* red-600 */
-  --mistengine: #ec4899;     /* pink-500 */
-  --zombiology: #d4af37;     /* or métallique */
-  
-  /* Couleur par défaut brumisa3 (= générique) */
-  --brumisa-bleu: #3b82f6;   /* blue-500 - Couleur principale du site */
-  
-  /* Couleurs fonctionnelles (évitent les conflits avec systèmes JDR) */
-  --succes: #22c55e;        /* green-500 (distinct d'emerald) */
-  --erreur: #f97316;        /* orange-500 (distinct du rouge Metro) */
-  --avertissement: #eab308;  /* yellow-500 (neutre) */
-  --info: #06b6d4;          /* cyan-500 (distinct du bleu générique) */
+  /* Couleurs principales - Noir/Blanc dominant */
+  --noir-profond: #121212;      /* Arrière-plans, boutons */
+  --noir-charbon: #242833;      /* Cartes, conteneurs */
+  --blanc-pur: #ffffff;         /* Textes principaux */
+  --gris-texte: #e5e5e5;        /* Textes secondaires */
+
+  /* Couleurs d'accent - Minimalisme */
+  --bleu-cyberpunk: #334fb4;    /* Accent interactif */
+  --gris-bordure: #3a3f4a;      /* Bordures subtiles */
+  --gris-hover: #4a5060;        /* États hover */
+
+  /* Couleurs système JDR (uniquement pour différenciation contextuelle) */
+  --monsterhearts: #8b5cf6;     /* purple-500 */
+  --engrenages: #d97706;        /* amber-600 */
+  --metro2033: #dc2626;         /* red-600 */
+  --mistengine: #ec4899;        /* pink-500 */
+  --zombiology: #d4af37;        /* or métallique */
+
+  /* Couleur principale du site */
+  --brumisa-bleu: #334fb4;      /* Bleu cyberpunk - Couleur principale */
+
+  /* Couleurs fonctionnelles */
+  --succes: #22c55e;            /* green-500 */
+  --erreur: #f97316;            /* orange-500 */
+  --avertissement: #eab308;     /* yellow-500 */
+  --info: #06b6d4;              /* cyan-500 */
+
+  /* Ombres minimalistes */
+  --shadow-subtle: 0 4px 5px rgba(18, 18, 18, 0.05);
+  --shadow-none: none;
 }
 ```
 
-## 🔤 Typographie
+## 🔤 Typographie (style cyberpunk épuré)
 
 ### Polices principales
 
-#### "Source Serif 4" - Police serif pour le corps de texte
-- **Poids disponibles** : 400 (regular), 400i (italic), 500 (medium), 700 (bold)
-- **Usage** : Texte principal, paragraphes, contenus longs
-- **Chargement** : Google Fonts
+#### "Assistant" - Police sans-serif moderne (Google Fonts)
+- **Poids disponibles** : 400 (regular), 700 (bold)
+- **Usage** : Titres, corps de texte, navigation, éléments UI
+- **Caractère** : Moderne, lisible, épuré, cyberpunk
+- **Chargement** : Google Fonts avec font-display: swap
 ```html
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
 ```
 
-#### "Shackleton" - Police display/sans-serif (Adobe Fonts)
-- **Usage** : Titres, boutons, navigation, éléments UI
-- **Caractère** : Moderne, gaming, impactant
-- **Chargement** : Adobe Fonts (Typekit)
-```html
-<link rel="stylesheet" href="https://use.typekit.net/vpm3oax.css">
-```
+#### Fallback système (performance)
+- **Stack** : `'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
+- **Avantage** : Si Google Fonts échoue, polices système natives s'affichent instantanément
 
-### Hiérarchie typographique
+### Hiérarchie typographique (échelle fluide)
 
-| Élément | Police | Taille | Poids | Line-height |
-|---------|--------|--------|-------|-------------|
-| **H1** | Shackleton, sans-serif | 3rem (48px) | 700 | 1.2 |
-| **H2** | Shackleton, sans-serif | 2.25rem (36px) | 600 | 1.25 |
-| **H3** | Shackleton, sans-serif | 1.875rem (30px) | 600 | 1.3 |
-| **H4** | Shackleton, sans-serif | 1.5rem (24px) | 500 | 1.35 |
-| **H5** | Shackleton, sans-serif | 1.25rem (20px) | 500 | 1.4 |
-| **H6** | Shackleton, sans-serif | 1.125rem (18px) | 500 | 1.4 |
-| **Corps** | Source Serif 4, serif | 1rem (16px) | 400 | 1.6 |
-| **Petit texte** | Source Serif 4, serif | 0.875rem (14px) | 400 | 1.5 |
-| **Boutons** | Shackleton, sans-serif | 1rem (16px) | 500 | 1 |
-| **Navigation** | Shackleton, sans-serif | 0.9375rem (15px) | 500 | 1 |
+| Élément | Police | Taille | Poids | Line-height | Transformation |
+|---------|--------|--------|-------|-------------|----------------|
+| **H1** | Assistant, sans-serif | clamp(2.5rem, 4vw, 3.5rem) | 700 | 1.1 | uppercase |
+| **H2** | Assistant, sans-serif | clamp(2rem, 3vw, 2.75rem) | 700 | 1.2 | uppercase |
+| **H3** | Assistant, sans-serif | clamp(1.5rem, 2.5vw, 2rem) | 700 | 1.25 | none |
+| **H4** | Assistant, sans-serif | clamp(1.25rem, 2vw, 1.5rem) | 700 | 1.3 | none |
+| **H5** | Assistant, sans-serif | 1.125rem (18px) | 700 | 1.4 | none |
+| **H6** | Assistant, sans-serif | 1rem (16px) | 700 | 1.4 | none |
+| **Corps** | Assistant, sans-serif | clamp(0.9375rem, 2.5vw, 1rem) | 400 | 1.6 | none |
+| **Petit texte** | Assistant, sans-serif | 0.875rem (14px) | 400 | 1.5 | none |
+| **Boutons** | Assistant, sans-serif | 1rem (16px) | 700 | 1 | uppercase |
+| **Navigation** | Assistant, sans-serif | 0.9375rem (15px) | 700 | 1 | none |
 
-### Classes CSS typographiques
+### Classes CSS typographiques (approche minimaliste)
 ```css
-/* Titres */
-.heading-1 { font-family: 'Shackleton', sans-serif; font-size: 3rem; font-weight: 700; line-height: 1.2; }
-.heading-2 { font-family: 'Shackleton', sans-serif; font-size: 2.25rem; font-weight: 600; line-height: 1.25; }
-.heading-3 { font-family: 'Shackleton', sans-serif; font-size: 1.875rem; font-weight: 600; line-height: 1.3; }
+/* Titres - Toujours bold, uppercase pour H1/H2 */
+.heading-1 {
+  font-family: 'Assistant', sans-serif;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
 
-/* Corps de texte */
-.body-text { font-family: 'Source Serif 4', serif; font-size: 1rem; font-weight: 400; line-height: 1.6; }
-.body-small { font-family: 'Source Serif 4', serif; font-size: 0.875rem; font-weight: 400; line-height: 1.5; }
+.heading-2 {
+  font-family: 'Assistant', sans-serif;
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
 
-/* UI Elements */
-.button-text { font-family: 'Shackleton', sans-serif; font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-.nav-text { font-family: 'Shackleton', sans-serif; font-size: 0.9375rem; font-weight: 500; }
+.heading-3 {
+  font-family: 'Assistant', sans-serif;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Corps de texte - Même police, cohérence visuelle */
+.body-text {
+  font-family: 'Assistant', sans-serif;
+  font-size: clamp(0.9375rem, 2.5vw, 1rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.body-small {
+  font-family: 'Assistant', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* UI Elements - Bold pour les interactions */
+.button-text {
+  font-family: 'Assistant', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nav-text {
+  font-family: 'Assistant', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
 ```
 
-## 🎯 Caractéristiques du design
+## 🎯 Caractéristiques du design (philosophie Otherscape)
 
 ### Esthétique générale
-- **Style** : Gaming/Horror avec touches élégantes
-- **Inspiration** : Interfaces de jeux modernes, ambiance gothique raffinée
-- **Équilibre** : Sombre et mystérieux mais professionnel et accessible
+- **Style** : Cyberpunk minimaliste dystopien
+- **Inspiration** : Interfaces gaming modernes, futurisme épuré, Tokyo:Otherscape
+- **Équilibre** : Sombre et immersif, épuré et performant, accessible
 
-### Contraste et accessibilité
-- **Ratio de contraste minimum** : 4.5:1 pour le texte normal, 3:1 pour le texte large
-- **Texte principal** : Toujours blanc (#fff) sur fond sombre
-- **Liens** : Brand violet sur fond clair, blanc sur fond sombre
+### Contraste et accessibilité (WCAG AAA)
+- **Ratio de contraste minimum** : 7:1 pour le texte normal (AAA), 4.5:1 pour le texte large (AA)
+- **Texte principal** : Blanc pur (#ffffff) sur fond noir profond (#121212)
+- **Liens** : Blanc avec hover bleu cyberpunk (#334fb4)
+- **Bordures** : Gris subtil (#3a3f4a) pour éviter le contraste agressif
 
-### Ambiance visuelle
-- **Mystérieuse** : Utilisation dominante du noir avec accents violets
-- **Professionnelle** : Typographie claire et hiérarchie bien définie
-- **Gaming** : Éléments UI inspirés des interfaces de jeu
-- **Élégante** : Espaces généreux, animations subtiles
+### Ambiance visuelle (minimalisme immersif)
+- **Épurée** : Noir/blanc dominant, bleu accent rare et impactant
+- **Performante** : Ombres minimes (blur 5px max), transitions rapides (0.4s)
+- **Cyberpunk** : Typographie bold uppercase, contraste franc, grilles généreuses
+- **Immersive** : Espaces généreux (36px desktop, 27px mobile), navigation intuitive
 
 ## 🎨 Applications par composant
 
@@ -215,77 +283,79 @@ Les dégradés sont réservés aux **zones d'impact visuel** :
 </button>
 ```
 
-##### Classes Tailwind
+##### Classes UnoCSS/Tailwind (style cyberpunk minimaliste)
 ```css
-/* Base - commune à tous les boutons */
+/* Base - commune à tous les boutons (approche épurée) */
 .btn {
-  @apply inline-flex items-center justify-center px-6 py-3 
-         font-display font-medium text-base
-         border-2 rounded-lg
-         transition-all duration-200 ease-in-out
+  @apply inline-flex items-center justify-center
+         px-6 py-3 min-h-[48px]
+         font-sans font-bold text-base uppercase tracking-wider
+         bg-[#121212] text-white border border-[#3a3f4a]
+         rounded-none
+         transition-all duration-[400ms] ease-out
          cursor-pointer
-         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900;
+         focus:outline-none focus:ring-2 focus:ring-[#334fb4] focus:ring-offset-2 focus:ring-offset-[#121212];
 }
 
-/* Tailles */
-.btn-sm { @apply px-4 py-2 text-sm; }
-.btn-md { @apply px-6 py-3 text-base; } /* default */
-.btn-lg { @apply px-8 py-4 text-lg; }
-.btn-xl { @apply px-10 py-5 text-xl; }
+/* Tailles (touch-friendly) */
+.btn-sm { @apply px-4 py-2 min-h-[44px] text-sm; }
+.btn-md { @apply px-6 py-3 min-h-[48px] text-base; } /* default */
+.btn-lg { @apply px-8 py-4 min-h-[52px] text-lg; }
+.btn-xl { @apply px-10 py-5 min-h-[56px] text-xl; }
 
-/* Types */
+/* Types (flat design, pas de dégradé) */
 .btn-primary {
-  @apply bg-generique text-white border-generique
-         hover:bg-generique/90 hover:border-generique
-         focus:ring-generique;
+  @apply bg-[#334fb4] text-white border-[#334fb4]
+         hover:bg-[#2a3f95] hover:scale-[1.02]
+         focus:ring-[#334fb4];
 }
 
 .btn-secondary {
-  @apply bg-gray-800 text-gray-300 border-gray-700
-         hover:bg-gray-700 hover:text-white hover:border-gray-600
-         focus:ring-gray-500;
+  @apply bg-[#242833] text-[#e5e5e5] border-[#3a3f4a]
+         hover:bg-[#4a5060] hover:text-white
+         focus:ring-[#4a5060];
 }
 
 .btn-tertiary {
-  @apply bg-transparent text-gray-400 border-transparent
-         hover:text-white hover:bg-gray-800/50
-         focus:ring-gray-500;
+  @apply bg-transparent text-[#e5e5e5] border-transparent
+         hover:text-white hover:bg-[#242833]
+         focus:ring-[#3a3f4a];
 }
 
 .btn-danger {
-  @apply bg-red-600 text-white border-red-600
-         hover:bg-red-700 hover:border-red-700
-         focus:ring-red-500;
+  @apply bg-[#f97316] text-white border-[#f97316]
+         hover:bg-[#ea580c] hover:scale-[1.02]
+         focus:ring-[#f97316];
 }
 
 /* États */
 .btn:disabled {
-  @apply bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed
-         hover:bg-gray-600 hover:text-gray-400 hover:border-gray-600;
+  @apply bg-[#242833] text-[#4a5060] border-[#3a3f4a] cursor-not-allowed
+         hover:bg-[#242833] hover:text-[#4a5060] hover:scale-100;
 }
 
-/* Variantes */
+/* Variantes outline (minimaliste) */
 .btn-outline {
   @apply bg-transparent;
 }
 
 .btn-outline.btn-primary {
-  @apply text-generique border-generique
-         hover:bg-generique hover:text-white hover:border-generique;
+  @apply text-[#334fb4] border-[#334fb4]
+         hover:bg-[#334fb4] hover:text-white hover:scale-[1.02];
 }
 
 .btn-outline.btn-secondary {
-  @apply text-gray-400 border-gray-600
-         hover:bg-gray-800 hover:text-white hover:border-gray-700;
+  @apply text-[#e5e5e5] border-[#3a3f4a]
+         hover:bg-[#242833] hover:text-white;
 }
 
 /* Boutons icon-only */
 .btn-icon {
-  @apply p-3;
+  @apply p-3 min-w-[48px];
 }
 
-.btn-icon.btn-sm { @apply p-2; }
-.btn-icon.btn-lg { @apply p-4; }
+.btn-icon.btn-sm { @apply p-2 min-w-[44px]; }
+.btn-icon.btn-lg { @apply p-4 min-w-[52px]; }
 ```
 
 #### Boutons par système JDR
@@ -392,40 +462,33 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 </div>
 ```
 
-#### Animations et effets
+#### Animations et effets (minimalisme cyberpunk)
 
 ```css
-/* Effet de pulsation pour CTA importants */
-.btn-pulse {
-  @apply relative overflow-hidden;
+/* Effet hover simple - scale subtil (style Otherscape) */
+.btn-hover-scale:hover {
+  transform: scale(1.02);
+  transition: transform 0.4s ease;
 }
 
-.btn-pulse::before {
-  content: '';
-  @apply absolute inset-0 bg-white/20;
-  animation: pulse-wave 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+/* Effet hover - translateY pour cartes (style Otherscape) */
+.card-hover:hover {
+  transform: translateY(-4px);
+  transition: transform 0.4s ease;
 }
 
-@keyframes pulse-wave {
-  0% { transform: scale(0); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
+/* ÉVITER les effets suivants (trop complexes pour le style minimaliste) :
+   - pulse/glow
+   - glitch
+   - néons
+   - dégradés animés
+   - ombres prononcées
+*/
 
-/* Effet de glitch pour Metro 2033 */
-.btn-glitch {
-  position: relative;
-}
-
-.btn-glitch:hover {
-  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@keyframes glitch {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
+/* Transitions universelles (rapides, fluides) */
+* {
+  transition-duration: 0.4s;
+  transition-timing-function: ease;
 }
 ```
 
@@ -443,85 +506,151 @@ Chaque système a sa propre couleur d'accent pour les boutons contextuels :
 3. **Espacement** : minimum 8px entre boutons groupés
 4. **Mobile** : taille minimum 44x44px pour les zones tactiles
 
-### Cartes et conteneurs
+### Cartes et conteneurs (style cyberpunk flat)
 ```css
 .card {
-  background: var(--noir-charbon);
-  border: 1px solid var(--gris-fonce);
-  color: var(--blanc);
+  background: var(--noir-charbon); /* #242833 */
+  border: 1px solid var(--gris-bordure); /* #3a3f4a */
+  color: var(--blanc-pur); /* #ffffff */
+  padding: 2rem;
+  border-radius: 0; /* Angles droits, pas d'arrondi */
+  box-shadow: none; /* Pas d'ombre par défaut */
 }
 
 .card-hover:hover {
-  border-color: var(--brumisa-bleu);
-  box-shadow: 0 0 20px rgba(118, 65, 211, 0.3);
+  border-color: var(--bleu-cyberpunk); /* #334fb4 */
+  transform: translateY(-4px); /* Effet Otherscape */
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 5px rgba(18, 18, 18, 0.05); /* Ombre minimaliste */
 }
 ```
 
-### Formulaires
+### Formulaires (minimalisme fonctionnel)
 ```css
 .input {
-  background: var(--noir);
-  border: 2px solid var(--gris-fonce);
-  color: var(--blanc);
-  font-family: 'Source Serif 4', serif;
+  background: var(--noir-profond); /* #121212 */
+  border: 1px solid var(--gris-bordure); /* #3a3f4a */
+  color: var(--blanc-pur); /* #ffffff */
+  font-family: 'Assistant', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  padding: 0.75rem 1rem;
+  border-radius: 0; /* Angles droits */
+  transition: all 0.4s ease;
 }
 
 .input:focus {
-  border-color: var(--brumisa-bleu);
+  border-color: var(--bleu-cyberpunk); /* #334fb4 */
   outline: none;
-  box-shadow: 0 0 0 3px rgba(118, 65, 211, 0.2);
+  box-shadow: none; /* Pas de glow, juste bordure */
+}
+
+.input::placeholder {
+  color: var(--gris-texte); /* #e5e5e5 */
+  opacity: 0.6;
 }
 ```
 
-## 🌟 Effets et animations
+## 🌟 Effets et animations (approche minimaliste Otherscape)
 
-### Transitions
-- **Durée standard** : 200ms
-- **Courbe d'accélération** : ease-in-out
-- **Properties** : opacity, transform, border-color, box-shadow
+### Transitions (performance-first)
+- **Durée standard** : 400ms (fluide, pas trop rapide)
+- **Courbe d'accélération** : ease (simplicité)
+- **Properties** : transform, border-color uniquement (éviter opacity et box-shadow pour performance)
 
-### Effets hover
+### Effets hover (subtils et impactants)
 ```css
-/* Glow violet */
-.glow-hover:hover {
-  box-shadow: 0 0 30px rgba(118, 65, 211, 0.5);
-  transform: translateY(-2px);
+/* Hover scale - Boutons (style Otherscape) */
+.hover-scale:hover {
+  transform: scale(1.02);
+  transition: transform 0.4s ease;
 }
 
-/* Pulse animation */
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(118, 65, 211, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(118, 65, 211, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(118, 65, 211, 0); }
+/* Hover translateY - Cartes (style Otherscape) */
+.hover-lift:hover {
+  transform: translateY(-4px);
+  border-color: var(--bleu-cyberpunk);
+  transition: all 0.4s ease;
 }
+
+/* Hover couleur - Liens */
+.hover-link:hover {
+  color: var(--bleu-cyberpunk);
+  transition: color 0.4s ease;
+}
+
+/* ÉVITER absolument :
+   - box-shadow animés (performance)
+   - pulse/glow (trop flashy)
+   - rotations complexes
+   - dégradés animés
+*/
 ```
 
-## 📱 Adaptations mobile
+## 📱 Adaptations mobile (style Otherscape responsive)
 
-### Breakpoints
-- **Mobile** : < 640px
-- **Tablette** : 640px - 1024px
+### Breakpoints (alignés Otherscape)
+- **Mobile** : < 768px (threshold Otherscape)
+- **Tablette** : 768px - 1024px
 - **Desktop** : > 1024px
+- **Large desktop** : > 1580px (Otherscape extended)
 
-### Ajustements typographiques mobiles
+### Layout responsive (max-width Otherscape)
 ```css
-@media (max-width: 640px) {
-  .heading-1 { font-size: 2rem; }
-  .heading-2 { font-size: 1.5rem; }
-  .body-text { font-size: 0.9375rem; }
+.container {
+  max-width: 120rem; /* 1920px - Otherscape page-width */
+  margin: 0 auto;
+  padding: 36px; /* Desktop */
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 27px; /* Mobile - Otherscape sections */
+  }
+}
+```
+
+### Espacements responsive (style Otherscape)
+```css
+/* Grilles avec espacements Otherscape */
+.grid {
+  display: grid;
+  gap: 8px; /* Desktop - Otherscape grid spacing */
+}
+
+@media (max-width: 768px) {
+  .grid {
+    gap: 4px; /* Mobile - Otherscape grid mobile */
+  }
+}
+```
+
+### Ajustements typographiques mobiles (fluides)
+```css
+/* Déjà responsive avec clamp() - pas besoin de media queries */
+.heading-1 {
+  font-size: clamp(2.5rem, 4vw, 3.5rem); /* Fluide automatique */
+}
+
+.body-text {
+  font-size: clamp(0.9375rem, 2.5vw, 1rem); /* Fluide automatique */
 }
 ```
 
 ## 🌐 Utilisation des couleurs sur le site web
 
-### Principe général : Bleu brumisa3 par défaut
+### Principe général : Bleu cyberpunk par défaut (style minimaliste)
 
-**IMPORTANT** : Le site brumisa3 utilise le **bleu** (`#3b82f6` - `blue-500`) comme couleur principale par défaut pour :
-- ✅ **Navigation principale** (liens, boutons primaires)
-- ✅ **Pages d'authentification** (connexion, inscription, mot de passe)
-- ✅ **Contenu générique** (aide, documentation, features)
-- ✅ **Boutons d'action principaux**
-- ✅ **États focus et hover par défaut**
+**IMPORTANT** : Le site brumisa3 utilise le **bleu cyberpunk** (`#334fb4`) comme couleur d'accent principale pour :
+- ✅ **Hover interactif** (boutons, liens, cartes)
+- ✅ **États focus** (accessibilité, navigation clavier)
+- ✅ **Accents contextuels** (bordures au hover, indicateurs)
+- ✅ **CTA principaux** (boutons primaires uniquement)
+
+**Noir/Blanc dominant** (98% du design) :
+- Fonds : `#121212` (noir profond) et `#242833` (noir charbon)
+- Textes : `#ffffff` (blanc pur) et `#e5e5e5` (gris texte)
+- Bordures : `#3a3f4a` (gris bordure subtil)
 
 ### Utilisation contextuelle des systèmes JDR
 
@@ -546,13 +675,14 @@ Les couleurs spécifiques aux systèmes sont utilisées dans leur **contexte app
 - ❌ Utiliser les couleurs de système de jeu pour les boutons primaires génériques
 - ❌ Modifier la navigation selon le système de jeu
 
-### ✅ Ce qu'il faut faire
+### ✅ Ce qu'il faut faire (approche minimaliste)
 
-- ✅ Utiliser le **bleu brumisa3** (`#est `) pour le contenu générique et la navigation principale
-- ✅ Utiliser les couleurs système dans leur contexte (pages dédiées, hero sections)
+- ✅ Utiliser le **bleu cyberpunk** (`#334fb4`) uniquement au hover et focus
+- ✅ Privilégier le noir/blanc pour 98% du design
+- ✅ Utiliser les couleurs système JDR dans leur contexte (badges, bordures contextuelles)
 - ✅ Garder une cohérence de navigation sur tout le site
-- ✅ Éviter les variations d'opacité excessives (maximum 2-3 niveaux)
-- ✅ Privilégier les dégradés sur les hero sections et zones CTA importantes
+- ✅ Éviter absolument les opacités (0% ou 100% uniquement)
+- ✅ Pas de dégradés sur le site web (réservés aux PDFs thématiques)
 
 #### Thématiques PDF par système
 
@@ -644,29 +774,31 @@ font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
 /* Effets : éclaboussures, distorsion, contamination */
 ```
 
-### Principe d'application
+### Principe d'application (minimalisme web vs immersion PDF)
 
-#### Pages Web (Cohérence)
-- **Fond** : Toujours noir (#000) ou noir charbon (#1e1e1e)
-- **Accent système** : Couleur spécifique au système pour bordures, hovers, badges
-- **Contenu générique** : Bleu pour features, sections d'aide, contenus transversaux
-- **Texte** : Blanc pour le contraste maximal
-- **Cohérence** : Le bleu brumisa3 est la couleur principale du site, les accents sont contextuels
+#### Pages Web (Minimalisme cyberpunk - style Otherscape)
+- **Fond** : Toujours noir profond (#121212) ou noir charbon (#242833)
+- **Texte** : Blanc pur (#ffffff) pour contraste maximal WCAG AAA
+- **Bordures** : Gris subtil (#3a3f4a) par défaut, bleu (#334fb4) au hover uniquement
+- **Accent bleu** : Uniquement sur interactions (hover, focus, CTA primaires)
+- **Couleurs système** : Uniquement badges/bordures contextuelles (pas de fonds colorés)
+- **Cohérence** : 98% noir/blanc, 2% bleu cyberpunk, 0% dégradé
 
-#### PDFs (Immersion thématique)
-- **Liberté totale** : Chaque système peut avoir son propre fond, polices, décorations
+#### PDFs (Immersion thématique - liberté totale)
+- **Liberté créative** : Chaque système a son propre fond, polices, décorations
+- **Dégradés autorisés** : Uniquement dans les PDFs pour l'immersion
 - **Immersion** : Le design doit faire "sentir" l'univers du jeu
 - **Narration visuelle** : Les éléments graphiques racontent l'histoire du monde
 - **Fonctionnalité** : Reste lisible et utilisable en jeu
 
-### Utilisation des couleurs
-- **Bleu brumisa3** : Navigation, CTAs principaux, branding, contenu générique (couleur principale)
-- **Couleurs système (web)** : Dans leur contexte spécifique (pages système, badges, bordures)
-- **Couleurs système (PDF)** : Palette complète thématique pour l'immersion
-- **Violet brand (legacy)** : Conservé pour certains éléments historiques
-- **Exemples** : 
-  - Page d'accueil avec features → bleu
-  - Carte Monsterhearts sur le site → bordure violette
+### Utilisation des couleurs (résumé)
+- **Bleu cyberpunk (#334fb4)** : Hover, focus, CTA primaires uniquement (site web)
+- **Noir/Blanc** : Base de tout le design web (98% du site)
+- **Couleurs système (web)** : Badges, bordures contextuelles uniquement
+- **Couleurs système (PDF)** : Palette complète thématique avec dégradés
+- **Exemples concrets** :
+  - Page d'accueil → fond noir, textes blancs, boutons avec hover bleu
+  - Badge Monsterhearts → bordure violette fine, texte violet, fond transparent
   - PDF Monsterhearts → design gothique complet avec dégradés violets/roses
 
 ### 📝 Guidelines pour Templates PDF
@@ -782,18 +914,19 @@ font-family: 'Bebas Neue', 'Impact', sans-serif; /* Urgence, impact */
 - [ ] Images optimisées
 - [ ] Footer avec attribution
 
-## 📦 Blocs et composants
+## 📦 Blocs et composants (style cyberpunk minimaliste)
 
-### Structure des blocs
-Inspiré du design gaming moderne, chaque bloc suit ces principes :
+### Structure des blocs (inspiré Otherscape)
+Approche flat, angles droits, espacements généreux
 
-#### Hero Section
+#### Hero Section (minimaliste)
 ```css
 .hero-section {
-  background: var(--noir);
+  background: var(--noir-profond); /* #121212 */
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+  padding: 36px; /* Otherscape spacing */
+  max-width: 120rem; /* Otherscape page-width */
+  margin: 0 auto;
 }
 
 .hero-content {
@@ -803,79 +936,81 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
   padding: 4rem 2rem;
 }
 
-.hero-image {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.8;
-  filter: contrast(1.2);
+/* Pas d'image de fond, pas d'overlay, minimalisme total */
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 27px; /* Otherscape mobile */
+  }
 }
 ```
 
-#### Blocs de contenu
+#### Blocs de contenu (flat design)
 ```css
 .content-block {
-  background: var(--noir-charbon);
-  border: 1px solid var(--gris-fonce);
-  border-radius: 1rem;
-  padding: 3rem 2rem;
+  background: var(--noir-charbon); /* #242833 */
+  border: 1px solid var(--gris-bordure); /* #3a3f4a */
+  border-radius: 0; /* Angles droits */
+  padding: 36px; /* Otherscape spacing */
   margin: 2rem 0;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.4s ease;
 }
 
-.content-block::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--brumisa-bleu);
-  opacity: 0;
-  transition: opacity 200ms ease-in-out;
+.content-block:hover {
+  border-color: var(--bleu-cyberpunk); /* #334fb4 */
+  transform: translateY(-4px); /* Otherscape lift */
+  box-shadow: 0 4px 5px rgba(18, 18, 18, 0.05); /* Ombre minimaliste */
 }
 
-.content-block:hover::before {
-  opacity: 1;
-}
+/* Pas de pseudo-éléments ::before, simplicité totale */
 ```
 
-#### Cards système
+#### Cards système (cyberpunk flat)
 ```css
 .system-card {
-  background: var(--noir-charbon);
-  border: 2px solid transparent;
-  border-radius: 0.75rem;
+  background: var(--noir-charbon); /* #242833 */
+  border: 1px solid transparent;
+  border-radius: 0; /* Angles droits */
   padding: 2rem;
-  transition: all 200ms ease-in-out;
+  transition: all 0.4s ease;
   cursor: pointer;
 }
 
 .system-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px); /* Otherscape style */
   border-color: var(--system-color);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 5px rgba(18, 18, 18, 0.05); /* Ombre subtile */
 }
 ```
 
-### Éléments UI récurrents
+### Éléments UI récurrents (minimalisme cyberpunk)
 
-#### Badges et indicateurs
+#### Badges et indicateurs (flat design)
 ```css
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.75rem;
-  background: rgba(118, 65, 211, 0.2);
-  color: var(--brumisa-bleu);
-  border: 1px solid var(--brumisa-bleu);
-  border-radius: 9999px;
+  background: transparent; /* Pas de fond coloré */
+  color: var(--bleu-cyberpunk); /* #334fb4 */
+  border: 1px solid var(--bleu-cyberpunk);
+  border-radius: 0; /* Angles droits */
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 700; /* Bold pour lisibilité */
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-family: 'Assistant', sans-serif;
+}
+
+/* Badge système contextuel */
+.badge-monsterhearts {
+  color: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.badge-engrenages {
+  color: #d97706;
+  border-color: #d97706;
 }
 ```
 
@@ -1072,34 +1207,92 @@ Inspiré du design gaming moderne, chaque bloc suit ces principes :
 }
 ```
 
-## 🚀 Implémentation Tailwind
+## 🚀 Implémentation UnoCSS/Tailwind (style cyberpunk)
 
-### Configuration custom
+### Configuration UnoCSS (recommandé pour performance)
+```javascript
+// uno.config.ts
+import { defineConfig, presetWind, presetTypography } from 'unocss'
+
+export default defineConfig({
+  presets: [
+    presetWind(), // Compatibilité Tailwind
+    presetTypography(),
+  ],
+  theme: {
+    colors: {
+      // Couleurs principales - Noir/Blanc
+      'noir-profond': '#121212',
+      'noir-charbon': '#242833',
+      'blanc-pur': '#ffffff',
+      'gris-texte': '#e5e5e5',
+      'gris-bordure': '#3a3f4a',
+      'gris-hover': '#4a5060',
+
+      // Accent cyberpunk
+      'bleu-cyberpunk': '#334fb4',
+      'bleu-hover': '#2a3f95',
+
+      // Couleurs système JDR
+      'monsterhearts': '#8b5cf6',
+      'engrenages': '#d97706',
+      'metro2033': '#dc2626',
+      'mistengine': '#ec4899',
+      'zombiology': '#d4af37',
+
+      // Couleurs fonctionnelles
+      'succes': '#22c55e',
+      'erreur': '#f97316',
+      'avertissement': '#eab308',
+      'info': '#06b6d4',
+    },
+    fontFamily: {
+      'sans': ['Assistant', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+    },
+    maxWidth: {
+      'container': '120rem', // Otherscape page-width
+    },
+    spacing: {
+      'section-desktop': '36px', // Otherscape spacing
+      'section-mobile': '27px',  // Otherscape mobile
+      'grid-desktop': '8px',     // Otherscape grid
+      'grid-mobile': '4px',
+    },
+  },
+  shortcuts: {
+    // Shortcuts pour composants réutilisables
+    'btn-base': 'inline-flex items-center justify-center px-6 py-3 min-h-[48px] font-sans font-bold text-base uppercase tracking-wider bg-noir-profond text-blanc-pur border border-gris-bordure transition-all duration-[400ms] ease-out cursor-pointer',
+    'card-base': 'bg-noir-charbon border border-gris-bordure p-8 transition-all duration-[400ms] ease-out',
+    'input-base': 'bg-noir-profond border border-gris-bordure text-blanc-pur font-sans px-4 py-3 transition-all duration-[400ms] ease-out',
+  },
+})
+```
+
+### Alternative Tailwind (si UnoCSS non souhaité)
 ```javascript
 // tailwind.config.js
 module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-violet': '#7641d3',
-        'brand-violet-dark': '#5c28ae',
-        'noir': '#000000',
-        'noir-charbon': '#1e1e1e',
-        'gris-fonce': '#32373c',
-        'gris-clair': '#abb8c3',
-        'violet-electrique': '#9b51e0',
-        // Couleurs système JDR
+        // Cyberpunk palette
+        'noir-profond': '#121212',
+        'noir-charbon': '#242833',
+        'blanc-pur': '#ffffff',
+        'bleu-cyberpunk': '#334fb4',
+        // Systèmes JDR
         'monsterhearts': '#8b5cf6',
         'engrenages': '#d97706',
         'metro2033': '#dc2626',
         'mistengine': '#ec4899',
         'zombiology': '#d4af37',
-        'generique': '#3b82f6',
       },
       fontFamily: {
-        'serif': ['Source Serif 4', 'serif'],
-        'display': ['Shackleton', 'sans-serif'],
-      }
+        'sans': ['Assistant', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
+      maxWidth: {
+        'container': '120rem',
+      },
     }
   }
 }
