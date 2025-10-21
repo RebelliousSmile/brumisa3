@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brumisater - Wireframe Style Otherscape</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* VARIABLES CSS (style Otherscape) */
+        :root {
+            /* Couleurs principales */
+            --noir-profond: #121212;
+            --noir-charbon: #242833;
+            --blanc-pur: #ffffff;
+            --gris-texte: #e5e5e5;
+            --gris-bordure: #3a3f4a;
+            --gris-hover: #4a5060;
+
+            /* Accent cyberpunk */
+            --bleu-cyberpunk: #334fb4;
+            --bleu-hover: #2a3f95;
+
+            /* Espacements Otherscape */
+            --section-desktop: 36px;
+            --section-mobile: 27px;
+            --grid-gap: 8px;
+            --max-width: 120rem; /* 1920px */
+
+            /* Ombres minimalistes */
+            --shadow-subtle: 0 4px 5px rgba(18, 18, 18, 0.05);
+
+            /* Transitions */
+            --transition-speed: 0.4s;
+        }
+
+        /* BASE */
+        html {
+            font-size: 62.5%; /* 10px base */
+        }
+
+        body {
+            font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.6rem;
+            line-height: 1.6;
+            background-color: var(--noir-profond);
+            color: var(--blanc-pur);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--section-desktop);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--section-mobile);
+            }
+        }
+
+        /* TYPOGRAPHIE */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 3vw, 2.75rem);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: clamp(0.9375rem, 2.5vw, 1rem);
+            color: var(--gris-texte);
+            margin-bottom: 1rem;
+        }
+
+        /* NAVIGATION */
+        nav {
+            background-color: var(--noir-charbon);
+            border-bottom: 1px solid var(--gris-bordure);
+            padding: var(--section-desktop) 0;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--blanc-pur);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            transition: color var(--transition-speed) ease;
+        }
+
+        nav a:hover {
+            color: var(--bleu-cyberpunk);
+        }
+
+        @media (max-width: 768px) {
+            nav .container {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        /* HERO SECTION */
+        .hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: var(--noir-profond);
+            padding: 6rem 0;
+        }
+
+        .hero-content {
+            max-width: 80rem;
+        }
+
+        .hero h1 {
+            margin-bottom: 2rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+        }
+
+        /* BOUTONS (style cyberpunk flat) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem 2.4rem;
+            min-height: 48px;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            background-color: var(--bleu-cyberpunk);
+            color: var(--blanc-pur);
+            border: 1px solid var(--bleu-cyberpunk);
+            border-radius: 0; /* Angles droits */
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .btn:hover {
+            background-color: var(--bleu-hover);
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background-color: var(--noir-charbon);
+            border-color: var(--gris-bordure);
+            color: var(--gris-texte);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gris-hover);
+            color: var(--blanc-pur);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* GRILLE */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+            gap: var(--grid-gap);
+            margin: 4rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                gap: 4px;
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARTES (flat design cyberpunk) */
+        .card {
+            background-color: var(--noir-charbon);
+            border: 1px solid var(--gris-bordure);
+            border-radius: 0; /* Angles droits */
+            padding: 2rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .card:hover {
+            border-color: var(--bleu-cyberpunk);
+            transform: translateY(-4px); /* Effet Otherscape */
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+        }
+
+        .card p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* BADGE */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background: transparent;
+            color: var(--bleu-cyberpunk);
+            border: 1px solid var(--bleu-cyberpunk);
+            border-radius: 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .badge-monsterhearts {
+            color: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+
+        .badge-engrenages {
+            color: #d97706;
+            border-color: #d97706;
+        }
+
+        .badge-metro2033 {
+            color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* FORMULAIRE */
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            color: var(--blanc-pur);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--noir-profond);
+            border: 1px solid var(--gris-bordure);
+            border-radius: 0;
+            color: var(--blanc-pur);
+            font-family: 'Assistant', sans-serif;
+            font-size: 1rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            border-color: var(--bleu-cyberpunk);
+            outline: none;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--gris-texte);
+            opacity: 0.6;
+        }
+
+        textarea {
+            min-height: 12rem;
+            resize: vertical;
+        }
+
+        /* FOOTER */
+        footer {
+            background-color: var(--noir-charbon);
+            border-top: 1px solid var(--gris-bordure);
+            padding: var(--section-desktop) 0;
+            margin-top: 6rem;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--gris-texte);
+            font-size: 0.875rem;
+        }
+
+        /* ACCESSIBILITY */
+        :focus-visible {
+            outline: 2px solid var(--bleu-cyberpunk);
+            outline-offset: 2px;
+        }
+
+        /* SKIP LINK */
+        .skip-link {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            background: var(--bleu-cyberpunk);
+            color: var(--blanc-pur);
+            padding: 1rem 2rem;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .skip-link:focus {
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- SKIP LINK (accessibilité) -->
+    <a href="#main" class="skip-link">Aller au contenu principal</a>
+
+    <!-- NAVIGATION -->
+    <nav role="navigation" aria-label="Navigation principale">
+        <div class="container">
+            <div>
+                <h2 style="margin: 0;">BRUMISATER</h2>
+            </div>
+            <ul>
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#systemes">Systemes JDR</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero" role="banner">
+        <div class="hero-content">
+            <h1>Generateur de Fiches JDR</h1>
+            <p>Creez des fiches de personnages immersives pour vos parties de jeu de role. Style cyberpunk minimaliste, performance maximale.</p>
+            <div class="btn-group">
+                <a href="#creer" class="btn">Creer une Fiche</a>
+                <a href="#documentation" class="btn btn-secondary">Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main id="main" role="main">
+        <div class="container">
+            <!-- SECTION SYSTEMES JDR -->
+            <section id="systemes">
+                <h2>Systemes de Jeu Supportes</h2>
+                <p>Chaque systeme beneficie d'une fiche thematique unique avec PDF personnalise.</p>
+
+                <div class="grid">
+                    <!-- CARTE MONSTERHEARTS -->
+                    <article class="card">
+                        <span class="badge badge-monsterhearts">Monsterhearts</span>
+                        <h3>Romance Gothique</h3>
+                        <p>Explorez les tourments de l'adolescence surnaturelle avec des fiches elegantes et dramatiques.</p>
+                        <a href="#monsterhearts" class="btn btn-secondary">Decouvrir</a>
+                    </article>
+
+                    <!-- CARTE ENGRENAGES -->
+                    <article class="card">
+                        <span class="badge badge-engrenages">Engrenages</span>
+                        <h3>Fantasy Epique</h3>
+                        <p>Plongez dans un univers medieval mystique avec la Roue du Temps et Ecryme.</p>
+                        <a href="#engrenages" class="btn btn-secondary">Decouvrir</a>
+                    </article>
+
+                    <!-- CARTE METRO 2033 -->
+                    <article class="card">
+                        <span class="badge badge-metro2033">Metro 2033</span>
+                        <h3>Post-Apocalyptique</h3>
+                        <p>Survivez dans les ruines d'un monde detruit avec des fiches brutales et immersives.</p>
+                        <a href="#metro2033" class="btn btn-secondary">Decouvrir</a>
+                    </article>
+                </div>
+            </section>
+
+            <!-- SECTION FORMULAIRE CONTACT -->
+            <section id="contact">
+                <h2>Contactez-Nous</h2>
+                <p>Une question ? Un retour ? N'hesitez pas a nous ecrire.</p>
+
+                <form action="#" method="post">
+                    <div class="form-group">
+                        <label for="nom">Nom</label>
+                        <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="votre.email@exemple.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" placeholder="Votre message..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn">Envoyer</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; 2025 Brumisater - Generateur de Fiches JDR - Style Cyberpunk Otherscape</p>
+            <p>Design inspire de Tokyo:Otherscape - Minimalisme dystopien</p>
+        </div>
+    </footer>
+</body>
+</html>
