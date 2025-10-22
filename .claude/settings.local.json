@@ -150,7 +150,10 @@
       "Bash(pnpm tsx scripts/audit-legacy-systems.ts)",
       "Bash(netstat -ano)",
       "Bash(tree /F app /A)",
-      "Bash(start wireframe-otherscape-authentique.html)"
+      "Bash(start wireframe-otherscape-authentique.html)",
+      "Bash(tree:*)",
+      "Bash(start documentationDESIGN-SYSTEMwireframe-otherscape-authentique.html)",
+      "Bash(Set-Content 'C:\\Users\\fxgui\\Documents\\Projets\\brumisa3\\documentation\\DESIGN-SYSTEM\\wireframe-otherscape-authentique.html')"
     ],
     "deny": []
   }

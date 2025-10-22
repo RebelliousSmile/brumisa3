@@ -476,6 +476,35 @@
                 inset 0 0 5px rgba(255, 255, 255, 0.2);
         }
 
+        /* Numeros de segments de jauge */
+        .segment-number {
+            position: absolute;
+            left: 8px;
+            top: 6px;
+            font-size: 1rem;
+            font-weight: 800;
+            color: rgba(0, 217, 217, 0.4);
+            font-variant-numeric: tabular-nums;
+            z-index: 10;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .user-dropdown-item:hover .segment-number {
+            color: var(--cyan-neon);
+            text-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* Numero special pour deconnexion */
+        .user-dropdown-item:last-child .segment-number {
+            color: rgba(255, 0, 110, 0.4);
+        }
+
+        .user-dropdown-item:last-child:hover .segment-number {
+            color: var(--rose-neon);
+            text-shadow: 0 0 8px rgba(255, 0, 110, 0.5);
+        }
+
         /* HERO SECTION CYBERPUNK */
         .hero {
             min-height: 100vh;
@@ -1444,6 +1473,7 @@
         <div class="user-dropdown">
             <ul class="user-dropdown-list">
                 <li class="user-dropdown-item">
+                    <span class="segment-number">01</span>
                     <a href="#profil" class="user-dropdown-link">
                         <svg viewBox="0 0 24 24">
                             <circle cx="12" cy="8" r="4"/>
@@ -1454,6 +1484,7 @@
                 </li>
                 <li class="user-dropdown-divider"></li>
                 <li class="user-dropdown-item">
+                    <span class="segment-number">02</span>
                     <a href="#playspaces" class="user-dropdown-link">
                         <svg viewBox="0 0 24 24">
                             <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -1464,6 +1495,7 @@
                 </li>
                 <li class="user-dropdown-divider"></li>
                 <li class="user-dropdown-item">
+                    <span class="segment-number">03</span>
                     <a href="#personnages" class="user-dropdown-link">
                         <svg viewBox="0 0 24 24">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -1474,6 +1506,7 @@
                 </li>
                 <li class="user-dropdown-divider"></li>
                 <li class="user-dropdown-item">
+                    <span class="segment-number">04</span>
                     <a href="#parametres" class="user-dropdown-link">
                         <svg viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="3"/>
@@ -1484,6 +1517,7 @@
                 </li>
                 <li class="user-dropdown-divider"></li>
                 <li class="user-dropdown-item">
+                    <span class="segment-number">05</span>
                     <button class="user-dropdown-link logout">
                         <svg viewBox="0 0 24 24">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -1513,69 +1547,86 @@
     <!-- SECTION PRODUITS -->
     <section id="produits" class="section">
         <div class="container">
-            <!-- TABS OTHERSCAPE -->
+            <!-- TABS OTHERSCAPE - Moteurs de jeu -->
             <div class="tabs-container">
                 <div class="tabs">
-                    <button class="tab active">
-                        <span>BOOKS & SETS</span>
+                    <button class="tab active" data-system="mist-engine">
+                        <span>MIST ENGINE</span>
                     </button>
-                    <button class="tab">
-                        <span>DIGITAL</span>
-                    </button>
-                    <button class="tab">
-                        <span>ACCESSORIES</span>
+                    <button class="tab" data-system="city-of-mist">
+                        <span>CITY OF MIST</span>
                     </button>
                 </div>
             </div>
 
-            <h2 class="section-title">GAME BOOKS & SETS</h2>
-            <p class="section-subtitle">ALL BOOKS INCLUDE PDF COPIES</p>
+            <h2 class="section-title">HACKS & EXTENSIONS</h2>
+            <p class="section-subtitle">TOUS LES HACKS INCLUENT L'EXPORT PDF</p>
 
-            <div class="products-grid">
-                <!-- Produit 1 -->
+            <!-- Conteneur pour les grilles de hacks (avec data-system pour le filtrage) -->
+            <div class="products-grid" data-system-content="mist-engine">
+                <!-- Hack Mist Engine 1 - LITM -->
                 <article class="product-card">
                     <div class="product-image">
-                        <span class="product-badge">NEW</span>
+                        <span class="product-badge">OFFICIEL</span>
                     </div>
                     <div class="product-content">
-                        <div class="product-category">Monsterhearts</div>
-                        <h3 class="product-title">Fiche Romance Gothique</h3>
-                        <p class="product-description">Fiche personnage elegante pour explorer l'adolescence surnaturelle.</p>
+                        <div class="product-category">Mist Engine</div>
+                        <h3 class="product-title">Legends in the Mist</h3>
+                        <p class="product-description">Systeme complet avec Theme Cards, Hero Card, Relations et Trackers.</p>
                         <div class="product-footer">
-                            <div class="product-price">GRATUIT</div>
-                            <a href="#" class="btn product-btn"><span>Telecharger</span></a>
+                            <div class="product-price">4 univers</div>
+                            <a href="#" class="btn product-btn" onclick="openModal()"><span>Lancer un Playspace</span></a>
                         </div>
                     </div>
                 </article>
 
-                <!-- Produit 2 -->
+                <!-- Hack Mist Engine 2 - Otherscape -->
                 <article class="product-card">
                     <div class="product-image">
-                        <span class="product-badge sale">SALE</span>
+                        <span class="product-badge">OFFICIEL</span>
                     </div>
                     <div class="product-content">
-                        <div class="product-category">Engrenages</div>
-                        <h3 class="product-title">Pack Fantasy Epique</h3>
-                        <p class="product-description">Collection complete pour la Roue du Temps et Ecryme.</p>
+                        <div class="product-category">Mist Engine</div>
+                        <h3 class="product-title">Tokyo:Otherscape</h3>
+                        <p class="product-description">Hack cyberpunk japonais avec megapoles et technologie mystique.</p>
                         <div class="product-footer">
-                            <div class="product-price">5.99€</div>
-                            <a href="#" class="btn product-btn"><span>Acheter</span></a>
+                            <div class="product-price">3 univers</div>
+                            <a href="#" class="btn product-btn" onclick="openModal()"><span>Lancer un Playspace</span></a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Conteneur City of Mist (cache par defaut) -->
+            <div class="products-grid" data-system-content="city-of-mist" style="display: none;">
+                <!-- Hack City of Mist 1 -->
+                <article class="product-card">
+                    <div class="product-image">
+                        <span class="product-badge">OFFICIEL</span>
+                    </div>
+                    <div class="product-content">
+                        <div class="product-category">City of Mist</div>
+                        <h3 class="product-title">City of Mist Standard</h3>
+                        <p class="product-description">Systeme original avec Mythos, Logos et spectrum identity.</p>
+                        <div class="product-footer">
+                            <div class="product-price">1 univers</div>
+                            <a href="#" class="btn product-btn" onclick="openModal()"><span>Lancer un Playspace</span></a>
                         </div>
                     </div>
                 </article>
 
-                <!-- Produit 3 -->
+                <!-- Hack City of Mist 2 -->
                 <article class="product-card">
                     <div class="product-image">
-                        <span class="product-badge sold-out">SOLD OUT</span>
+                        <span class="product-badge">OFFICIEL</span>
                     </div>
                     <div class="product-content">
-                        <div class="product-category">Metro 2033</div>
-                        <h3 class="product-title">Edition Post-Apo</h3>
-                        <p class="product-description">Fiches brutales pour survivre dans les ruines.</p>
+                        <div class="product-category">City of Mist</div>
+                        <h3 class="product-title">City of Mist Noir</h3>
+                        <p class="product-description">Variante noir detective avec themes sombres et enquetes.</p>
                         <div class="product-footer">
-                            <div class="product-price">4.99€</div>
-                            <a href="#" class="btn product-btn" style="opacity: 0.5; cursor: not-allowed;"><span>Epuise</span></a>
+                            <div class="product-price">1 univers</div>
+                            <a href="#" class="btn product-btn" onclick="openModal()"><span>Lancer un Playspace</span></a>
                         </div>
                     </div>
                 </article>
@@ -1660,34 +1711,43 @@
         </div>
     </section>
 
-    <!-- SECTION SYSTEMES -->
-    <section id="systemes" class="section">
+    <!-- SECTION UNIVERS POPULAIRES -->
+    <section id="univers" class="section">
         <div class="container">
-            <h2 class="section-title">Systemes de Jeu Supportes</h2>
+            <h2 class="section-title">UNIVERS POPULAIRES</h2>
+            <p class="section-subtitle">SELECTIONNEZ UN UNIVERS POUR DEMARRER</p>
 
             <div class="system-grid">
-                <!-- Monsterhearts -->
-                <article class="system-card monsterhearts">
-                    <span class="system-badge">Monsterhearts</span>
-                    <h3 class="system-title">Romance Gothique</h3>
-                    <p class="system-description">Explorez les tourments de l'adolescence surnaturelle avec des fiches elegantes et dramatiques. ThemeCards, Hero Cards, et trackers personnalises.</p>
-                    <a href="#monsterhearts" class="btn btn-secondary"><span>Decouvrir</span></a>
+                <!-- Univers LITM 1 -->
+                <article class="system-card litm">
+                    <span class="system-badge" style="background: var(--cyan-neon); color: var(--noir-profond);">Legends in the Mist</span>
+                    <h3 class="system-title">Chicago Noir 1940s</h3>
+                    <p class="system-description">Detectives et mysteres dans le Chicago des annees 40. Brume, gangsters et secrets surnaturels dans une atmosphere noir.</p>
+                    <a href="#" class="btn btn-secondary" onclick="openModal()"><span>Lancer un Playspace</span></a>
                 </article>
 
-                <!-- Engrenages -->
-                <article class="system-card engrenages">
-                    <span class="system-badge">Engrenages & Sortileges</span>
-                    <h3 class="system-title">Fantasy Epique</h3>
-                    <p class="system-description">Plongez dans un univers medieval mystique avec la Roue du Temps et Ecryme. Fiches nobles avec entrelacs celtiques.</p>
-                    <a href="#engrenages" class="btn btn-secondary"><span>Decouvrir</span></a>
+                <!-- Univers LITM 2 -->
+                <article class="system-card litm">
+                    <span class="system-badge" style="background: var(--cyan-neon); color: var(--noir-profond);">Legends in the Mist</span>
+                    <h3 class="system-title">Cyberpunk 2077</h3>
+                    <p class="system-description">Megacorporations, hackers et technologie de pointe dans un futur dystopique baigne de Brume.</p>
+                    <a href="#" class="btn btn-secondary" onclick="openModal()"><span>Lancer un Playspace</span></a>
                 </article>
 
-                <!-- Metro 2033 -->
-                <article class="system-card metro">
-                    <span class="system-badge">Metro 2033</span>
-                    <h3 class="system-title">Post-Apocalyptique</h3>
-                    <p class="system-description">Survivez dans les ruines d'un monde detruit avec des fiches brutales et immersives. Style industriel et dystopique.</p>
-                    <a href="#metro2033" class="btn btn-secondary"><span>Decouvrir</span></a>
+                <!-- Univers Otherscape -->
+                <article class="system-card otherscape">
+                    <span class="system-badge" style="background: var(--violet-neon); color: var(--blanc);">Tokyo:Otherscape</span>
+                    <h3 class="system-title">Tokyo:Otherscape Officiel</h3>
+                    <p class="system-description">Megapole japonaise futuriste ou technologie et mysticisme se melangent dans un cyberpunk unique.</p>
+                    <a href="#" class="btn btn-secondary" onclick="openModal()"><span>Lancer un Playspace</span></a>
+                </article>
+
+                <!-- Univers City of Mist -->
+                <article class="system-card city-of-mist">
+                    <span class="system-badge" style="background: var(--rose-neon); color: var(--blanc);">City of Mist</span>
+                    <h3 class="system-title">City of Mist Standard</h3>
+                    <p class="system-description">La Cite brumeuse originale avec Mythos et Logos. Enquetes urbaines et identites fragmentees.</p>
+                    <a href="#" class="btn btn-secondary" onclick="openModal()"><span>Lancer un Playspace</span></a>
                 </article>
             </div>
         </div>
@@ -1816,6 +1876,42 @@
                 // TODO: Integration avec votre systeme i18n
                 // Exemple avec Nuxt: this.$i18n.setLocale(lang)
                 // Exemple avec localStorage: localStorage.setItem('language', lang)
+            });
+        });
+
+        // Gestion des onglets systemes de jeu
+        document.querySelectorAll('.tabs .tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Verifie si l'onglet a un data-system (onglets de systeme de jeu)
+                const systemId = this.dataset.system;
+                if (!systemId) return;
+
+                // Retire active de tous les onglets du meme groupe
+                this.closest('.tabs').querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                // Active l'onglet clique
+                this.classList.add('active');
+
+                // Cache toutes les grilles de produits
+                document.querySelectorAll('[data-system-content]').forEach(grid => {
+                    grid.style.display = 'none';
+                });
+
+                // Affiche la grille correspondante avec animation
+                const targetGrid = document.querySelector(`[data-system-content="${systemId}"]`);
+                if (targetGrid) {
+                    targetGrid.style.display = 'grid';
+                    // Animation fade-in
+                    targetGrid.style.opacity = '0';
+                    setTimeout(() => {
+                        targetGrid.style.transition = 'opacity 0.4s ease';
+                        targetGrid.style.opacity = '1';
+                    }, 10);
+                }
+
+                console.log('Systeme selectionne:', systemId);
             });
         });
 

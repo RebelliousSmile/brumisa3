@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brumisa3 - Modale Playspace Cyberpunk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* VARIABLES BRUMISA3 CYBERPUNK */
+        :root {
+            /* Couleurs principales */
+            --noir-profond: #0a0a0a;
+            --noir-card: #1a1a1a;
+            --noir-hover: #2a2a2a;
+
+            /* Texte */
+            --blanc: #ffffff;
+            --gris-clair: #e0e0e0;
+            --gris-moyen: #999999;
+
+            /* Accents */
+            --cyan-neon: #00d9d9;
+            --cyan-hover: #00ffff;
+            --cyan-glow: rgba(0, 217, 217, 0.5);
+            --rose-neon: #ff006e;
+
+            /* Effets */
+            --glow-cyan: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-glow);
+            --glow-cyan-fort: 0 0 10px var(--cyan-neon), 0 0 20px var(--cyan-neon), 0 0 40px var(--cyan-neon);
+        }
+
+        /* BASE */
+        html {
+            font-size: 62.5%;
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            font-size: 1.6rem;
+            line-height: 1.6;
+            background-color: var(--noir-profond);
+            color: var(--blanc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* DEMO BUTTON */
+        .demo-btn {
+            padding: 1.5rem 4rem;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: var(--cyan-neon);
+            color: var(--noir-profond);
+            border: 2px solid var(--cyan-neon);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--glow-cyan);
+        }
+
+        .demo-btn:hover {
+            box-shadow: var(--glow-cyan-fort);
+            transform: translateY(-2px);
+        }
+
+        /* MODAL OVERLAY */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* MODAL CONTAINER */
+        .modal-container {
+            background: var(--noir-card);
+            border: 2px solid var(--cyan-neon);
+            box-shadow: var(--glow-cyan-fort), 0 10px 40px rgba(0, 0, 0, 0.5);
+            max-width: 60rem;
+            width: 100%;
+            position: relative;
+            transform: scale(0.9) translateY(-20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Effet scanline */
+        .modal-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 217, 217, 0.03) 2px,
+                rgba(0, 217, 217, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* MODAL HEADER */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2.5rem 3rem;
+            border-bottom: 1px solid rgba(0, 217, 217, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--blanc);
+        }
+
+        .modal-close {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: transparent;
+            border: 2px solid rgba(0, 217, 217, 0.3);
+            color: var(--gris-clair);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            border-color: var(--cyan-neon);
+            color: var(--cyan-neon);
+            box-shadow: 0 0 10px var(--cyan-glow);
+            transform: rotate(90deg);
+        }
+
+        .modal-close:focus {
+            outline: none;
+            border-color: var(--cyan-neon);
+            box-shadow: 0 0 0 3px rgba(0, 217, 217, 0.2);
+        }
+
+        /* MODAL BODY */
+        .modal-body {
+            padding: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* FORM GROUP */
+        .form-group {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--cyan-neon);
+            margin-bottom: 1rem;
+        }
+
+        .form-label-required::after {
+            content: '*';
+            color: var(--rose-neon);
+            margin-left: 0.5rem;
+        }
+
+        /* FORM INPUTS */
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 217, 217, 0.3);
+            color: var(--blanc);
+            font-family: 'Assistant', sans-serif;
+            font-size: 1.6rem;
+            transition: all 0.3s ease;
+        }
+
+        /* SELECT OPTIONS */
+        .form-select option {
+            background: var(--noir-card);
+            color: var(--blanc);
+            padding: 1rem;
+        }
+
+        .form-select optgroup {
+            background: var(--noir-profond);
+            color: var(--cyan-neon);
+            font-weight: 700;
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--gris-moyen);
+        }
+
+        .form-input:hover,
+        .form-textarea:hover,
+        .form-select:hover {
+            border-color: rgba(0, 217, 217, 0.5);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--cyan-neon);
+            background: rgba(0, 217, 217, 0.1);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        /* Validation inline */
+        .form-input:invalid:not(:placeholder-shown),
+        .form-textarea:invalid:not(:placeholder-shown) {
+            border-color: var(--rose-neon);
+        }
+
+        .form-textarea {
+            min-height: 10rem;
+            resize: vertical;
+        }
+
+        /* Error message */
+        .form-error {
+            display: none;
+            color: var(--rose-neon);
+            font-size: 1.2rem;
+            margin-top: 0.8rem;
+            font-weight: 600;
+        }
+
+        .form-input:invalid:not(:placeholder-shown) + .form-error,
+        .form-textarea:invalid:not(:placeholder-shown) + .form-error {
+            display: block;
+        }
+
+        /* FORM HELPER TEXT */
+        .form-helper {
+            color: var(--gris-moyen);
+            font-size: 1.2rem;
+            margin-top: 0.8rem;
+            line-height: 1.5;
+        }
+
+        /* SWITCH TOGGLE MJ/PJ */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .switch-label {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--gris-clair);
+            transition: color 0.3s ease;
+        }
+
+        .switch-label.active {
+            color: var(--cyan-neon);
+            text-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .switch-toggle {
+            position: relative;
+            width: 6rem;
+            height: 3rem;
+            background: rgba(0, 217, 217, 0.1);
+            border: 2px solid rgba(0, 217, 217, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 2.2rem;
+            height: 2.2rem;
+            background: var(--cyan-neon);
+            box-shadow: 0 0 10px var(--cyan-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .switch-toggle.gm::after {
+            transform: translateX(3rem);
+        }
+
+        .switch-toggle:hover {
+            border-color: var(--cyan-neon);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        /* ICON PICKER */
+        .icon-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .icon-option {
+            aspect-ratio: 1;
+            background: rgba(0, 217, 217, 0.05);
+            border: 2px solid rgba(0, 217, 217, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon-option:hover {
+            border-color: var(--cyan-neon);
+            background: rgba(0, 217, 217, 0.1);
+            transform: scale(1.1);
+        }
+
+        .icon-option.selected {
+            border-color: var(--cyan-neon);
+            background: rgba(0, 217, 217, 0.2);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        /* SELECT DISABLED STATE */
+        .form-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* MODAL FOOTER */
+        .modal-footer {
+            padding: 2.5rem 3rem;
+            border-top: 1px solid rgba(0, 217, 217, 0.3);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* BUTTONS */
+        .btn-secondary {
+            padding: 1.2rem 3rem;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: transparent;
+            color: var(--gris-clair);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 12rem;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--cyan-neon);
+            color: var(--cyan-neon);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .btn-secondary:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 217, 217, 0.2);
+        }
+
+        .btn-primary {
+            padding: 1.2rem 3rem;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: var(--cyan-neon);
+            color: var(--noir-profond);
+            border: 2px solid var(--cyan-neon);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--cyan-glow);
+            min-width: 14rem;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: var(--glow-cyan-fort);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: var(--glow-cyan-fort), 0 0 0 3px rgba(0, 217, 217, 0.3);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 640px) {
+            .modal-container {
+                max-width: 50rem;
+            }
+
+            .modal-header {
+                padding: 2rem;
+            }
+
+            .modal-title {
+                font-size: 1.6rem;
+            }
+
+            .modal-body {
+                padding: 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 2rem;
+            }
+
+            .form-input,
+            .form-textarea,
+            .form-select {
+                font-size: 1.4rem;
+                padding: 1rem 1.2rem;
+            }
+
+            .modal-footer {
+                padding: 2rem;
+                flex-direction: column-reverse;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+
+        /* ACCESSIBILITY */
+        @media (prefers-reduced-motion: reduce) {
+            .modal-overlay,
+            .modal-container,
+            .modal-close,
+            .btn-primary,
+            .btn-secondary {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
+
+        /* DEMO CONTAINER */
+        .demo-container {
+            text-align: center;
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--cyan-neon);
+            margin-bottom: 2rem;
+            text-shadow: var(--glow-cyan);
+        }
+
+        .demo-description {
+            color: var(--gris-clair);
+            font-size: 1.4rem;
+            margin-bottom: 3rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- DEMO BUTTON -->
+    <div class="demo-container">
+        <h1 class="demo-title">Modale Creation Playspace</h1>
+        <p class="demo-description">
+            Formulaire complet avec selection en cascade (Moteur → Hack → Univers),<br>
+            switches MJ/PJ, selecteur d'icone et validation intelligente.<br>
+            Le bouton Creer se desactive automatiquement si un champ requis est manquant.
+        </p>
+        <button class="demo-btn" onclick="openModal()">
+            Creer un Playspace
+        </button>
+    </div>
+
+    <!-- MODAL OVERLAY -->
+    <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <!-- MODAL CONTAINER -->
+        <div class="modal-container">
+            <!-- MODAL HEADER -->
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Creer un Playspace</h2>
+                <button
+                    class="modal-close"
+                    onclick="closeModal()"
+                    aria-label="Fermer la modale"
+                    type="button"
+                >
+                    &times;
+                </button>
+            </div>
+
+            <!-- MODAL BODY -->
+            <div class="modal-body">
+                <form id="playspaceForm">
+                    <!-- MOTEUR DE JEU (City of Mist vs Mist Engine) -->
+                    <div class="form-group">
+                        <label class="form-label form-label-required">
+                            Moteur de jeu
+                        </label>
+                        <div class="switch-container">
+                            <span class="switch-label active" id="label-mist-engine">Mist Engine</span>
+                            <div class="switch-toggle" id="engine-switch" onclick="toggleEngine()"></div>
+                            <span class="switch-label" id="label-city-of-mist">City of Mist</span>
+                        </div>
+                        <input type="hidden" id="engine-value" value="mist-engine">
+                    </div>
+
+                    <!-- HACK / SYSTEME -->
+                    <div class="form-group">
+                        <label for="playspace-hack" class="form-label form-label-required">
+                            Hack / Systeme
+                        </label>
+                        <select
+                            id="playspace-hack"
+                            class="form-select"
+                            required
+                            onchange="updateUniverseOptions()"
+                        >
+                            <option value="">-- Choisir un hack --</option>
+                            <!-- Options Mist Engine -->
+                            <optgroup label="Mist Engine" id="optgroup-mist-engine">
+                                <option value="litm">Legends in the Mist</option>
+                                <option value="otherscape">Tokyo:Otherscape</option>
+                            </optgroup>
+                            <!-- Options City of Mist (cachees par defaut) -->
+                            <optgroup label="City of Mist" id="optgroup-city-of-mist" style="display: none;">
+                                <option value="com-standard">City of Mist (Standard)</option>
+                                <option value="com-noir">City of Mist Noir</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- UNIVERS (selection en cascade) -->
+                    <div class="form-group">
+                        <label for="playspace-universe" class="form-label form-label-required">
+                            Univers
+                        </label>
+                        <select
+                            id="playspace-universe"
+                            class="form-select"
+                            required
+                            disabled
+                        >
+                            <option value="">-- Selectionner d'abord un hack --</option>
+                        </select>
+                        <p class="form-helper" id="universe-helper">Choisissez d'abord un hack pour voir les univers disponibles</p>
+                    </div>
+
+                    <!-- SWITCH MJ / PJ -->
+                    <div class="form-group">
+                        <label class="form-label form-label-required">
+                            Role
+                        </label>
+                        <div class="switch-container">
+                            <span class="switch-label active" id="label-player">Joueur (PJ)</span>
+                            <div class="switch-toggle" id="role-switch" onclick="toggleRole()"></div>
+                            <span class="switch-label" id="label-gm">Meneur (MJ)</span>
+                        </div>
+                        <input type="hidden" id="role-value" value="player">
+                    </div>
+
+                    <!-- NOM DU PLAYSPACE -->
+                    <div class="form-group">
+                        <label for="playspace-name" class="form-label form-label-required">
+                            Nom du Playspace
+                        </label>
+                        <input
+                            type="text"
+                            id="playspace-name"
+                            class="form-input"
+                            placeholder="Ex: Campagne Chicago"
+                            required
+                            minlength="3"
+                            maxlength="50"
+                            oninput="validateForm()"
+                        >
+                        <p class="form-error">Le nom doit contenir au moins 3 caracteres</p>
+                    </div>
+
+                    <!-- ICONE -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Icone du Playspace
+                        </label>
+                        <div class="icon-picker">
+                            <div class="icon-option" data-icon="circuit" onclick="selectIcon('circuit', this)">◈</div>
+                            <div class="icon-option" data-icon="hex" onclick="selectIcon('hex', this)">⬡</div>
+                            <div class="icon-option" data-icon="city" onclick="selectIcon('city', this)">▣</div>
+                            <div class="icon-option" data-icon="network" onclick="selectIcon('network', this)">⊞</div>
+                            <div class="icon-option" data-icon="data" onclick="selectIcon('data', this)">◧</div>
+                            <div class="icon-option selected" data-icon="cyber" onclick="selectIcon('cyber', this)">◉</div>
+                            <div class="icon-option" data-icon="terminal" onclick="selectIcon('terminal', this)">▭</div>
+                            <div class="icon-option" data-icon="grid" onclick="selectIcon('grid', this)">◫</div>
+                            <div class="icon-option" data-icon="signal" onclick="selectIcon('signal', this)">◬</div>
+                            <div class="icon-option" data-icon="core" onclick="selectIcon('core', this)">◉</div>
+                            <div class="icon-option" data-icon="matrix" onclick="selectIcon('matrix', this)">◰</div>
+                            <div class="icon-option" data-icon="node" onclick="selectIcon('node', this)">◆</div>
+                        </div>
+                        <input type="hidden" id="icon-value" value="cyber">
+                        <p class="form-helper">Selectionnez une icone pour le menu radial (par defaut: ◉)</p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- MODAL FOOTER -->
+            <div class="modal-footer">
+                <button
+                    class="btn-secondary"
+                    onclick="closeModal()"
+                    type="button"
+                >
+                    Annuler
+                </button>
+                <button
+                    class="btn-primary"
+                    id="submitBtn"
+                    onclick="submitForm()"
+                    type="button"
+                    disabled
+                >
+                    Creer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        const modalOverlay = document.getElementById('modalOverlay');
+        const playspaceForm = document.getElementById('playspaceForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const nameInput = document.getElementById('playspace-name');
+        const hackSelect = document.getElementById('playspace-hack');
+        const universeSelect = document.getElementById('playspace-universe');
+
+        // Base de donnees univers par hack (selection en cascade)
+        const universesByHack = {
+            'litm': [
+                { value: 'custom', label: 'Univers personnalise' },
+                { value: 'noir-detective', label: 'Noir Detective (Chicago 1940s)' },
+                { value: 'cyberpunk', label: 'Cyberpunk 2077' },
+                { value: 'medieval-fantasy', label: 'Medieval Fantasy' }
+            ],
+            'otherscape': [
+                { value: 'tokyo-otherscape', label: 'Tokyo:Otherscape (Officiel)' },
+                { value: 'new-york-otherscape', label: 'New York:Otherscape' },
+                { value: 'paris-otherscape', label: 'Paris:Otherscape' }
+            ],
+            'com-standard': [
+                { value: 'city-of-mist-standard', label: 'City of Mist (Standard)' }
+            ],
+            'com-noir': [
+                { value: 'city-of-mist-noir', label: 'City of Mist Noir' }
+            ]
+        };
+
+        // Toggle moteur de jeu (Mist Engine vs City of Mist)
+        function toggleEngine() {
+            const engineSwitch = document.getElementById('engine-switch');
+            const engineValue = document.getElementById('engine-value');
+            const labelMistEngine = document.getElementById('label-mist-engine');
+            const labelCityOfMist = document.getElementById('label-city-of-mist');
+            const optgroupMistEngine = document.getElementById('optgroup-mist-engine');
+            const optgroupCityOfMist = document.getElementById('optgroup-city-of-mist');
+
+            if (engineValue.value === 'mist-engine') {
+                // Switch vers City of Mist
+                engineValue.value = 'city-of-mist';
+                engineSwitch.classList.add('gm');
+                labelMistEngine.classList.remove('active');
+                labelCityOfMist.classList.add('active');
+
+                // Affiche/cache les optgroups
+                optgroupMistEngine.style.display = 'none';
+                optgroupCityOfMist.style.display = 'block';
+            } else {
+                // Switch vers Mist Engine
+                engineValue.value = 'mist-engine';
+                engineSwitch.classList.remove('gm');
+                labelMistEngine.classList.add('active');
+                labelCityOfMist.classList.remove('active');
+
+                // Affiche/cache les optgroups
+                optgroupMistEngine.style.display = 'block';
+                optgroupCityOfMist.style.display = 'none';
+            }
+
+            // Reset hack et univers
+            hackSelect.value = '';
+            updateUniverseOptions();
+        }
+
+        // Toggle role (PJ vs MJ)
+        function toggleRole() {
+            const roleSwitch = document.getElementById('role-switch');
+            const roleValue = document.getElementById('role-value');
+            const labelPlayer = document.getElementById('label-player');
+            const labelGM = document.getElementById('label-gm');
+
+            if (roleValue.value === 'player') {
+                // Switch vers MJ
+                roleValue.value = 'gm';
+                roleSwitch.classList.add('gm');
+                labelPlayer.classList.remove('active');
+                labelGM.classList.add('active');
+            } else {
+                // Switch vers PJ
+                roleValue.value = 'player';
+                roleSwitch.classList.remove('gm');
+                labelPlayer.classList.add('active');
+                labelGM.classList.remove('active');
+            }
+        }
+
+        // Mise a jour des options univers selon le hack selectionne
+        function updateUniverseOptions() {
+            const selectedHack = hackSelect.value;
+
+            if (!selectedHack) {
+                // Reset si aucun hack selectionne
+                universeSelect.disabled = true;
+                universeSelect.innerHTML = '<option value="">-- Selectionner d\'abord un hack --</option>';
+                document.getElementById('universe-helper').textContent =
+                    'Choisissez d\'abord un hack pour voir les univers disponibles';
+                validateForm();
+                return;
+            }
+
+            // Active le select univers
+            universeSelect.disabled = false;
+
+            // Charge les univers pour ce hack
+            const universes = universesByHack[selectedHack] || [];
+
+            if (universes.length === 0) {
+                universeSelect.innerHTML = '<option value="">Aucun univers disponible</option>';
+                document.getElementById('universe-helper').textContent =
+                    'Aucun univers disponible pour ce hack';
+            } else {
+                let optionsHTML = '<option value="">-- Choisir un univers --</option>';
+                universes.forEach(universe => {
+                    optionsHTML += `<option value="${universe.value}">${universe.label}</option>`;
+                });
+                universeSelect.innerHTML = optionsHTML;
+                document.getElementById('universe-helper').textContent =
+                    `${universes.length} univers disponible(s) pour ${hackSelect.options[hackSelect.selectedIndex].text}`;
+            }
+
+            validateForm();
+        }
+
+        // Selection d'icone
+        function selectIcon(iconId, element) {
+            // Retire la selection precedente
+            document.querySelectorAll('.icon-option').forEach(icon => {
+                icon.classList.remove('selected');
+            });
+
+            // Ajoute la selection
+            element.classList.add('selected');
+            document.getElementById('icon-value').value = iconId;
+        }
+
+        function openModal() {
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Focus sur le premier input
+            setTimeout(() => {
+                nameInput.focus();
+            }, 100);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            playspaceForm.reset();
+
+            // Reset des switches
+            document.getElementById('engine-value').value = 'mist-engine';
+            document.getElementById('engine-switch').classList.remove('gm');
+            document.getElementById('label-mist-engine').classList.add('active');
+            document.getElementById('label-city-of-mist').classList.remove('active');
+
+            document.getElementById('role-value').value = 'player';
+            document.getElementById('role-switch').classList.remove('gm');
+            document.getElementById('label-player').classList.add('active');
+            document.getElementById('label-gm').classList.remove('active');
+
+            // Reset icone
+            document.querySelectorAll('.icon-option').forEach(icon => {
+                icon.classList.remove('selected');
+            });
+            document.querySelector('[data-icon="cyber"]').classList.add('selected');
+            document.getElementById('icon-value').value = 'cyber';
+
+            // Reset select groupes
+            document.getElementById('optgroup-mist-engine').style.display = 'block';
+            document.getElementById('optgroup-city-of-mist').style.display = 'none';
+
+            updateUniverseOptions();
+            validateForm();
+        }
+
+        function validateForm() {
+            const nameValue = nameInput.value.trim();
+            const hackValue = hackSelect.value;
+            const universeValue = universeSelect.value;
+
+            const isValid = nameValue.length >= 3 && hackValue !== '' && universeValue !== '';
+
+            submitBtn.disabled = !isValid;
+        }
+
+        function submitForm() {
+            if (playspaceForm.checkValidity()) {
+                const formData = {
+                    engine: document.getElementById('engine-value').value,
+                    hack: hackSelect.value,
+                    hackLabel: hackSelect.options[hackSelect.selectedIndex].text,
+                    universe: universeSelect.value,
+                    universeLabel: universeSelect.options[universeSelect.selectedIndex].text,
+                    role: document.getElementById('role-value').value,
+                    name: nameInput.value,
+                    icon: document.getElementById('icon-value').value
+                };
+
+                console.log('Playspace cree:', formData);
+                alert(`Playspace cree avec succes:\n\nNom: ${formData.name}\nMoteur: ${formData.engine === 'mist-engine' ? 'Mist Engine' : 'City of Mist'}\nHack: ${formData.hackLabel}\nUnivers: ${formData.universeLabel}\nRole: ${formData.role === 'player' ? 'Joueur (PJ)' : 'Meneur (MJ)'}\nIcone: ${formData.icon}`);
+                closeModal();
+            }
+        }
+
+        // Validation en temps reel
+        hackSelect.addEventListener('change', validateForm);
+        universeSelect.addEventListener('change', validateForm);
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // Fermer en cliquant sur l'overlay (hors modal)
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // Submit avec Enter
+        playspaceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitForm();
+        });
+
+        // Ouvrir automatiquement pour demo
+        setTimeout(() => {
+            openModal();
+        }, 500);
+    </script>
+</body>
+</html>

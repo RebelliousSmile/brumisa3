@@ -1,315 +1,351 @@
-# Design System - Brumisa3
+# Design System Brumisa3
 
-## Vue d'Ensemble
+Guide de reference rapide du systeme de design pour Brumisa3 MVP v1.0
 
-Le design system de Brumisa3 suit une philosophie **cyberpunk minimaliste dystopien** inspiree de Tokyo:Otherscape, privilegiant la clarte, la performance et l'immersion.
+---
 
-## Fichiers du Design System
+## Introduction
 
-### 1. `charte-graphique-web.md` (PRINCIPAL)
-Documentation complete du design system avec toutes les specifications techniques.
+Brumisa3 utilise un **design cyberpunk minimaliste dystopien** inspire de Tokyo:Otherscape, optimise pour:
 
-**Contenu:**
-- Vision design et principes directeurs
-- Palette de couleurs (noir/blanc dominant, bleu cyberpunk accent)
-- Typographie Assistant (Google Fonts)
-- Composants UI (boutons, cartes, formulaires)
-- Effets et animations minimalistes
-- Layout et espacements Otherscape
-- Configuration UnoCSS/Tailwind
-- Guidelines PDF par systeme JDR
+- Performance maximale (UnoCSS, 1 font, animations GPU)
+- Accessibilite WCAG 2.1 AAA (contraste 7:1, touch targets 48px)
+- Mobile-first responsive
+- Immersion Mist Engine
 
-**Quand consulter:**
-- Avant de creer un nouveau composant
-- Pour verifier les couleurs/espacements/typographie
-- Pour comprendre la differentiation web vs PDF
+---
 
-### 2. `MIGRATION-OTHERSCAPE.md` (GUIDE)
-Guide detaille pour migrer du style ancien vers le nouveau style cyberpunk.
+## Fichiers essentiels
 
-**Contenu:**
-- Comparaison avant/apres detaillee
-- Exemples concrets de migration (boutons, cartes, formulaires)
-- Checklist validation (design, performance, accessibilite)
-- Plan migration progressive 8 semaines
-- Support et ressources
+### Documentation principale
+- **design-system-brumisa3.md** - Documentation complete consolidee (LIRE EN PREMIER)
+  - Palette de couleurs (cyan neon #00d9d9, noir profond #0a0a0a)
+  - Typographie (Assistant font)
+  - Composants UI (boutons, cards, forms, navigation)
+  - Accessibilite et performance
+  - Configuration UnoCSS
 
-**Quand consulter:**
-- Lors de la refonte d'un composant existant
-- Pour planifier les sprints de migration
-- Pour valider qu'un composant respecte le nouveau style
+### References visuelles
+- **wireframe-otherscape-authentique.html** - Reference visuelle complete
+  - Tous les composants implementes
+  - Navigation gauge-style
+  - Language selector
+  - User menu dropdown
+  - Formulaires et cards
 
-### 3. `wireframe-exemple-otherscape.html` (DEMO)
-Wireframe HTML/CSS fonctionnel illustrant le nouveau design system.
+### Composants specialises
+- **GAUGE-MENU-DESIGN.md** - Specifications menu utilisateur gauge
+  - Design jauge cyberpunk
+  - Barres de remplissage cyan/rose
+  - Animations et interactions
+  - Responsive desktop/mobile
 
-**Contenu:**
-- Navigation cyberpunk
-- Hero section minimaliste
-- Cartes systemes JDR avec badges
-- Formulaire contact
-- Tous les composants en action
+### Documentation historique
+- **MIGRATION-OTHERSCAPE.md** - Guide migration vers style Otherscape
+  - Contexte historique (ancien bleu #334fb4 → nouveau cyan #00d9d9)
+  - Comparaison avant/apres
+  - Checklist migration
 
-**Quand consulter:**
-- Pour voir le rendu final du design
-- Pour copier/coller des composants
-- Pour montrer au client le style Otherscape
+---
 
-## Principes Directeurs
+## Quick Start
 
-### 1. Minimalisme Radical
-- **98% Noir/Blanc** : #121212 (noir profond), #242833 (noir charbon), #ffffff (blanc pur)
-- **2% Bleu cyberpunk** : #334fb4 (uniquement hover/focus/CTA primaires)
-- **Pas de degrades** sur le site web (reserves aux PDFs thematiques)
-- **Opacite binaire** : 0% ou 100% uniquement
+### 1. Palette de couleurs
 
-### 2. Performance-First
-- **1 seule police** : Assistant (400 + 700) avec fallback systeme
-- **Ombres minimes** : blur 5px, opacity 0.05 max
-- **Transitions rapides** : 0.4s ease (GPU-friendly)
-- **Angles droits** : border-radius: 0 (rendu plus rapide)
-
-### 3. Accessibilite WCAG AAA
-- **Contraste** : 7:1 (texte normal), 4.5:1 (texte large)
-- **Touch targets** : 48x48px minimum
-- **Focus visible** : Ring 2px bleu cyberpunk
-- **Navigation clavier** : Complete avec skip link
-
-### 4. Mobile-Responsive
-- **Breakpoint** : 768px (threshold Otherscape)
-- **Espacements** : 36px desktop / 27px mobile
-- **Grilles** : gap 8px desktop / 4px mobile
-- **Max-width** : 120rem (1920px)
-
-### 5. Coherence Systeme
-- **UnoCSS recommande** : Shortcuts reutilisables (btn-base, card-base, input-base)
-- **Variables CSS** : Palette unifiee dans :root
-- **Composants atomiques** : Reutilisables sur tout le site
-
-## Differentiation Web vs PDF
-
-### Site Web (Minimalisme Cyberpunk)
-```
-Style       : Flat design, angles droits, noir/blanc dominant
-Couleurs    : 98% noir/blanc + 2% bleu cyberpunk
-Degrades    : Aucun
-Effets      : Hover simple (scale, translateY)
-Typographie : Assistant uniquement
-Cible       : Performance, accessibilite, modernite
-```
-
-### PDFs Thematiques (Immersion Totale)
-```
-Style       : Liberte creative par systeme JDR
-Couleurs    : Palettes completes thematiques
-Degrades    : Autorises pour immersion
-Effets      : Tous effets thematiques possibles
-Typographie : Polices thematiques variees
-Cible       : Immersion, narration visuelle, beaute
-```
-
-## Palette de Couleurs
-
-### Principales (98% du design)
 ```css
---noir-profond: #121212;    /* Arriere-plans, boutons */
---noir-charbon: #242833;    /* Cartes, conteneurs */
---blanc-pur: #ffffff;       /* Textes principaux */
---gris-texte: #e5e5e5;      /* Textes secondaires */
---gris-bordure: #3a3f4a;    /* Bordures subtiles */
---gris-hover: #4a5060;      /* Etats hover */
+/* Backgrounds */
+--noir-profond: #0a0a0a;     /* Background principal */
+--noir-card: #1a1a1a;         /* Cards/sections */
+
+/* Accents */
+--cyan-neon: #00d9d9;         /* Accent primaire */
+--rose-neon: #ff006e;         /* Actions danger */
+
+/* Textes */
+--blanc-pur: #ffffff;         /* Texte principal */
+--gris-clair: #e0e0e0;        /* Texte secondaire */
 ```
 
-### Accent Cyberpunk (2% du design)
+### 2. Typographie
+
 ```css
---bleu-cyberpunk: #334fb4;  /* Hover, focus, CTA */
---bleu-hover: #2a3f95;      /* Hover sur bleu */
+/* Font family */
+font-family: 'Assistant', sans-serif;
+
+/* Weights */
+font-weight: 300; /* Light */
+font-weight: 400; /* Regular */
+font-weight: 600; /* Semibold */
+font-weight: 700; /* Bold */
+
+/* Sizes (desktop) */
+font-size: 12px;  /* xs - Labels */
+font-size: 14px;  /* sm - Secondaire */
+font-size: 16px;  /* base - Principal */
+font-size: 20px;  /* lg - Sous-titres */
+font-size: 24px;  /* xl - Titres H2 */
+font-size: 32px;  /* 2xl - Titres H1 */
 ```
 
-### Systemes JDR (contextuelles)
-```css
---monsterhearts: #8b5cf6;   /* Violet gothique */
---engrenages: #d97706;      /* Brun ambre */
---metro2033: #dc2626;       /* Rouge post-apo */
---mistengine: #ec4899;      /* Rose mystique */
---zombiology: #d4af37;      /* Or metallique */
-```
+### 3. Composants essentiels (UnoCSS)
 
-## Composants Principaux
+#### Bouton primaire
 
-### Boutons
 ```html
-<!-- Primaire (bleu cyberpunk) -->
-<button class="btn-primary">Action Principale</button>
-
-<!-- Secondaire (gris) -->
-<button class="btn-secondary">Action Secondaire</button>
-
-<!-- Outline -->
-<button class="btn-outline">Action Tertiaire</button>
+<button class="
+  px-8 py-4
+  bg-cyan text-noir
+  font-bold uppercase
+  hover:(scale-105 shadow-lg)
+  focus:(ring-2 ring-cyan)
+">
+  Action
+</button>
 ```
 
-### Cartes
-```html
-<article class="card">
-  <span class="badge badge-monsterhearts">MONSTERHEARTS</span>
-  <h3>Titre de la Carte</h3>
-  <p>Description de la carte avec texte gris.</p>
-  <a href="#" class="btn-secondary">Decouvrir</a>
-</article>
-```
+#### Card
 
-### Formulaires
 ```html
-<div class="form-group">
-  <label for="input-id">Label</label>
-  <input type="text" id="input-id" placeholder="Placeholder...">
+<div class="
+  bg-noir-card border border-gray-800
+  p-6
+  hover:(border-cyan scale-102)
+">
+  <h3 class="text-lg font-bold text-white">Titre</h3>
+  <p class="text-gray-400">Contenu...</p>
 </div>
 ```
 
-## Typographie
+#### Input
 
-### Famille
-```css
-font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+```html
+<input
+  type="text"
+  class="
+    w-full px-4 py-3
+    bg-noir border-2 border-gray-800
+    text-white
+    focus:(border-cyan shadow-lg)
+  "
+>
 ```
 
-### Echelle
-```css
-H1: clamp(2.5rem, 4vw, 3.5rem) - Bold, UPPERCASE
-H2: clamp(2rem, 3vw, 2.75rem) - Bold, UPPERCASE
-H3: clamp(1.5rem, 2.5vw, 2rem) - Bold
-Corps: clamp(0.9375rem, 2.5vw, 1rem) - Regular
-```
+---
 
-## Effets Hover
+## UnoCSS Configuration
 
-### Boutons
-```css
-transform: scale(1.02);
-transition: all 0.4s ease;
-```
-
-### Cartes
-```css
-transform: translateY(-4px);
-border-color: var(--bleu-cyberpunk);
-box-shadow: 0 4px 5px rgba(18, 18, 18, 0.05);
-transition: all 0.4s ease;
-```
-
-### Liens
-```css
-color: var(--bleu-cyberpunk);
-transition: color 0.4s ease;
-```
-
-## Configuration Technique
-
-### UnoCSS (recommande)
-```typescript
+```javascript
 // uno.config.ts
-import { defineConfig, presetWind, presetTypography } from 'unocss'
-
 export default defineConfig({
-  presets: [presetWind(), presetTypography()],
+  presets: [
+    presetWind(), // Tailwind-compatible
+    presetTypography(),
+    presetIcons(),
+  ],
+
   theme: {
     colors: {
-      'noir-profond': '#121212',
-      'noir-charbon': '#242833',
-      'bleu-cyberpunk': '#334fb4',
-      // ...
-    },
-    fontFamily: {
-      'sans': ['Assistant', 'sans-serif'],
-    },
-    spacing: {
-      'section-desktop': '36px',
-      'section-mobile': '27px',
+      'noir': '#0a0a0a',
+      'noir-card': '#1a1a1a',
+      'cyan': '#00d9d9',
+      'rose': '#ff006e',
     },
   },
+
   shortcuts: {
-    'btn-base': 'bg-noir-profond text-blanc-pur min-h-[48px]',
-    'card-base': 'bg-noir-charbon border-gris-bordure p-8',
+    'btn-primary': 'px-8 py-4 bg-cyan text-noir font-bold uppercase hover:scale-105',
+    'card': 'bg-noir-card border border-gray-800 p-6 hover:border-cyan',
   },
 })
 ```
 
-### Tailwind (alternative)
-```javascript
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        'noir-profond': '#121212',
-        'bleu-cyberpunk': '#334fb4',
-        // ...
-      },
-      fontFamily: {
-        'sans': ['Assistant', 'sans-serif'],
-      },
-    }
-  }
-}
+---
+
+## Accessibilite (WCAG 2.1 AAA)
+
+### Contrastes minimum
+- Texte normal: 7:1 (AAA)
+- Texte large (18px+): 4.5:1 (AAA)
+
+### Touch targets
+- Mobile: 48x48px minimum
+- Desktop: 32x32px minimum
+
+### Focus states
+```html
+<button class="focus:(outline-none ring-2 ring-cyan ring-offset-2)">
+  Action
+</button>
 ```
 
-## Checklist Nouveau Composant
-
-Avant de creer ou modifier un composant, verifier:
-
-### Design
-- [ ] Palette noir/blanc dominant respectee
-- [ ] Bleu cyberpunk uniquement hover/focus
-- [ ] Angles droits partout (border-radius: 0)
-- [ ] Ombres minimalistes (blur 5px max)
-- [ ] Typographie Assistant uniquement
-
-### Performance
-- [ ] Transitions 0.4s smooth
-- [ ] Pas d'animations complexes
-- [ ] Transform GPU-friendly (scale, translateY)
-- [ ] Pas d'opacites intermediaires
-
-### Accessibilite
-- [ ] Contraste 7:1 (WCAG AAA)
-- [ ] Touch targets 48x48px
-- [ ] Focus visible bleu cyberpunk
-- [ ] Labels ARIA si necessaire
-
-### Responsive
-- [ ] Breakpoint 768px fonctionnel
-- [ ] Espacements 36px/27px respectes
-- [ ] Grilles gap 8px/4px correctes
-- [ ] Typographie fluide avec clamp()
-
-## Ressources
-
-### Documentation
-- **Charte complete** : `charte-graphique-web.md`
-- **Guide migration** : `MIGRATION-OTHERSCAPE.md`
-- **Wireframe demo** : `wireframe-exemple-otherscape.html`
-
-### Inspiration
-- **Otherscape** : https://sonofoak.com/pages/otherscape
-- **Assistant Font** : https://fonts.google.com/specimen/Assistant
-- **UnoCSS** : https://unocss.dev/
-- **Tailwind** : https://tailwindcss.com/
-
-### Outils
-- **Contrast Checker** : https://webaim.org/resources/contrastchecker/
-- **Lighthouse** : Chrome DevTools (performance/accessibilite)
-- **Assistant Preview** : Google Fonts specimen page
-
-## Support
-
-Pour toute question sur le design system:
-1. Consulter `charte-graphique-web.md` (reference complete)
-2. Regarder `wireframe-exemple-otherscape.html` (demo visuelle)
-3. Lire `MIGRATION-OTHERSCAPE.md` (guide migration)
-4. Creer une issue GitHub si probleme persiste
+### ARIA labels
+```html
+<nav aria-label="Navigation principale">
+  <a href="/preparation" aria-current="page">Preparation</a>
+</nav>
+```
 
 ---
 
-**Version** : 2.0 (Cyberpunk Otherscape)
-**Date** : 2025-10-21
-**Status** : Documentation complete, implementation en cours
+## Responsive Breakpoints
+
+```javascript
+{
+  sm: '640px',    // Mobile landscape
+  md: '768px',    // Tablette portrait
+  lg: '1024px',   // Desktop
+  xl: '1280px',   // Large desktop
+  '2xl': '1536px' // Extra large
+}
+```
+
+### Exemple mobile-first
+
+```html
+<div class="
+  grid grid-cols-1 gap-4
+  md:grid-cols-2 md:gap-6
+  lg:grid-cols-3
+">
+  <!-- Items -->
+</div>
+```
+
+---
+
+## Performance
+
+### Objectifs
+- First Contentful Paint (FCP): < 1.5s
+- Largest Contentful Paint (LCP): < 2.5s
+- Cumulative Layout Shift (CLS): < 0.1
+
+### Optimisations
+- 1 seule font (Assistant) → 50% chargement plus rapide
+- Animations GPU (transform, opacity)
+- UnoCSS on-demand → CSS minimal
+- Lazy loading images
+- Critical CSS inline
+
+---
+
+## Navigation
+
+### Header desktop
+- Logo Brumisa3 (cyan)
+- Navigation principale (Decouverte, Preparation, Solo, VTT)
+- Language selector (FR/EN avec underline cyan)
+- User menu dropdown (gauge style)
+
+### Sidebar playspaces
+- Liste playspaces avec badges role (MJ/PJ)
+- Playspace actif: border cyan, bg cyan/10
+- Hover: border cyan, bg cyan/5
+
+### Mobile bottom navigation
+- 4 icones max (WCAG recommendation)
+- Item actif: text cyan
+- Touch targets: 48x48px minimum
+
+---
+
+## Composants specialises
+
+### User Menu Gauge
+Reference: `GAUGE-MENU-DESIGN.md`
+
+Caracteristiques:
+- Barre pleine largeur cyberpunk
+- Segments biseautes 45deg
+- Barres de remplissage cyan (standard) et rose (deconnexion)
+- Animation gauge-fill au hover
+- Scanlines et glow effects
+
+### Language Selector
+```html
+<div class="flex items-center gap-2">
+  <button class="text-cyan font-semibold border-b-2 border-cyan pb-1">
+    FR
+  </button>
+  <span class="text-gray-500">|</span>
+  <button class="text-gray-400 hover:text-cyan pb-1">
+    EN
+  </button>
+</div>
+```
+
+---
+
+## Fichiers archives (ne pas utiliser)
+
+Les fichiers suivants sont archives pour reference historique:
+- `design-system-guide.md` - Architecture EJS obsolete
+- `GAUGE-MENU-*.md` (sauf DESIGN) - Documentation redondante
+- `navigation-radiale-*.md` - Concept non retenu
+- `PRESENTATION-CLIENT.md` - Presentation historique
+
+---
+
+## Fichiers deplaces
+
+Documentation generale (non specifique design):
+- `ux-mobile-first.md` → `documentation/DEVELOPPEMENT/`
+- `arborescence-navigation.md` → `documentation/ARCHITECTURE/`
+- `regles-wireframing.md` → `documentation/DEVELOPPEMENT/`
+- `charte-graphique-pdf.md` → `documentation/FONCTIONNALITES/`
+
+---
+
+## Roadmap
+
+### MVP v1.0 (actuel - Legends in the Mist uniquement)
+- Cyan neon (#00d9d9) comme accent primaire
+- Navigation gauge-style
+- Composants essentiels
+- Mobile-first responsive
+- WCAG 2.1 AAA
+
+### v1.2+ (multi-systemes)
+- Themes pour Monsterhearts (violet), Engrenages (orange), Metro (rouge)
+- Dark/Light mode toggle
+- Customisation couleurs utilisateur
+
+---
+
+## Support
+
+### Questions design
+Consulter `design-system-brumisa3.md` (documentation complete)
+
+### Questions techniques UnoCSS
+Voir configuration dans `design-system-brumisa3.md` section "Implementation avec UnoCSS"
+
+### Questions accessibilite
+Voir section "Accessibilite" dans `design-system-brumisa3.md`
+
+### Reference visuelle
+Ouvrir `wireframe-otherscape-authentique.html` dans navigateur
+
+---
+
+## Checklist implementation
+
+Avant d'implementer un nouveau composant:
+
+- [ ] Lire specifications dans `design-system-brumisa3.md`
+- [ ] Verifier reference visuelle dans `wireframe-otherscape-authentique.html`
+- [ ] Utiliser classes UnoCSS (ou shortcuts)
+- [ ] Respecter contraste WCAG AAA (7:1)
+- [ ] Touch targets 48px mobile, 32px desktop
+- [ ] Tester responsive (mobile, tablet, desktop)
+- [ ] Ajouter ARIA labels si necessaire
+- [ ] Tester navigation clavier
+- [ ] Verifier performance (Lighthouse)
+
+---
+
+**Version:** 1.0.0
+**Derniere mise a jour:** 2025-10-21
+**Mainteneur:** Equipe Brumisa3
+
+Pour toute question, consulter `design-system-brumisa3.md` en premier.
