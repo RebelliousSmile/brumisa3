@@ -26,7 +26,7 @@
     <CommonHeader />
 
     <!-- Main Content (plein écran, pas de margin-left) -->
-    <main class="flex-1 bg-gray-50 relative">
+    <main class="flex-1 bg-otherscape-noir-profond relative">
       <!-- Page content -->
       <div class="min-h-full">
         <slot />

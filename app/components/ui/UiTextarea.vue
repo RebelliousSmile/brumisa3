@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-2">
-    <label v-if="label" :for="textareaId" class="block text-sm font-medium text-gray-300">
+    <label v-if="label" :for="textareaId" class="block text-sm font-medium text-otherscape-cyan-neon">
       {{ label }}
-      <span v-if="required" class="text-red-400">*</span>
+      <span v-if="required" class="text-otherscape-rose-neon">*</span>
     </label>
     
     <div class="relative">
@@ -20,17 +20,17 @@
       />
       
       <div v-if="error" class="absolute top-3 right-3">
-        <Icon name="heroicons:exclamation-circle" class="h-5 w-5 text-red-400" />
+        <Icon name="heroicons:exclamation-circle" class="h-5 w-5 text-otherscape-rose-neon" />
       </div>
     </div>
-    
+
     <div class="flex justify-between items-center">
       <div>
-        <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
-        <p v-else-if="hint" class="text-sm text-gray-400">{{ hint }}</p>
+        <p v-if="error" class="text-sm text-otherscape-rose-neon">{{ error }}</p>
+        <p v-else-if="hint" class="text-sm text-otherscape-gris-clair">{{ hint }}</p>
       </div>
-      
-      <div v-if="showCharCount && maxLength" class="text-sm text-gray-400">
+
+      <div v-if="showCharCount && maxLength" class="text-sm text-otherscape-gris-clair">
         {{ characterCount }}/{{ maxLength }}
       </div>
     </div>
@@ -73,10 +73,10 @@ const textareaClasses = computed(() => {
   const resizeClasses = `resize-${props.resize}`
   
   const colorClasses = props.error
-    ? 'bg-red-50 border-red-300 text-red-900 placeholder-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+    ? 'bg-otherscape-noir-card border-otherscape-rose-neon text-otherscape-blanc placeholder-otherscape-rose-neon/50 focus:border-otherscape-rose-neon focus:ring-2 focus:ring-otherscape-rose-neon/20'
     : props.disabled
-    ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
-    : 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20'
+    ? 'bg-otherscape-noir-card border-otherscape-gris-moyen/30 text-otherscape-gris-moyen cursor-not-allowed opacity-50'
+    : 'bg-otherscape-noir-card border-otherscape-cyan-neon/30 text-otherscape-blanc placeholder-otherscape-gris-moyen focus:border-otherscape-cyan-neon focus:ring-2 focus:ring-otherscape-cyan-neon/20'
   
   return `${baseClasses} ${resizeClasses} ${colorClasses} px-4 py-3`
 })

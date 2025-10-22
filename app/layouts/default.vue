@@ -21,7 +21,7 @@
     <CommonHeader />
 
     <!-- Main Content -->
-    <main class="flex-1 bg-gray-50">
+    <main class="flex-1 bg-otherscape-noir-profond">
       <slot />
     </main>
 

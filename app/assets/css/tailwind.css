@@ -2,14 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Variables CSS Otherscape Authentiques */
+:root {
+  /* Couleurs principales */
+  --noir-profond: #0a0a0a;
+  --noir-card: #1a1a1a;
+  --cyan-neon: #00d9d9;
+  --cyan-hover: #00ffff;
+  --cyan-glow: rgba(0, 217, 217, 0.5);
+  --rose-neon: #ff006e;
+  --violet-neon: #9d4edd;
+
+  /* Texte */
+  --blanc: #ffffff;
+  --gris-clair: #cccccc;
+  --gris-moyen: #999999;
+
+  /* Effets */
+  --glow-cyan: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-glow);
+  --glow-cyan-fort: 0 0 10px var(--cyan-neon), 0 0 20px var(--cyan-neon), 0 0 40px var(--cyan-neon);
+
+  /* Espacements */
+  --spacing: 2rem;
+  --gap: 2rem;
+}
+
 /* Custom base styles */
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    font-size: 62.5%;
   }
-  
+
   body {
     @apply bg-gray-50 text-gray-900;
+    font-size: 1.6rem;
+    line-height: 1.6;
+  }
+
+  /* Style pour la page d'accueil Otherscape */
+  .home-page {
+    background-color: var(--noir-profond);
+    color: var(--blanc);
+    font-family: 'Assistant', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Fond de page avec effet scanlines */
+  .home-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 217, 217, 0.03) 2px,
+      rgba(0, 217, 217, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Conteneur pour garder le contenu au-dessus des scanlines */
+  .home-page > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Titres Otherscape */
+  .home-page h1,
+  .home-page h2,
+  .home-page h3 {
+    font-family: 'Assistant', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--blanc);
   }
 }
 

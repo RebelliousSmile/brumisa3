@@ -77,11 +77,11 @@ const buttonClasses = computed(() => {
   }
   
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-brand-violet to-blue-600 text-white hover:from-blue-600 hover:to-brand-violet focus:ring-brand-violet',
-    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
-    outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
-    ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+    primary: 'bg-otherscape-cyan-neon text-otherscape-noir-profond hover:bg-otherscape-cyan-hover focus:ring-otherscape-cyan-neon border-2 border-otherscape-cyan-neon shadow-glow-cyan hover:shadow-glow-cyan-fort font-extrabold uppercase tracking-wider',
+    secondary: 'bg-otherscape-noir-card text-otherscape-cyan-neon hover:bg-otherscape-noir-card/80 focus:ring-otherscape-cyan-neon border-2 border-otherscape-cyan-neon/30 hover:border-otherscape-cyan-neon uppercase tracking-wider',
+    outline: 'border-2 border-otherscape-cyan-neon bg-transparent text-otherscape-cyan-neon hover:bg-otherscape-cyan-neon/10 focus:ring-otherscape-cyan-neon uppercase tracking-wider',
+    ghost: 'text-otherscape-cyan-neon hover:bg-otherscape-cyan-neon/10 focus:ring-otherscape-cyan-neon uppercase tracking-wider',
+    danger: 'bg-otherscape-rose-neon text-otherscape-noir-profond hover:bg-otherscape-rose-neon/90 focus:ring-otherscape-rose-neon border-2 border-otherscape-rose-neon shadow-glow-rose uppercase tracking-wider'
   }
   
   const widthClass = props.fullWidth ? 'w-full' : ''

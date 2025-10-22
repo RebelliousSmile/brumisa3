@@ -7,7 +7,7 @@ Créateur de fiches de personnages JDR immersives avec **Nuxt 4** et architectur
 ### 🏗️ Stack technique
 - **Framework** : Nuxt 4 + Vue 3 Composition API
 - **Backend** : Nitro Server + PostgreSQL + Prisma ORM
-- **Frontend** : Vue 3 + UnoCSS (Tailwind-style) + Pinia
+- **Frontend** : Vue 3 + UnoCSS + Pinia
 - **PDF** : PDFKit avec génération programmatique (v2.0+)
 - **Auth** : @sidebase/nuxt-auth avec sessions (mode guest + compte)
 - **Tests** : Playwright (100% E2E, pas de tests unitaires)

@@ -636,18 +636,8 @@
 
         .section-title {
             text-align: center;
-            margin-bottom: 6rem;
+            margin-bottom: 3rem;
             position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 10rem;
-            height: 3px;
-            background: var(--cyan-neon);
-            margin: 2rem auto 0;
-            box-shadow: var(--glow-cyan);
         }
 
         .section-subtitle {
@@ -1560,7 +1550,10 @@
             </div>
 
             <h2 class="section-title">HACKS & EXTENSIONS</h2>
-            <p class="section-subtitle">TOUS LES HACKS INCLUENT L'EXPORT PDF</p>
+            <p style="text-align: center; color: var(--gris-clair); font-size: 1.6rem; line-height: 1.8; max-width: 90rem; margin: 0 auto 6rem;">
+                Choisissez parmi nos extensions officielles pour Mist Engine et City of Mist.
+                Chaque hack propose un univers unique avec ses propres regles, themes et mecaniques de jeu adaptes.
+            </p>
 
             <!-- Conteneur pour les grilles de hacks (avec data-system pour le filtrage) -->
             <div class="products-grid" data-system-content="mist-engine">
@@ -1714,8 +1707,14 @@
     <!-- SECTION UNIVERS POPULAIRES -->
     <section id="univers" class="section">
         <div class="container">
-            <h2 class="section-title">UNIVERS POPULAIRES</h2>
-            <p class="section-subtitle">SELECTIONNEZ UN UNIVERS POUR DEMARRER</p>
+            <div class="showcase-header">
+                <div class="showcase-subtitle">POPULAR SETTINGS</div>
+                <h2 class="showcase-title">UNIVERS POPULAIRES</h2>
+                <p class="showcase-description">
+                    Explorez nos univers les plus joues, du noir des annees 40 au cyberpunk futuriste.
+                    Chaque univers offre une atmosphere unique et des possibilites narratives infinies pour vos parties.
+                </p>
+            </div>
 
             <div class="system-grid">
                 <!-- Univers LITM 1 -->
@@ -1757,6 +1756,10 @@
     <section id="contact" class="section">
         <div class="container">
             <h2 class="section-title">Sign Up for Updates</h2>
+            <p style="text-align: center; color: var(--gris-clair); font-size: 1.6rem; line-height: 1.8; max-width: 90rem; margin: 0 auto 6rem;">
+                Restez informe des nouvelles sorties, mises a jour et fonctionnalites.
+                Rejoignez notre communaute pour ne rien manquer de l'univers Brumisa3 et du Mist Engine.
+            </p>
 
             <form style="max-width: 70rem; margin: 0 auto;">
                 <div class="form-group">

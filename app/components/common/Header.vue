@@ -1,202 +1,399 @@
 <script setup lang="ts">
 /**
- * Header Principal - Navigation Persistante
+ * Header Principal - Navigation Cyberpunk Otherscape
  *
- * Structure :
- * - Logo Brumisa3 (lien vers /)
- * - Navigation principale (4 sections) :
- *   1. Decouverte
- *   2. Preparation (context-sensitive MJ/PJ)
- *   3. Jouer en solo (grise en MVP v1.0)
- *   4. Table VTT (grise en MVP v2.0)
- * - Zone utilisateur (droite) :
- *   - [Mode Guest] Banner "Creer un compte"
- *   - [Authentifie] Avatar + Dropdown (Profil, Parametres, Deconnexion)
- *   - [Non connecte] Se connecter / S'inscrire
+ * Conforme au wireframe: documentation/DESIGN-SYSTEM/wireframe-otherscape-authentique.html
  */
-
-// TODO: Implementer stores
-// const authStore = useAuthStore()
-// const playspaceStore = usePlayspaceStore()
-// const { user, isAuthenticated, isGuest } = storeToRefs(authStore)
-// const { activePlayspace } = storeToRefs(playspaceStore)
 
 const route = useRoute()
 
-// Navigation items
+// Navigation items - 4 sections principales MVP
 const navItems = [
-  {
-    label: 'Decouverte',
-    path: '/decouverte',
-    icon: 'i-heroicons-light-bulb',
-    enabled: true
-  },
-  {
-    label: 'Preparation',
-    path: '/preparation',
-    icon: 'i-heroicons-pencil-square',
-    enabled: true,
-    contextSensitive: true // UI adaptative selon role MJ/PJ
-  },
-  {
-    label: 'Jouer en solo',
-    path: '/solo',
-    icon: 'i-heroicons-user',
-    enabled: true, // Page placeholder accessible
-    badge: 'v1.3+',
-    comingSoon: true
-  },
-  {
-    label: 'Table VTT',
-    path: '/vtt',
-    icon: 'i-heroicons-users',
-    enabled: true, // Page placeholder accessible
-    badge: 'v2.0+',
-    comingSoon: true
-  }
+  { label: 'Decouverte', path: '/decouverte' },
+  { label: 'Preparation', path: '/preparation' },
+  { label: 'Jouer en solo', path: '/solo' },
+  { label: 'Table VTT', path: '/vtt' }
 ]
 
 // Active route check
 const isActive = (path: string) => {
-  return route.path.startsWith(path)
+  return route.path === path
 }
 
 // Dropdowns
 const showUserDropdown = ref(false)
-const showLangDropdown = ref(false)
+const currentLang = ref('fr')
 
 // TODO: Logout handler
 const handleLogout = async () => {
-  // await authStore.logout()
-  // navigateTo('/auth/login')
+  showUserDropdown.value = false
+}
+
+// Toggle user dropdown
+const toggleUserDropdown = () => {
+  showUserDropdown.value = !showUserDropdown.value
+}
+
+// Close dropdown when clicking outside
+const closeDropdown = () => {
+  showUserDropdown.value = false
+}
+
+// Language switch
+const switchLanguage = (lang: string) => {
+  currentLang.value = lang
 }
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
-    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+  <nav
+    class="fixed top-0 left-0 right-0 z-[1000] border-b border-otherscape-cyan-neon backdrop-blur-[10px] transition-all duration-300"
+    :class="[
+      'bg-[rgba(10,10,10,0.95)]'
+    ]"
+  >
+    <div class="max-w-[140rem] mx-auto px-16 py-6 flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink to="/" class="flex items-center space-x-2">
-        <span class="text-2xl font-bold text-brand-violet">Brumisa3</span>
+      <NuxtLink
+        to="/"
+        class="group"
+      >
+        <span
+          class="font-otherscape font-extrabold text-[2.4rem] uppercase tracking-[0.2em] text-otherscape-cyan-neon text-shadow-glow-cyan-fort transition-all duration-300 group-hover:text-otherscape-cyan-hover group-hover:text-shadow-[0_0_15px_#00d9d9,0_0_30px_#00d9d9,0_0_50px_#00d9d9]"
+        >
+          BRUMISA3
+        </span>
       </NuxtLink>
 
-      <!-- Navigation Principale (4 sections) -->
-      <nav class="hidden md:flex items-center space-x-1">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.path"
-          :to="item.path"
-          :class="[
-            'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-            isActive(item.path)
-              ? 'bg-brand-violet text-white'
-              : 'text-gray-700 hover:bg-gray-100',
-          ]"
-        >
-          {{ item.label }}
-          <span
-            v-if="item.badge"
-            class="ml-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600"
+      <!-- Navigation Principale -->
+      <ul class="hidden md:flex items-center gap-12 list-none">
+        <li v-for="item in navItems" :key="item.path">
+          <NuxtLink
+            :to="item.path"
+            class="relative inline-block text-otherscape-blanc no-underline font-bold text-[1.4rem] uppercase tracking-[0.1em] transition-all duration-300 group hover:text-otherscape-cyan-neon"
+            :class="{ 'text-otherscape-cyan-neon': isActive(item.path) }"
           >
-            {{ item.badge }}
-          </span>
-        </NuxtLink>
-      </nav>
+            {{ item.label }}
+            <!-- Underline effect -->
+            <span
+              class="absolute bottom-[-5px] left-0 w-0 h-[2px] bg-otherscape-cyan-neon shadow-glow-cyan transition-all duration-300 group-hover:w-full"
+              :class="{ '!w-full': isActive(item.path) }"
+            ></span>
+          </NuxtLink>
+        </li>
+      </ul>
 
-      <!-- Zone Utilisateur (Droite) -->
-      <div class="flex items-center space-x-4">
+      <!-- Zone Utilisateur -->
+      <div class="flex items-center gap-6">
         <!-- Selecteur de langue -->
-        <div class="relative">
+        <div class="flex items-center gap-3 px-6" role="navigation" aria-label="Selecteur de langue">
           <button
-            class="flex items-center space-x-1 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            @click="showLangDropdown = !showLangDropdown"
+            class="relative bg-transparent border-none text-otherscape-gris-clair font-otherscape font-bold text-[1.3rem] uppercase tracking-[0.15em] cursor-pointer px-[0.8rem] py-[0.5rem] transition-all duration-300 hover:text-otherscape-cyan-hover focus-visible:outline-2 focus-visible:outline-otherscape-cyan-neon focus-visible:outline-offset-4 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-otherscape-cyan-neon after:shadow-[0_0_5px_#00d9d9] after:transition-all after:duration-300 hover:after:w-[80%]"
+            :class="{
+              'text-otherscape-cyan-neon text-shadow-glow-cyan after:!w-[80%]': currentLang === 'fr'
+            }"
+            @click="switchLanguage('fr')"
+            aria-current="true"
+            aria-label="Francais - Langue active"
           >
-            <Icon name="heroicons:language" class="h-5 w-5" />
-            <span class="hidden sm:inline">FR</span>
-            <Icon name="heroicons:chevron-down" class="h-4 w-4" />
+            FR
           </button>
-
-          <!-- Dropdown Langues (TODO: implementer avec i18n) -->
-          <div
-            v-if="showLangDropdown"
-            class="absolute right-0 top-12 w-32 rounded-lg bg-white shadow-lg border border-gray-200 py-2"
+          <span class="text-[rgba(0,217,217,0.3)] text-[1.6rem] select-none" aria-hidden="true">/</span>
+          <button
+            class="relative bg-transparent border-none text-otherscape-gris-clair font-otherscape font-bold text-[1.3rem] uppercase tracking-[0.15em] cursor-pointer px-[0.8rem] py-[0.5rem] transition-all duration-300 hover:text-otherscape-cyan-hover focus-visible:outline-2 focus-visible:outline-otherscape-cyan-neon focus-visible:outline-offset-4 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-otherscape-cyan-neon after:shadow-[0_0_5px_#00d9d9] after:transition-all after:duration-300 hover:after:w-[80%]"
+            :class="{
+              'text-otherscape-cyan-neon text-shadow-glow-cyan after:!w-[80%]': currentLang === 'en'
+            }"
+            @click="switchLanguage('en')"
+            aria-label="English"
           >
-            <button class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
-              Francais
-            </button>
-            <button class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
-              English
-            </button>
-          </div>
+            EN
+          </button>
         </div>
 
-        <!-- Non connecte -->
-        <template v-if="false">
-          <UiButton to="/auth/login" variant="ghost" size="sm">
-            Se connecter
-          </UiButton>
-          <UiButton to="/auth/register" variant="primary" size="sm">
-            S'inscrire
-          </UiButton>
-        </template>
-
-        <!-- Mode Guest -->
-        <template v-if="false">
-          <div class="hidden lg:flex items-center space-x-2 rounded-lg bg-yellow-50 px-3 py-1.5 text-sm">
-            <Icon name="heroicons:exclamation-triangle" class="h-4 w-4 text-yellow-600" />
-            <span class="text-yellow-900">Mode invité</span>
-            <UiButton to="/auth/register" variant="primary" size="xs">
-              Créer un compte
-            </UiButton>
-          </div>
-        </template>
-
-        <!-- Authentifie -->
-        <template v-if="false">
+        <!-- User Menu Button -->
+        <div class="relative ml-8">
           <button
-            class="flex items-center space-x-2 rounded-lg p-2 hover:bg-gray-100"
-            @click="showUserDropdown = !showUserDropdown"
+            class="flex items-center gap-[0.8rem] px-[1.5rem] py-[0.8rem] bg-transparent border-none text-otherscape-cyan-neon font-otherscape font-bold text-[1.3rem] uppercase tracking-[0.15em] cursor-pointer transition-all duration-300 hover:text-otherscape-cyan-hover focus-visible:outline-2 focus-visible:outline-otherscape-cyan-neon focus-visible:outline-offset-4"
+            @click="toggleUserDropdown"
+            :aria-expanded="showUserDropdown"
+            aria-haspopup="true"
           >
-            <div class="h-8 w-8 rounded-full bg-brand-violet text-white flex items-center justify-center text-sm font-medium">
-              U
-            </div>
-            <Icon name="heroicons:chevron-down" class="h-4 w-4 text-gray-500" />
+            <!-- Icone utilisateur -->
+            <svg
+              class="w-[1.8rem] h-[1.8rem] stroke-current fill-none stroke-[2]"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3-7 8-7s8 3 8 7" />
+            </svg>
+            <span>Valkyrie</span>
+            <!-- Chevron dropdown -->
+            <svg
+              class="w-[1.2rem] h-[1.2rem] stroke-current fill-none stroke-[2] transition-transform duration-300"
+              :class="{ 'rotate-180': showUserDropdown }"
+              viewBox="0 0 12 8"
+              aria-hidden="true"
+            >
+              <path d="M1 1L6 6L11 1" />
+            </svg>
           </button>
-
-          <!-- Dropdown Menu (TODO: implémenter avec Headless UI) -->
-          <div
-            v-if="showUserDropdown"
-            class="absolute right-4 top-14 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-2"
-          >
-            <NuxtLink
-              to="/profile"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Mon Profil
-            </NuxtLink>
-            <NuxtLink
-              to="/settings"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Paramètres
-            </NuxtLink>
-            <button
-              class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
-              @click="handleLogout"
-            >
-              Déconnexion
-            </button>
-          </div>
-        </template>
-
-        <!-- Placeholder MVP (affiche "Non connecte" par defaut) -->
-        <UiButton to="/auth/login" variant="ghost" size="sm">
-          Se connecter
-        </UiButton>
-        <UiButton to="/auth/register" variant="primary" size="sm">
-          S'inscrire
-        </UiButton>
+        </div>
       </div>
     </div>
-  </header>
+
+    <!-- User Dropdown Menu - Gauge Style HUD (Horizontal Full Width) -->
+    <Transition
+      enter-active-class="transition-all duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+      leave-active-class="transition-all duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+      enter-from-class="opacity-0 scale-y-0 origin-top"
+      leave-to-class="opacity-0 scale-y-0 origin-top"
+      enter-to-class="opacity-100 scale-y-100"
+      leave-from-class="opacity-100 scale-y-100"
+    >
+      <div v-if="showUserDropdown" class="absolute top-full left-0 right-0 w-full bg-transparent z-[1000]">
+        <ul
+          class="user-dropdown-list list-none p-0 m-0 flex w-full items-stretch gap-0 bg-[rgba(10,10,10,0.95)] border-t border-b-2 border-otherscape-cyan-neon shadow-[0_4px_20px_rgba(0,217,217,0.3)] backdrop-blur-[10px] relative animate-gauge-bar-appear"
+        >
+          <!-- Profile -->
+          <li class="group">
+            <span class="segment-number">01</span>
+            <a
+              href="#profil"
+              class="flex items-center justify-center gap-[0.8rem] px-[2.5rem] py-[2rem] bg-transparent border-none text-otherscape-gris-clair font-otherscape text-[1.2rem] font-bold uppercase tracking-[0.15em] text-left no-underline cursor-pointer transition-all duration-300 whitespace-nowrap relative z-[2] w-full [clip-path:polygon(0_0,calc(100%-10px)_0,100%_10px,100%_100%,0_100%)] group-hover:text-otherscape-cyan-neon group-hover:text-shadow-[0_0_10px_rgba(0,217,217,0.5)]"
+              @click="closeDropdown"
+            >
+              <svg
+                class="w-[1.6rem] h-[1.6rem] stroke-current fill-none stroke-[2] transition-all duration-300 group-hover:drop-shadow-[0_0_5px_#00d9d9]"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3-7 8-7s8 3 8 7" />
+              </svg>
+              <span>Profil</span>
+            </a>
+          </li>
+
+          <!-- Playspaces -->
+          <li class="group">
+            <span class="segment-number">02</span>
+            <a
+              href="#playspaces"
+              class="flex items-center justify-center gap-[0.8rem] px-[2.5rem] py-[2rem] bg-transparent border-none text-otherscape-gris-clair font-otherscape text-[1.2rem] font-bold uppercase tracking-[0.15em] text-left no-underline cursor-pointer transition-all duration-300 whitespace-nowrap relative z-[2] w-full [clip-path:polygon(0_0,calc(100%-10px)_0,100%_10px,100%_100%,0_100%)] group-hover:text-otherscape-cyan-neon group-hover:text-shadow-[0_0_10px_rgba(0,217,217,0.5)]"
+              @click="closeDropdown"
+            >
+              <svg
+                class="w-[1.6rem] h-[1.6rem] stroke-current fill-none stroke-[2] transition-all duration-300 group-hover:drop-shadow-[0_0_5px_#00d9d9]"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 3v18" />
+              </svg>
+              <span>Playspaces</span>
+            </a>
+          </li>
+
+          <!-- Personnages -->
+          <li class="group">
+            <span class="segment-number">03</span>
+            <a
+              href="#personnages"
+              class="flex items-center justify-center gap-[0.8rem] px-[2.5rem] py-[2rem] bg-transparent border-none text-otherscape-gris-clair font-otherscape text-[1.2rem] font-bold uppercase tracking-[0.15em] text-left no-underline cursor-pointer transition-all duration-300 whitespace-nowrap relative z-[2] w-full [clip-path:polygon(0_0,calc(100%-10px)_0,100%_10px,100%_100%,0_100%)] group-hover:text-otherscape-cyan-neon group-hover:text-shadow-[0_0_10px_rgba(0,217,217,0.5)]"
+              @click="closeDropdown"
+            >
+              <svg
+                class="w-[1.6rem] h-[1.6rem] stroke-current fill-none stroke-[2] transition-all duration-300 group-hover:drop-shadow-[0_0_5px_#00d9d9]"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>Personnages</span>
+            </a>
+          </li>
+
+          <!-- Parametres -->
+          <li class="group">
+            <span class="segment-number">04</span>
+            <a
+              href="#parametres"
+              class="flex items-center justify-center gap-[0.8rem] px-[2.5rem] py-[2rem] bg-transparent border-none text-otherscape-gris-clair font-otherscape text-[1.2rem] font-bold uppercase tracking-[0.15em] text-left no-underline cursor-pointer transition-all duration-300 whitespace-nowrap relative z-[2] w-full [clip-path:polygon(0_0,calc(100%-10px)_0,100%_10px,100%_100%,0_100%)] group-hover:text-otherscape-cyan-neon group-hover:text-shadow-[0_0_10px_rgba(0,217,217,0.5)]"
+              @click="closeDropdown"
+            >
+              <svg
+                class="w-[1.6rem] h-[1.6rem] stroke-current fill-none stroke-[2] transition-all duration-300 group-hover:drop-shadow-[0_0_5px_#00d9d9]"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v6m0 6v6M5 5l4 4m6 6l4 4M1 12h6m6 0h6M5 19l4-4m6-6l4-4" />
+              </svg>
+              <span>Parametres</span>
+            </a>
+          </li>
+
+          <!-- Deconnexion -->
+          <li class="group">
+            <span class="segment-number">05</span>
+            <button
+              class="flex items-center justify-center gap-[0.8rem] px-[2.5rem] py-[2rem] bg-transparent border-none text-otherscape-rose-neon font-otherscape text-[1.2rem] font-bold uppercase tracking-[0.15em] text-left cursor-pointer transition-all duration-300 whitespace-nowrap relative z-[2] w-full [clip-path:polygon(0_0,calc(100%-10px)_0,100%_10px,100%_100%,0_100%)] group-hover:text-otherscape-rose-neon group-hover:text-shadow-[0_0_10px_rgba(255,0,110,0.5)]"
+              @click="handleLogout"
+            >
+              <svg
+                class="w-[1.6rem] h-[1.6rem] stroke-current fill-none stroke-[2] transition-all duration-300 group-hover:drop-shadow-[0_0_5px_#ff006e]"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Deconnexion</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </Transition>
+  </nav>
 </template>
+
+<style scoped>
+/* Keyframes pour animations */
+@keyframes gauge-bar-appear {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes gauge-fill {
+  0% {
+    width: 4px;
+    opacity: 0.6;
+  }
+  100% {
+    width: 100%;
+    opacity: 0.15;
+  }
+}
+
+/* Effet gauge sur les items du dropdown */
+.user-dropdown-list li {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Barre de remplissage gauge à gauche */
+.user-dropdown-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--cyan-neon) 0%, rgba(0, 217, 217, 0.3) 100%);
+  box-shadow: 0 0 10px var(--cyan-neon);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+/* Effet alternance sur les items pairs */
+.user-dropdown-list li:nth-child(2n)::before {
+  box-shadow: 0 0 10px var(--cyan-neon), inset 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Barre rose pour déconnexion */
+.user-dropdown-list li:last-child::before {
+  background: linear-gradient(180deg, var(--rose-neon) 0%, rgba(255, 0, 110, 0.3) 100%);
+  box-shadow: 0 0 10px var(--rose-neon);
+}
+
+/* Biseau droit */
+.user-dropdown-list li::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(135deg, transparent 0%, rgba(0, 217, 217, 0.3) 50%, transparent 100%);
+  transform: skewX(-45deg);
+  transform-origin: top right;
+}
+
+/* Hover - gauge se remplit */
+.user-dropdown-list li:hover::before {
+  width: 100%;
+  opacity: 0.15;
+  animation: gauge-fill 0.4s ease-out forwards;
+}
+
+/* Numéros de segments */
+.segment-number {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: rgba(0, 217, 217, 0.4);
+  font-variant-numeric: tabular-nums;
+  z-index: 10;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.user-dropdown-list li:hover .segment-number {
+  color: var(--cyan-neon);
+  text-shadow: 0 0 8px rgba(0, 217, 217, 0.5);
+}
+
+/* Numéro déconnexion en rose */
+.user-dropdown-list li:last-child .segment-number {
+  color: rgba(255, 0, 110, 0.4);
+}
+
+.user-dropdown-list li:last-child:hover .segment-number {
+  color: var(--rose-neon);
+  text-shadow: 0 0 8px rgba(255, 0, 110, 0.5);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  nav {
+    padding: 1.5rem 2rem;
+  }
+
+  .segment-number {
+    display: none;
+  }
+
+  /* Gauge vertical sur mobile */
+  .user-dropdown-list li::before {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: auto;
+    width: 100%;
+    height: 3px;
+  }
+
+  .user-dropdown-list li:hover::before {
+    height: 100%;
+  }
+
+  .user-dropdown-list li::after {
+    display: none;
+  }
+}
+</style>

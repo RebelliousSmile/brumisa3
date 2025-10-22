@@ -36,6 +36,7 @@
             --violet-neon: #9d4edd;
             --vert-neon: #00ff88;
             --jaune-neon: #ffd700;
+            --bleu-neon: #4d9eff;
 
             /* Effets */
             --glow-cyan: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-glow);
@@ -239,6 +240,10 @@
             color: var(--jaune-neon);
         }
 
+        .picto-card.spectrum .picto-icon {
+            color: var(--bleu-neon);
+        }
+
         /* LEGEND */
         .legend {
             display: flex;
@@ -292,6 +297,11 @@
         .legend-color.tag {
             color: var(--jaune-neon);
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .legend-color.spectrum {
+            color: var(--bleu-neon);
+            box-shadow: 0 0 10px rgba(77, 158, 255, 0.5);
         }
 
         .legend-label {
@@ -390,6 +400,10 @@
             <div class="legend-item">
                 <div class="legend-color tag"></div>
                 <span class="legend-label">Tag / Scene</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color spectrum"></div>
+                <span class="legend-label">Spectrum</span>
             </div>
         </div>
 

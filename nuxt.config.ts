@@ -9,12 +9,17 @@ export default defineNuxtConfig({
   // Modules
   modules: [
     '@pinia/nuxt',
-    '@nuxtjs/tailwindcss',
+    '@unocss/nuxt',
     '@sidebase/nuxt-auth',
     '@nuxt/icon',
     '@nuxtjs/i18n'
   ],
-  
+
+  // CSS global
+  css: [
+    '~/assets/css/main.css'
+  ],
+
   // Configuration Pinia pour shared/stores
   pinia: {
     storesDirs: ['../shared/stores/**', './shared/stores/**']

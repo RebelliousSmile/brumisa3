@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-2">
-    <label v-if="label" :for="selectId" class="block text-sm font-medium text-gray-300">
+    <label v-if="label" :for="selectId" class="block text-sm font-medium text-otherscape-cyan-neon">
       {{ label }}
-      <span v-if="required" class="text-red-400">*</span>
+      <span v-if="required" class="text-otherscape-rose-neon">*</span>
     </label>
     
     <div class="relative">
@@ -28,21 +28,21 @@
       </select>
       
       <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-        <Icon 
+        <Icon
           v-if="error"
-          name="heroicons:exclamation-circle" 
-          class="h-5 w-5 text-red-400" 
+          name="heroicons:exclamation-circle"
+          class="h-5 w-5 text-otherscape-rose-neon"
         />
-        <Icon 
+        <Icon
           v-else
-          name="heroicons:chevron-down" 
-          class="h-5 w-5 text-gray-400" 
+          name="heroicons:chevron-down"
+          class="h-5 w-5 text-otherscape-cyan-neon"
         />
       </div>
     </div>
-    
-    <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
-    <p v-else-if="hint" class="text-sm text-gray-400">{{ hint }}</p>
+
+    <p v-if="error" class="text-sm text-otherscape-rose-neon">{{ error }}</p>
+    <p v-else-if="hint" class="text-sm text-otherscape-gris-clair">{{ hint }}</p>
   </div>
 </template>
 
@@ -86,10 +86,10 @@ const selectClasses = computed(() => {
   }
   
   const colorClasses = props.error
-    ? 'bg-red-50 border-red-300 text-red-900 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+    ? 'bg-otherscape-noir-card border-otherscape-rose-neon text-otherscape-blanc focus:border-otherscape-rose-neon focus:ring-2 focus:ring-otherscape-rose-neon/20'
     : props.disabled
-    ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
-    : 'bg-gray-700 border-gray-600 text-white focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20'
+    ? 'bg-otherscape-noir-card border-otherscape-gris-moyen/30 text-otherscape-gris-moyen cursor-not-allowed opacity-50'
+    : 'bg-otherscape-noir-card border-otherscape-cyan-neon/30 text-otherscape-blanc focus:border-otherscape-cyan-neon focus:ring-2 focus:ring-otherscape-cyan-neon/20'
   
   return `${baseClasses} ${sizeClasses[props.size]} ${colorClasses}`
 })
