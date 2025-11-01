@@ -5,6 +5,7 @@
  * - All playspaces MUST have hackId defined
  * - hackId MUST be valid (city-of-mist, litm, otherlands)
  * - universeId null = utilise defaultUniverse du hack
+ * - isGM MUST be Boolean (false = PC mode, true = GM mode)
  */
 
 import { describe, it, expect } from 'vitest'
@@ -32,6 +33,16 @@ describe('Playspace Hack+Univers Business Rules', () => {
 
     for (const playspace of playspaces) {
       expect(validHacks).toContain(playspace.hackId)
+    }
+  })
+
+  it('All playspaces MUST have isGM Boolean (GM vs PC mode)', async () => {
+    const playspaces = await prisma.playspace.findMany()
+
+    for (const playspace of playspaces) {
+      // isGM doit être Boolean (false = PC mode, true = GM mode)
+      expect(playspace).toHaveProperty('isGM')
+      expect(typeof playspace.isGM).toBe('boolean')
     }
   })
 

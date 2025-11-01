@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
         description: true,
         hackId: true,
         universeId: true,
+        isGM: true,
         userId: true,
         createdAt: true,
         updatedAt: true,

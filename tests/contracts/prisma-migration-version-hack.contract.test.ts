@@ -5,6 +5,7 @@
  * - City of Mist playspaces migrated to hackId city-of-mist
  * - LITM playspaces migrated to hackId litm
  * - universeId ajouté (optionnel)
+ * - isGM Boolean field added (false = PC mode, true = GM mode)
  */
 
 import { describe, it, expect } from 'vitest'
@@ -25,6 +26,8 @@ describe('Prisma Migration Hack+Univers', () => {
       expect(playspace.hackId).toBe('city-of-mist')
       // Version dérivée depuis config
       expect(getVersionId(playspace.hackId)).toBe('1.0')
+      // isGM doit être Boolean
+      expect(typeof playspace.isGM).toBe('boolean')
     }
   })
 
@@ -39,6 +42,8 @@ describe('Prisma Migration Hack+Univers', () => {
       expect(playspace.hackId).toBe('litm')
       // Version dérivée depuis config
       expect(getVersionId(playspace.hackId)).toBe('2.0')
+      // isGM doit être Boolean
+      expect(typeof playspace.isGM).toBe('boolean')
     }
   })
 
@@ -48,6 +53,16 @@ describe('Prisma Migration Hack+Univers', () => {
     for (const playspace of playspaces) {
       // universeId peut être null ou string (pas undefined)
       expect(playspace).toHaveProperty('universeId')
+    }
+  })
+
+  it('All playspaces have isGM Boolean field (GM vs PC mode)', async () => {
+    const playspaces = await prisma.playspace.findMany()
+
+    for (const playspace of playspaces) {
+      // isGM doit être Boolean (false = PC mode, true = GM mode)
+      expect(playspace).toHaveProperty('isGM')
+      expect(typeof playspace.isGM).toBe('boolean')
     }
   })
 })

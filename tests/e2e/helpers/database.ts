@@ -34,7 +34,8 @@ export async function createTestUser() {
 export async function createTestPlayspace(
   userId: string,
   hackId: 'city-of-mist' | 'litm' = 'city-of-mist',
-  universeId: string | null = null
+  universeId: string | null = null,
+  isGM: boolean = false // PC mode par défaut
 ) {
   return await prisma.playspace.create({
     data: {
@@ -42,7 +43,8 @@ export async function createTestPlayspace(
       description: 'Test playspace for E2E tests',
       userId,
       hackId,
-      universeId // null = defaultUniverse du hack
+      universeId, // null = defaultUniverse du hack
+      isGM // false = PC mode (Player Character), true = GM mode (Game Master)
     }
   })
 }

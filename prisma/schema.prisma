@@ -25,12 +25,14 @@ model Playspace {
   description String?
   userId      String
 
-  // Architecture Hack + Univers
+  // Architecture Hack + Univers + Game Master Mode
   // - hackId : "city-of-mist" | "litm" | "otherlands" (contient versionId en config)
   // - universeId : null (default du hack) ou custom (ex: "paris-1920", "neo-tokyo")
+  // - isGM : false (PC mode) | true (GM mode) - Détermine l'UI et le workflow
   // Règles et validation via code/server/config/systems.config.ts
   hackId      String
   universeId  String? // null = utilise defaultUniverse, ou ID custom
+  isGM        Boolean @default(false) // false = PC (Player Character), true = GM (Game Master)
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -39,6 +41,7 @@ model Playspace {
 
   @@index([userId])
   @@index([hackId])
+  @@index([isGM])
   @@map("playspaces")
 }
 

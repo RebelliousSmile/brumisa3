@@ -17,6 +17,7 @@ export interface Playspace {
   description?: string
   hackId: string
   universeId: string | null
+  isGM: boolean // false = PC (Player Character), true = GM (Game Master)
   userId: string
   createdAt: string
   updatedAt: string
@@ -45,6 +46,9 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   })
 
   const hasPlayspaces = computed(() => playspaces.value.length > 0)
+
+  /** Vérifie si le playspace actif est en mode GM (Game Master) */
+  const isGM = computed(() => activePlayspace.value?.isGM === true)
 
   /** Récupère le nom de la version du playspace actif */
   const activeVersion = computed(() => {
@@ -99,6 +103,7 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     description?: string
     hackId: string
     universeId?: string | null
+    isGM?: boolean
   }) {
     loading.value = true
     error.value = null
@@ -133,6 +138,7 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     name?: string
     description?: string
     universeId?: string | null
+    isGM?: boolean
   }) {
     loading.value = true
     error.value = null
@@ -219,6 +225,7 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     // Getters
     activePlayspace,
     hasPlayspaces,
+    isGM,
     activeVersion,
     activeHackName,
     activeUniverseName,

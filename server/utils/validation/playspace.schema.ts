@@ -26,7 +26,11 @@ export const createPlayspaceSchema = z.object({
     .min(1, 'L\'ID univers ne peut pas être vide')
     .max(100, 'L\'ID univers ne peut pas dépasser 100 caractères')
     .optional()
-    .nullable()
+    .nullable(),
+
+  isGM: z.boolean({
+    errorMap: () => ({ message: 'isGM doit être un booléen' })
+  }).default(false) // false = PC mode, true = GM mode
 })
 
 /**
@@ -51,7 +55,11 @@ export const updatePlayspaceSchema = z.object({
     .min(1)
     .max(100)
     .optional()
-    .nullable()
+    .nullable(),
+
+  isGM: z.boolean({
+    errorMap: () => ({ message: 'isGM doit être un booléen' })
+  }).optional()
 })
 
 /**

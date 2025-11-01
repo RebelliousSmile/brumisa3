@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { createPlayspaceSchema } from '~/server/utils/validation/playspace.schema'
+import { createPlayspaceSchema } from '../../utils/validation/playspace.schema'
 
 const prisma = new PrismaClient()
 
@@ -54,6 +54,7 @@ export default defineEventHandler(async (event) => {
         description: true,
         hackId: true,
         universeId: true,
+        isGM: true,
         createdAt: true,
         updatedAt: true
       }

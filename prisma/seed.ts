@@ -28,7 +28,8 @@ async function main() {
       description: 'A City of Mist campaign (version 1.0)',
       userId: testUser.id,
       hackId: 'city-of-mist',
-      universeId: null // null = defaultUniverse "the-city"
+      universeId: null, // null = defaultUniverse "the-city"
+      isGM: true // Game Master mode
     }
   })
 
@@ -38,7 +39,8 @@ async function main() {
       description: 'A Legends in the Mist campaign (version 2.0 - Mist Engine)',
       userId: testUser.id,
       hackId: 'litm',
-      universeId: null // null = defaultUniverse "obojima"
+      universeId: null, // null = defaultUniverse "obojima"
+      isGM: false // Player Character mode (default)
     }
   })
 
