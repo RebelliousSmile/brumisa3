@@ -25,18 +25,20 @@ async function main() {
   const comPlayspace = await prisma.playspace.create({
     data: {
       name: 'Chicago Investigations',
-      description: 'A City of Mist campaign in modern-day Chicago',
+      description: 'A City of Mist campaign (version 1.0)',
       userId: testUser.id,
-      systemId: 'city-of-mist'
+      hackId: 'city-of-mist',
+      universeId: null // null = defaultUniverse "the-city"
     }
   })
 
   const litmPlayspace = await prisma.playspace.create({
     data: {
       name: 'Legends of Obojima',
-      description: 'A Legends in the Mist campaign in feudal Japan',
+      description: 'A Legends in the Mist campaign (version 2.0 - Mist Engine)',
       userId: testUser.id,
-      systemId: 'litm'
+      hackId: 'litm',
+      universeId: null // null = defaultUniverse "obojima"
     }
   })
 

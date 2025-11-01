@@ -31,13 +31,18 @@ export async function createTestUser() {
   })
 }
 
-export async function createTestPlayspace(userId: string, systemId: 'city-of-mist' | 'litm' = 'city-of-mist') {
+export async function createTestPlayspace(
+  userId: string,
+  hackId: 'city-of-mist' | 'litm' = 'city-of-mist',
+  universeId: string | null = null
+) {
   return await prisma.playspace.create({
     data: {
-      name: systemId === 'city-of-mist' ? 'Test City of Mist Playspace' : 'Test LITM Playspace',
+      name: hackId === 'city-of-mist' ? 'Test City of Mist Playspace' : 'Test LITM Playspace',
       description: 'Test playspace for E2E tests',
       userId,
-      systemId
+      hackId,
+      universeId // null = defaultUniverse du hack
     }
   })
 }

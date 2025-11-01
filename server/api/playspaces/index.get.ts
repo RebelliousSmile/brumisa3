@@ -31,7 +31,8 @@ export default defineEventHandler(async (event) => {
         id: true,
         name: true,
         description: true,
-        systemId: true,
+        hackId: true,
+        universeId: true,
         createdAt: true,
         updatedAt: true,
         _count: {

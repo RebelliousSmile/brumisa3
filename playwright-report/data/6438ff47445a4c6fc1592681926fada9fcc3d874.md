@@ -1,0 +1,203 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - link "BRUMISA3" [ref=e6]:
+          - /url: /
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Decouverte" [ref=e9]:
+              - /url: /decouverte
+              - text: Decouverte
+          - listitem [ref=e10]:
+            - link "Preparation" [ref=e11]:
+              - /url: /preparation
+              - text: Preparation
+          - listitem [ref=e12]:
+            - link "Jouer en solo" [ref=e13]:
+              - /url: /solo
+              - text: Jouer en solo
+          - listitem [ref=e14]:
+            - link "Table VTT" [ref=e15]:
+              - /url: /vtt
+              - text: Table VTT
+        - generic [ref=e16]:
+          - navigation "Selecteur de langue" [ref=e17]:
+            - button "Francais - Langue active" [ref=e18] [cursor=pointer]: FR
+            - generic [ref=e19]: /
+            - button "English" [ref=e20] [cursor=pointer]: EN
+          - button "Valkyrie" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+            - generic [ref=e26]: Valkyrie
+            - img [ref=e27]
+    - main [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: Mist Engine RPG
+          - heading "Generateur de Fiches JDR" [level=1] [ref=e34]
+          - paragraph [ref=e35]: Creez des fiches de personnages immersives pour vos parties. Design cyberpunk inspire de Tokyo:Otherscape. Materiel officiel pour le Mist Engine.
+          - generic [ref=e36]:
+            - link "Creer une Fiche" [ref=e37] [cursor=pointer]:
+              - /url: /preparation
+              - generic [ref=e38]: Creer une Fiche
+            - link "Explorer" [ref=e39] [cursor=pointer]:
+              - /url: /decouverte
+              - generic [ref=e40]: Explorer
+        - generic [ref=e42]:
+          - generic [ref=e44]:
+            - button "MIST ENGINE" [ref=e45] [cursor=pointer]
+            - button "CITY OF MIST" [ref=e46] [cursor=pointer]
+          - heading "HACKS & EXTENSIONS" [level=2] [ref=e47]
+          - paragraph [ref=e48]: Choisissez parmi nos extensions officielles pour Mist Engine et City of Mist. Chaque hack propose un univers unique avec ses propres regles, themes et mecaniques de jeu adaptes.
+          - generic [ref=e49]:
+            - article [ref=e50] [cursor=pointer]:
+              - generic [ref=e51]:
+                - generic [ref=e52]: OFFICIEL
+                - text: IMAGE
+              - generic [ref=e53]:
+                - generic [ref=e54]: Mist Engine
+                - heading "Legends in the Mist" [level=3] [ref=e55]
+                - paragraph [ref=e56]: Systeme complet avec Theme Cards, Hero Card, Relations et Trackers.
+                - generic [ref=e57]:
+                  - generic [ref=e58]: 4 univers
+                  - button "Lancer un Playspace" [ref=e59]:
+                    - generic [ref=e60]: Lancer un Playspace
+            - article [ref=e61] [cursor=pointer]:
+              - generic [ref=e62]:
+                - generic [ref=e63]: OFFICIEL
+                - text: IMAGE
+              - generic [ref=e64]:
+                - generic [ref=e65]: Mist Engine
+                - heading "Tokyo:Otherscape" [level=3] [ref=e66]
+                - paragraph [ref=e67]: Hack cyberpunk japonais avec megapoles et technologie mystique.
+                - generic [ref=e68]:
+                  - generic [ref=e69]: 3 univers
+                  - button "Lancer un Playspace" [ref=e70]:
+                    - generic [ref=e71]: Lancer un Playspace
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: POPULAR SETTINGS
+            - heading "UNIVERS POPULAIRES" [level=2] [ref=e76]
+            - paragraph [ref=e77]: Explorez nos univers les plus joues, du noir des annees 40 au cyberpunk futuriste. Chaque univers offre une atmosphere unique et des possibilites narratives infinies pour vos parties.
+          - generic [ref=e78]:
+            - article [ref=e79]:
+              - generic [ref=e80]: Legends in the Mist
+              - heading "Chicago Noir 1940s" [level=3] [ref=e81]
+              - paragraph [ref=e82]: Detectives et mysteres dans le Chicago des annees 40. Brume, gangsters et secrets surnaturels dans une atmosphere noir.
+              - button "Lancer un Playspace" [ref=e83] [cursor=pointer]:
+                - generic [ref=e84]: Lancer un Playspace
+            - article [ref=e85]:
+              - generic [ref=e86]: Legends in the Mist
+              - heading "Cyberpunk 2077" [level=3] [ref=e87]
+              - paragraph [ref=e88]: Megacorporations, hackers et technologie de pointe dans un futur dystopique baigne de Brume.
+              - button "Lancer un Playspace" [ref=e89] [cursor=pointer]:
+                - generic [ref=e90]: Lancer un Playspace
+            - article [ref=e91]:
+              - generic [ref=e92]: Tokyo:Otherscape
+              - heading "Tokyo:Otherscape Officiel" [level=3] [ref=e93]
+              - paragraph [ref=e94]: Megapole japonaise futuriste ou technologie et mysticisme se melangent dans un cyberpunk unique.
+              - button "Lancer un Playspace" [ref=e95] [cursor=pointer]:
+                - generic [ref=e96]: Lancer un Playspace
+            - article [ref=e97]:
+              - generic [ref=e98]: City of Mist
+              - heading "City of Mist Standard" [level=3] [ref=e99]
+              - paragraph [ref=e100]: La Cite brumeuse originale avec Mythos et Logos. Enquetes urbaines et identites fragmentees.
+              - button "Lancer un Playspace" [ref=e101] [cursor=pointer]:
+                - generic [ref=e102]: Lancer un Playspace
+    - contentinfo [ref=e103]:
+      - generic [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Brumisa3" [level=3] [ref=e106]
+          - paragraph [ref=e107]: Generateur de fiches de personnages pour Mist Engine. Materiel officiel pour Tokyo:Otherscape, Legends in the Mist et autres univers.
+          - generic [ref=e108]:
+            - link "Discord" [ref=e109]:
+              - /url: "#"
+              - text: D
+            - link "Twitter" [ref=e110]:
+              - /url: "#"
+              - text: X
+            - link "Facebook" [ref=e111]:
+              - /url: "#"
+              - text: F
+            - link "Instagram" [ref=e112]:
+              - /url: "#"
+              - text: I
+        - generic [ref=e113]:
+          - heading "Navigation" [level=3] [ref=e114]
+          - list [ref=e115]:
+            - listitem [ref=e116]:
+              - link "Accueil" [ref=e117]:
+                - /url: /
+            - listitem [ref=e118]:
+              - link "Produits" [ref=e119]:
+                - /url: /preparation
+            - listitem [ref=e120]:
+              - link "Systemes JDR" [ref=e121]:
+                - /url: /decouverte
+            - listitem [ref=e122]:
+              - link "Guide d'utilisation" [ref=e123]:
+                - /url: /decouverte/guide
+            - listitem [ref=e124]:
+              - link "Contact" [ref=e125]:
+                - /url: /support
+        - generic [ref=e126]:
+          - heading "Ressources" [level=3] [ref=e127]
+          - list [ref=e128]:
+            - listitem [ref=e129]:
+              - link "Documentation" [ref=e130]:
+                - /url: /decouverte/guide
+            - listitem [ref=e131]:
+              - link "Tutoriels" [ref=e132]:
+                - /url: /decouverte/tutoriels
+            - listitem [ref=e133]:
+              - link "Exemples" [ref=e134]:
+                - /url: /decouverte/exemples
+            - listitem [ref=e135]:
+              - link "FAQ" [ref=e136]:
+                - /url: /decouverte/guide#faq
+            - listitem [ref=e137]:
+              - link "Support" [ref=e138]:
+                - /url: /support
+        - generic [ref=e139]:
+          - heading "Newsletter" [level=3] [ref=e140]
+          - paragraph [ref=e141]: Recevez les nouveaux systemes et mises a jour.
+          - generic [ref=e142]:
+            - textbox "votre@email.com" [ref=e143]
+            - button "S'abonner" [ref=e144] [cursor=pointer]:
+              - generic [ref=e145]: S'abonner
+      - generic [ref=e146]:
+        - paragraph [ref=e147]: © 2025 Brumisa3 - Tous droits reserves
+        - paragraph [ref=e148]:
+          - text: Materiel officiel pour
+          - link "Tokyo:Otherscape" [ref=e149]:
+            - /url: https://sonofoak.com
+          - text: et Mist Engine par Son of Oak Game Studio
+        - paragraph [ref=e150]:
+          - link "Mentions Legales" [ref=e151]:
+            - /url: /legal
+          - text: •
+          - link "Confidentialite" [ref=e152]:
+            - /url: /legal#rgpd
+          - text: •
+          - link "CGU" [ref=e153]:
+            - /url: /legal#cgu
+  - generic:
+    - img
+  - generic:
+    - generic:
+      - generic:
+        - button "Go to parent" [disabled]
+        - button "Open in editor"
+        - button "Close"
+  - generic [ref=e154]:
+    - button "Toggle Nuxt DevTools" [ref=e155] [cursor=pointer]:
+      - img [ref=e156]
+    - generic "Page load time" [ref=e159]:
+      - generic [ref=e160]: "85"
+      - generic [ref=e161]: ms
+    - button "Toggle Component Inspector" [ref=e163] [cursor=pointer]:
+      - img [ref=e164]
+```

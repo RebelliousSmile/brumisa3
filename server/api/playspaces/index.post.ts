@@ -4,17 +4,9 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { z } from 'zod'
+import { createPlayspaceSchema } from '~/server/utils/validation/playspace.schema'
 
 const prisma = new PrismaClient()
-
-const CreatePlayspaceSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
-  description: z.string().optional(),
-  systemId: z.enum(['city-of-mist', 'litm'], {
-    errorMap: () => ({ message: 'System must be city-of-mist or litm' })
-  })
-})
 
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()
@@ -35,31 +27,33 @@ export default defineEventHandler(async (event) => {
 
     // Validate request body
     const body = await readBody(event)
-    const result = CreatePlayspaceSchema.safeParse(body)
+    const result = createPlayspaceSchema.safeParse(body)
 
     if (!result.success) {
       throw createError({
         statusCode: 400,
-        message: 'Validation failed',
+        message: 'Validation échouée',
         data: result.error.flatten()
       })
     }
 
-    const { name, description, systemId } = result.data
+    const { name, description, hackId, universeId } = result.data
 
     // Create playspace
     const playspace = await prisma.playspace.create({
       data: {
         name,
         description,
-        systemId,
+        hackId,
+        universeId: universeId || null,
         userId
       },
       select: {
         id: true,
         name: true,
         description: true,
-        systemId: true,
+        hackId: true,
+        universeId: true,
         createdAt: true,
         updatedAt: true
       }

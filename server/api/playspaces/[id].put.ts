@@ -4,15 +4,9 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { z } from 'zod'
+import { updatePlayspaceSchema, playspaceIdSchema } from '~/server/utils/validation/playspace.schema'
 
 const prisma = new PrismaClient()
-
-const UpdatePlayspaceSchema = z.object({
-  name: z.string().min(2).max(100).optional(),
-  description: z.string().optional(),
-  systemId: z.enum(['city-of-mist', 'litm']).optional()
-})
 
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()
@@ -32,14 +26,24 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, message: 'Unauthorized' })
     }
 
+    // Validate playspace ID
+    const idValidation = playspaceIdSchema.safeParse(id)
+    if (!idValidation.success) {
+      throw createError({
+        statusCode: 400,
+        message: 'ID playspace invalide',
+        data: idValidation.error.flatten()
+      })
+    }
+
     // Validate request body
     const body = await readBody(event)
-    const result = UpdatePlayspaceSchema.safeParse(body)
+    const result = updatePlayspaceSchema.safeParse(body)
 
     if (!result.success) {
       throw createError({
         statusCode: 400,
-        message: 'Validation failed',
+        message: 'Validation échouée',
         data: result.error.flatten()
       })
     }
@@ -66,7 +70,8 @@ export default defineEventHandler(async (event) => {
         id: true,
         name: true,
         description: true,
-        systemId: true,
+        hackId: true,
+        universeId: true,
         createdAt: true,
         updatedAt: true
       }
