@@ -9,7 +9,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getVersionId, getUniverseName, getHackName } from '~/server/config/systems.config'
+import { getVersionId, getUniverseName, getHackName } from '#shared/config/systems.config'
 
 export interface Playspace {
   id: string

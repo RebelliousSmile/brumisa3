@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import type { Playspace } from '~/shared/stores/playspace'
-import { HACKS } from '~/server/config/systems.config'
+import { HACKS } from '#shared/config/systems.config'
 
 const props = defineProps<{
   initialData?: Partial<Playspace>

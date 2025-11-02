@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ThemeCard } from '~/shared/stores/character'
-import { getHackRules } from '~/server/config/systems.config'
+import { getHackRules } from '#shared/config/systems.config'
 
 const props = defineProps<{
   themeCards?: ThemeCard[]

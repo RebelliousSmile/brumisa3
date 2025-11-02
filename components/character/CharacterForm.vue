@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { usePlayspaceStore } from '~/shared/stores/playspace'
-import { getHackName, getUniverseName } from '~/server/config/systems.config'
+import { getHackName, getUniverseName } from '#shared/config/systems.config'
 import type { Character } from '~/shared/stores/character'
 
 const props = defineProps<{

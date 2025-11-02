@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Playspace } from '~/shared/stores/playspace'
-import { getVersionId, getVersionName, getHackName, getUniverseName } from '~/server/config/systems.config'
+import { getVersionId, getVersionName, getHackName, getUniverseName } from '#shared/config/systems.config'
 
 const props = defineProps<{
   playspace: Playspace
