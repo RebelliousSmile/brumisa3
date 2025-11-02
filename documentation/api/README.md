@@ -1,0 +1,46 @@
+**Brumisa3 - Documentation API**
+
+***
+
+# Brumisa3 - Documentation API
+
+## Modules
+
+- [app/composables/litm/useEditMode](app/composables/litm/useEditMode/README.md)
+- [app/composables/litm/usePips](app/composables/litm/usePips/README.md)
+- [app/composables/useAuth](app/composables/useAuth/README.md)
+- [app/composables/useI18nLitm](app/composables/useI18nLitm/README.md)
+- [app/composables/usePdf](app/composables/usePdf/README.md)
+- [app/composables/usePersonnages](app/composables/usePersonnages/README.md)
+- [app/composables/useRadialMenu](app/composables/useRadialMenu/README.md)
+- [app/composables/useSystemes](app/composables/useSystemes/README.md)
+- [app/server/api/auth/login.post](app/server/api/auth/login.post/README.md)
+- [app/server/api/auth/logout.post](app/server/api/auth/logout.post/README.md)
+- [app/server/api/auth/session.get](app/server/api/auth/session.get/README.md)
+- [app/server/api/characters/\[id\].delete](app/server/api/characters/[id].delete/README.md)
+- [app/server/api/characters/\[id\].get](app/server/api/characters/[id].get/README.md)
+- [app/server/api/characters/\[id\].put](app/server/api/characters/[id].put/README.md)
+- [app/server/api/characters/\[id\]/export.get](app/server/api/characters/[id]/export.get/README.md)
+- [app/server/api/characters/\[id\]/theme-cards.post](app/server/api/characters/[id]/theme-cards.post/README.md)
+- [app/server/api/characters/index.get](app/server/api/characters/index.get/README.md)
+- [app/server/api/characters/index.post](app/server/api/characters/index.post/README.md)
+- [app/server/api/hacks/\[id\].get](app/server/api/hacks/[id].get/README.md)
+- [app/server/api/hacks/index.get](app/server/api/hacks/index.get/README.md)
+- [app/server/api/playspaces/\[id\].delete](app/server/api/playspaces/[id].delete/README.md)
+- [app/server/api/playspaces/\[id\].get](app/server/api/playspaces/[id].get/README.md)
+- [app/server/api/playspaces/\[id\].put](app/server/api/playspaces/[id].put/README.md)
+- [app/server/api/playspaces/index.get](app/server/api/playspaces/index.get/README.md)
+- [app/server/api/playspaces/index.post](app/server/api/playspaces/index.post/README.md)
+- [app/server/api/statistics.get](app/server/api/statistics.get/README.md)
+- [app/server/api/systems/\[id\].get](app/server/api/systems/[id].get/README.md)
+- [app/server/api/systems/cards.get](app/server/api/systems/cards.get/README.md)
+- [app/server/api/systems/index.get](app/server/api/systems/index.get/README.md)
+- [app/server/api/templates.get](app/server/api/templates.get/README.md)
+- [app/server/utils/logger](app/server/utils/logger/README.md)
+- [app/server/utils/model-validator](app/server/utils/model-validator/README.md)
+- [app/server/utils/prisma](app/server/utils/prisma/README.md)
+- [app/server/utils/validation/playspace.schema](app/server/utils/validation/playspace.schema/README.md)
+- [shared/stores/auth](shared/stores/auth/README.md)
+- [shared/stores/character](shared/stores/character/README.md)
+- [shared/stores/playspace](shared/stores/playspace/README.md)
+- [shared/stores/ui](shared/stores/ui/README.md)

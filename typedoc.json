@@ -1,11 +1,11 @@
 {
   "name": "Brumisa3 - Documentation API",
   "entryPoints": [
-    "./server/services/",
-    "./server/api/",
+    "./app/server/services/",
+    "./app/server/api/",
     "./app/composables/",
     "./shared/stores/",
-    "./server/utils/"
+    "./app/server/utils/"
   ],
   "entryPointStrategy": "expand",
   "out": "./documentation/api/",

@@ -34,7 +34,7 @@
     "deploy:build": "pnpm run clean && pnpm install && pnpm run db:generate && pnpm run build",
     "deploy:start": "pnpm run db:migrate && pnpm run start",
     "docs:generate": "typedoc",
-    "docs:serve": "cd documentation/api && npx http-server -p 3001 -o",
+    "docs:serve": "npx http-server documentation/api -p 3010 -c-1 -o http://127.0.0.1:3010/README.md",
     "docs:build": "pnpm run docs:generate && echo Documentation generated in documentation/api/",
     "docs:clean": "rmdir /s /q documentation\\api 2>nul || rm -rf documentation/api/ 2>/dev/null || echo API docs cleaned"
   },
@@ -74,6 +74,7 @@
     "@vue/test-utils": "^2.4.6",
     "cross-env": "^10.0.0",
     "happy-dom": "^18.0.1",
+    "http-server": "^14.1.1",
     "jest": "^30.1.3",
     "pinia": "^3.0.3",
     "ts-jest": "^29.4.1",
