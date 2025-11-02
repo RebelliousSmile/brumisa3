@@ -18,12 +18,12 @@ useSeoMeta({
 <template>
   <div class="home-page">
     <!-- Hero Section Otherscape -->
-    <HomeHeroSection />
+    <HeroSection />
 
     <!-- Section Produits/Hacks -->
-    <HomeProductsSection />
+    <ProductsSection />
 
     <!-- Section Univers Populaires -->
-    <HomeUniversSection />
+    <UniversSection />
   </div>
 </template>
