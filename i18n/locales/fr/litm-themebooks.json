@@ -1,0 +1,43 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "themebook": {
+    "circumstance": "Circonstances",
+    "devotion": "Devouement",
+    "past": "Passe",
+    "people": "Relations",
+    "personality": "Personnalite",
+    "skillOrTrade": "Competence ou Metier",
+    "trait": "Trait",
+
+    "duty": "Devoir",
+    "influence": "Influence",
+    "knowledge": "Savoir",
+    "prodigiousAbility": "Competence Prodigieuse",
+    "relic": "Relique",
+    "uncannyBeing": "Creature Etrange",
+
+    "destiny": "Destin",
+    "dominion": "Domination",
+    "mastery": "Maitrise",
+    "monstrosity": "Monstruosite",
+
+    "companion": "Compagnon",
+    "magic": "Magie",
+    "possessions": "Possessions"
+  },
+
+  "themeTypes": {
+    "Origin": "Origine",
+    "Adventure": "Aventure",
+    "Greatness": "Grandeur",
+
+    "Logos": "Logos",
+    "Mythos": "Mythos",
+
+    "Self": "Soi",
+    "Noise": "Bruit"
+  }
+}

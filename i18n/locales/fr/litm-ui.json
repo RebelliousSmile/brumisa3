@@ -1,0 +1,23 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "actions": {
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+
+  "tooltips": {
+    "viewMode": {
+      "sideBySide": "Vue Cote-a-Cote forcee",
+      "flipping": "Vue Recto-Verso forcee",
+      "global": "Vue accordee aux parametres globaux"
+    }
+  },
+
+  "cardRenderer": {
+    "themeCardPlaceholder": "Carte de Theme : {title}",
+    "listCardPlaceholder": "Carte Liste : {title}"
+  }
+}

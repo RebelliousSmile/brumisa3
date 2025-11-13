@@ -1,0 +1,59 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "themeCard": {
+    "fellowshipTitle": "Theme de Compagnie",
+    "placeholderName": "Trait principal...",
+    "noName": "SANS NOM",
+    "power": "ATOUT",
+    "weakness": "CONTRAINTE",
+
+    "questTitle": "Quete",
+    "noQuest": "TEXTE DE QUETE VIDE",
+    "questPlaceholder": "Entrez votre texte de Quete...",
+
+    "addPowerTag": "Creer Trait d'Atout",
+    "addWeaknessTag": "Creer Trait de Contrainte",
+
+    "improvements": "Ameliorations Speciales",
+    "addImprovement": "Ajouter une Amelioration"
+  },
+
+  "tagItem": {
+    "placeholder": "Entrez votre Trait...",
+    "noName": "SANS NOM"
+  },
+
+  "improvements": {
+    "placeholder": "Entrez votre amelioration...",
+    "noName": "SANS NOM"
+  },
+
+  "createCardDialog": {
+    "title": "Creer une Carte de Theme",
+    "editTitle": "Editer une Carte de Theme",
+    "description": "Utilisez les options suivantes pour creer une Carte de Theme. Vous pouvez creer un theme customise si vous le souhaitez.",
+    "editDescription": "Utilisez les options suivantes pour modifier votre theme, ou le type de votre Carte de Theme. Vous pouvez creer un theme customise si vous le souhaitez.",
+    "createButton": "Confirmer la Carte",
+    "updateButton": "Confirmer les Modifications",
+
+    "selectPlaceholder": "Type de Carte...",
+    "cardTypeLabel": "Type de Carte",
+    "themeCard": "Theme de Heros",
+    "fellowshipCard": "Theme de Compagnie",
+
+    "selectThemeTypePlaceholder": "Selectionnez un type...",
+    "themeTypeLabel": "Type de Theme",
+
+    "selectThemebookPlaceholder": "Selectionnez ou ecrivez un theme...",
+    "searchThemebookPlaceholder": "Cherchez ou creez un theme...",
+    "noThemebookFound": "Theme introuvable dans les themes par defaut. Vous pouvez l'utiliser comme theme customise !",
+    "themebookLabel": "Theme",
+
+    "startingTagsLabel": "Traits de Depart",
+    "powerTagCountLabel": "Traits d'Atout",
+    "weaknessTagCountLabel": "Traits de Contrainte"
+  }
+}

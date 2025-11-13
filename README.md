@@ -1,263 +1,195 @@
-# 🎲 Générateur PDF JDR
+# Brumisa3 - Companion Tool Officieux Mist Engine
+
+**L'outil complementaire 100% gratuit pour Legends in the Mist, Otherscape et City of Mist**
 
-**Générateur de PDFs pour fiches de personnages et aides de jeu de rôle**
+Brumisa3 est un companion tool dedie au Mist Engine, concu pour completer votre experience de jeu. Creez et gerez vos personnages, organisez vos enquetes avec l'Investigation Board, et explorez les oracles contextuels - le tout dans un outil moderne.
 
-Créez et gérez vos fiches de personnages pour **Monsterhearts**, **7ème Mer**, **Engrenages & Sortilèges**, **Metro 2033** et **Mist Engine** avec génération automatique de PDFs stylisés.
-
-## ✨ Fonctionnalités
-
-- 🎭 **5 systèmes JDR supportés** avec templates spécialisés
-- 📄 **Génération PDF automatique** avec styles thématiques
-- 👥 **Système de rôles** (Utilisateur, Premium, Admin)
-- ⚡ **Interface Alpine.js** moderne et réactive
-- 🎨 **Design responsive** avec Tailwind CSS
-- 🔒 **Authentification sécurisée** avec codes d'accès
-- 🏗️ **Architecture MVC propre** avec principes SOLID/DRY
+**Note** : Brumisa3 n'est pas un VTT (Virtual Tabletop) et ne remplace pas Foundry ou Roll20. C'est un outil specialise pour ce que les VTT ne font pas bien : la gestion narrative des personnages et l'organisation d'enquetes.
 
-## 🎮 Systèmes supportés
+## Fonctionnalites actuelles (MVP v1.0)
+
+### Playspaces
+Creez des contextes de jeu isoles combinant systeme, hack et univers :
+- **Systeme** : Mist Engine ou City of Mist
+- **Hack** : LITM (Legends in the Mist), Otherscape, ou personnalise
+- **Univers** : Hearts of Ravensdale par defaut, ou creez le votre
 
-| Système | Type | Mécaniques |
-|---------|------|-----------|
-| **Monsterhearts** | PbtA | Skins, Moves, Conditions, Strings |
-| **7ème Mer** | Swashbuckling | Nations, Hero Points, Avantages |
-| **Engrenages & Sortilèges** | Steampunk | Spécialisations Magie/Science |
-| **Metro 2033** | Post-apocalyptique | Factions, Radiation, Survie |
-| **Mist Engine** | Narratif | Assets, Debilities, Momentum |
-
-## 🚀 Installation rapide
+Basculez instantanement entre vos differentes campagnes en un clic.
 
-```bash
-# Cloner le repository
-git clone https://github.com/RebelliousSmile/generateur-pdf-jdr.git
-cd generateur-pdf-jdr
+### Personnages LITM Complets
+- **Theme Cards** : Power tags, Weakness tags, Attention, Fade, Crack
+- **Hero Card** : Relations, Quintessences, Sac a dos
+- **Trackers** : Status, Story Tags, Story Themes
+- Validation complete cote serveur pour integrite des donnees
 
-# Installer les dépendances
-npm install
+### Authentification Flexible
+- **Mode guest** : Pas de compte requis, donnees en localStorage
+- **Compte utilisateur** : Sauvegarde centralisee en base de donnees PostgreSQL
+- Migration automatique localStorage vers BDD lors de la creation de compte
 
-# Configuration
-cp .env.example .env
-# Modifier les variables d'environnement si nécessaire
-
-# Initialiser la base de données
-npm run db:init
-npm run db:seed
+### Export de Donnees
+- Exportez vos personnages en JSON
+- Format compatible avec characters-of-the-mist
+- Partagez avec votre communaute
 
-# Démarrer en mode développement
-npm run dev
-```
-
-L'application sera accessible sur http://localhost:3074
-
-## 📚 Documentation
-
-- **[CLAUDE.md](documentation/CLAUDE.md)** - Architecture détaillée du projet
-- **[API.md](documentation/API.md)** - Documentation des endpoints
-- **[SYSTEMS.md](documentation/SYSTEMS.md)** - Guide des systèmes JDR
-
-## 🏗️ Architecture
-
-```
-src/
-├── models/          # Modèles métier (SOLID)
-├── controllers/     # Contrôleurs MVC
-├── services/        # Services métier
-├── views/           # Templates EJS (logique séparée)
-└── routes/          # Routes Express
-public/js/
-├── services/        # Services métier frontend
-├── components/      # Composants Alpine réutilisables
-└── app.js          # Configuration Alpine + stores
-```
-
-### 🧩 Architecture Alpine.js
-
-- **Stores globaux** pour état partagé
-- **Services métier** séparés (PersonnageService, PdfService)
-- **Composants réutilisables** sans logique dans les templates
-- **Validation côté client ET serveur**
-
-## 🎯 Utilisation
-
-### Créer un personnage
-1. Choisir un système de JDR
-2. Remplir les informations de base
-3. Configurer les attributs selon le système
-4. Sauvegarder la fiche
-
-### Générer un PDF
-1. Ouvrir la fiche personnage
-2. Cliquer "Générer PDF"
-3. Télécharger le document stylisé
-
-### Codes d'accès
-- **Premium** : `123456` (plus de fonctionnalités)
-- **Admin** : `789012` (administration complète)
-
-## 🛠️ Scripts disponibles
-
-### Scripts NPM
-
-```bash
-npm run dev         # Mode développement (nodemon + CSS watch)
-npm run build:css   # Compile Tailwind CSS
-npm start          # Production
-npm test           # Tests Jest
-npm run lint       # ESLint
-npm run db:seed    # Remplir avec données d'exemple
-```
-
-### Scripts de maintenance (dossier `scripts/`)
-
-#### 🗄️ **Base de données**
-
-```bash
-# Migration complète de la base de données (11 migrations)
-node scripts/migrate-db.js
-
-# Debug et vérification
-node scripts/debug-db.js                    # Vérifier état général de la DB
-node scripts/check-table-structure.js       # Vérifier structure des tables
-node scripts/check-users.js                # Vérifier utilisateurs et authentification
-node scripts/test-db-connection.js         # Tester connexion à la base
-
-# Base de données de test
-node scripts/init-test-db.js               # Initialiser base de test
-```
-
-#### 🎲 **Oracles et contenus**
-
-```bash
-# Injection d'oracles
-node scripts/injecter-oracle.js [fichier.json] [--jeu=nom] [--admin-id=123]
-node scripts/inject-monsterhearts.js       # Injecter oracles Monsterhearts
-node scripts/inject-all-monsterhearts.js   # Injecter tous les oracles MH
-
-# Debug oracles
-node scripts/debug-oracles.js              # Vérifier oracles en base
-node scripts/check-oracles-db.js           # État complet des oracles
-node scripts/test-oracle-query.js          # Tester requêtes oracles
-```
-
-#### 🔐 **Authentification et utilisateurs**
-
-```bash
-# Tests d'authentification
-node scripts/test-auth-manual.js           # Test auth manuel
-node scripts/debug-user-exists.js          # Vérifier existence utilisateur
-node scripts/test-reset-password.js        # Tester reset mot de passe
-node scripts/test-reset-admin.js           # Reset admin
-
-# Gestion mots de passe
-node scripts/debug-password-reset.js       # Debug reset password
-node scripts/debug-token-expiration.js     # Debug expiration tokens
-```
-
-#### 📧 **Emails et notifications**
+## Roadmap
 
-```bash
-# Tests d'envoi d'emails
-node scripts/test-email.js                 # Test email basique
-node scripts/test-email-simple.js          # Test email simplifié  
-node scripts/debug-email-sending.js        # Debug envoi emails
-node scripts/test-password-reset-email.js  # Test email reset password
-node scripts/test-with-real-user-email.js  # Test avec vrai utilisateur
-
-# Services emails
-node scripts/debug-resend.js               # Debug service Resend
-node scripts/test-email-service-improved.js # Test service email amélioré
-```
-
-#### 📄 **PDFs et génération**
-
-```bash
-# Tests génération PDF
-node scripts/test-base-pdfkit.js           # Test PDFKit de base
-node scripts/test-pdf-model.js             # Test modèle PDF
-node scripts/test-monsterhearts-generique-pdfkit.js # Test PDF Monsterhearts
-node scripts/test-long-document-pdfkit.js  # Test document long
-```
-
-#### 🧪 **Tests et debug**
-
-```bash
-# Tests endpoints
-node scripts/test-endpoints-real.js        # Test endpoints réels
-node scripts/test-route-oracles.js         # Test routes oracles
-node scripts/test-session-expiration.js    # Test expiration sessions
-
-# Debug divers
-node scripts/debug-env-test.js             # Debug variables environnement
-node scripts/test-templates-helpers.js     # Test helpers templates
-node scripts/load-env.js                   # Charger variables env
-```
-
-#### 🔧 **Migration et développement**
-
-```bash
-# Migration de projet
-node scripts/migrate-chai-to-jest.js       # Migration Chai vers Jest
-node scripts/migrate-existing-oracles.js   # Migration oracles existants
-node scripts/add-game-system-column.js     # Ajouter colonne système jeu
-
-# Utilitaires développement  
-node scripts/migrate-db-functions.js       # Fonctions de migration
-node scripts/test-db-helper.js             # Helper de test DB
-```
-
-## 🧪 Tests
-
-```bash
-npm test                    # Tous les tests
-npm run test:unit          # Tests unitaires
-npm run test:integration   # Tests d'intégration
-npm run test:coverage     # Couverture de code
-```
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Nous accueillons tous types de contributions :
-
-### 🐛 Signaler un bug ou proposer une fonctionnalité
-
-- **[Créer une issue](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues/new)** pour signaler un problème
-- **[Parcourir les issues existantes](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues)** pour voir ce qui est en cours
-
-### 🔧 Contribuer au code
-
-1. **Fork** le repository
-2. **Créer une branche** pour votre fonctionnalité : `git checkout -b feature/ma-fonctionnalite`
-3. **Respecter l'architecture** existante (SOLID/DRY)
-4. **Ajouter des tests** pour le nouveau code
-5. **Mettre à jour la documentation**
-6. **Soumettre une [Pull Request](https://github.com/RebelliousSmile/generateur-pdf-jdr/pulls)**
-
-### 🎲 Ajouter un nouveau système JDR
-
-1. Ajouter la configuration dans `src/utils/systemesJeu.js`
-2. Créer le template PDF dans `src/services/PdfService.js`  
-3. Ajouter les tests correspondants
-4. Mettre à jour la documentation
-
-### 📖 Améliorer la documentation
-
-- Corriger les fautes de frappe
-- Ajouter des exemples
-- Traduire en d'autres langues
-- Améliorer les guides d'utilisation
-
-**[Voir toutes les façons de contribuer →](https://github.com/RebelliousSmile/generateur-pdf-jdr/blob/main/CONTRIBUTING.md)**
-
-## 📝 Licence
-
-Ce projet est sous licence MIT. Voir [LICENSE](LICENSE) pour plus de détails.
-
-## 🙏 Remerciements
-
-- Inspiré de **EuroCeramic** pour l'architecture de base
-- Communauté **Alpine.js** pour la réactivité moderne
-- **Tailwind CSS** pour le design system
-- Créateurs des systèmes JDR supportés
+### v1.0 (MVP) - Q1 2025 - EN COURS
+Playspaces + Characters LITM + Auth + Export JSON
+
+### v1.1 - Amelioration UX (2-3 semaines)
+Dark mode, Mobile responsive, Undo/Redo, Raccourcis clavier
+
+### v1.3 - Systeme de Jets (2 semaines)
+Jets de des securises, Historique, Selection tags/statuts
+
+### v2.0 - Investigation Board (4-5 semaines)
+Canvas interactif, Notes, Connexions, Export PNG
+
+### v2.5 - Mode Multi-joueurs (6-8 semaines)
+WebSocket temps reel, Investigation Board collaboratif
+
+## Comment utiliser Brumisa3
+
+### Acces a l'application
+Brumisa3 est une application web accessible directement depuis votre navigateur. Aucune installation requise.
+
+**Lien** : [URL de production a definir]
+
+### Creer votre premier playspace
+1. Arrivez sur Brumisa3
+2. Choisissez votre systeme : **Mist Engine** ou City of Mist
+3. Choisissez votre hack : **LITM**, Otherscape, ou creez un hack personnalise
+4. Choisissez votre univers : **Hearts of Ravensdale** (par defaut) ou creez le votre
+5. Donnez un nom a votre playspace
+6. Creez votre playspace - pret en moins de 60 secondes !
+
+### Creer un personnage LITM
+1. Dans votre playspace, cliquez "Nouveau personnage"
+2. Remplissez nom, description, avatar (optionnel)
+3. Ajoutez des **Theme Cards** (minimum 2, maximum 4)
+   - Ajoutez Power tags (forces)
+   - Ajoutez Weakness tags (faiblesses)
+   - Gerez Attention, Fade, Crack
+4. Completez votre **Hero Card**
+   - Ajoutez vos relations (allies, rivaux, etc.)
+   - Definissez vos quintessences
+5. Gerez vos **Trackers**
+   - Status (etats temporaires)
+   - Story Tags (tags narratifs)
+   - Story Themes (themes narratifs)
+
+### Basculer entre playspaces
+- Cliquez sur un playspace dans la sidebar
+- Basculement instantane (< 2 secondes)
+- Tous vos personnages du nouveau playspace sont charges automatiquement
+
+### Exporter vos personnages
+- Cliquez "Exporter" sur un personnage
+- Fichier JSON telecharge automatiquement
+- Format compatible avec characters-of-the-mist
+- Partagez avec votre communaute ou importez ailleurs
+
+## Mode Guest vs Compte Utilisateur
+
+### Mode Guest (localStorage)
+- **Avantages** : Pas de compte requis, acces immediat
+- **Limites** : Maximum 3 playspaces, donnees locales au navigateur
+- **Risques** : Perte de donnees si cache navigateur efface
+
+### Compte Utilisateur (Base de donnees)
+- **Avantages** : Playspaces illimites, synchronisation multi-appareils, sauvegarde perenne
+- **Migration** : Lors de la creation de compte, import automatique de vos playspaces localStorage
+
+## Stack Technique
+
+**Frontend** : Vue 3 + Nuxt 4 + Pinia
+**Backend** : Nitro Server + PostgreSQL + Prisma
+**Auth** : @sidebase/nuxt-auth
+**Styling** : UnoCSS (Tailwind-style)
+**Tests** : Playwright (100% E2E)
+
+Pour les developpeurs : consultez la [documentation complete](documentation/) et [CLAUDE.md](CLAUDE.md).
+
+## Contribution
+
+Les contributions sont bienvenues !
+
+### Types de contributions
+- Signalement de bugs via les [issues GitHub](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues)
+- Nouvelles fonctionnalites avec Pull Requests
+- Amelioration documentation
+- Tests E2E additionnels
+
+### Processus de contribution
+1. Fork le repository
+2. Creer une branche feature : `git checkout -b feature/ma-fonctionnalite`
+3. Respecter l'architecture documentee (`documentation/ARCHITECTURE/`)
+4. Ajouter des tests E2E Playwright pour le nouveau code
+5. Mettre a jour la documentation si necessaire
+6. Soumettre une Pull Request
+
+Pour les instructions developpeur detaillees : consultez [CLAUDE.md](CLAUDE.md) et [documentation/DEVELOPPEMENT/](documentation/DEVELOPPEMENT/).
+
+## Projets de Reference
+
+Brumisa3 s'inspire de 5 projets open-source de la communaute Mist Engine. Nous remercions chaleureusement leurs auteurs pour leurs contributions :
+
+### 1. taragnor/city-of-mist
+**Systeme FoundryVTT officieux pour City of Mist**
+Repository : [github.com/taragnor/city-of-mist](https://github.com/taragnor/city-of-mist)
+Licence : Voir le repository
+Contribution : Architecture Actor-Item, systeme de themes et tags
+
+### 2. Altervayne/characters-of-the-mist
+**Application standalone Next.js pour gestion de personnages**
+Repository : [github.com/Altervayne/characters-of-the-mist](https://github.com/Altervayne/characters-of-the-mist)
+Licence : CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike 4.0)
+Contribution : Undo/Redo avec Zustand temporal, Drawer System, format d'export JSON
+
+### 3. mikerees/litm-player
+**Serveur multi-joueurs Node.js pour Legends in the Mist**
+Repository : [github.com/mikerees/litm-player](https://github.com/mikerees/litm-player)
+Licence : MIT License
+Contribution : WebSocket temps reel, systeme de jets multi-joueurs
+
+### 4. mordachai/investigation-board
+**Module FoundryVTT Investigation Board**
+Repository : [github.com/mordachai/investigation-board](https://github.com/mordachai/investigation-board)
+Licence : MIT License
+Contribution : Canvas interactif, notes sticky, drag & drop
+
+### 5. mordachai/mist-hud
+**HUD ameliore pour FoundryVTT (CoM/OS/LitM)**
+Repository : [github.com/mordachai/mist-hud](https://github.com/mordachai/mist-hud)
+Licence : MIT License
+Contribution : HUD ameliore, support multi-jeux (CoM, Otherscape, LITM)
+
+## Licence
+
+Ce projet respecte la licence **City of Mist Garage** de Son of Oak Game Studio.
+
+**100% gratuit, pour toujours** - Pas de fonctionnalites premium, jamais.
+
+Brumisa3 est un projet non commercial, cree pour la communaute Mist Engine. Le code source est disponible sous licence MIT (a confirmer).
+
+## Remerciements
+
+- **Son of Oak Game Studio** pour le Mist Engine et la licence Garage
+- **Nuxt 4** et l'equipe Vue.js pour le framework moderne
+- **Prisma** pour l'ORM TypeScript
+- **Playwright** pour les tests E2E
+- **Communaute Mist Engine** francophone pour l'inspiration
+- **Auteurs des 5 projets de reference** (voir section ci-dessus)
+
+## Support
+
+- **Bugs et suggestions** : [GitHub Issues](https://github.com/RebelliousSmile/generateur-pdf-jdr/issues)
+- **Documentation** : [documentation/](documentation/)
+- **Discord** : [Lien a definir]
 
 ---
 
-**Créé avec ❤️ pour la communauté JDR française**
+**Cree pour la communaute Mist Engine - Companion tool officieux 100% gratuit**
+
+Version : MVP v1.0 (Q1 2025)

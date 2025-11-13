@@ -1,0 +1,37 @@
+{
+  "app": {
+    "title": "Brumisa3",
+    "description": "Generateur de fiches de personnages JDR",
+    "welcome": "Bienvenue"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Creer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Precedent",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite",
+    "notFound": "Page non trouvee",
+    "unauthorized": "Non autorise",
+    "serverError": "Erreur serveur"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "characters": "Personnages",
+    "systems": "Systemes de jeu",
+    "profile": "Profil",
+    "settings": "Parametres"
+  }
+}

@@ -1,0 +1,105 @@
+/**
+ * EXEMPLE : Création d'un thème avec validation selon le système
+ */
+
+import { validateBody } from '~/server/utils/model-validator'
+import { getSystemConfig } from '~/server/config/systems'
+
+export default defineEventHandler(async (event) => {
+  const characterId = getRouterParam(event, 'id')
+
+  // 1. Récupérer le personnage pour connaître son système
+  const character = await prisma.characters.findUnique({
+    where: { id: characterId }
+  })
+
+  if (!character) {
+    throw createError({
+      statusCode: 404,
+      message: 'Character not found'
+    })
+  }
+
+  // 2. Validation de base du thème
+  const validatedData = await validateBody(event, 'ThemeCard', 'create')
+
+  // 3. Récupérer la config du système pour validation avancée
+  const systemConfig = getSystemConfig(character.systemId)
+
+  if (!systemConfig) {
+    throw createError({
+      statusCode: 500,
+      message: `Invalid system config: ${character.systemId}`
+    })
+  }
+
+  // 4. Valider le type de thème selon le système
+  const themeTypeConfig = systemConfig.themeTypes.find(
+    t => t.code === validatedData.type
+  )
+
+  if (!themeTypeConfig) {
+    const validTypes = systemConfig.themeTypes.map(t => t.code).join(', ')
+    throw createError({
+      statusCode: 400,
+      message: `Invalid theme type "${validatedData.type}" for system ${character.systemId}. Valid types: ${validTypes}`
+    })
+  }
+
+  // 5. Valider le nombre de tags selon les règles du système
+  const totalTags = validatedData.powerTags.length + validatedData.weaknessTags.length
+
+  if (totalTags < themeTypeConfig.minTags) {
+    throw createError({
+      statusCode: 400,
+      message: `Theme "${validatedData.type}" requires at least ${themeTypeConfig.minTags} tags (you have ${totalTags})`
+    })
+  }
+
+  if (totalTags > themeTypeConfig.maxTags) {
+    throw createError({
+      statusCode: 400,
+      message: `Theme "${validatedData.type}" allows maximum ${themeTypeConfig.maxTags} tags (you have ${totalTags})`
+    })
+  }
+
+  // 6. Vérifier si les weakness tags sont autorisés
+  if (!themeTypeConfig.allowWeaknessTags && validatedData.weaknessTags.length > 0) {
+    throw createError({
+      statusCode: 400,
+      message: `Theme type "${validatedData.type}" does not allow weakness tags`
+    })
+  }
+
+  try {
+    // 7. Créer le thème
+    const theme = await prisma.themeCards.create({
+      data: {
+        id: crypto.randomUUID(),
+        characterId,
+        type: validatedData.type,
+        themebook: validatedData.themebook,
+        title: validatedData.title,
+        description: validatedData.description,
+        powerTags: validatedData.powerTags,
+        weaknessTags: validatedData.weaknessTags,
+        attention: validatedData.attention || 0,
+        crack: validatedData.crack || 0,
+        order: validatedData.order || 0,
+        dateCreation: new Date(),
+        dateModification: new Date()
+      }
+    })
+
+    return {
+      success: true,
+      data: theme
+    }
+  } catch (error: any) {
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to create theme',
+      data: error.message
+    })
+  }
+})

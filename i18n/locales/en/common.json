@@ -1,0 +1,37 @@
+{
+  "app": {
+    "title": "Brumisa3",
+    "description": "RPG character sheet generator",
+    "welcome": "Welcome"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error"
+  },
+  "navigation": {
+    "home": "Home",
+    "characters": "Characters",
+    "systems": "Game systems",
+    "profile": "Profile",
+    "settings": "Settings"
+  }
+}

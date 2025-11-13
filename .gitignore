@@ -1,49 +1,58 @@
-# Dependencies
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+build/
+
+# Node dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Production builds
-dist/
-build/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-.env.test
-
 # Logs
 logs/
 *.log
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.*.local
+.env.test
+!.env.example
 
 # Database
 data/*.sqlite
 data/*.db
 
-# Generated PDFs
-output/pdfs/*
-!output/pdfs/.gitkeep
-
-# Uploads
-uploads/*
-!uploads/.gitkeep
+# Generated PDFs and uploads
+output/
+uploads/
+tmp/
+temp/
+documentation/SOURCES/
 
 # IDE
-.vscode/
+.DS_Store
+.fleet
 .idea/
+.vscode/
 *.swp
 *.swo
 
 # OS
-.DS_Store
 Thumbs.db
 
 # Testing
 coverage/
 .nyc_output/
 
-# Temporary
-tmp/
-temp/
+# Prisma
+/app/generated/prisma
+
+# Temporary backup
+temp_backup/

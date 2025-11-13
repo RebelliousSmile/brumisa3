@@ -1,0 +1,34 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "notifications": {
+    "general": {
+      "importFailed": "Import du fichier echoue. Les donnees sont corrompues ou incorrectes.",
+      "exportSuccess": "Fichier exporte.",
+      "invalidExportType": "Cet objet ne peut pas etre exporte.",
+      "appReset": "Reinitialisation de l'application terminee. Actualisation..."
+    },
+    "character": {
+      "savedToDrawer": "Personnage en cours sauvegarde a la racine du Tiroir.",
+      "exported": "Personnage en cours exporte vers les telechargements.",
+      "exportFailedNoChar": "Export echoue, aucun personnage trouve.",
+      "imported": "Fichier personnage exporte avec succes.",
+      "reset": "Fiche de personnage reinitialisee avec succes.",
+      "componentImported": "Fichier de composant importe avec succes."
+    },
+    "card": {
+      "created": "Carte creee avec succes.",
+      "updated": "Carte mise a jour avec succes."
+    },
+    "tracker": {
+      "created": "Suivi cree avec succes."
+    }
+  },
+
+  "errors": {
+    "localStorageDisabled_title": "Erreur Critique de Stockage",
+    "localStorageDisabled_description": "Il semblerait que pour une raison ou pour une autre, le stockage local de votre navigateur n'est pas accessible par l'application. Characters of the Mist depend uniquement du stockage local de votre navigateur pour la persistance et la gestion des donnees, et n'utilise aucun serveur. Cela signifie que l'application ne peut pas fonctionner dans votre cas."
+  }
+}

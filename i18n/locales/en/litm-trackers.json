@@ -1,0 +1,21 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "trackers": {
+    "addStatus": "Add Status",
+    "addStoryTag": "Add Story Tag",
+    "statusPlaceholder": "Fill your status...",
+    "statusNoName": "NO STATUS",
+    "storyTagPlaceholder": "Fill your story tag...",
+    "storyTagNoName": "NO STORY TAG"
+  },
+
+  "pipTracker": {
+    "abandon": "ABANDON",
+    "improve": "IMPROVE",
+    "milestone": "MILESTONE",
+    "promise": "PROMISE"
+  }
+}

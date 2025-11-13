@@ -1,0 +1,44 @@
+{
+  "_source": "characters-of-the-mist by Altervayne",
+  "_license": "CC BY-NC-SA 4.0",
+  "_url": "https://github.com/Altervayne/characters-of-the-mist",
+
+  "characterSheet": {
+    "loading": "Loading Character...",
+    "newCharacterName": "New Character",
+    "characterNamePlaceholder": "Character Name...",
+    "addCard": "Add Card",
+    "dropToLoadCharacter": "Drop Character Sheet Item here to load the full character. Be careful, this will replace your currently active character.",
+    "dropToImport": "Drop your file here to import the component into your character sheet. If you drop a full character, it will replace your currently active character."
+  },
+
+  "heroCard": {
+    "title": "Hero Card",
+    "noName": "NO HERO NAME",
+    "characterNamePlaceholder": "Character Name...",
+
+    "relationships": "Fellowship relationships",
+    "addRelationship": "Add relationship",
+    "companion": "Companion",
+    "companionPlaceholder": "Fellow",
+    "relationship": "Relationship",
+    "relationshipCompanionNoName": "NO NAME",
+    "relationshipPlaceholder": "Relation",
+    "relationshipRelationNoName": "NO TAG",
+
+    "quintessences": "Quintessences",
+    "addQuintessence": "Add Quintessence"
+  },
+
+  "backpack": {
+    "title": "Backpack",
+    "addItem": "Add Item",
+    "noName": "NO ITEM",
+    "placeholder": "Write your item..."
+  },
+
+  "quintessences": {
+    "placeholder": "Write your quintessence...",
+    "noName": "NO QUINTESSENCE"
+  }
+}

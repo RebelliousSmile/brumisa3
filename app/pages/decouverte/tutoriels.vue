@@ -1,0 +1,25 @@
+<script setup lang="ts">
+/**
+ * Page Tutoriels Pas-a-Pas
+ *
+ * Tutoriels interactifs :
+ * - Tutoriel 1 : Mon premier playspace
+ * - Tutoriel 2 : Mon premier personnage
+ * - Tutoriel 3 : Exporter en JSON
+ */
+
+definePageMeta({
+  layout: 'default'
+})
+
+useSeoMeta({
+  title: 'Tutoriels Interactifs - Brumisa3',
+  description: 'Tutoriels pas-a-pas Brumisa3 : creer un playspace, un personnage et exporter en JSON'
+})
+</script>
+
+<template>
+  <div>
+    <!-- TODO: Implementer contenu -->
+  </div>
+</template>
