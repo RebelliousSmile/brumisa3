@@ -468,15 +468,18 @@ useSeoMeta({
           </h2>
 
           <div class="bg-navy-800 border border-navy-600 rounded-2xl p-6">
-            <HeroCardForm
-              v-if="character.heroCard"
-              :hack-id="hackId"
-              :character-id="characterId"
-              :hero-card="character.heroCard"
-              @submit="handleHeroCardSubmit"
-              @cancel="() => {}"
-            />
-            <p v-else class="text-gray-400 italic">Hero Card non disponible</p>
+            <template v-if="character.heroCard">
+              <HeroCardForm
+                :hack-id="hackId"
+                :character-id="characterId"
+                :hero-card="character.heroCard"
+                @submit="handleHeroCardSubmit"
+                @cancel="() => {}"
+              />
+            </template>
+            <template v-else>
+              <p class="text-gray-400 italic">Hero Card non disponible</p>
+            </template>
           </div>
         </section>
 
@@ -497,7 +500,18 @@ useSeoMeta({
       </main>
     </div>
 
-    <!-- Modal: Theme Card -->
+    <!-- Error State -->
+    <div v-else class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <Icon name="heroicons:exclamation-triangle" class="w-16 h-16 text-red-500 mx-auto mb-4" />
+        <p class="text-gray-400 mb-4">Personnage introuvable</p>
+        <UiButton variant="primary" to="/characters">
+          Retour aux personnages
+        </UiButton>
+      </div>
+    </div>
+
+    <!-- Modals (outside conditional structure) -->
     <UiModal
       v-model="showThemeCardModal"
       :title="editingThemeCard ? 'Modifier Theme Card' : 'Nouvelle Theme Card'"
@@ -513,7 +527,6 @@ useSeoMeta({
       />
     </UiModal>
 
-    <!-- Modal: Tag -->
     <UiModal
       v-model="showTagModal"
       title="Nouveau Tag"
@@ -527,16 +540,5 @@ useSeoMeta({
         @cancel="showTagModal = false"
       />
     </UiModal>
-
-    <!-- Error State -->
-    <div v-else class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <Icon name="heroicons:exclamation-triangle" class="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <p class="text-gray-400 mb-4">Personnage introuvable</p>
-        <UiButton variant="primary" to="/characters">
-          Retour aux personnages
-        </UiButton>
-      </div>
-    </div>
   </div>
 </template>

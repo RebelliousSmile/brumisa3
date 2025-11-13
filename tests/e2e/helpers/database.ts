@@ -33,18 +33,82 @@ export async function createTestUser() {
 
 export async function createTestPlayspace(
   userId: string,
-  hackId: 'city-of-mist' | 'litm' = 'city-of-mist',
+  hackId: 'city-of-mist' | 'litm' | 'otherscape' = 'city-of-mist',
   universeId: string | null = null,
   isGM: boolean = false // PC mode par défaut
 ) {
+  const names = {
+    'city-of-mist': 'Test City of Mist Playspace',
+    'litm': 'Test LITM Playspace',
+    'otherscape': 'Test Otherscape Playspace'
+  }
+
   return await prisma.playspace.create({
     data: {
-      name: hackId === 'city-of-mist' ? 'Test City of Mist Playspace' : 'Test LITM Playspace',
+      name: names[hackId],
       description: 'Test playspace for E2E tests',
       userId,
       hackId,
-      universeId, // null = defaultUniverse du hack
-      isGM // false = PC mode (Player Character), true = GM mode (Game Master)
+      universeId,
+      isGM
+    }
+  })
+}
+
+export async function createTestCharacter(
+  playspaceId: string,
+  name: string = 'Test Character'
+) {
+  return await prisma.character.create({
+    data: {
+      name,
+      description: 'Test character for E2E tests',
+      playspaceId,
+      heroCard: {
+        create: {
+          identity: 'Test Identity',
+          mystery: 'Test Mystery'
+        }
+      },
+      trackers: {
+        create: {}
+      }
+    },
+    include: {
+      heroCard: true,
+      trackers: true
+    }
+  })
+}
+
+export async function createTestThemeCard(
+  characterId: string,
+  type: string = 'MYTHOS',
+  name: string = 'Test Theme Card'
+) {
+  return await prisma.themeCard.create({
+    data: {
+      name,
+      type: type as any,
+      description: 'Test theme card for E2E tests',
+      attention: 0,
+      characterId
+    }
+  })
+}
+
+export async function createTestTag(
+  themeCardId: string,
+  type: 'POWER' | 'WEAKNESS' | 'STORY' = 'POWER',
+  name: string = 'Test Tag'
+) {
+  return await prisma.tag.create({
+    data: {
+      name,
+      type,
+      burned: false,
+      inverted: false,
+      themeCardId
     }
   })
 }
