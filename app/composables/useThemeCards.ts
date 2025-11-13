@@ -12,8 +12,7 @@
  */
 
 import { ref } from 'vue'
-import type { ThemeCard } from '~/shared/stores/character'
-import { useUiStore } from '~/shared/stores/ui'
+import type { ThemeCard } from '../../shared/stores/character'
 
 export function useThemeCards() {
   const uiStore = useUiStore()

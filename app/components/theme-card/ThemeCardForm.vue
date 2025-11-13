@@ -54,7 +54,7 @@
         id="description"
         v-model="formData.description"
         placeholder="Décrivez les pouvoirs et capacités de ce thème..."
-        rows="4"
+        :rows="4"
         :error="errors.description"
       />
       <p v-if="errors.description" class="mt-1 text-sm text-red-400">

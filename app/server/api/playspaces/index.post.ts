@@ -3,10 +3,8 @@
  * Create a new playspace for the authenticated user
  */
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '~/server/utils/prisma'
 import { createPlayspaceSchema } from '../../utils/validation/playspace.schema'
-
-const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()

@@ -256,12 +256,13 @@ export const useCharacterStore = defineStore('character', () => {
   /**
    * Get full character with relations
    */
-  async function getCharacter(id: string) {
+  async function getCharacter(id: string, full: boolean = true) {
     loading.value = true
     error.value = null
 
     try {
-      const character = await $fetch<Character>(`/api/characters/${id}`)
+      const url = full ? `/api/characters/${id}?full=true` : `/api/characters/${id}`
+      const character = await $fetch<Character>(url)
       return character
     } catch (err: any) {
       error.value = err.message || 'Failed to get character'

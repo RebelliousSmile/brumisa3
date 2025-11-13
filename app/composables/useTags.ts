@@ -9,8 +9,7 @@
  */
 
 import { ref } from 'vue'
-import type { Tag } from '~/shared/stores/character'
-import { useUiStore } from '~/shared/stores/ui'
+import type { Tag } from '../../shared/stores/character'
 
 export function useTags() {
   const uiStore = useUiStore()

@@ -5,6 +5,11 @@
  * Design Otherscape cyberpunk avec sections Hero, Produits, Personnages et Univers
  */
 
+// Import explicit des composants home
+import HeroSection from '~/components/home/HeroSection.vue'
+import ProductsSection from '~/components/home/ProductsSection.vue'
+import UniversSection from '~/components/home/UniversSection.vue'
+
 definePageMeta({
   layout: 'default'
 })

@@ -9,8 +9,7 @@
  */
 
 import { ref } from 'vue'
-import type { HeroCard } from '~/shared/stores/character'
-import { useUiStore } from '~/shared/stores/ui'
+import type { HeroCard } from '../../shared/stores/character'
 
 export function useHeroCard() {
   const uiStore = useUiStore()

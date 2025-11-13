@@ -9,7 +9,7 @@
         id="identity"
         v-model="formData.identity"
         :placeholder="placeholders.identity"
-        rows="4"
+        :rows="4"
         required
         :error="errors.identity"
       />
@@ -30,7 +30,7 @@
         id="mystery"
         v-model="formData.mystery"
         :placeholder="placeholders.mystery"
-        rows="4"
+        :rows="4"
         required
         :error="errors.mystery"
       />

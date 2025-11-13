@@ -9,8 +9,7 @@
  */
 
 import { ref } from 'vue'
-import type { Trackers, Status, StoryTag, StoryTheme } from '~/shared/stores/character'
-import { useUiStore } from '~/shared/stores/ui'
+import type { Trackers, Status, StoryTag, StoryTheme } from '../../shared/stores/character'
 
 export function useTrackers() {
   const uiStore = useUiStore()

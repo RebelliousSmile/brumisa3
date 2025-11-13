@@ -299,7 +299,7 @@ useSeoMeta({
                 id="description"
                 v-model="formData.description"
                 placeholder="Description du personnage..."
-                rows="6"
+                :rows="6"
               />
             </div>
 

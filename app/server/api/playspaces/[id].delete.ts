@@ -3,9 +3,7 @@
  * Delete a playspace (cascade deletes all characters)
  */
 
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()

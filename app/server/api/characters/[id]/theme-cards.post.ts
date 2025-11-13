@@ -4,11 +4,10 @@
  * Validates ThemeType based on playspace hackId
  */
 
-import { PrismaClient, ThemeType } from '@prisma/client'
+import { prisma } from '~/server/utils/prisma'
+import { ThemeType } from '@prisma/client'
 import { z } from 'zod'
 import { validateThemeType, getHackRules } from '~/server/config/systems.config'
-
-const prisma = new PrismaClient()
 
 const CreateThemeCardSchema = z.object({
   name: z.string().min(2).max(100),

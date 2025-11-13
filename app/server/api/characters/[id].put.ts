@@ -3,10 +3,8 @@
  * Update a character
  */
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '~/server/utils/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const UpdateCharacterSchema = z.object({
   name: z.string().min(2).max(100).optional(),

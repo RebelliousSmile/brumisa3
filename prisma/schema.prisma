@@ -75,6 +75,7 @@ model ThemeCard {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@index([characterId])
+  @@index([characterId, createdAt])
   @@map("theme_cards")
 }
 
@@ -91,6 +92,7 @@ model Tag {
 
   @@index([themeCardId])
   @@index([type])
+  @@index([themeCardId, type])
   @@map("tags")
 }
 

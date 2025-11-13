@@ -3,9 +3,7 @@
  * Get a character with all details
  */
 
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()
@@ -19,10 +17,20 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, message: 'Unauthorized' })
     }
 
-    // Fetch character
+    // Check if full data is requested
+    const query = getQuery(event)
+    const full = query.full === 'true'
+
+    // Fetch character with optimized select
     const character = await prisma.character.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        playspaceId: true,
+        createdAt: true,
+        updatedAt: true,
         playspace: {
           select: {
             id: true,
@@ -33,24 +41,44 @@ export default defineEventHandler(async (event) => {
             userId: true
           }
         },
-        themeCards: {
-          include: {
-            tags: true
+        ...(full && {
+          themeCards: {
+            include: {
+              tags: {
+                orderBy: [
+                  { type: 'asc' },
+                  { createdAt: 'asc' }
+                ]
+              }
+            },
+            orderBy: { createdAt: 'asc' }
           },
-          orderBy: { createdAt: 'asc' }
-        },
-        heroCard: {
-          include: {
-            relationships: true
+          heroCard: {
+            include: {
+              relationships: {
+                orderBy: { createdAt: 'asc' }
+              }
+            }
+          },
+          trackers: {
+            include: {
+              statuses: {
+                orderBy: { createdAt: 'asc' }
+              },
+              storyTags: {
+                orderBy: { createdAt: 'asc' }
+              },
+              storyThemes: {
+                orderBy: { createdAt: 'asc' }
+              }
+            }
           }
-        },
-        trackers: {
-          include: {
-            statuses: true,
-            storyTags: true,
-            storyThemes: true
+        }),
+        ...(!full && {
+          _count: {
+            select: { themeCards: true }
           }
-        }
+        })
       }
     })
 
