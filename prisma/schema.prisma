@@ -338,15 +338,25 @@ model utilisateurs {
 }
 
 enum ThemeType {
+  // City of Mist (1st Edition)
   MYTHOS
   LOGOS
   MIST
   CREW
+
+  // Mist Engine - Legends in the Mist
   ORIGIN
   ADVENTURE
   GREATNESS
   FELLOWSHIP
   BACKPACK
+
+  // Mist Engine - Tokyo: Otherscape
+  NOISE
+  SELF
+  MYTHOS_OS
+  CREW_OS
+  LOADOUT
 }
 
 enum TagType {
