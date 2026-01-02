@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 
   // Nuxt 4 - structure avec app/ directory
   srcDir: 'app/',
+  serverDir: 'app/server/',
 
   // Redirections pages obsoletes vers accueil
   routeRules: {

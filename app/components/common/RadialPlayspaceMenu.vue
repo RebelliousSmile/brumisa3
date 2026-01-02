@@ -12,17 +12,25 @@
  *
  * Comportement:
  * - S'affiche sur toutes les pages utilisant layout 'playspace'
- * - Invite l'utilisateur a selectionner un playspace s'il n'en a pas
+ * - Affiche les playspaces depuis localStorage + BDD
  * - Permet de switcher entre playspaces ou d'en creer un nouveau
  */
 
-interface Playspace {
+import CreatePlayspaceModal from '~/components/playspace/CreatePlayspaceModal.vue'
+
+interface PlayspaceDisplay {
   id: string
   name: string
   role: 'MJ' | 'PJ'
+  hackId: string
+  universeId: string | null
+  systemAbbr: string  // ME, CoM
+  hackAbbr: string    // LITM, OS, CoM
+  universeAbbr: string // Obo, TKO, City, etc.
   characterCount: number
   isActive: boolean
-  systemIcon?: string
+  systemIcon: string
+  isLocal: boolean
 }
 
 // Props
@@ -40,52 +48,96 @@ const props = withDefaults(defineProps<Props>(), {
 const isExpanded = ref(false)
 const isHovering = ref(false)
 const isMobile = ref(false)
+const isModalOpen = ref(false)
+const hoveredPlayspaceId = ref<string | null>(null) // Playspace survole pour afficher details
+const viewportHeight = ref(800) // Hauteur viewport par defaut (sera mis a jour onMounted)
 
-// TODO: Replace with store
-// const playspaceStore = usePlayspaceStore()
-// const { playspaces, activePlayspace } = storeToRefs(playspaceStore)
+// Store
+const playspaceStore = usePlayspaceStore()
 
-// Mock data
-const mockPlayspaces = ref<Playspace[]>([
-  {
-    id: '1',
-    name: 'LITM - Chicago Noir',
-    role: 'PJ',
-    characterCount: 3,
-    isActive: true,
-    systemIcon: 'heroicons:star-solid'
-  },
-  {
-    id: '2',
-    name: 'Campagne Test',
-    role: 'MJ',
-    characterCount: 5,
-    isActive: false,
-    systemIcon: 'heroicons:squares-2x2'
-  },
-  {
-    id: '3',
-    name: 'Otherscape - Cyberpunk',
-    role: 'PJ',
-    characterCount: 2,
-    isActive: false,
-    systemIcon: 'heroicons:cpu-chip'
+// Abbreviations pour systeme, hack, univers
+const getSystemAbbr = (hackId: string): string => {
+  switch (hackId) {
+    case 'litm':
+    case 'otherscape':
+      return 'ME' // Mist Engine
+    case 'city-of-mist':
+      return 'CoM' // City of Mist
+    default:
+      return '?'
   }
-])
+}
 
-// Computed
+const getHackAbbr = (hackId: string): string => {
+  switch (hackId) {
+    case 'litm':
+      return 'LITM'
+    case 'otherscape':
+      return 'OS'
+    case 'city-of-mist':
+      return 'CoM'
+    default:
+      return hackId.substring(0, 3).toUpperCase()
+  }
+}
+
+const getUniverseAbbr = (universeId: string | null): string => {
+  if (!universeId) return 'Def'
+  const abbrMap: Record<string, string> = {
+    'obojima': 'Obo',
+    'litm-custom': 'Cust',
+    'tokyo-otherscape': 'TKO',
+    'otherscape-custom': 'Cust',
+    'the-city': 'City',
+    'city-of-mist-custom': 'Cust'
+  }
+  return abbrMap[universeId] || universeId.substring(0, 3)
+}
+
+// Map hackId to icon
+const getHackIcon = (hackId: string): string => {
+  switch (hackId) {
+    case 'litm':
+      return 'heroicons:star-solid'
+    case 'otherscape':
+      return 'heroicons:cpu-chip'
+    case 'city-of-mist':
+      return 'heroicons:building-office-2'
+    default:
+      return 'heroicons:squares-2x2'
+  }
+}
+
+// Computed: transformer les playspaces du store pour l'affichage
+const displayPlayspaces = computed<PlayspaceDisplay[]>(() => {
+  return playspaceStore.allPlayspaces.map(p => ({
+    id: p.id,
+    name: p.name,
+    role: p.isGM ? 'MJ' : 'PJ',
+    hackId: p.hackId,
+    universeId: p.universeId,
+    systemAbbr: getSystemAbbr(p.hackId),
+    hackAbbr: getHackAbbr(p.hackId),
+    universeAbbr: getUniverseAbbr(p.universeId),
+    characterCount: p._count?.characters || 0,
+    isActive: playspaceStore.activePlayspaceId === p.id,
+    systemIcon: getHackIcon(p.hackId),
+    isLocal: p.id.startsWith('local_')
+  }))
+})
+
 const visiblePlayspaces = computed(() =>
-  mockPlayspaces.value.slice(0, props.maxVisible)
+  displayPlayspaces.value.slice(0, props.maxVisible)
 )
 
 const hasMore = computed(() =>
-  mockPlayspaces.value.length > props.maxVisible
+  displayPlayspaces.value.length > props.maxVisible
 )
 
-const totalCount = computed(() => mockPlayspaces.value.length)
+const totalCount = computed(() => displayPlayspaces.value.length)
 
 const activePlayspace = computed(() =>
-  mockPlayspaces.value.find(p => p.isActive)
+  displayPlayspaces.value.find(p => p.isActive)
 )
 
 // Position classes
@@ -105,15 +157,49 @@ const positionClasses = computed(() => {
   }
 })
 
+// Rayon en vh pour responsive (converti en px via ref reactive)
+const getRadiusInPx = (vhValue: number): number => {
+  return (vhValue / 100) * viewportHeight.value
+}
+
 // Calculate radial position for each option
+// Pour bottom-left: deploiement vers le haut-droite (arc de -120 a -30 degres)
 const getRadialPosition = (index: number, total: number) => {
-  const spreadAngle = 120 // degrees
-  const startAngle = props.position.includes('bottom') ? -150 : -30 // Adjust based on position
-  const radius = isMobile.value ? 100 : 140 // px from center
+  const spreadAngle = 90 // degrees d'arc
+  const radiusVh = isMobile.value ? 12 : 16 // vh from center
+  const radius = getRadiusInPx(radiusVh)
 
-  const angle = startAngle + (spreadAngle / (total - 1)) * index
+  // Angle de depart selon la position du menu
+  // bottom-left: vers le haut-droite (-120 a -30)
+  // bottom-right: vers le haut-gauche (-150 a -60)
+  let startAngle: number
+  switch (props.position) {
+    case 'bottom-left':
+      startAngle = -120
+      break
+    case 'bottom-right':
+      startAngle = -150
+      break
+    case 'top-left':
+      startAngle = 30
+      break
+    case 'top-right':
+      startAngle = 120
+      break
+    default:
+      startAngle = -120
+  }
+
+  // Calculer l'angle pour cet element
+  // Si un seul element, le placer au milieu de l'arc
+  let angle: number
+  if (total <= 1) {
+    angle = startAngle + spreadAngle / 2
+  } else {
+    angle = startAngle + (spreadAngle / (total - 1)) * index
+  }
+
   const radian = (angle * Math.PI) / 180
-
   const x = Math.cos(radian) * radius
   const y = Math.sin(radian) * radius
 
@@ -126,22 +212,92 @@ const getRadialPosition = (index: number, total: number) => {
 // Handlers
 const toggleMenu = () => {
   isExpanded.value = !isExpanded.value
+  if (!isExpanded.value) {
+    hoveredPlayspaceId.value = null
+  }
 }
 
 const closeMenu = () => {
   isExpanded.value = false
+  hoveredPlayspaceId.value = null
 }
 
-const switchPlayspace = (playspaceId: string) => {
-  // TODO: await playspaceStore.setActivePlayspace(playspaceId)
-  console.log('Switch to playspace:', playspaceId)
+// Survol d'un playspace : afficher les 3 ronds d'info
+const onPlayspaceHover = (playspaceId: string) => {
+  hoveredPlayspaceId.value = playspaceId
+}
+
+const onPlayspaceLeave = () => {
+  hoveredPlayspaceId.value = null
+}
+
+// Clic sur un playspace : naviguer directement
+const goToPlayspace = (playspaceId: string) => {
+  playspaceStore.switchPlayspace(playspaceId)
+  navigateTo(`/playspaces/${playspaceId}`)
   closeMenu()
 }
 
 const createNewPlayspace = () => {
-  // TODO: Navigate to creation
-  console.log('Create new playspace')
+  isModalOpen.value = true
   closeMenu()
+}
+
+const handleModalClose = () => {
+  isModalOpen.value = false
+}
+
+const handlePlayspaceCreated = (playspaceId: string) => {
+  isModalOpen.value = false
+  navigateTo(`/playspaces/${playspaceId}`)
+}
+
+// Position des 3 petits ronds d'info autour d'un playspace
+// Les bulles s'orientent vers l'exterieur du menu radial (opposees au centre)
+const getInfoBubblePosition = (bubbleIndex: number, playspaceIndex: number, totalPlayspaces: number): { x: number; y: number } => {
+  const spreadAngle = 90 // degrees d'arc
+  const radiusVh = isMobile.value ? 8 : 11 // vh - equidistant avec playspace (16vh du centre, bulles a 11vh du playspace)
+  const radius = getRadiusInPx(radiusVh)
+
+  // Calculer l'angle du playspace (meme logique que getRadialPosition)
+  let startAngle: number
+  switch (props.position) {
+    case 'bottom-left':
+      startAngle = -120
+      break
+    case 'bottom-right':
+      startAngle = -150
+      break
+    case 'top-left':
+      startAngle = 30
+      break
+    case 'top-right':
+      startAngle = 120
+      break
+    default:
+      startAngle = -120
+  }
+
+  // Angle du playspace par rapport au centre
+  let playspaceAngle: number
+  if (totalPlayspaces <= 1) {
+    playspaceAngle = startAngle + spreadAngle / 2
+  } else {
+    playspaceAngle = startAngle + (spreadAngle / (totalPlayspaces - 1)) * playspaceIndex
+  }
+
+  // Les bulles sont disposees en arc de 60 degres, centrees sur la direction du playspace
+  const bubbleSpread = 60
+  // bubbleIndex: 0, 1, 2 -> offsets: -30, 0, +30
+  const bubbleOffset = (bubbleIndex - 1) * (bubbleSpread / 2)
+  const bubbleAngle = playspaceAngle + bubbleOffset
+
+  const radian = (bubbleAngle * Math.PI) / 180
+
+  return {
+    x: Math.cos(radian) * radius,
+    y: Math.sin(radian) * radius
+  }
 }
 
 // Keyboard navigation
@@ -164,29 +320,36 @@ const handleClickOutside = (event: MouseEvent) => {
 // Accessibility: reduced motion
 const prefersReducedMotion = ref(false)
 
+// Resize handler (defined here for cleanup)
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 768
+  viewportHeight.value = window.innerHeight
+}
+
 // Setup event listeners
 onMounted(() => {
-  // Check mobile
+  // Charger les playspaces locaux depuis localStorage
+  playspaceStore.init()
+
+  // Check mobile et viewport height
   isMobile.value = window.innerWidth < 768
+  viewportHeight.value = window.innerHeight
 
   // Check reduced motion preference
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   prefersReducedMotion.value = mediaQuery.matches
 
-  const handleResize = () => {
-    isMobile.value = window.innerWidth < 768
-  }
-
   // Add event listeners
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('resize', handleResize)
   window.addEventListener('keydown', handleKeydown)
+})
 
-  onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('keydown', handleKeydown)
-  })
+// Cleanup on unmount (must be at top level of setup)
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -264,60 +427,97 @@ onMounted(() => {
         role="menu"
       >
         <!-- Playspace Options -->
-        <button
+        <div
           v-for="(playspace, index) in visiblePlayspaces"
           :key="playspace.id"
-          type="button"
+          class="absolute top-1/2 left-1/2"
           :style="getRadialPosition(index, visiblePlayspaces.length)"
-          :class="[
-            'absolute top-1/2 left-1/2',
-            'flex flex-col items-center justify-center gap-1',
-            'h-16 w-16 rounded-full',
-            'transition-all duration-300',
-            'focus:outline-none focus:ring-3 focus:ring-offset-2',
-            playspace.isActive
-              ? 'bg-gradient-to-br from-cyan-500 to-cyan-700 text-white shadow-xl ring-2 ring-white focus:ring-cyan-500'
-              : 'bg-white text-gray-700 shadow-lg hover:shadow-xl hover:scale-110 focus:ring-gray-400'
-          ]"
-          role="menuitem"
-          :aria-label="`Switch to ${playspace.name}`"
-          @click="switchPlayspace(playspace.id)"
         >
-          <!-- System Icon -->
-          <Icon
-            :name="playspace.systemIcon || 'heroicons:squares-2x2'"
-            class="h-5 w-5"
-          />
-
-          <!-- Role Badge -->
-          <span
+          <!-- Bouton principal du playspace -->
+          <button
+            type="button"
             :class="[
-              'text-xs font-bold px-1.5 py-0.5 rounded-full',
-              playspace.isActive
-                ? 'bg-white text-cyan-600'
-                : playspace.role === 'MJ'
-                  ? 'bg-orange-100 text-orange-800'
-                  : 'bg-blue-100 text-blue-800'
+              'relative flex flex-col items-center justify-center gap-1',
+              'h-16 w-16 rounded-full',
+              'transition-all duration-300',
+              'focus:outline-none focus:ring-3 focus:ring-offset-2',
+              hoveredPlayspaceId === playspace.id
+                ? 'bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow-xl ring-2 ring-violet-300 scale-110 focus:ring-violet-500'
+                : playspace.isActive
+                  ? 'bg-gradient-to-br from-cyan-500 to-cyan-700 text-white shadow-xl ring-2 ring-white focus:ring-cyan-500'
+                  : 'bg-white text-gray-700 shadow-lg hover:shadow-xl hover:scale-105 focus:ring-gray-400'
             ]"
+            role="menuitem"
+            :aria-label="`Ouvrir ${playspace.name}`"
+            @click="goToPlayspace(playspace.id)"
+            @mouseenter="onPlayspaceHover(playspace.id)"
+            @mouseleave="onPlayspaceLeave"
           >
-            {{ playspace.role }}
-          </span>
+            <!-- System Icon -->
+            <Icon
+              :name="playspace.systemIcon"
+              class="h-5 w-5"
+            />
 
-          <!-- Tooltip on hover (absolute positioned) -->
-          <span
-            :class="[
-              'absolute left-full ml-3 px-3 py-1.5 rounded-lg',
-              'bg-gray-900 text-white text-sm font-medium whitespace-nowrap',
-              'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-              'pointer-events-none z-50'
-            ]"
-          >
-            {{ playspace.name }}
-            <span class="text-gray-400 text-xs ml-2">
-              ({{ playspace.characterCount }} perso{{ playspace.characterCount > 1 ? 's' : '' }})
+            <!-- Role Badge -->
+            <span
+              :class="[
+                'text-xs font-bold px-1.5 py-0.5 rounded-full',
+                hoveredPlayspaceId === playspace.id
+                  ? 'bg-white text-violet-600'
+                  : playspace.isActive
+                    ? 'bg-white text-cyan-600'
+                    : playspace.role === 'MJ'
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-blue-100 text-blue-800'
+              ]"
+            >
+              {{ playspace.role }}
             </span>
-          </span>
-        </button>
+          </button>
+
+          <!-- 3 petits ronds d'info au survol -->
+          <Transition name="fade">
+            <div
+              v-if="hoveredPlayspaceId === playspace.id"
+              class="absolute inset-0 pointer-events-none"
+            >
+              <!-- Systeme -->
+              <span
+                class="absolute flex items-center justify-center h-8 w-8 rounded-full bg-gray-800 text-white text-xs font-bold shadow-lg border border-gray-600"
+                :style="{
+                  left: `calc(50% + ${getInfoBubblePosition(0, index, visiblePlayspaces.length).x}px)`,
+                  top: `calc(50% + ${getInfoBubblePosition(0, index, visiblePlayspaces.length).y}px)`,
+                  transform: 'translate(-50%, -50%)'
+                }"
+              >
+                {{ playspace.systemAbbr }}
+              </span>
+              <!-- Hack -->
+              <span
+                class="absolute flex items-center justify-center h-8 w-8 rounded-full bg-cyan-600 text-white text-xs font-bold shadow-lg"
+                :style="{
+                  left: `calc(50% + ${getInfoBubblePosition(1, index, visiblePlayspaces.length).x}px)`,
+                  top: `calc(50% + ${getInfoBubblePosition(1, index, visiblePlayspaces.length).y}px)`,
+                  transform: 'translate(-50%, -50%)'
+                }"
+              >
+                {{ playspace.hackAbbr }}
+              </span>
+              <!-- Univers -->
+              <span
+                class="absolute flex items-center justify-center h-8 w-8 rounded-full bg-violet-600 text-white text-xs font-bold shadow-lg"
+                :style="{
+                  left: `calc(50% + ${getInfoBubblePosition(2, index, visiblePlayspaces.length).x}px)`,
+                  top: `calc(50% + ${getInfoBubblePosition(2, index, visiblePlayspaces.length).y}px)`,
+                  transform: 'translate(-50%, -50%)'
+                }"
+              >
+                {{ playspace.universeAbbr }}
+              </span>
+            </div>
+          </Transition>
+        </div>
 
         <!-- New Playspace Button -->
         <button
@@ -369,7 +569,7 @@ onMounted(() => {
         <!-- Playspace List -->
         <div class="p-4 space-y-2">
           <button
-            v-for="playspace in mockPlayspaces"
+            v-for="playspace in displayPlayspaces"
             :key="playspace.id"
             type="button"
             :class="[
@@ -380,7 +580,7 @@ onMounted(() => {
                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
             ]"
             role="menuitem"
-            @click="switchPlayspace(playspace.id)"
+            @click="goToPlayspace(playspace.id)"
           >
             <!-- Icon -->
             <div
@@ -392,7 +592,7 @@ onMounted(() => {
               ]"
             >
               <Icon
-                :name="playspace.systemIcon || 'heroicons:squares-2x2'"
+                :name="playspace.systemIcon"
                 class="h-6 w-6"
               />
             </div>
@@ -400,21 +600,17 @@ onMounted(() => {
             <!-- Info -->
             <div class="flex-1 min-w-0 text-left">
               <div class="flex items-center gap-2 mb-1">
-                <Icon
-                  v-if="playspace.isActive"
-                  name="heroicons:star-solid"
-                  class="h-4 w-4 flex-shrink-0"
-                />
                 <h3 class="text-sm font-semibold truncate">
                   {{ playspace.name }}
                 </h3>
+                <span v-if="playspace.isLocal" class="text-xs opacity-70">(local)</span>
               </div>
-              <div class="flex items-center gap-2 text-xs">
+              <div class="flex items-center gap-2 text-xs flex-wrap">
                 <span
                   :class="[
                     'inline-flex items-center rounded-full border px-2 py-0.5 font-medium',
                     playspace.isActive
-                      ? 'bg-white text-cyan-600 border-white'
+                      ? 'bg-white/20 text-white border-white/30'
                       : playspace.role === 'MJ'
                         ? 'bg-orange-100 text-orange-800 border-orange-300'
                         : 'bg-blue-100 text-blue-800 border-blue-300'
@@ -422,8 +618,8 @@ onMounted(() => {
                 >
                   {{ playspace.role }}
                 </span>
-                <span :class="playspace.isActive ? 'text-white/80' : 'text-gray-500'">
-                  {{ playspace.characterCount }} perso{{ playspace.characterCount > 1 ? 's' : '' }}
+                <span :class="playspace.isActive ? 'text-white/70' : 'text-gray-500'">
+                  {{ playspace.systemAbbr }} / {{ playspace.hackAbbr }} / {{ playspace.universeAbbr }}
                 </span>
               </div>
             </div>
@@ -451,6 +647,13 @@ onMounted(() => {
         </div>
       </div>
     </Transition>
+
+    <!-- Modal de creation de playspace -->
+    <CreatePlayspaceModal
+      :is-open="isModalOpen"
+      @close="handleModalClose"
+      @created="handlePlayspaceCreated"
+    />
   </div>
 </template>
 
@@ -488,6 +691,27 @@ onMounted(() => {
 .slide-up-enter-from,
 .slide-up-leave-to {
   transform: translateY(100%);
+}
+
+/* Slide down animation for details panel */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 200ms ease;
+  overflow: hidden;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.slide-down-enter-to,
+.slide-down-leave-from {
+  opacity: 1;
+  max-height: 200px;
 }
 
 /* Fade animation for backdrop */

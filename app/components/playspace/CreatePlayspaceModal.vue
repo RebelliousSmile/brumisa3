@@ -188,6 +188,9 @@ const selectSuggestion = (suggestion: string) => {
   name.value = suggestion
 }
 
+// Store pour sauvegarder les playspaces locaux
+const playspaceStore = usePlayspaceStore()
+
 // Submit
 const handleSubmit = async () => {
   if (!name.value.trim()) {
@@ -199,7 +202,17 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    const response = await $fetch('/api/playspaces', {
+    const response = await $fetch<{
+      id: string
+      name: string
+      description: string | null
+      hackId: string
+      universeId: string | null
+      isGM: boolean
+      createdAt: string
+      updatedAt: string
+      persisted: boolean
+    }>('/api/playspaces', {
       method: 'POST',
       body: {
         name: name.value.trim(),
@@ -209,10 +222,25 @@ const handleSubmit = async () => {
       }
     })
 
+    // Si le playspace n'est pas persiste (utilisateur non connecte), le sauvegarder en localStorage
+    if (!response.persisted) {
+      playspaceStore.addLocalPlayspace({
+        id: response.id,
+        name: response.name,
+        description: response.description || undefined,
+        hackId: response.hackId,
+        universeId: response.universeId,
+        isGM: response.isGM,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
+        persisted: false
+      })
+    }
+
     emit('created', response.id)
     handleClose()
   } catch (err: any) {
-    error.value = err.data?.message || 'Erreur lors de la création du playspace'
+    error.value = err.data?.message || 'Erreur lors de la creation du playspace'
   } finally {
     isLoading.value = false
   }

@@ -3,13 +3,19 @@
  * Gestion des playspaces (contextes de jeu)
  *
  * Architecture : hackId + universeId
- * - hackId : "city-of-mist" | "litm" | "otherlands"
+ * - hackId : "city-of-mist" | "litm" | "otherscape"
  * - universeId : null (default) ou custom
+ *
+ * Support local (non-authentifie) et persiste (BDD)
+ * - Local : id commence par "local_", stocke en localStorage
+ * - Persiste : id UUID, stocke en BDD
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { getVersionId, getUniverseName, getHackName } from '#shared/config/systems.config'
+
+const LOCAL_STORAGE_KEY = 'brumisa3_local_playspaces'
 
 export interface Playspace {
   id: string
@@ -18,12 +24,20 @@ export interface Playspace {
   hackId: string
   universeId: string | null
   isGM: boolean // false = PC (Player Character), true = GM (Game Master)
-  userId: string
+  userId?: string // Optional pour les playspaces locaux
   createdAt: string
   updatedAt: string
+  persisted?: boolean // true = BDD, false = localStorage
   _count?: {
     characters: number
   }
+}
+
+/**
+ * Verifie si un playspace est local (non persiste en BDD)
+ */
+export function isLocalPlayspace(id: string): boolean {
+  return id.startsWith('local_')
 }
 
 export const usePlayspaceStore = defineStore('playspace', () => {
@@ -32,20 +46,79 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   // ============================================
 
   const playspaces = ref<Playspace[]>([])
+  const localPlayspaces = ref<Playspace[]>([])
   const activePlayspaceId = ref<string | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   // ============================================
+  // LOCAL STORAGE HELPERS
+  // ============================================
+
+  /**
+   * Charge les playspaces locaux depuis localStorage
+   */
+  function loadLocalPlayspaces() {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
+      if (stored) {
+        localPlayspaces.value = JSON.parse(stored)
+      }
+    } catch (err) {
+      console.error('[PlayspaceStore] Failed to load local playspaces:', err)
+      localPlayspaces.value = []
+    }
+  }
+
+  /**
+   * Sauvegarde les playspaces locaux dans localStorage
+   */
+  function saveLocalPlayspaces() {
+    if (typeof window === 'undefined') return
+
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localPlayspaces.value))
+    } catch (err) {
+      console.error('[PlayspaceStore] Failed to save local playspaces:', err)
+    }
+  }
+
+  /**
+   * Ajoute un playspace local
+   */
+  function addLocalPlayspace(playspace: Playspace) {
+    localPlayspaces.value.push(playspace)
+    saveLocalPlayspaces()
+  }
+
+  /**
+   * Recupere un playspace par ID (local ou persiste)
+   */
+  function getPlayspaceById(id: string): Playspace | null {
+    if (isLocalPlayspace(id)) {
+      return localPlayspaces.value.find(p => p.id === id) || null
+    }
+    return playspaces.value.find(p => p.id === id) || null
+  }
+
+  // Watch pour sauvegarder automatiquement les changements locaux
+  watch(localPlayspaces, saveLocalPlayspaces, { deep: true })
+
+  // ============================================
   // GETTERS
   // ============================================
 
+  /** Tous les playspaces (locaux + persistes) */
+  const allPlayspaces = computed(() => [...localPlayspaces.value, ...playspaces.value])
+
   const activePlayspace = computed(() => {
     if (!activePlayspaceId.value) return null
-    return playspaces.value.find(p => p.id === activePlayspaceId.value) || null
+    return getPlayspaceById(activePlayspaceId.value)
   })
 
-  const hasPlayspaces = computed(() => playspaces.value.length > 0)
+  const hasPlayspaces = computed(() => allPlayspaces.value.length > 0)
 
   /** Vérifie si le playspace actif est en mode GM (Game Master) */
   const isGM = computed(() => activePlayspace.value?.isGM === true)
@@ -198,17 +271,24 @@ export const usePlayspaceStore = defineStore('playspace', () => {
    * Change le playspace actif
    */
   async function switchPlayspace(id: string) {
-    const playspace = playspaces.value.find(p => p.id === id)
+    const playspace = getPlayspaceById(id)
     if (!playspace) {
       error.value = 'Playspace not found'
       return
     }
 
-    // TODO: Sauvegarder l'état du playspace actuel avant switch
+    // TODO: Sauvegarder l'etat du playspace actuel avant switch
 
     activePlayspaceId.value = id
 
     // TODO: Charger les characters du nouveau playspace
+  }
+
+  /**
+   * Initialise le store (charge les playspaces locaux)
+   */
+  function init() {
+    loadLocalPlayspaces()
   }
 
   // ============================================
@@ -218,11 +298,13 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   return {
     // State
     playspaces,
+    localPlayspaces,
     activePlayspaceId,
     loading,
     error,
 
     // Getters
+    allPlayspaces,
     activePlayspace,
     hasPlayspaces,
     isGM,
@@ -231,10 +313,14 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     activeUniverseName,
 
     // Actions
+    init,
     loadPlayspaces,
+    loadLocalPlayspaces,
     createPlayspace,
     updatePlayspace,
     deletePlayspace,
-    switchPlayspace
+    switchPlayspace,
+    addLocalPlayspace,
+    getPlayspaceById
   }
 })
