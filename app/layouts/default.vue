@@ -26,8 +26,8 @@
     <main class="flex-1 bg-otherscape-noir-profond relative">
       <slot />
 
-      <!-- Menu Radial Playspace (selection/creation) -->
-      <CommonRadialPlayspaceMenu position="bottom-left" />
+      <!-- Menu Radial Playspace Fullscreen (selection/creation) -->
+      <CommonRadialPlayspaceMenuFullscreen />
     </main>
 
     <!-- Footer -->

@@ -1,16 +1,15 @@
 <script setup lang="ts">
 /**
- * Menu Radial Playspaces - Version Fullscreen Cyberpunk
+ * Menu Radial Playspaces - Version Fullscreen Cyberpunk v2
  *
- * Design immersif avec:
- * - Overlay plein ecran avec grid holographique
- * - Playspaces sur cercle central 360deg
- * - Bulles d'info sur cercle interne au survol
- * - Effets neon, scanlines, glitch
- * - Animations de deploiement spatial
+ * Design concentrique :
+ * - Centre : Bouton "+" (nouveau playspace)
+ * - Cercle interieur : 3 infos (Systeme, Hack, Univers) du playspace actif
+ * - Cercle exterieur : Playspaces existants
  */
 
 import CreatePlayspaceModal from '~/components/playspace/CreatePlayspaceModal.vue'
+import { MAX_PLAYSPACES } from '#shared/stores/playspace'
 
 interface PlayspaceDisplay {
   id: string
@@ -18,58 +17,60 @@ interface PlayspaceDisplay {
   role: 'MJ' | 'PJ'
   hackId: string
   universeId: string | null
-  systemAbbr: string
-  hackAbbr: string
-  universeAbbr: string
+  systemName: string
+  hackName: string
+  universeName: string
   isActive: boolean
   isLocal: boolean
 }
 
 // State
 const isOpen = ref(false)
-const hoveredId = ref<string | null>(null)
 const isModalOpen = ref(false)
 
 // Store
 const playspaceStore = usePlayspaceStore()
 
-// Abbreviations
-const getSystemAbbr = (hackId: string): string => {
+// Limite atteinte
+const isLimitReached = computed(() => playspaceStore.isMaxPlayspacesReached)
+
+// Noms complets pour les bulles d'info
+const getSystemName = (hackId: string): string => {
   switch (hackId) {
     case 'litm':
     case 'otherscape':
-      return 'ME'
+      return 'Mist Engine'
     case 'city-of-mist':
-      return 'CoM'
+      return 'City of Mist'
     default:
-      return '?'
+      return 'Inconnu'
   }
 }
 
-const getHackAbbr = (hackId: string): string => {
+const getHackName = (hackId: string): string => {
   switch (hackId) {
     case 'litm':
-      return 'LITM'
+      return 'Legends in the Mist'
     case 'otherscape':
-      return 'OS'
+      return 'Otherscape'
     case 'city-of-mist':
-      return 'CoM'
+      return 'City of Mist'
     default:
-      return hackId.substring(0, 3).toUpperCase()
+      return hackId
   }
 }
 
-const getUniverseAbbr = (universeId: string | null): string => {
-  if (!universeId) return 'DEF'
-  const abbrMap: Record<string, string> = {
-    'obojima': 'OBO',
-    'litm-custom': 'CUST',
-    'tokyo-otherscape': 'TKO',
-    'otherscape-custom': 'CUST',
-    'the-city': 'CITY',
-    'city-of-mist-custom': 'CUST'
+const getUniverseName = (universeId: string | null): string => {
+  if (!universeId) return 'Par defaut'
+  const nameMap: Record<string, string> = {
+    'obojima': 'Obojima',
+    'litm-custom': 'Personnalise',
+    'tokyo-otherscape': 'Tokyo',
+    'otherscape-custom': 'Personnalise',
+    'the-city': 'The City',
+    'city-of-mist-custom': 'Personnalise'
   }
-  return abbrMap[universeId] || universeId.substring(0, 4).toUpperCase()
+  return nameMap[universeId] || universeId
 }
 
 // Computed
@@ -80,92 +81,82 @@ const displayPlayspaces = computed<PlayspaceDisplay[]>(() => {
     role: p.isGM ? 'MJ' : 'PJ',
     hackId: p.hackId,
     universeId: p.universeId,
-    systemAbbr: getSystemAbbr(p.hackId),
-    hackAbbr: getHackAbbr(p.hackId),
-    universeAbbr: getUniverseAbbr(p.universeId),
+    systemName: getSystemName(p.hackId),
+    hackName: getHackName(p.hackId),
+    universeName: getUniverseName(p.universeId),
     isActive: playspaceStore.activePlayspaceId === p.id,
     isLocal: p.id.startsWith('local_')
   }))
 })
 
-const hoveredPlayspace = computed(() =>
-  displayPlayspaces.value.find(p => p.id === hoveredId.value)
-)
+// Playspace survole (pour afficher ses infos)
+const hoveredPlayspaceId = ref<string | null>(null)
 
-const activePlayspace = computed(() =>
-  displayPlayspaces.value.find(p => p.isActive)
-)
-
-const hoveredIndex = computed(() =>
-  displayPlayspaces.value.findIndex(p => p.id === hoveredId.value)
-)
+// Playspace a afficher dans les infos (survole > actif > premier)
+const displayedPlayspace = computed(() => {
+  if (hoveredPlayspaceId.value) {
+    return displayPlayspaces.value.find(p => p.id === hoveredPlayspaceId.value)
+  }
+  const active = displayPlayspaces.value.find(p => p.isActive)
+  if (active) return active
+  // Fallback: premier playspace disponible
+  return displayPlayspaces.value[0] || null
+})
 
 const totalCount = computed(() => displayPlayspaces.value.length)
 
-// Position sur cercle 360deg (commence en haut)
-function getNodePosition(index: number, total: number): { left: string; top: string; delay: string } {
+// Position cercle interieur (3 infos) - rayon 15vh (sur le cercle guide-inner de 30vh)
+function getInfoPosition(index: number): { left: string; top: string } {
   const startAngle = -90 // Commence en haut
-  const angleStep = 360 / (total + 1) // +1 pour le bouton "+"
+  const angleStep = 120 // 360 / 3
   const angle = startAngle + angleStep * index
 
-  const radiusPercent = 38
+  const radiusVh = 15 // vh - rayon du cercle interieur
   const radian = (angle * Math.PI) / 180
 
-  const x = 50 + Math.cos(radian) * radiusPercent
-  const y = 50 + Math.sin(radian) * radiusPercent
+  // Position en vh depuis le centre de l'ecran
+  const x = Math.cos(radian) * radiusVh
+  const y = Math.sin(radian) * radiusVh
 
   return {
-    left: `${x}%`,
-    top: `${y}%`,
-    delay: `${index * 80}ms`
+    left: `calc(50% + ${x}vh)`,
+    top: `calc(50% + ${y}vh)`
   }
 }
 
-// Position bulles info vers le centre
-function getInfoPosition(bubbleIndex: number): { left: string; top: string; delay: string } {
-  if (hoveredIndex.value === -1) return { left: '50%', top: '50%', delay: '0ms' }
+// Position cercle exterieur (playspaces) - rayon 32vh (sur le cercle guide-outer de 64vh)
+function getPlayspacePosition(index: number, total: number): { left: string; top: string; delay: string } {
+  const startAngle = -90 // Commence en haut
+  const angleStep = total > 0 ? 360 / total : 360
+  const angle = startAngle + angleStep * index
 
-  const total = displayPlayspaces.value.length + 1
-  const startAngle = -90
-  const angleStep = 360 / total
-  const playspaceAngle = startAngle + angleStep * hoveredIndex.value
+  const radiusVh = 32 // vh - rayon du cercle exterieur
+  const radian = (angle * Math.PI) / 180
 
-  // Bulles vers le centre (angle oppose)
-  const reverseAngle = playspaceAngle + 180
-  const bubbleSpread = 30
-  const offset = (bubbleIndex - 1) * bubbleSpread
-  const finalAngle = reverseAngle + offset
-
-  const radiusPercent = 22
-  const radian = (finalAngle * Math.PI) / 180
-
-  const x = 50 + Math.cos(radian) * radiusPercent
-  const y = 50 + Math.sin(radian) * radiusPercent
+  const x = Math.cos(radian) * radiusVh
+  const y = Math.sin(radian) * radiusVh
 
   return {
-    left: `${x}%`,
-    top: `${y}%`,
-    delay: `${bubbleIndex * 60}ms`
+    left: `calc(50% + ${x}vh)`,
+    top: `calc(50% + ${y}vh)`,
+    delay: `${index * 60}ms`
   }
 }
 
 // Handlers
 function toggleMenu() {
   isOpen.value = !isOpen.value
-  if (!isOpen.value) {
-    hoveredId.value = null
-  }
 }
 
 function closeMenu() {
   isOpen.value = false
-  hoveredId.value = null
 }
 
 function selectPlayspace(id: string) {
   playspaceStore.switchPlayspace(id)
-  navigateTo(`/playspaces/${id}`)
   closeMenu()
+  // Retour a l'accueil avec le playspace selectionne
+  navigateTo('/')
 }
 
 function openCreateModal() {
@@ -175,7 +166,8 @@ function openCreateModal() {
 function handlePlayspaceCreated(playspaceId: string) {
   isModalOpen.value = false
   closeMenu()
-  navigateTo(`/playspaces/${playspaceId}`)
+  // Retour a l'accueil avec le playspace selectionne
+  navigateTo('/')
 }
 
 // Keyboard
@@ -209,11 +201,8 @@ onUnmounted(() => {
       <div class="orb-inner">
         <Icon name="heroicons:squares-2x2" class="orb-icon" />
       </div>
-      <div class="orb-ring orb-ring-1"></div>
-      <div class="orb-ring orb-ring-2"></div>
-      <div class="orb-ring orb-ring-3"></div>
+      <div class="orb-ring"></div>
 
-      <!-- Badge count -->
       <span v-if="totalCount > 0" class="orb-badge">
         {{ totalCount }}
       </span>
@@ -221,13 +210,12 @@ onUnmounted(() => {
 
     <!-- Overlay Fullscreen -->
     <Teleport to="body">
-        <Transition name="overlay">
-          <div
-            v-if="isOpen"
-            class="cyber-overlay"
+      <Transition name="overlay">
+        <div
+          v-if="isOpen"
+          class="cyber-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label="Selection de playspace"
           @click.self="closeMenu"
         >
           <!-- Background Effects -->
@@ -235,36 +223,61 @@ onUnmounted(() => {
           <div class="bg-scanlines" aria-hidden="true"></div>
           <div class="bg-vignette" aria-hidden="true"></div>
 
-          <!-- Cercles decoratifs -->
-          <div class="deco-circle deco-circle-outer" aria-hidden="true"></div>
-          <div class="deco-circle deco-circle-middle" aria-hidden="true"></div>
-          <div class="deco-circle deco-circle-inner" aria-hidden="true"></div>
+          <!-- Cercles guides -->
+          <div class="guide-circle guide-inner" aria-hidden="true"></div>
+          <div class="guide-circle guide-outer" aria-hidden="true"></div>
 
-          <!-- Lignes de connexion -->
-          <svg class="connection-lines" aria-hidden="true">
-            <line
-              v-for="(ps, index) in displayPlayspaces"
-              :key="`line-${ps.id}`"
-              x1="50%"
-              y1="50%"
-              :x2="getNodePosition(index, displayPlayspaces.length).left"
-              :y2="getNodePosition(index, displayPlayspaces.length).top"
-              class="connection-line"
-              :class="{ 'is-active': ps.isActive, 'is-hovered': hoveredId === ps.id }"
-            />
-          </svg>
+          <!-- HUB CENTRAL - Bouton + -->
+          <button
+            type="button"
+            class="center-hub"
+            :class="{ 'is-disabled': isLimitReached }"
+            :aria-label="isLimitReached ? 'Limite atteinte' : 'Nouveau playspace'"
+            :disabled="isLimitReached"
+            @click="!isLimitReached && openCreateModal()"
+          >
+            <div class="hub-glow"></div>
+            <div class="hub-content">
+              <Icon :name="isLimitReached ? 'heroicons:lock-closed' : 'heroicons:plus'" class="hub-icon" />
+              <span class="hub-label">{{ isLimitReached ? `${MAX_PLAYSPACES}/${MAX_PLAYSPACES}` : 'NOUVEAU' }}</span>
+            </div>
+          </button>
 
-          <!-- Indicateur Central -->
-          <div class="center-hub">
-            <div class="hub-core">
-              <div class="hub-pulse"></div>
-              <span class="hub-label">ACTIF</span>
-              <span class="hub-value">{{ activePlayspace?.name || 'AUCUN' }}</span>
+          <!-- CERCLE INTERIEUR - 3 Infos (Systeme, Hack, Univers) - visible au survol -->
+          <div class="info-ring" :class="{ 'is-visible': hoveredPlayspaceId !== null }">
+            <!-- Systeme -->
+            <div
+              class="info-node"
+              :class="{ 'has-data': displayedPlayspace }"
+              :style="getInfoPosition(0)"
+            >
+              <span class="info-label">Systeme</span>
+              <span class="info-value">{{ displayedPlayspace?.systemName || '--' }}</span>
+            </div>
+
+            <!-- Hack -->
+            <div
+              class="info-node"
+              :class="{ 'has-data': displayedPlayspace }"
+              :style="getInfoPosition(1)"
+            >
+              <span class="info-label">Hack</span>
+              <span class="info-value">{{ displayedPlayspace?.hackName || '--' }}</span>
+            </div>
+
+            <!-- Univers -->
+            <div
+              class="info-node"
+              :class="{ 'has-data': displayedPlayspace }"
+              :style="getInfoPosition(2)"
+            >
+              <span class="info-label">Univers</span>
+              <span class="info-value">{{ displayedPlayspace?.universeName || '--' }}</span>
             </div>
           </div>
 
-          <!-- Playspace Nodes -->
-          <TransitionGroup name="node">
+          <!-- CERCLE EXTERIEUR - Playspaces -->
+          <TransitionGroup name="node" tag="div" class="playspace-ring">
             <button
               v-for="(ps, index) in displayPlayspaces"
               :key="ps.id"
@@ -272,110 +285,40 @@ onUnmounted(() => {
               class="playspace-node"
               :class="{
                 'is-active': ps.isActive,
-                'is-hovered': hoveredId === ps.id,
-                'is-mj': ps.role === 'MJ'
+                'is-mj': ps.role === 'MJ',
+                'is-hovered': hoveredPlayspaceId === ps.id
               }"
               :style="{
-                left: getNodePosition(index, displayPlayspaces.length).left,
-                top: getNodePosition(index, displayPlayspaces.length).top,
-                transitionDelay: getNodePosition(index, displayPlayspaces.length).delay
+                left: getPlayspacePosition(index, displayPlayspaces.length).left,
+                top: getPlayspacePosition(index, displayPlayspaces.length).top,
+                animationDelay: getPlayspacePosition(index, displayPlayspaces.length).delay
               }"
               :aria-label="`Ouvrir ${ps.name}`"
               @click="selectPlayspace(ps.id)"
-              @mouseenter="hoveredId = ps.id"
-              @mouseleave="hoveredId = null"
+              @mouseenter="hoveredPlayspaceId = ps.id"
+              @mouseleave="hoveredPlayspaceId = null"
             >
               <div class="node-glow"></div>
-              <div class="node-border"></div>
               <div class="node-content">
                 <span class="node-role">{{ ps.role }}</span>
-                <span class="node-hack">{{ ps.hackAbbr }}</span>
               </div>
               <span class="node-name">{{ ps.name }}</span>
             </button>
+
           </TransitionGroup>
-
-          <!-- Bouton Nouveau Playspace -->
-          <button
-            type="button"
-            class="playspace-node new-node"
-            :style="{
-              left: getNodePosition(displayPlayspaces.length, displayPlayspaces.length).left,
-              top: getNodePosition(displayPlayspaces.length, displayPlayspaces.length).top,
-              transitionDelay: getNodePosition(displayPlayspaces.length, displayPlayspaces.length).delay
-            }"
-            aria-label="Creer un nouveau playspace"
-            @click="openCreateModal"
-          >
-            <div class="node-glow"></div>
-            <div class="node-border node-border-dashed"></div>
-            <div class="node-content">
-              <Icon name="heroicons:plus" class="new-icon" />
-            </div>
-            <span class="node-name">NOUVEAU</span>
-          </button>
-
-          <!-- Bulles d'Info au Survol -->
-          <Transition name="info">
-            <div v-if="hoveredPlayspace" class="info-bubbles">
-              <!-- Systeme -->
-              <div
-                class="info-bubble info-system"
-                :style="{
-                  left: getInfoPosition(0).left,
-                  top: getInfoPosition(0).top,
-                  transitionDelay: getInfoPosition(0).delay
-                }"
-              >
-                <span class="bubble-label">SYS</span>
-                <span class="bubble-value">{{ hoveredPlayspace.systemAbbr }}</span>
-              </div>
-
-              <!-- Hack -->
-              <div
-                class="info-bubble info-hack"
-                :style="{
-                  left: getInfoPosition(1).left,
-                  top: getInfoPosition(1).top,
-                  transitionDelay: getInfoPosition(1).delay
-                }"
-              >
-                <span class="bubble-label">HACK</span>
-                <span class="bubble-value">{{ hoveredPlayspace.hackAbbr }}</span>
-              </div>
-
-              <!-- Univers -->
-              <div
-                class="info-bubble info-universe"
-                :style="{
-                  left: getInfoPosition(2).left,
-                  top: getInfoPosition(2).top,
-                  transitionDelay: getInfoPosition(2).delay
-                }"
-              >
-                <span class="bubble-label">UNIV</span>
-                <span class="bubble-value">{{ hoveredPlayspace.universeAbbr }}</span>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Bouton Fermer -->
-          <button
-            type="button"
-            class="close-btn"
-            aria-label="Fermer"
-            @click="closeMenu"
-          >
-            <Icon name="heroicons:x-mark" />
-            <span class="close-label">ESC</span>
-          </button>
 
           <!-- Titre -->
           <div class="overlay-title">
-            <span class="title-deco">//</span>
-            <span class="title-text">PLAYSPACE_SELECT</span>
-            <span class="title-deco">//</span>
+            <span class="title-line"></span>
+            <span class="title-text">PLAYSPACE SELECT</span>
+            <span class="title-line"></span>
           </div>
+
+          <!-- Bouton Fermer -->
+          <button type="button" class="close-btn" @click="closeMenu">
+            <Icon name="heroicons:x-mark" />
+            <span>ESC</span>
+          </button>
         </div>
       </Transition>
     </Teleport>
@@ -390,17 +333,16 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ===== VARIABLES CYBERPUNK ===== */
-:root {
-  --cyber-cyan: #00d9d9;
-  --cyber-cyan-dim: #007a7a;
-  --cyber-violet: #9b59b6;
-  --cyber-violet-dim: #5b3469;
-  --cyber-pink: #ff006e;
-  --cyber-orange: #ff6b35;
-  --cyber-dark: #0a0a0a;
-  --cyber-darker: #050505;
-  --cyber-gray: #1a1a1a;
+/* ===== VARIABLES - Palette 3 couleurs ===== */
+.radial-menu-fullscreen {
+  --color-primary: #00d9d9;      /* Cyan - PJ, elements principaux */
+  --color-primary-bright: #00ffff;
+  --color-secondary: #ffaa44;    /* Or/Ambre - MJ */
+  --color-secondary-bright: #ffcc66;
+  --color-tertiary: #ffffff;     /* Blanc - textes, accents */
+  --color-tertiary-dim: #aaaaaa;
+  --color-dark: #0a0a0a;
+  --color-dark-mid: #1a1a1a;
 }
 
 /* ===== ORB TRIGGER ===== */
@@ -408,10 +350,9 @@ onUnmounted(() => {
   position: fixed;
   bottom: 2rem;
   left: 2rem;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 4rem;
+  height: 4rem;
   z-index: 100;
-
   background: transparent;
   border: none;
   cursor: pointer;
@@ -420,138 +361,99 @@ onUnmounted(() => {
 
 .orb-inner {
   position: absolute;
-  inset: 15%;
-  background: linear-gradient(135deg, var(--cyber-cyan) 0%, var(--cyber-cyan-dim) 100%);
+  inset: 10%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #007a7a 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-
-  box-shadow:
-    0 0 20px rgba(0, 217, 217, 0.6),
-    0 0 40px rgba(0, 217, 217, 0.3),
-    inset 0 0 20px rgba(255, 255, 255, 0.1);
-
+  box-shadow: 0 0 25px rgba(0, 217, 217, 0.6);
   transition: all 0.3s ease;
 }
 
 .orb-trigger:hover .orb-inner {
-  box-shadow:
-    0 0 30px rgba(0, 217, 217, 0.8),
-    0 0 60px rgba(0, 217, 217, 0.4),
-    inset 0 0 30px rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
 }
 
 .orb-trigger.is-active .orb-inner {
-  background: linear-gradient(135deg, var(--cyber-violet) 0%, var(--cyber-violet-dim) 100%);
-  box-shadow:
-    0 0 30px rgba(155, 89, 182, 0.8),
-    0 0 60px rgba(155, 89, 182, 0.4);
+  background: linear-gradient(135deg, var(--color-primary-bright) 0%, var(--color-primary) 100%);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.9);
 }
 
 .orb-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: var(--cyber-dark);
-  transition: transform 0.3s ease;
+  color: #051515;
 }
 
 .orb-trigger.is-active .orb-icon {
+  color: #051515;
   transform: rotate(45deg);
-  color: white;
 }
 
-/* Anneaux orbitaux */
 .orb-ring {
   position: absolute;
   inset: 0;
-  border: 1px solid var(--cyber-cyan);
+  border: 2px solid var(--color-primary);
   border-radius: 50%;
-  opacity: 0.3;
-  animation: orbit-pulse 3s ease-in-out infinite;
-}
-
-.orb-ring-1 {
-  animation-delay: 0s;
-}
-
-.orb-ring-2 {
-  inset: -15%;
-  animation-delay: 0.5s;
-  opacity: 0.2;
-}
-
-.orb-ring-3 {
-  inset: -30%;
-  animation-delay: 1s;
-  opacity: 0.1;
-}
-
-@keyframes orbit-pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.5;
-  }
+  opacity: 0.4;
+  animation: ring-pulse 2s ease-in-out infinite;
 }
 
 .orb-trigger.is-active .orb-ring {
-  border-color: var(--cyber-violet);
+  border-color: var(--color-primary-bright);
+  opacity: 0.6;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.2; }
 }
 
 .orb-badge {
   position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.4rem;
-
+  top: -4px;
+  right: -4px;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  background: var(--color-secondary);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #1a1000;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: var(--cyber-orange);
-  border-radius: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: white;
-  z-index: 3;
-
-  box-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
+  box-shadow: 0 0 10px rgba(255, 170, 68, 0.6);
 }
 
-/* ===== OVERLAY FULLSCREEN ===== */
+/* ===== OVERLAY ===== */
 .cyber-overlay {
   position: fixed;
   inset: 0;
   z-index: 99;
-  background: rgba(5, 5, 5, 0.97);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 5, 5, 0.98);
+  backdrop-filter: blur(10px);
   overflow: hidden;
 }
 
-/* Grid holographique */
+/* Background effects */
 .bg-grid {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(90deg, rgba(0, 217, 217, 0.03) 1px, transparent 1px),
     linear-gradient(0deg, rgba(0, 217, 217, 0.03) 1px, transparent 1px);
-  background-size: 4rem 4rem;
-  animation: grid-scroll 20s linear infinite;
+  background-size: 3rem 3rem;
+  animation: grid-move 30s linear infinite;
 }
 
-@keyframes grid-scroll {
+@keyframes grid-move {
   0% { transform: translate(0, 0); }
-  100% { transform: translate(4rem, 4rem); }
+  100% { transform: translate(3rem, 3rem); }
 }
 
-/* Scanlines */
 .bg-scanlines {
   position: absolute;
   inset: 0;
@@ -559,87 +461,87 @@ onUnmounted(() => {
     0deg,
     transparent 0px,
     transparent 2px,
-    rgba(0, 217, 217, 0.015) 2px,
-    rgba(0, 217, 217, 0.015) 4px
+    rgba(0, 217, 217, 0.02) 2px,
+    rgba(0, 217, 217, 0.02) 4px
   );
   pointer-events: none;
-  animation: scanline-flicker 0.1s steps(2) infinite;
 }
 
-@keyframes scanline-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.98; }
-}
-
-/* Vignette */
 .bg-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 0%,
-    transparent 40%,
-    rgba(0, 0, 0, 0.6) 100%
-  );
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
   pointer-events: none;
 }
 
-/* Cercles decoratifs */
-.deco-circle {
+/* Guide circles - cercles neon lumineux */
+.guide-circle {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 1px solid;
   pointer-events: none;
 }
 
-.deco-circle-outer {
-  width: min(85vh, 85vw);
-  height: min(85vh, 85vw);
-  border-color: rgba(0, 217, 217, 0.1);
+.guide-inner {
+  width: 30vh;
+  height: 30vh;
+  border: 2px solid rgba(0, 217, 217, 0.5);
+  box-shadow:
+    0 0 15px rgba(0, 217, 217, 0.4),
+    0 0 30px rgba(0, 217, 217, 0.2),
+    inset 0 0 15px rgba(0, 217, 217, 0.1);
+  animation: neon-pulse-cyan 4s ease-in-out infinite 2s;
 }
 
-.deco-circle-middle {
-  width: min(60vh, 60vw);
-  height: min(60vh, 60vw);
-  border-color: rgba(0, 217, 217, 0.15);
-  border-style: dashed;
+.guide-outer {
+  width: 64vh;
+  height: 64vh;
+  border: 2px solid rgba(0, 217, 217, 0.6);
+  box-shadow:
+    0 0 10px rgba(0, 217, 217, 0.4),
+    0 0 25px rgba(0, 217, 217, 0.2),
+    inset 0 0 10px rgba(0, 217, 217, 0.1);
+  animation: neon-pulse-cyan 4s ease-in-out infinite;
 }
 
-.deco-circle-inner {
-  width: min(35vh, 35vw);
-  height: min(35vh, 35vw);
-  border-color: rgba(0, 217, 217, 0.2);
+@keyframes neon-pulse-cyan {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(0, 217, 217, 0.5),
+      0 0 20px rgba(0, 217, 217, 0.3),
+      0 0 40px rgba(0, 217, 217, 0.2),
+      inset 0 0 10px rgba(0, 217, 217, 0.2),
+      inset 0 0 20px rgba(0, 217, 217, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 15px rgba(0, 217, 217, 0.7),
+      0 0 30px rgba(0, 217, 217, 0.5),
+      0 0 60px rgba(0, 217, 217, 0.3),
+      inset 0 0 15px rgba(0, 217, 217, 0.3),
+      inset 0 0 30px rgba(0, 217, 217, 0.15);
+  }
 }
 
-/* Lignes de connexion */
-.connection-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.connection-line {
-  stroke: rgba(0, 217, 217, 0.1);
-  stroke-width: 1;
-  stroke-dasharray: 5 5;
-}
-
-.connection-line.is-active {
-  stroke: rgba(0, 217, 217, 0.4);
-  stroke-width: 2;
-  stroke-dasharray: none;
-}
-
-.connection-line.is-hovered {
-  stroke: rgba(0, 217, 217, 0.6);
-  stroke-width: 2;
-  stroke-dasharray: none;
-  filter: drop-shadow(0 0 5px rgba(0, 217, 217, 0.5));
+@keyframes neon-pulse-violet {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(155, 89, 182, 0.5),
+      0 0 20px rgba(155, 89, 182, 0.3),
+      0 0 40px rgba(155, 89, 182, 0.2),
+      inset 0 0 10px rgba(155, 89, 182, 0.2),
+      inset 0 0 20px rgba(155, 89, 182, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 15px rgba(155, 89, 182, 0.7),
+      0 0 30px rgba(155, 89, 182, 0.5),
+      0 0 60px rgba(155, 89, 182, 0.3),
+      inset 0 0 15px rgba(155, 89, 182, 0.3),
+      inset 0 0 30px rgba(155, 89, 182, 0.15);
+  }
 }
 
 /* ===== HUB CENTRAL ===== */
@@ -648,88 +550,209 @@ onUnmounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 5;
-}
-
-.hub-core {
-  position: relative;
-  width: min(12vh, 12vw);
-  height: min(12vh, 12vw);
-  min-width: 80px;
-  min-height: 80px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-
-  background: radial-gradient(circle, var(--cyber-gray) 0%, var(--cyber-dark) 100%);
-  border: 2px solid var(--cyber-cyan);
-  border-radius: 50%;
-
-  box-shadow:
-    0 0 30px rgba(0, 217, 217, 0.3),
-    inset 0 0 30px rgba(0, 217, 217, 0.1);
-}
-
-.hub-pulse {
-  position: absolute;
-  inset: -10%;
-  border: 2px solid var(--cyber-cyan);
-  border-radius: 50%;
-  opacity: 0;
-  animation: hub-pulse 2s ease-out infinite;
-}
-
-@keyframes hub-pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-
-.hub-label {
-  font-size: clamp(0.5rem, 1vh, 0.625rem);
-  font-weight: 600;
-  color: var(--cyber-cyan);
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  opacity: 0.7;
-}
-
-.hub-value {
-  font-size: clamp(0.625rem, 1.2vh, 0.75rem);
-  font-weight: 800;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-align: center;
-  max-width: 90%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ===== PLAYSPACE NODES ===== */
-.playspace-node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-
-  width: min(10vh, 10vw);
-  height: min(10vh, 10vw);
-  min-width: 70px;
-  min-height: 70px;
-
+  z-index: 20;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
+  transition: transform 0.3s ease;
+}
+
+.center-hub:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.center-hub:hover .hub-content {
+  border-color: #00ffff;
+  border-style: solid;
+  box-shadow:
+    0 0 30px rgba(0, 255, 255, 0.7),
+    0 0 60px rgba(0, 217, 217, 0.4),
+    inset 0 0 30px rgba(0, 255, 255, 0.2);
+}
+
+.center-hub:hover .hub-icon {
+  transform: rotate(90deg);
+  color: #00ffff;
+}
+
+.center-hub:hover .hub-label {
+  color: #00ffff;
+}
+
+/* Hub desactive (limite atteinte) */
+.center-hub.is-disabled {
+  cursor: not-allowed;
+}
+
+.center-hub.is-disabled .hub-content {
+  border-color: #666666;
+  border-style: dashed;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  box-shadow:
+    0 0 10px rgba(100, 100, 100, 0.2),
+    inset 0 0 10px rgba(100, 100, 100, 0.1);
+}
+
+.center-hub.is-disabled .hub-icon {
+  color: #666666;
+}
+
+.center-hub.is-disabled .hub-label {
+  color: #666666;
+  text-shadow: none;
+}
+
+.center-hub.is-disabled .hub-glow {
+  opacity: 0.2;
+}
+
+.center-hub.is-disabled:hover .hub-content {
+  border-color: #888888;
+  transform: none;
+}
+
+.hub-glow {
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(circle, rgba(0, 217, 217, 0.15) 0%, transparent 70%);
+  animation: hub-pulse 3s ease-in-out infinite;
+}
+
+@keyframes hub-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.hub-content {
+  width: 12vh;
+  height: 12vh;
+  min-width: 80px;
+  min-height: 80px;
+  background: linear-gradient(135deg, #0d2530 0%, #051520 100%);
+  border: 3px dashed #00d9d9;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow:
+    0 0 20px rgba(0, 217, 217, 0.4),
+    0 0 40px rgba(0, 217, 217, 0.2),
+    inset 0 0 20px rgba(0, 217, 217, 0.15);
+}
+
+.hub-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #00ffff;
+  transition: all 0.3s ease;
+}
+
+.hub-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #00ffff;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  transition: color 0.3s ease;
+}
+
+/* ===== CERCLE INTERIEUR - INFOS ===== */
+.info-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.info-ring.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Info bubbles - palette unifiee cyan/blanc */
+.info-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 7vh;
+  height: 7vh;
+  min-width: 50px;
+  min-height: 50px;
+  background: linear-gradient(135deg, #0d2530 0%, #051015 100%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px;
+  border: 2px solid #00d9d9;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 15px rgba(0, 217, 217, 0.5),
+    0 0 30px rgba(0, 217, 217, 0.2),
+    inset 0 0 10px rgba(0, 217, 217, 0.1);
+}
+
+.info-label {
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #aaaaaa;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.info-value {
+  font-size: clamp(0.55rem, 1vh, 0.7rem);
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  text-align: center;
+  line-height: 1.1;
+  max-width: 95%;
+  word-wrap: break-word;
+}
+
+/* Info node avec donnees - plus lumineux */
+.info-node.has-data {
+  transform: translate(-50%, -50%) scale(1.05);
+  border-color: #00ffff;
+  background: linear-gradient(135deg, #1a3540 0%, #0d2025 100%);
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.7),
+    0 0 40px rgba(0, 217, 217, 0.3),
+    inset 0 0 15px rgba(0, 255, 255, 0.15);
+}
+
+.info-node.has-data .info-value {
+  color: #00ffff;
+  text-shadow: 0 0 12px rgba(0, 255, 255, 1);
+}
+
+/* ===== CERCLE EXTERIEUR - PLAYSPACES ===== */
+.playspace-ring {
+  position: absolute;
+  inset: 0;
   z-index: 10;
+}
+
+.playspace-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 8vh;
+  height: 8vh;
+  min-width: 55px;
+  min-height: 55px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .node-glow {
@@ -740,403 +763,229 @@ onUnmounted(() => {
   transition: opacity 0.3s ease;
 }
 
-.playspace-node:hover .node-glow,
-.playspace-node.is-hovered .node-glow {
+.playspace-node:hover .node-glow {
   opacity: 1;
 }
 
 .playspace-node.is-active .node-glow {
-  background: radial-gradient(circle, rgba(0, 217, 217, 0.4) 0%, transparent 70%);
   opacity: 1;
+  background: radial-gradient(circle, rgba(0, 217, 217, 0.4) 0%, transparent 70%);
 }
 
-.node-border {
-  position: absolute;
-  inset: 0;
-  border: 2px solid rgba(0, 217, 217, 0.4);
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.playspace-node:hover .node-border,
-.playspace-node.is-hovered .node-border {
-  border-color: var(--cyber-cyan);
-  box-shadow:
-    0 0 20px rgba(0, 217, 217, 0.5),
-    inset 0 0 20px rgba(0, 217, 217, 0.1);
-}
-
-.playspace-node.is-active .node-border {
-  border-color: var(--cyber-cyan);
-  border-width: 3px;
-  box-shadow:
-    0 0 30px rgba(0, 217, 217, 0.6),
-    inset 0 0 30px rgba(0, 217, 217, 0.2);
-}
-
-.playspace-node.is-mj .node-border {
-  border-color: rgba(155, 89, 182, 0.5);
-}
-
-.playspace-node.is-mj:hover .node-border,
-.playspace-node.is-mj.is-hovered .node-border {
-  border-color: var(--cyber-violet);
-  box-shadow:
-    0 0 20px rgba(155, 89, 182, 0.5),
-    inset 0 0 20px rgba(155, 89, 182, 0.1);
-}
-
-.node-border-dashed {
-  border-style: dashed;
-  border-color: rgba(155, 89, 182, 0.4);
-}
-
-.new-node:hover .node-border-dashed {
-  border-style: solid;
-  border-color: var(--cyber-violet);
-}
-
+/* Playspace node - PJ = cyan */
 .node-content {
   position: absolute;
-  inset: 10%;
+  inset: 0;
+  background: linear-gradient(135deg, #0d2530 0%, #051520 100%);
+  border: 3px solid #00d9d9;
+  border-radius: 50%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-
-  background: var(--cyber-gray);
-  border-radius: 50%;
   transition: all 0.3s ease;
+  box-shadow:
+    0 0 15px rgba(0, 217, 217, 0.6),
+    0 0 30px rgba(0, 217, 217, 0.3),
+    inset 0 0 15px rgba(0, 217, 217, 0.2);
 }
 
-.playspace-node:hover .node-content,
-.playspace-node.is-hovered .node-content {
-  background: rgba(0, 217, 217, 0.1);
+.playspace-node:hover .node-content {
+  background: linear-gradient(135deg, #1a3540 0%, #0d2530 100%);
+  border-color: #00ffff;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.8),
+    0 0 40px rgba(0, 217, 217, 0.5),
+    inset 0 0 20px rgba(0, 255, 255, 0.3);
+  transform: scale(1.15);
 }
 
-.playspace-node.is-active .node-content {
-  background: linear-gradient(135deg, var(--cyber-cyan) 0%, var(--cyber-cyan-dim) 100%);
+/* PJ actif = cyan lumineux */
+.playspace-node.is-active:not(.is-mj) .node-content {
+  background: linear-gradient(135deg, #00d9d9 0%, #00a0a0 100%);
+  border-color: #ffffff;
+  box-shadow:
+    0 0 25px rgba(0, 255, 255, 1),
+    0 0 50px rgba(0, 217, 217, 0.6),
+    inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* MJ = or/ambre */
+.playspace-node.is-mj .node-content {
+  background: linear-gradient(135deg, #302510 0%, #1a1508 100%);
+  border-color: #ffaa44;
+  box-shadow:
+    0 0 15px rgba(255, 170, 68, 0.6),
+    0 0 30px rgba(255, 170, 68, 0.3),
+    inset 0 0 15px rgba(255, 170, 68, 0.2);
+}
+
+.playspace-node.is-mj:hover .node-content {
+  background: linear-gradient(135deg, #4a3a1a 0%, #302510 100%);
+  border-color: #ffcc66;
+  box-shadow:
+    0 0 20px rgba(255, 204, 102, 0.8),
+    0 0 40px rgba(255, 170, 68, 0.5),
+    inset 0 0 20px rgba(255, 204, 102, 0.3);
+}
+
+.playspace-node.is-mj.is-active .node-content {
+  background: linear-gradient(135deg, #ffaa44 0%, #cc8800 100%);
+  border-color: #ffffff;
+  box-shadow:
+    0 0 25px rgba(255, 204, 102, 1),
+    0 0 50px rgba(255, 170, 68, 0.6),
+    inset 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .node-role {
-  font-size: clamp(0.625rem, 1.2vh, 0.875rem);
-  font-weight: 800;
-  color: var(--cyber-cyan);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: clamp(1.4rem, 3vh, 1.8rem);
+  font-weight: 900;
+  color: #00ffff;
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.8),
+    0 0 20px rgba(0, 217, 217, 0.5);
 }
 
 .playspace-node.is-mj .node-role {
-  color: var(--cyber-violet);
+  color: #ffcc66;
+  text-shadow:
+    0 0 10px rgba(255, 204, 102, 0.8),
+    0 0 20px rgba(255, 170, 68, 0.5);
 }
 
-.playspace-node.is-active .node-role {
-  color: var(--cyber-dark);
+/* PJ actif - texte blanc */
+.playspace-node.is-active:not(.is-mj) .node-role {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
-.node-hack {
-  font-size: clamp(0.5rem, 1vh, 0.75rem);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* MJ actif - texte blanc */
+.playspace-node.is-mj.is-active .node-role {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
-.playspace-node.is-active .node-hack {
-  color: rgba(0, 0, 0, 0.6);
-}
-
+/* Nom toujours visible */
 .node-name {
   position: absolute;
-  bottom: -1.5rem;
+  bottom: -1.8rem;
   left: 50%;
   transform: translateX(-50%);
-
-  font-size: clamp(0.625rem, 1vh, 0.75rem);
+  font-size: clamp(0.7rem, 1.2vh, 0.85rem);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-
-  opacity: 0;
-  transition: all 0.3s ease;
-}
-
-.playspace-node:hover .node-name,
-.playspace-node.is-hovered .node-name {
-  opacity: 1;
-  color: var(--cyber-cyan);
-  text-shadow: 0 0 10px rgba(0, 217, 217, 0.5);
-}
-
-.new-icon {
-  width: 2rem;
-  height: 2rem;
-  color: var(--cyber-violet);
-  transition: all 0.3s ease;
-}
-
-.new-node:hover .new-icon {
-  color: white;
-  transform: rotate(90deg);
-}
-
-/* ===== INFO BUBBLES ===== */
-.info-bubbles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 15;
-}
-
-.info-bubble {
-  position: absolute;
-  transform: translate(-50%, -50%);
-
-  width: min(7vh, 7vw);
-  height: min(7vh, 7vw);
-  min-width: 50px;
-  min-height: 50px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.125rem;
-
-  background: var(--cyber-gray);
-  border-radius: 50%;
-  border: 2px solid;
-
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.info-system {
-  border-color: #606060;
-}
-
-.info-hack {
-  border-color: var(--cyber-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 217, 0.3);
-}
-
-.info-universe {
-  border-color: var(--cyber-violet);
-  box-shadow: 0 0 15px rgba(155, 89, 182, 0.3);
-}
-
-.bubble-label {
-  font-size: clamp(0.5rem, 0.8vh, 0.625rem);
-  font-weight: 600;
-  color: #606060;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.bubble-value {
-  font-size: clamp(0.75rem, 1.2vh, 0.875rem);
-  font-weight: 800;
+  color: #00d9d9;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(0, 217, 217, 0.6);
+  transition: all 0.3s ease;
 }
 
-.info-system .bubble-value {
-  color: #a0a0a0;
+.playspace-node:hover .node-name {
+  color: #00ffff;
+  text-shadow: 0 0 12px rgba(0, 255, 255, 0.8);
 }
 
-.info-hack .bubble-value {
-  color: var(--cyber-cyan);
+.playspace-node.is-mj .node-name {
+  color: #ffaa44;
+  text-shadow: 0 0 8px rgba(255, 170, 68, 0.6);
 }
 
-.info-universe .bubble-value {
-  color: var(--cyber-violet);
-}
-
-/* ===== CLOSE BUTTON ===== */
-.close-btn {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.5);
-
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  border-color: var(--cyber-pink);
-  color: var(--cyber-pink);
-  box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
-}
-
-.close-btn svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.close-label {
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+.playspace-node.is-mj:hover .node-name {
+  color: #ffcc66;
+  text-shadow: 0 0 12px rgba(255, 204, 102, 0.8);
 }
 
 /* ===== TITRE ===== */
 .overlay-title {
   position: absolute;
-  top: 2rem;
+  top: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-
   display: flex;
   align-items: center;
   gap: 1rem;
+}
 
-  font-size: clamp(0.75rem, 1.5vh, 1rem);
+.title-line {
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00d9d9, transparent);
+}
+
+.title-text {
+  font-size: 0.75rem;
   font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.3em;
 }
 
-.title-deco {
-  color: var(--cyber-cyan);
-  opacity: 0.5;
+/* ===== CLOSE BTN ===== */
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.title-text {
-  color: rgba(255, 255, 255, 0.7);
+.close-btn:hover {
+  border-color: #00d9d9;
+  color: #00d9d9;
+}
+
+.close-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 /* ===== TRANSITIONS ===== */
 .overlay-enter-active {
-  animation: overlay-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: overlay-in 0.35s ease-out forwards;
 }
 
 .overlay-leave-active {
-  animation: overlay-out 0.3s ease-in forwards;
+  animation: overlay-out 0.25s ease-in forwards;
 }
 
 @keyframes overlay-in {
-  0% {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    backdrop-filter: blur(4px);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes overlay-out {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 .node-enter-active {
-  animation: node-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: node-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .node-leave-active {
-  animation: node-out 0.2s ease-in forwards;
+  animation: node-pop 0.2s ease-in reverse forwards;
 }
 
-@keyframes node-in {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
-    filter: blur(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes node-out {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
+@keyframes node-pop {
+  from {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0);
   }
-}
-
-.info-enter-active {
-  animation: info-in 0.3s ease-out forwards;
-}
-
-.info-leave-active {
-  animation: info-out 0.15s ease-in forwards;
-}
-
-@keyframes info-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
+  to {
     opacity: 1;
-  }
-}
-
-@keyframes info-out {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.info-bubble {
-  animation: bubble-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes bubble-pop {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-  }
-  70% {
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-  100% {
     transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* ===== REDUCED MOTION ===== */
-@media (prefers-reduced-motion: reduce) {
-  .bg-grid,
-  .bg-scanlines,
-  .orb-ring,
-  .hub-pulse {
-    animation: none;
-  }
-
-  .overlay-enter-active,
-  .overlay-leave-active,
-  .node-enter-active,
-  .node-leave-active,
-  .info-enter-active,
-  .info-leave-active {
-    animation-duration: 0.01ms !important;
   }
 }
 
@@ -1149,18 +998,29 @@ onUnmounted(() => {
     left: 1.5rem;
   }
 
+  .guide-inner { width: 30vw; height: 30vw; }
+  .guide-outer { width: 70vw; height: 70vw; }
+
+  .hub-content {
+    width: 15vw;
+    height: 15vw;
+  }
+
+  .info-node {
+    width: 12vw;
+    height: 12vw;
+  }
+
   .playspace-node {
-    min-width: 60px;
-    min-height: 60px;
+    width: 13vw;
+    height: 13vw;
   }
+}
 
-  .info-bubble {
-    min-width: 45px;
-    min-height: 45px;
-  }
-
-  .overlay-title {
-    font-size: 0.625rem;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bg-grid, .orb-ring, .hub-glow {
+    animation: none;
   }
 }
 </style>

@@ -3,10 +3,10 @@
  * Page Accueil - Parcours progressif d'onboarding
  *
  * Structure du parcours :
- * 1. Hero/News - Actualités du site
- * 2. Hacks - Choix du hack/système de jeu
- * 3. Personnages - Liste des personnages (si playspace sélectionné)
- * 4. FAQ - Questions fréquentes
+ * 1. Hero/News - Actualites du site
+ * 2. Hacks - Choix du hack/systeme (repliable si playspace actif)
+ * 3. Personnages - Liste des personnages (si playspace selectionne)
+ * 4. FAQ - Questions frequentes
  */
 
 // Import des composants home
@@ -20,12 +20,24 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Brumisa3 - Créateur de fiches Mist Engine',
-  description: 'Créez et gérez vos fiches de personnages pour Legends in the Mist et autres jeux Mist Engine'
+  title: 'Brumisa3 - Createur de fiches Mist Engine',
+  description: 'Creez et gerez vos fiches de personnages pour Legends in the Mist et autres jeux Mist Engine'
 })
 
-// TODO: Récupérer le playspace actif depuis le store
-const hasPlayspace = ref(false)
+// Store playspace
+const playspaceStore = usePlayspaceStore()
+
+// Initialiser le store au montage
+onMounted(() => {
+  playspaceStore.init()
+})
+
+// Playspace actif
+const hasPlayspace = computed(() => playspaceStore.hasPlayspaces && playspaceStore.activePlayspaceId !== null)
+const activePlayspace = computed(() => playspaceStore.activePlayspace)
+
+// Sections repliees si playspace actif
+const sectionsCollapsed = computed(() => hasPlayspace.value)
 </script>
 
 <template>
@@ -33,8 +45,13 @@ const hasPlayspace = ref(false)
     <!-- 1. Hero Section - Actualités -->
     <HeroSection />
 
-    <!-- 2. Hacks - Choix du système de jeu -->
-    <HacksSelection />
+    <!-- 2. Hacks - Choix du système de jeu (replie si playspace actif) -->
+    <HacksSelection
+      :collapsed="sectionsCollapsed"
+      :active-hack-name="activePlayspace?.hackId"
+      :active-universe-name="activePlayspace?.universeId"
+      :is-g-m="activePlayspace?.isGM"
+    />
 
     <!-- 3. Personnages - Visible si playspace actif -->
     <CharacterShowcase v-if="hasPlayspace" />

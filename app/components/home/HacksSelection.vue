@@ -3,9 +3,50 @@
  * Hacks Selection - Choix du hack/univers de jeu
  * Section avec tabs pour filtrer entre Mist Engine et City of Mist
  * Style Otherscape cyberpunk
+ * Mode collapsed: resume compact cliquable pour deplier
  */
 
 import CreatePlayspaceModal from '~/components/playspace/CreatePlayspaceModal.vue'
+
+// Props
+const props = defineProps<{
+  collapsed?: boolean
+  activeHackName?: string
+  activeUniverseName?: string
+  isGM?: boolean
+}>()
+
+// Emit pour demander expansion
+const emit = defineEmits<{
+  expand: []
+}>()
+
+// Etat local pour expansion manuelle
+const isExpanded = ref(false)
+
+// Computed pour afficher le contenu complet
+const showFullContent = computed(() => !props.collapsed || isExpanded.value)
+
+// Noms lisibles pour le resume
+const getHackDisplayName = (hackId: string | undefined): string => {
+  if (!hackId) return 'Non defini'
+  const names: Record<string, string> = {
+    'litm': 'Legends in the Mist',
+    'otherscape': 'Tokyo:Otherscape',
+    'city-of-mist': 'City of Mist'
+  }
+  return names[hackId] || hackId
+}
+
+const getUniverseDisplayName = (universeId: string | null | undefined): string => {
+  if (!universeId) return 'Par defaut'
+  const names: Record<string, string> = {
+    'obojima': 'Obojima',
+    'tokyo-otherscape': 'Tokyo',
+    'the-city': 'The City'
+  }
+  return names[universeId] || universeId
+}
 
 const activeSystem = ref('mist-engine')
 
@@ -27,134 +68,169 @@ const handleModalClose = () => {
 }
 
 const handlePlayspaceCreated = (playspaceId: string) => {
-  // Naviguer vers le playspace créé
-  navigateTo(`/playspaces/${playspaceId}`)
+  // Retour a l'accueil avec le playspace
+  navigateTo('/')
+}
+
+const handleExpand = () => {
+  emit('expand')
 }
 </script>
 
 <template>
-  <section id="hacks" class="section">
+  <section id="hacks" class="section" :class="{ 'section-collapsed': collapsed && !isExpanded }">
     <div class="container">
-      <!-- Header -->
-      <div class="section-header">
-        <span class="section-subtitle">Etape 1</span>
-        <h2 class="section-title">Choisissez votre système</h2>
-        <p class="section-description">
-          Chaque système propose des mécaniques de jeu et des univers uniques.
-          Sélectionnez celui qui correspond à votre style de jeu pour créer votre premier Playspace.
-        </p>
-      </div>
-
-      <!-- TABS OTHERSCAPE - Moteurs de jeu -->
-      <div class="tabs-container">
-        <div class="tabs">
-          <button
-            class="tab"
-            :class="{ active: activeSystem === 'mist-engine' }"
-            @click="switchSystem('mist-engine')"
-          >
-            <span>MIST ENGINE</span>
-          </button>
-          <button
-            class="tab"
-            :class="{ active: activeSystem === 'city-of-mist' }"
-            @click="switchSystem('city-of-mist')"
-          >
-            <span>CITY OF MIST</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Conteneur Mist Engine -->
-      <Transition name="fade">
-        <div v-if="activeSystem === 'mist-engine'" class="products-grid">
-          <!-- Hack LITM -->
-          <article class="product-card" @click="selectHack('litm')">
-            <div class="product-image">
-              <span class="product-badge">OFFICIEL</span>
+      <!-- Mode Replie - Resume compact -->
+      <Transition name="collapse">
+        <div v-if="collapsed && !isExpanded" class="collapsed-summary">
+          <div class="summary-content">
+            <div class="summary-badge">
+              <Icon name="heroicons:check-circle" class="summary-icon" />
+              <span>PLAYSPACE ACTIF</span>
             </div>
-            <div class="product-content">
-              <div class="product-category">Mist Engine</div>
-              <h3 class="product-title">Legends in the Mist</h3>
-              <p class="product-description">
-                Système complet avec Theme Cards (identité, pouvoir, faiblesse), Hero Card et Trackers.
-                Idéal pour des récits héroïques et épiques.
-              </p>
-              <div class="product-footer">
-                <div class="product-meta">4 univers disponibles</div>
-                <button class="btn product-btn">
-                  <span>Créer un Playspace</span>
-                </button>
-              </div>
+            <div class="summary-info">
+              <span class="summary-hack">{{ getHackDisplayName(activeHackName) }}</span>
+              <span class="summary-separator">/</span>
+              <span class="summary-universe">{{ getUniverseDisplayName(activeUniverseName) }}</span>
             </div>
-          </article>
-
-          <!-- Hack Otherscape -->
-          <article class="product-card otherscape" @click="selectHack('otherscape')">
-            <div class="product-image">
-              <span class="product-badge violet">OFFICIEL</span>
+            <div class="summary-role">
+              <span v-if="isGM" class="role-indicator mj">MJ - Dangers</span>
+              <span v-else class="role-indicator pj">PJ - Personnages</span>
             </div>
-            <div class="product-content">
-              <div class="product-category violet">Mist Engine</div>
-              <h3 class="product-title">Tokyo:Otherscape</h3>
-              <p class="product-description">
-                Hack cyberpunk japonais. Megapoles futuristes, technologie mystique
-                et identités fragmentées dans un Tokyo alternatif.
-              </p>
-              <div class="product-footer">
-                <div class="product-meta">2 univers disponibles</div>
-                <button class="btn product-btn violet">
-                  <span>Créer un Playspace</span>
-                </button>
-              </div>
-            </div>
-          </article>
+          </div>
         </div>
       </Transition>
 
-      <!-- Conteneur City of Mist -->
-      <Transition name="fade">
-        <div v-if="activeSystem === 'city-of-mist'" class="products-grid">
-          <!-- Hack City of Mist -->
-          <article class="product-card city-of-mist" @click="selectHack('city-of-mist')">
-            <div class="product-image">
-              <span class="product-badge rose">OFFICIEL</span>
+      <!-- Contenu Complet (visible si pas replie ou si expandu) -->
+      <Transition name="expand">
+        <div v-if="showFullContent">
+          <!-- Header -->
+          <div class="section-header">
+            <span class="section-subtitle">Etape 1</span>
+            <h2 class="section-title">Choisissez votre systeme</h2>
+            <p class="section-description">
+              Chaque systeme propose des mecaniques de jeu et des univers uniques.
+              Selectionnez celui qui correspond a votre style de jeu pour creer votre premier Playspace.
+            </p>
+            <!-- Bouton replier si on a expandu manuellement -->
+            <button v-if="collapsed && isExpanded" class="collapse-btn" type="button" @click="isExpanded = false">
+              <Icon name="heroicons:chevron-up" />
+              <span>Replier</span>
+            </button>
+          </div>
+
+          <!-- TABS OTHERSCAPE - Moteurs de jeu -->
+          <div class="tabs-container">
+            <div class="tabs">
+              <button
+                class="tab"
+                :class="{ active: activeSystem === 'mist-engine' }"
+                @click="switchSystem('mist-engine')"
+              >
+                <span>MIST ENGINE</span>
+              </button>
+              <button
+                class="tab"
+                :class="{ active: activeSystem === 'city-of-mist' }"
+                @click="switchSystem('city-of-mist')"
+              >
+                <span>CITY OF MIST</span>
+              </button>
             </div>
-            <div class="product-content">
-              <div class="product-category rose">City of Mist</div>
-              <h3 class="product-title">City of Mist</h3>
-              <p class="product-description">
-                Le système original avec Mythos, Logos et spectrum d'identité.
-                Enquêtes urbaines, mystères et identités mythologiques fragmentées
-                dans une ville brumeuse où les légendes prennent vie.
+          </div>
+
+          <!-- Conteneur Mist Engine -->
+          <Transition name="fade">
+            <div v-if="activeSystem === 'mist-engine'" class="products-grid">
+              <!-- Hack LITM -->
+              <article class="product-card" @click="selectHack('litm')">
+                <div class="product-image">
+                  <span class="product-badge">OFFICIEL</span>
+                </div>
+                <div class="product-content">
+                  <div class="product-category">Mist Engine</div>
+                  <h3 class="product-title">Legends in the Mist</h3>
+                  <p class="product-description">
+                    Systeme complet avec Theme Cards (identite, pouvoir, faiblesse), Hero Card et Trackers.
+                    Ideal pour des recits heroiques et epiques.
+                  </p>
+                  <div class="product-footer">
+                    <div class="product-meta">4 univers disponibles</div>
+                    <button class="btn product-btn">
+                      <span>Creer un Playspace</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Hack Otherscape -->
+              <article class="product-card otherscape" @click="selectHack('otherscape')">
+                <div class="product-image">
+                  <span class="product-badge violet">OFFICIEL</span>
+                </div>
+                <div class="product-content">
+                  <div class="product-category violet">Mist Engine</div>
+                  <h3 class="product-title">Tokyo:Otherscape</h3>
+                  <p class="product-description">
+                    Hack cyberpunk japonais. Megapoles futuristes, technologie mystique
+                    et identites fragmentees dans un Tokyo alternatif.
+                  </p>
+                  <div class="product-footer">
+                    <div class="product-meta">2 univers disponibles</div>
+                    <button class="btn product-btn violet">
+                      <span>Creer un Playspace</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </Transition>
+
+          <!-- Conteneur City of Mist -->
+          <Transition name="fade">
+            <div v-if="activeSystem === 'city-of-mist'" class="products-grid">
+              <!-- Hack City of Mist -->
+              <article class="product-card city-of-mist" @click="selectHack('city-of-mist')">
+                <div class="product-image">
+                  <span class="product-badge rose">OFFICIEL</span>
+                </div>
+                <div class="product-content">
+                  <div class="product-category rose">City of Mist</div>
+                  <h3 class="product-title">City of Mist</h3>
+                  <p class="product-description">
+                    Le systeme original avec Mythos, Logos et spectrum d'identite.
+                    Enquetes urbaines, mysteres et identites mythologiques fragmentees
+                    dans une ville brumeuse ou les legendes prennent vie.
+                  </p>
+                  <div class="product-footer">
+                    <div class="product-meta">2 univers disponibles</div>
+                    <button class="btn product-btn rose">
+                      <span>Creer un Playspace</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </Transition>
+
+          <!-- Info box -->
+          <div class="info-box">
+            <div class="info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+            </div>
+            <div class="info-content">
+              <h4>Qu'est-ce qu'un Playspace ?</h4>
+              <p>
+                Un Playspace est votre espace de jeu personnel. Il contient vos personnages, vos notes et votre progression.
+                Vous pouvez creer plusieurs Playspaces pour differentes campagnes ou groupes de joueurs.
               </p>
-              <div class="product-footer">
-                <div class="product-meta">2 univers disponibles</div>
-                <button class="btn product-btn rose">
-                  <span>Créer un Playspace</span>
-                </button>
-              </div>
             </div>
-          </article>
+          </div>
         </div>
       </Transition>
-
-      <!-- Info box -->
-      <div class="info-box">
-        <div class="info-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4M12 8h.01" />
-          </svg>
-        </div>
-        <div class="info-content">
-          <h4>Qu'est-ce qu'un Playspace ?</h4>
-          <p>
-            Un Playspace est votre espace de jeu personnel. Il contient vos personnages, vos notes et votre progression.
-            Vous pouvez créer plusieurs Playspaces pour différentes campagnes ou groupes de joueurs.
-          </p>
-        </div>
-      </div>
     </div>
 
     <!-- Modal de création -->
@@ -517,10 +593,181 @@ const handlePlayspaceCreated = (playspaceId: string) => {
   opacity: 0;
 }
 
+/* MODE REPLIE */
+.section-collapsed {
+  padding: 2rem;
+}
+
+.collapsed-summary {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 3rem;
+  background: rgba(0, 217, 217, 0.08);
+  border: 2px solid rgba(0, 217, 217, 0.4);
+  transition: all 0.3s ease;
+}
+
+
+.summary-content {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.summary-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--cyan-neon);
+  color: var(--noir-profond);
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.summary-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.summary-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.summary-hack {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--blanc);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.summary-separator {
+  color: rgba(0, 217, 217, 0.5);
+  font-size: 1.6rem;
+}
+
+.summary-universe {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--gris-clair);
+}
+
+.summary-role {
+  display: flex;
+  gap: 2rem;
+  margin-left: 2rem;
+  padding-left: 2rem;
+  border-left: 1px solid rgba(0, 217, 217, 0.3);
+}
+
+.role-indicator {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.role-indicator.pj {
+  color: var(--cyan-neon);
+}
+
+.role-indicator.mj {
+  color: #ffaa44;
+}
+
+
+.collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(0, 217, 217, 0.3);
+  color: var(--cyan-neon);
+  font-family: 'Assistant', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.collapse-btn:hover {
+  background: rgba(0, 217, 217, 0.1);
+  border-color: var(--cyan-neon);
+}
+
+.collapse-btn svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Transitions expand/collapse */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.4s ease;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .section {
     padding: 6rem 1rem;
+  }
+
+  .section-collapsed {
+    padding: 1rem;
+  }
+
+  .collapsed-summary {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .summary-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .summary-hack {
+    font-size: 1.4rem;
+  }
+
+  .summary-role {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .role-indicator {
+    font-size: 1rem;
   }
 
   .tabs {

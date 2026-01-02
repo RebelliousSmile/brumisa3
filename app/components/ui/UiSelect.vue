@@ -78,7 +78,7 @@ const emit = defineEmits<{
 const selectId = computed(() => `select-${Math.random().toString(36).substr(2, 9)}`)
 
 const selectClasses = computed(() => {
-  const baseClasses = 'w-full border rounded-lg transition-colors focus:outline-none font-serif appearance-none'
+  const baseClasses = 'w-full border rounded-lg transition-colors focus:outline-none font-otherscape appearance-none'
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm',
     md: 'px-4 py-3 text-base',

@@ -19,7 +19,7 @@
     <CommonHeader />
 
     <!-- Main Content (plein ecran) -->
-    <main class="flex-1 bg-otherscape-noir-profond relative">
+    <main class="flex-1 bg-otherscape-noir-profond relative pt-20">
       <!-- Page content -->
       <div class="min-h-full">
         <slot />

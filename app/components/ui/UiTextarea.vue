@@ -69,7 +69,7 @@ const textareaId = computed(() => `textarea-${Math.random().toString(36).substr(
 const characterCount = computed(() => (props.modelValue || '').length)
 
 const textareaClasses = computed(() => {
-  const baseClasses = 'w-full border rounded-lg transition-colors focus:outline-none font-serif'
+  const baseClasses = 'w-full border rounded-lg transition-colors focus:outline-none font-otherscape'
   const resizeClasses = `resize-${props.resize}`
   
   const colorClasses = props.error

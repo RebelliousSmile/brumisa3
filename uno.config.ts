@@ -106,5 +106,8 @@ export default defineConfig({
     'animate-gauge-fill',
     'animate-scanline',
     'backdrop-blur-otherscape',
+    'font-otherscape',
+    'font-display',
+    'font-sans',
   ]
 })

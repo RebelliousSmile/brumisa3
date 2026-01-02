@@ -56,7 +56,7 @@ const switchLanguage = (lang: string) => {
       <!-- Logo -->
       <NuxtLink
         to="/"
-        class="group"
+        class="group no-underline"
       >
         <span
           class="font-otherscape font-extrabold text-[2.4rem] uppercase tracking-[0.2em] text-otherscape-cyan-neon text-shadow-glow-cyan-fort transition-all duration-300 group-hover:text-otherscape-cyan-hover group-hover:text-shadow-[0_0_15px_#00d9d9,0_0_30px_#00d9d9,0_0_50px_#00d9d9]"

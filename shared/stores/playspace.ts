@@ -16,6 +16,10 @@ import { ref, computed, watch } from 'vue'
 import { getVersionId, getUniverseName, getHackName } from '#shared/config/systems.config'
 
 const LOCAL_STORAGE_KEY = 'brumisa3_local_playspaces'
+const ACTIVE_PLAYSPACE_KEY = 'brumisa3_active_playspace'
+
+/** Nombre maximum de playspaces par utilisateur */
+export const MAX_PLAYSPACES = 7
 
 export interface Playspace {
   id: string
@@ -86,11 +90,55 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   }
 
   /**
-   * Ajoute un playspace local
+   * Charge l'ID du playspace actif depuis localStorage
    */
-  function addLocalPlayspace(playspace: Playspace) {
+  function loadActivePlayspaceId() {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = localStorage.getItem(ACTIVE_PLAYSPACE_KEY)
+      if (stored) {
+        activePlayspaceId.value = stored
+      }
+    } catch (err) {
+      console.error('[PlayspaceStore] Failed to load active playspace ID:', err)
+    }
+  }
+
+  /**
+   * Sauvegarde l'ID du playspace actif dans localStorage
+   */
+  function saveActivePlayspaceId() {
+    if (typeof window === 'undefined') return
+
+    try {
+      if (activePlayspaceId.value) {
+        localStorage.setItem(ACTIVE_PLAYSPACE_KEY, activePlayspaceId.value)
+      } else {
+        localStorage.removeItem(ACTIVE_PLAYSPACE_KEY)
+      }
+    } catch (err) {
+      console.error('[PlayspaceStore] Failed to save active playspace ID:', err)
+    }
+  }
+
+  // Watch pour sauvegarder automatiquement le playspace actif
+  watch(activePlayspaceId, saveActivePlayspaceId)
+
+  /**
+   * Ajoute un playspace local et l'active
+   * @returns true si ajoute, false si limite atteinte
+   */
+  function addLocalPlayspace(playspace: Playspace): boolean {
+    if (allPlayspaces.value.length >= MAX_PLAYSPACES) {
+      error.value = `Limite de ${MAX_PLAYSPACES} playspaces atteinte`
+      return false
+    }
     localPlayspaces.value.push(playspace)
     saveLocalPlayspaces()
+    // Auto-activer le nouveau playspace
+    activePlayspaceId.value = playspace.id
+    return true
   }
 
   /**
@@ -119,6 +167,12 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   })
 
   const hasPlayspaces = computed(() => allPlayspaces.value.length > 0)
+
+  /** Nombre de playspaces */
+  const playspaceCount = computed(() => allPlayspaces.value.length)
+
+  /** Verifie si la limite de playspaces est atteinte */
+  const isMaxPlayspacesReached = computed(() => allPlayspaces.value.length >= MAX_PLAYSPACES)
 
   /** Vérifie si le playspace actif est en mode GM (Game Master) */
   const isGM = computed(() => activePlayspace.value?.isGM === true)
@@ -169,7 +223,8 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   }
 
   /**
-   * Crée un nouveau playspace
+   * Cree un nouveau playspace
+   * Verifie la limite avant creation
    */
   async function createPlayspace(input: {
     name: string
@@ -178,6 +233,12 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     universeId?: string | null
     isGM?: boolean
   }) {
+    // Verifier la limite
+    if (allPlayspaces.value.length >= MAX_PLAYSPACES) {
+      error.value = `Limite de ${MAX_PLAYSPACES} playspaces atteinte`
+      throw new Error(error.value)
+    }
+
     loading.value = true
     error.value = null
 
@@ -268,7 +329,7 @@ export const usePlayspaceStore = defineStore('playspace', () => {
   }
 
   /**
-   * Change le playspace actif
+   * Change le playspace actif et charge ses donnees
    */
   async function switchPlayspace(id: string) {
     const playspace = getPlayspaceById(id)
@@ -277,18 +338,40 @@ export const usePlayspaceStore = defineStore('playspace', () => {
       return
     }
 
-    // TODO: Sauvegarder l'etat du playspace actuel avant switch
-
+    // Changer le playspace actif (declenche le watch pour charger les donnees)
     activePlayspaceId.value = id
-
-    // TODO: Charger les characters du nouveau playspace
   }
 
   /**
-   * Initialise le store (charge les playspaces locaux)
+   * Callback pour charger les donnees du playspace actif
+   * Doit etre appele par un watch dans le composant/plugin qui utilise le store
+   */
+  function onPlayspaceChange(callback: (playspace: Playspace | null) => void) {
+    watch(activePlayspace, (newPlayspace) => {
+      callback(newPlayspace)
+    }, { immediate: true })
+  }
+
+  /**
+   * Initialise le store (charge les playspaces locaux et l'ID actif)
    */
   function init() {
     loadLocalPlayspaces()
+    loadActivePlayspaceId()
+
+    // Verifier que le playspace actif existe toujours
+    if (activePlayspaceId.value) {
+      const exists = getPlayspaceById(activePlayspaceId.value)
+      if (!exists) {
+        console.warn('[PlayspaceStore] Active playspace not found, resetting')
+        activePlayspaceId.value = null
+      }
+    }
+
+    // Auto-activer le premier playspace si aucun actif valide
+    if (!activePlayspaceId.value && allPlayspaces.value.length > 0) {
+      activePlayspaceId.value = allPlayspaces.value[0].id
+    }
   }
 
   // ============================================
@@ -307,6 +390,8 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     allPlayspaces,
     activePlayspace,
     hasPlayspaces,
+    playspaceCount,
+    isMaxPlayspacesReached,
     isGM,
     activeVersion,
     activeHackName,
@@ -321,6 +406,7 @@ export const usePlayspaceStore = defineStore('playspace', () => {
     deletePlayspace,
     switchPlayspace,
     addLocalPlayspace,
-    getPlayspaceById
+    getPlayspaceById,
+    onPlayspaceChange
   }
 })

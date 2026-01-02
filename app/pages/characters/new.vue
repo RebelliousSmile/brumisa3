@@ -6,10 +6,12 @@
  * 1. Informations de base (nom, description)
  * 2. Theme Cards (min 2 requis)
  * 3. Hero Card (Identity/Mystery)
- * 4. Validation et création
+ * 4. Validation et creation
  *
- * Note: Trackers créés automatiquement, édition après création
+ * Note: Trackers crees automatiquement, edition apres creation
  */
+
+import { getThemeTypeConfig } from '#shared/config/theme-types.config'
 
 definePageMeta({
   layout: 'playspace',
@@ -88,6 +90,7 @@ function previousStep() {
 // Step 2: Theme Cards management
 const showThemeCardForm = ref(false)
 const editingThemeCardIndex = ref<number | null>(null)
+const selectedThemeType = ref<string>('')
 
 const tempThemeCard = reactive({
   name: '',
@@ -106,6 +109,13 @@ function resetTempThemeCard() {
 function handleAddThemeCardStep() {
   resetTempThemeCard()
   editingThemeCardIndex.value = null
+  selectedThemeType.value = ''
+  showThemeCardForm.value = false
+}
+
+function handleThemeTypeSelect(typeId: string) {
+  selectedThemeType.value = typeId
+  tempThemeCard.type = typeId
   showThemeCardForm.value = true
 }
 
@@ -115,6 +125,7 @@ function handleEditThemeCardStep(index: number) {
   tempThemeCard.type = card.type
   tempThemeCard.description = card.description
   tempThemeCard.attention = card.attention
+  selectedThemeType.value = card.type
   editingThemeCardIndex.value = index
   showThemeCardForm.value = true
 }
@@ -131,10 +142,37 @@ function handleThemeCardFormSubmit(data: any) {
   showThemeCardForm.value = false
   resetTempThemeCard()
   editingThemeCardIndex.value = null
+  selectedThemeType.value = ''
+}
+
+function handleThemeCardFormCancel() {
+  showThemeCardForm.value = false
+  resetTempThemeCard()
+  editingThemeCardIndex.value = null
+  selectedThemeType.value = ''
 }
 
 function handleDeleteThemeCardStep(index: number) {
   formData.themeCards.splice(index, 1)
+}
+
+/**
+ * Retourne les styles CSS pour un type de theme
+ */
+function getTypeStyle(typeId: string): Record<string, string> {
+  const config = getThemeTypeConfig(hackId.value, typeId)
+  if (!config) {
+    return {
+      '--type-color': '#9d4edd',
+      '--type-color-rgb': '157, 78, 221',
+      '--type-glow': 'rgba(157, 78, 221, 0.5)'
+    }
+  }
+  return {
+    '--type-color': config.color,
+    '--type-color-rgb': config.colorRgb,
+    '--type-glow': config.glowColor
+  }
 }
 
 // Finalize: Create character
@@ -198,83 +236,46 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen bg-navy-900 p-8">
+  <div class="character-creation-page">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-white mb-2">
+      <div class="page-header">
+        <h1 class="page-title">
           Nouveau Personnage
         </h1>
-        <p class="text-gray-400">
-          {{ playspace?.name }} · {{ hackId }}
+        <p class="page-subtitle">
+          {{ playspace?.name }} - {{ hackId }}
         </p>
       </div>
 
       <!-- Progress Stepper -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <div
-            v-for="step in totalSteps"
-            :key="step"
-            class="flex items-center flex-1"
-          >
-            <div class="flex flex-col items-center">
-              <div
-                :class="[
-                  'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all',
-                  currentStep >= step
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-navy-700 text-gray-500 border-2 border-navy-600'
-                ]"
-              >
-                {{ step }}
-              </div>
-              <span class="text-xs text-gray-400 mt-2">
-                {{ ['Infos', 'Theme Cards', 'Hero Card', 'Finaliser'][step - 1] }}
-              </span>
-            </div>
-
-            <div
-              v-if="step < totalSteps"
-              :class="[
-                'flex-1 h-1 mx-2',
-                currentStep > step ? 'bg-blue-600' : 'bg-navy-700'
-              ]"
-            />
-          </div>
-        </div>
-      </div>
+      <UiStepper
+        :current-step="currentStep"
+        :labels="['Infos', 'Theme Cards', 'Hero Card', 'Finaliser']"
+      />
 
       <!-- Step Content -->
-      <div class="bg-navy-800 border border-navy-600 rounded-2xl p-8">
+      <div class="content-card">
         <!-- Step 1: Basic Info -->
         <div v-if="currentStep === 1" class="space-y-6">
           <h2 class="text-xl font-bold text-white mb-6">Informations de base</h2>
 
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
-              Nom du personnage *
-            </label>
-            <UiInput
-              id="name"
-              v-model="formData.name"
-              placeholder="Ex: Aria, Kaito, Shadow..."
-              required
-              autofocus
-            />
-          </div>
+          <UiInput
+            id="name"
+            v-model="formData.name"
+            label="Nom du personnage"
+            placeholder="Ex: Aria, Kaito, Shadow..."
+            required
+            autofocus
+          />
 
-          <div>
-            <label for="description" class="block text-sm font-medium text-gray-300 mb-2">
-              Description (optionnel)
-            </label>
-            <UiTextarea
-              id="description"
-              v-model="formData.description"
-              placeholder="Décrivez votre personnage..."
-              :rows="6"
-            />
-          </div>
+          <UiTextarea
+            id="description"
+            v-model="formData.description"
+            label="Description (optionnel)"
+            placeholder="Decrivez votre personnage..."
+            :rows="6"
+          />
         </div>
 
         <!-- Step 2: Theme Cards -->
@@ -288,6 +289,7 @@ useSeoMeta({
             </h2>
 
             <UiButton
+              v-if="!showThemeCardForm && !selectedThemeType"
               variant="primary"
               icon="heroicons:plus"
               size="sm"
@@ -298,40 +300,67 @@ useSeoMeta({
             </UiButton>
           </div>
 
-          <!-- Theme Cards Form (inline) -->
-          <div v-if="showThemeCardForm" class="mb-6 p-6 bg-navy-700 border border-blue-500 rounded-xl">
+          <!-- Theme Type Selector (step 1 of add flow) -->
+          <div v-if="selectedThemeType === '' && editingThemeCardIndex === null && formData.themeCards.length < 4" class="theme-type-selector-container">
+            <ThemeTypeSelector
+              :hack-id="hackId"
+              v-model="selectedThemeType"
+              :show-title="formData.themeCards.length === 0"
+              @select="(type) => handleThemeTypeSelect(type.id)"
+              :hint="formData.themeCards.length === 0 ? 'Selectionnez le type de votre premiere Theme Card' : ''"
+            />
+          </div>
+
+          <!-- Theme Cards Form (step 2 of add flow, or edit mode) -->
+          <div v-if="showThemeCardForm" class="theme-card-form-container">
+            <div class="form-header">
+              <button
+                v-if="editingThemeCardIndex === null"
+                type="button"
+                class="back-button"
+                @click="handleThemeCardFormCancel"
+              >
+                <Icon name="heroicons:arrow-left" class="w-4 h-4" />
+                <span>Changer de type</span>
+              </button>
+              <span v-if="selectedThemeType" class="selected-type-badge" :style="getTypeStyle(selectedThemeType)">
+                {{ selectedThemeType }}
+              </span>
+            </div>
             <ThemeCardForm
               :hack-id="hackId"
               :current-theme-card-count="formData.themeCards.length"
               :theme-card="editingThemeCardIndex !== null ? formData.themeCards[editingThemeCardIndex] : undefined"
+              :preselected-type="selectedThemeType"
               @submit="handleThemeCardFormSubmit"
-              @cancel="showThemeCardForm = false"
+              @cancel="handleThemeCardFormCancel"
             />
           </div>
 
           <!-- Theme Cards Preview -->
-          <div v-if="formData.themeCards.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-if="formData.themeCards.length > 0 && !showThemeCardForm && selectedThemeType !== ''" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
               v-for="(card, index) in formData.themeCards"
               :key="index"
-              class="p-4 bg-navy-700 border border-navy-600 rounded-lg"
+              class="theme-card-preview"
+              :style="getTypeStyle(card.type)"
             >
               <div class="flex items-start justify-between mb-2">
                 <div class="flex-1">
                   <h3 class="font-bold text-white">{{ card.name }}</h3>
-                  <span class="text-xs text-purple-400">{{ card.type }}</span>
+                  <span class="text-xs" :style="{ color: 'var(--type-color)' }">{{ card.type }}</span>
                 </div>
                 <div class="flex gap-1">
                   <button
                     type="button"
-                    class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
+                    class="w-7 h-7 flex items-center justify-center text-gray-400 action-btn rounded"
                     @click="handleEditThemeCardStep(index)"
                   >
                     <Icon name="heroicons:pencil" class="w-4 h-4" />
                   </button>
                   <button
                     type="button"
-                    class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+                    class="w-7 h-7 flex items-center justify-center text-gray-400 action-btn action-btn-danger rounded"
                     @click="handleDeleteThemeCardStep(index)"
                   >
                     <Icon name="heroicons:trash" class="w-4 h-4" />
@@ -344,13 +373,45 @@ useSeoMeta({
             </div>
           </div>
 
-          <div v-else class="p-12 bg-navy-700 border-2 border-dashed border-navy-600 rounded-xl text-center">
-            <Icon name="heroicons:squares-2x2" class="w-12 h-12 text-gray-600 mx-auto mb-3" />
-            <p class="text-gray-400 mb-4">Aucune Theme Card créée</p>
-            <p class="text-sm text-gray-500 mb-4">Minimum 2 Theme Cards requis pour continuer</p>
-            <UiButton variant="primary" size="sm" @click="handleAddThemeCardStep">
-              Créer la première Theme Card
-            </UiButton>
+          <!-- Theme Cards Preview when in selection mode -->
+          <div v-else-if="formData.themeCards.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="(card, index) in formData.themeCards"
+              :key="index"
+              class="theme-card-preview"
+              :style="getTypeStyle(card.type)"
+            >
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                  <h3 class="font-bold text-white">{{ card.name }}</h3>
+                  <span class="text-xs" :style="{ color: 'var(--type-color)' }">{{ card.type }}</span>
+                </div>
+                <div class="flex gap-1">
+                  <button
+                    type="button"
+                    class="w-7 h-7 flex items-center justify-center text-gray-400 action-btn rounded"
+                    @click="handleEditThemeCardStep(index)"
+                  >
+                    <Icon name="heroicons:pencil" class="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    class="w-7 h-7 flex items-center justify-center text-gray-400 action-btn action-btn-danger rounded"
+                    @click="handleDeleteThemeCardStep(index)"
+                  >
+                    <Icon name="heroicons:trash" class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <p v-if="card.description" class="text-xs text-gray-500 line-clamp-2">
+                {{ card.description }}
+              </p>
+            </div>
+          </div>
+
+          <div v-else-if="formData.themeCards.length === 0 && selectedThemeType === ''" class="empty-state-hint">
+            <Icon name="heroicons:arrow-up" class="w-6 h-6 text-otherscape-cyan-neon/60 mx-auto mb-2" />
+            <p class="text-sm text-gray-500">Selectionnez un type ci-dessus pour commencer</p>
           </div>
         </div>
 
@@ -358,39 +419,31 @@ useSeoMeta({
         <div v-if="currentStep === 3" class="space-y-6">
           <h2 class="text-xl font-bold text-white mb-6">Hero Card</h2>
 
-          <div>
-            <label for="identity" class="block text-sm font-medium text-gray-300 mb-2">
-              {{ heroCardLabels.identity }} *
-            </label>
-            <UiTextarea
-              id="identity"
-              v-model="formData.identity"
-              :placeholder="`Décrivez ${heroCardLabels.identity.toLowerCase()}...`"
-              rows="4"
-              required
-            />
-          </div>
+          <UiTextarea
+            id="identity"
+            v-model="formData.identity"
+            :label="heroCardLabels.identity"
+            :placeholder="`Decrivez ${heroCardLabels.identity.toLowerCase()}...`"
+            rows="4"
+            required
+          />
 
-          <div>
-            <label for="mystery" class="block text-sm font-medium text-gray-300 mb-2">
-              {{ heroCardLabels.mystery }} *
-            </label>
-            <UiTextarea
-              id="mystery"
-              v-model="formData.mystery"
-              :placeholder="`Décrivez ${heroCardLabels.mystery.toLowerCase()}...`"
-              rows="4"
-              required
-            />
-          </div>
+          <UiTextarea
+            id="mystery"
+            v-model="formData.mystery"
+            :label="heroCardLabels.mystery"
+            :placeholder="`Decrivez ${heroCardLabels.mystery.toLowerCase()}...`"
+            rows="4"
+            required
+          />
 
-          <div class="p-4 bg-blue-900/20 border border-blue-500/50 rounded-lg">
+          <div class="info-box-cyan">
             <div class="flex items-start gap-3">
-              <Icon name="heroicons:information-circle" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+              <Icon name="heroicons:information-circle" class="w-5 h-5 text-otherscape-cyan-neon flex-shrink-0 mt-0.5" />
               <div class="text-sm text-gray-400">
-                <p class="font-medium text-gray-300 mb-1">{{ hackId }}</p>
+                <p class="font-medium text-white mb-1">{{ hackId }}</p>
                 <p>
-                  Le {{ heroCardLabels.identity }} et le {{ heroCardLabels.mystery }} définissent
+                  Le {{ heroCardLabels.identity }} et le {{ heroCardLabels.mystery }} definissent
                   les deux facettes de votre personnage.
                 </p>
               </div>
@@ -403,22 +456,22 @@ useSeoMeta({
           <h2 class="text-xl font-bold text-white mb-6">Récapitulatif</h2>
 
           <!-- Basic Info -->
-          <div class="p-4 bg-navy-700 border border-navy-600 rounded-lg">
+          <div class="recap-card">
             <h3 class="font-bold text-white mb-2">{{ formData.name }}</h3>
             <p class="text-sm text-gray-400">{{ formData.description || 'Pas de description' }}</p>
           </div>
 
           <!-- Theme Cards Count -->
-          <div class="p-4 bg-navy-700 border border-navy-600 rounded-lg">
+          <div class="recap-card">
             <div class="flex items-center justify-between">
               <span class="font-medium text-gray-300">Theme Cards</span>
-              <span class="font-bold text-white">{{ formData.themeCards.length }}</span>
+              <span class="font-bold text-otherscape-cyan-neon">{{ formData.themeCards.length }}</span>
             </div>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
                 v-for="(card, index) in formData.themeCards"
                 :key="index"
-                class="px-3 py-1 bg-purple-900/50 border border-purple-500 text-purple-300 rounded-full text-xs"
+                class="theme-badge"
               >
                 {{ card.name }} ({{ card.type }})
               </span>
@@ -426,29 +479,29 @@ useSeoMeta({
           </div>
 
           <!-- Hero Card -->
-          <div class="p-4 bg-navy-700 border border-navy-600 rounded-lg">
+          <div class="recap-card">
             <h3 class="font-bold text-white mb-3">Hero Card</h3>
             <div class="space-y-2 text-sm">
               <div>
-                <span class="text-gray-500">{{ heroCardLabels.identity }}:</span>
+                <span class="text-otherscape-cyan-neon">{{ heroCardLabels.identity }}:</span>
                 <span class="text-gray-300 ml-2">{{ formData.identity }}</span>
               </div>
               <div>
-                <span class="text-gray-500">{{ heroCardLabels.mystery }}:</span>
+                <span class="text-otherscape-cyan-neon">{{ heroCardLabels.mystery }}:</span>
                 <span class="text-gray-300 ml-2">{{ formData.mystery }}</span>
               </div>
             </div>
           </div>
 
           <!-- Performance Info -->
-          <div class="p-4 bg-green-900/20 border border-green-500/50 rounded-lg">
+          <div class="info-box-green">
             <div class="flex items-start gap-3">
               <Icon name="heroicons:check-circle" class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
               <div class="text-sm text-gray-400">
-                <p class="font-medium text-green-400 mb-1">Prêt à créer</p>
+                <p class="font-medium text-green-400 mb-1">Pret a creer</p>
                 <p>
-                  Votre personnage sera créé avec ses Theme Cards et Hero Card.
-                  Les Trackers seront initialisés automatiquement.
+                  Votre personnage sera cree avec ses Theme Cards et Hero Card.
+                  Les Trackers seront initialises automatiquement.
                 </p>
               </div>
             </div>
@@ -511,20 +564,222 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- Modal: Theme Card Form (for step 2) -->
-      <UiModal
-        v-model="showThemeCardForm"
-        :title="editingThemeCardIndex !== null ? 'Modifier Theme Card' : 'Nouvelle Theme Card'"
-        size="lg"
-      >
-        <ThemeCardForm
-          :hack-id="hackId"
-          :current-theme-card-count="formData.themeCards.length"
-          :theme-card="editingThemeCardIndex !== null ? formData.themeCards[editingThemeCardIndex] : undefined"
-          @submit="handleThemeCardFormSubmit"
-          @cancel="showThemeCardForm = false"
-        />
-      </UiModal>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Page container */
+.character-creation-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  padding: 2rem;
+}
+
+/* Header */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.page-subtitle {
+  color: #00d9d9;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Content card */
+.content-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(0, 217, 217, 0.3);
+  border-radius: 1rem;
+  padding: 2rem;
+  position: relative;
+}
+
+/* Scanline effect on card */
+.content-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 217, 217, 0.02) 2px,
+    rgba(0, 217, 217, 0.02) 4px
+  );
+  border-radius: inherit;
+}
+
+/* Form labels */
+.content-card :deep(label) {
+  color: #00d9d9;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Section titles */
+.content-card h2 {
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Theme card form container */
+.theme-card-form-container {
+  background: #1a1a1a;
+  border: 1px solid #00d9d9;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Theme card preview */
+.theme-card-preview {
+  background: #1a1a1a;
+  border: 1px solid rgba(0, 217, 217, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.theme-card-preview:hover {
+  border-color: #00d9d9;
+  box-shadow: 0 0 15px rgba(0, 217, 217, 0.2);
+}
+
+/* Empty state */
+.empty-state {
+  background: rgba(0, 217, 217, 0.05);
+  border: 2px dashed rgba(0, 217, 217, 0.3);
+  border-radius: 0.75rem;
+  padding: 3rem;
+  text-align: center;
+}
+
+.empty-state:hover {
+  border-color: rgba(0, 217, 217, 0.5);
+  background: rgba(0, 217, 217, 0.08);
+}
+
+/* Info boxes */
+.info-box-cyan {
+  background: rgba(0, 217, 217, 0.1);
+  border: 1px solid rgba(0, 217, 217, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.info-box-green {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Recap cards */
+.recap-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(0, 217, 217, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Theme type badges */
+.theme-badge {
+  background: rgba(157, 78, 221, 0.2);
+  border: 1px solid rgba(157, 78, 221, 0.5);
+  color: #9d4edd;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+/* Action buttons hover */
+.action-btn {
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  color: #00d9d9;
+  background: rgba(0, 217, 217, 0.1);
+}
+
+.action-btn-danger:hover {
+  color: #ff006e;
+  background: rgba(255, 0, 110, 0.1);
+}
+
+/* Theme type selector container */
+.theme-type-selector-container {
+  margin-bottom: 1.5rem;
+}
+
+/* Form header with back button */
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 217, 217, 0.2);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #999999;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  color: #00d9d9;
+}
+
+/* Selected type badge in form */
+.selected-type-badge {
+  background: rgba(var(--type-color-rgb, 157, 78, 221), 0.2);
+  border: 1px solid var(--type-color, #9d4edd);
+  color: var(--type-color, #9d4edd);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Theme card preview with type colors */
+.theme-card-preview {
+  border-color: var(--type-color, rgba(0, 217, 217, 0.3));
+}
+
+.theme-card-preview:hover {
+  border-color: var(--type-color, #00d9d9);
+  box-shadow: 0 0 15px var(--type-glow, rgba(0, 217, 217, 0.2));
+}
+
+/* Empty state hint */
+.empty-state-hint {
+  text-align: center;
+  padding: 2rem;
+}
+</style>
