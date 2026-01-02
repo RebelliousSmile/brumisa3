@@ -7,12 +7,12 @@
 
 const route = useRoute()
 
-// Navigation items - 4 sections principales MVP
+// Navigation items - 4 outils principaux MVP
 const navItems = [
-  { label: 'Decouverte', path: '/decouverte' },
-  { label: 'Preparation', path: '/preparation' },
-  { label: 'Jouer en solo', path: '/solo' },
-  { label: 'Table VTT', path: '/vtt' }
+  { label: 'Personnages', path: '/characters' },
+  { label: 'Trackers', path: '/trackers' },
+  { label: 'Dangers', path: '/dangers' },
+  { label: 'Actions', path: '/actions' }
 ]
 
 // Active route check

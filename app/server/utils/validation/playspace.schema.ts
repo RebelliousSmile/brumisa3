@@ -18,8 +18,8 @@ export const createPlayspaceSchema = z.object({
     .max(500, 'La description ne peut pas dépasser 500 caractères')
     .optional(),
 
-  hackId: z.enum(['city-of-mist', 'litm', 'otherlands'], {
-    errorMap: () => ({ message: 'Hack invalide. Valeurs autorisées : city-of-mist, litm, otherlands' })
+  hackId: z.enum(['city-of-mist', 'litm', 'otherscape'], {
+    errorMap: () => ({ message: 'Hack invalide. Valeurs autorisées : city-of-mist, litm, otherscape' })
   }),
 
   universeId: z.string()

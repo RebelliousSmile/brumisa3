@@ -1,103 +1,67 @@
 /**
- * Composable useRadialMenu - État partagé pour menus radiaux
+ * Composable useRadialMenu - Etat partage pour menu radial playspace
  *
  * Features:
- * - État global partagé entre RadialPlayspaceMenu et RadialActionMenu
- * - Ferme automatiquement l'autre menu quand l'un s'ouvre (UX)
- * - Gestion keyboard navigation globale
- * - Tracking analytics (ouverture/fermeture menus)
+ * - Etat global du menu radial playspace
+ * - Gestion keyboard navigation globale (Escape pour fermer)
  *
  * Usage:
  * ```ts
- * const { openMenu, closeMenu, isMenuOpen, activeMenu } = useRadialMenu()
- *
- * openMenu('playspace') // Ouvre playspace, ferme action
- * closeMenu() // Ferme tous les menus
- * isMenuOpen('playspace') // true si playspace ouvert
+ * const { isOpen, open, close, toggle } = useRadialMenu()
  * ```
  */
 
-type MenuType = 'playspace' | 'action'
-
 interface RadialMenuState {
-  activeMenu: MenuType | null
+  isOpen: boolean
   lastOpenedAt: Date | null
 }
 
 // Global state (shared across components)
 const state = ref<RadialMenuState>({
-  activeMenu: null,
+  isOpen: false,
   lastOpenedAt: null
 })
 
 export const useRadialMenu = () => {
   /**
-   * Ouvre un menu radial (ferme l'autre automatiquement)
+   * Ouvre le menu radial playspace
    */
-  const openMenu = (menuType: MenuType) => {
-    if (state.value.activeMenu === menuType) {
-      // Already open, do nothing
-      return
-    }
-
-    // Close other menu and open requested one
-    state.value.activeMenu = menuType
+  const open = () => {
+    if (state.value.isOpen) return
+    state.value.isOpen = true
     state.value.lastOpenedAt = new Date()
-
-    // TODO: Track analytics
-    // useAnalytics().track('radial_menu_opened', { menuType })
   }
 
   /**
-   * Ferme tous les menus radiaux
+   * Ferme le menu radial
    */
-  const closeMenu = () => {
-    if (!state.value.activeMenu) {
-      return
-    }
-
-    const previousMenu = state.value.activeMenu
-    state.value.activeMenu = null
-
-    // TODO: Track analytics (calculate time open)
-    // const timeOpen = Date.now() - state.value.lastOpenedAt.getTime()
-    // useAnalytics().track('radial_menu_closed', { menuType: previousMenu, timeOpen })
+  const close = () => {
+    if (!state.value.isOpen) return
+    state.value.isOpen = false
   }
 
   /**
-   * Toggle un menu (ouvre si fermé, ferme si ouvert)
+   * Toggle le menu (ouvre si ferme, ferme si ouvert)
    */
-  const toggleMenu = (menuType: MenuType) => {
-    if (state.value.activeMenu === menuType) {
-      closeMenu()
+  const toggle = () => {
+    if (state.value.isOpen) {
+      close()
     } else {
-      openMenu(menuType)
+      open()
     }
   }
 
   /**
-   * Vérifie si un menu spécifique est ouvert
+   * Computed: Est-ce que le menu est ouvert
    */
-  const isMenuOpen = (menuType: MenuType): boolean => {
-    return state.value.activeMenu === menuType
-  }
+  const isOpen = computed(() => state.value.isOpen)
 
   /**
-   * Computed: Est-ce qu'un menu est ouvert (peu importe lequel)
-   */
-  const isAnyMenuOpen = computed(() => state.value.activeMenu !== null)
-
-  /**
-   * Computed: Menu actif
-   */
-  const activeMenu = computed(() => state.value.activeMenu)
-
-  /**
-   * Ferme les menus quand Escape est pressé (global handler)
+   * Ferme le menu quand Escape est presse (global handler)
    */
   const handleGlobalKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && isAnyMenuOpen.value) {
-      closeMenu()
+    if (event.key === 'Escape' && isOpen.value) {
+      close()
       event.preventDefault()
       event.stopPropagation()
     }
@@ -113,14 +77,9 @@ export const useRadialMenu = () => {
   })
 
   return {
-    // State
-    activeMenu: readonly(activeMenu),
-    isAnyMenuOpen: readonly(isAnyMenuOpen),
-
-    // Methods
-    openMenu,
-    closeMenu,
-    toggleMenu,
-    isMenuOpen
+    isOpen: readonly(isOpen),
+    open,
+    close,
+    toggle
   }
 }

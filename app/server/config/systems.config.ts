@@ -64,7 +64,7 @@ export const SYSTEMS = {
   '2.0': {
     name: 'Mist Engine',
     description: 'Deuxième édition - Système générique avec hacks',
-    validHacks: ['litm', 'otherlands'] as const,
+    validHacks: ['litm', 'otherscape'] as const,
     publisher: 'Son of Oak Game Studio'
   }
 } as const satisfies Record<string, SystemConfig>
@@ -95,13 +95,13 @@ export const HACKS = {
     themeCardsRange: { min: 1, max: 4 },
     tagsPerCardRange: { min: 3, max: 5 }
   },
-  'otherlands': {
-    id: 'otherlands',
-    name: 'Otherlands',
-    description: 'Hack exploration mondes étranges (version 2.0)',
+  'otherscape': {
+    id: 'otherscape',
+    name: 'Tokyo:Otherscape',
+    description: 'Hack cyberpunk japonais (version 2.0)',
     versionId: '2.0',
-    defaultUniverse: 'otherscape',
-    validThemeTypes: ['ORIGIN', 'ADVENTURE', 'GREATNESS', 'FELLOWSHIP', 'BACKPACK'] as const, // Mêmes que LITM
+    defaultUniverse: 'tokyo-otherscape',
+    validThemeTypes: ['NOISE', 'SELF', 'MYTHOS_OS', 'CREW_OS', 'LOADOUT'] as const,
     themeCardsRange: { min: 1, max: 4 },
     tagsPerCardRange: { min: 3, max: 5 }
   }
@@ -117,7 +117,7 @@ export type HackId = keyof typeof HACKS
  * Valide qu'un hack est compatible avec une version
  *
  * @param versionId - Identifiant de version ("1.0", "2.0")
- * @param hackId - Identifiant du hack ("city-of-mist", "litm", "otherlands")
+ * @param hackId - Identifiant du hack ("city-of-mist", "litm", "otherscape")
  * @returns true si le hack est valide pour cette version
  *
  * @example
@@ -175,7 +175,7 @@ export function getVersionName(versionId: string): string {
  * @example
  * ```typescript
  * getHackName('litm') // "Legends in the Mist"
- * getHackName('otherlands') // "Otherlands"
+ * getHackName('otherscape') // "Tokyo:Otherscape"
  * ```
  */
 export function getHackName(hackId: string): string {
@@ -219,7 +219,7 @@ export function getFullSystemName(versionId: string, hackId: string): string {
  * getValidHacksForVersion('2.0')
  * // [
  * //   { id: 'litm', name: 'Legends in the Mist', ... },
- * //   { id: 'otherlands', name: 'Otherlands', ... }
+ * //   { id: 'otherscape', name: 'Tokyo:Otherscape', ... }
  * // ]
  * ```
  */

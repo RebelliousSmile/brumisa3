@@ -3,7 +3,7 @@
  *
  * Valide :
  * - All playspaces MUST have hackId defined
- * - hackId MUST be valid (city-of-mist, litm, otherlands)
+ * - hackId MUST be valid (city-of-mist, litm, otherscape)
  * - universeId null = utilise defaultUniverse du hack
  * - isGM MUST be Boolean (false = PC mode, true = GM mode)
  */
@@ -53,8 +53,8 @@ describe('Playspace Hack+Univers Business Rules', () => {
     // LITM → v2.0
     expect(getVersionId('litm')).toBe('2.0')
 
-    // Otherlands → v2.0
-    expect(getVersionId('otherlands')).toBe('2.0')
+    // Otherscape → v2.0
+    expect(getVersionId('otherscape')).toBe('2.0')
   })
 
   it('universeId null uses defaultUniverse from hack config', async () => {

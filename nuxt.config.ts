@@ -2,9 +2,21 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  
+
   // Nuxt 4 - structure avec app/ directory
   srcDir: 'app/',
+
+  // Redirections pages obsoletes vers accueil
+  routeRules: {
+    '/preparation': { redirect: { to: '/', statusCode: 301 } },
+    '/preparation/**': { redirect: { to: '/', statusCode: 301 } },
+    '/decouverte': { redirect: { to: '/', statusCode: 301 } },
+    '/decouverte/**': { redirect: { to: '/', statusCode: 301 } },
+    '/solo': { redirect: { to: '/', statusCode: 301 } },
+    '/solo/**': { redirect: { to: '/', statusCode: 301 } },
+    '/vtt': { redirect: { to: '/', statusCode: 301 } },
+    '/vtt/**': { redirect: { to: '/', statusCode: 301 } }
+  },
   
   // Modules
   modules: [

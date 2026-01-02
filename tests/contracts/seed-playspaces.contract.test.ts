@@ -62,7 +62,7 @@ describe('Seed Playspaces Hack+Univers', () => {
 
   it('All seed playspaces have valid hackId', async () => {
     const playspaces = await prisma.playspace.findMany()
-    const validHacks = ['city-of-mist', 'litm', 'otherlands']
+    const validHacks = ['city-of-mist', 'litm', 'otherscape']
 
     for (const playspace of playspaces) {
       expect(validHacks).toContain(playspace.hackId)

@@ -72,11 +72,11 @@ const selectGalleryItem = (index: number) => {
               </div>
             </div>
             <div class="character-actions">
-              <NuxtLink to="/preparation" class="btn">
-                <span>Creer ce Type</span>
+              <NuxtLink to="/characters/new" class="btn">
+                <span>Creer un Personnage</span>
               </NuxtLink>
-              <NuxtLink to="/decouverte" class="btn btn-secondary">
-                <span>Voir Details</span>
+              <NuxtLink to="/characters" class="btn btn-secondary">
+                <span>Voir Tous</span>
               </NuxtLink>
             </div>
           </div>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * Products Section - Hacks & Extensions
+ * Hacks Selection - Choix du hack/univers de jeu
  * Section avec tabs pour filtrer entre Mist Engine et City of Mist
+ * Style Otherscape cyberpunk
  */
 
-import { ref } from 'vue'
+import CreatePlayspaceModal from '~/components/playspace/CreatePlayspaceModal.vue'
 
 const activeSystem = ref('mist-engine')
 
@@ -12,15 +13,38 @@ const switchSystem = (system: string) => {
   activeSystem.value = system
 }
 
-const openModal = () => {
-  // TODO: Ouvrir modal de creation de playspace
-  console.log('Ouvrir modal playspace')
+// Modal state
+const isModalOpen = ref(false)
+const selectedHackId = ref('')
+
+const selectHack = (hackId: string) => {
+  selectedHackId.value = hackId
+  isModalOpen.value = true
+}
+
+const handleModalClose = () => {
+  isModalOpen.value = false
+}
+
+const handlePlayspaceCreated = (playspaceId: string) => {
+  // Naviguer vers le playspace créé
+  navigateTo(`/playspaces/${playspaceId}`)
 }
 </script>
 
 <template>
-  <section id="produits" class="section">
+  <section id="hacks" class="section">
     <div class="container">
+      <!-- Header -->
+      <div class="section-header">
+        <span class="section-subtitle">Etape 1</span>
+        <h2 class="section-title">Choisissez votre système</h2>
+        <p class="section-description">
+          Chaque système propose des mécaniques de jeu et des univers uniques.
+          Sélectionnez celui qui correspond à votre style de jeu pour créer votre premier Playspace.
+        </p>
+      </div>
+
       <!-- TABS OTHERSCAPE - Moteurs de jeu -->
       <div class="tabs-container">
         <div class="tabs">
@@ -41,46 +65,46 @@ const openModal = () => {
         </div>
       </div>
 
-      <h2 class="section-title">HACKS & EXTENSIONS</h2>
-      <p class="section-description">
-        Choisissez parmi nos extensions officielles pour Mist Engine et City of Mist.
-        Chaque hack propose un univers unique avec ses propres regles, themes et mecaniques de jeu adaptes.
-      </p>
-
       <!-- Conteneur Mist Engine -->
       <Transition name="fade">
         <div v-if="activeSystem === 'mist-engine'" class="products-grid">
           <!-- Hack LITM -->
-          <article class="product-card">
+          <article class="product-card" @click="selectHack('litm')">
             <div class="product-image">
               <span class="product-badge">OFFICIEL</span>
             </div>
             <div class="product-content">
               <div class="product-category">Mist Engine</div>
               <h3 class="product-title">Legends in the Mist</h3>
-              <p class="product-description">Systeme complet avec Theme Cards, Hero Card, Relations et Trackers.</p>
+              <p class="product-description">
+                Système complet avec Theme Cards (identité, pouvoir, faiblesse), Hero Card et Trackers.
+                Idéal pour des récits héroïques et épiques.
+              </p>
               <div class="product-footer">
-                <div class="product-price">4 univers</div>
-                <button class="btn product-btn" @click="openModal">
-                  <span>Lancer un Playspace</span>
+                <div class="product-meta">4 univers disponibles</div>
+                <button class="btn product-btn">
+                  <span>Créer un Playspace</span>
                 </button>
               </div>
             </div>
           </article>
 
           <!-- Hack Otherscape -->
-          <article class="product-card">
+          <article class="product-card otherscape" @click="selectHack('otherscape')">
             <div class="product-image">
-              <span class="product-badge">OFFICIEL</span>
+              <span class="product-badge violet">OFFICIEL</span>
             </div>
             <div class="product-content">
-              <div class="product-category">Mist Engine</div>
+              <div class="product-category violet">Mist Engine</div>
               <h3 class="product-title">Tokyo:Otherscape</h3>
-              <p class="product-description">Hack cyberpunk japonais avec megapoles et technologie mystique.</p>
+              <p class="product-description">
+                Hack cyberpunk japonais. Megapoles futuristes, technologie mystique
+                et identités fragmentées dans un Tokyo alternatif.
+              </p>
               <div class="product-footer">
-                <div class="product-price">3 univers</div>
-                <button class="btn product-btn" @click="openModal">
-                  <span>Lancer un Playspace</span>
+                <div class="product-meta">2 univers disponibles</div>
+                <button class="btn product-btn violet">
+                  <span>Créer un Playspace</span>
                 </button>
               </div>
             </div>
@@ -91,44 +115,55 @@ const openModal = () => {
       <!-- Conteneur City of Mist -->
       <Transition name="fade">
         <div v-if="activeSystem === 'city-of-mist'" class="products-grid">
-          <!-- Hack CoM Standard -->
-          <article class="product-card">
+          <!-- Hack City of Mist -->
+          <article class="product-card city-of-mist" @click="selectHack('city-of-mist')">
             <div class="product-image">
-              <span class="product-badge">OFFICIEL</span>
+              <span class="product-badge rose">OFFICIEL</span>
             </div>
             <div class="product-content">
-              <div class="product-category">City of Mist</div>
-              <h3 class="product-title">City of Mist Standard</h3>
-              <p class="product-description">Systeme original avec Mythos, Logos et spectrum identity.</p>
+              <div class="product-category rose">City of Mist</div>
+              <h3 class="product-title">City of Mist</h3>
+              <p class="product-description">
+                Le système original avec Mythos, Logos et spectrum d'identité.
+                Enquêtes urbaines, mystères et identités mythologiques fragmentées
+                dans une ville brumeuse où les légendes prennent vie.
+              </p>
               <div class="product-footer">
-                <div class="product-price">1 univers</div>
-                <button class="btn product-btn" @click="openModal">
-                  <span>Lancer un Playspace</span>
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Hack CoM Noir -->
-          <article class="product-card">
-            <div class="product-image">
-              <span class="product-badge">OFFICIEL</span>
-            </div>
-            <div class="product-content">
-              <div class="product-category">City of Mist</div>
-              <h3 class="product-title">City of Mist Noir</h3>
-              <p class="product-description">Variante noir detective avec themes sombres et enquetes.</p>
-              <div class="product-footer">
-                <div class="product-price">1 univers</div>
-                <button class="btn product-btn" @click="openModal">
-                  <span>Lancer un Playspace</span>
+                <div class="product-meta">2 univers disponibles</div>
+                <button class="btn product-btn rose">
+                  <span>Créer un Playspace</span>
                 </button>
               </div>
             </div>
           </article>
         </div>
       </Transition>
+
+      <!-- Info box -->
+      <div class="info-box">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4M12 8h.01" />
+          </svg>
+        </div>
+        <div class="info-content">
+          <h4>Qu'est-ce qu'un Playspace ?</h4>
+          <p>
+            Un Playspace est votre espace de jeu personnel. Il contient vos personnages, vos notes et votre progression.
+            Vous pouvez créer plusieurs Playspaces pour différentes campagnes ou groupes de joueurs.
+          </p>
+        </div>
+      </div>
     </div>
+
+    <!-- Modal de création -->
+    <CreatePlayspaceModal
+      :is-open="isModalOpen"
+      :preselected-hack-id="selectedHackId"
+      @close="handleModalClose"
+      @created="handlePlayspaceCreated"
+    />
   </section>
 </template>
 
@@ -137,6 +172,7 @@ const openModal = () => {
 .section {
   padding: 8rem 2rem;
   position: relative;
+  background: var(--noir-profond);
 }
 
 .container {
@@ -144,8 +180,23 @@ const openModal = () => {
   margin: 0 auto;
 }
 
-.section-title {
+/* HEADER */
+.section-header {
   text-align: center;
+  margin-bottom: 6rem;
+}
+
+.section-subtitle {
+  color: var(--cyan-neon);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  margin-bottom: 2rem;
+  display: block;
+}
+
+.section-title {
   font-size: clamp(2.5rem, 4vw, 4.5rem);
   font-weight: 800;
   text-transform: uppercase;
@@ -155,19 +206,18 @@ const openModal = () => {
 }
 
 .section-description {
-  text-align: center;
   color: var(--gris-clair);
   font-size: 1.6rem;
   line-height: 1.8;
   max-width: 90rem;
-  margin: 0 auto 6rem;
+  margin: 0 auto;
 }
 
 /* TABS OTHERSCAPE STYLE - Minimaliste */
 .tabs-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -206,6 +256,7 @@ const openModal = () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
   gap: 3rem;
+  margin-bottom: 4rem;
 }
 
 /* CARTES PRODUITS CYBERPUNK */
@@ -240,9 +291,32 @@ const openModal = () => {
   opacity: 1;
 }
 
+/* Variantes couleurs */
+.product-card.otherscape {
+  border-color: rgba(157, 78, 221, 0.3);
+}
+.product-card.otherscape::before {
+  background: linear-gradient(135deg, transparent 0%, rgba(157, 78, 221, 0.1) 100%);
+}
+.product-card.otherscape:hover {
+  border-color: var(--violet-neon);
+  box-shadow: 0 0 30px rgba(157, 78, 221, 0.4);
+}
+
+.product-card.city-of-mist {
+  border-color: rgba(255, 45, 85, 0.3);
+}
+.product-card.city-of-mist::before {
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 45, 85, 0.1) 100%);
+}
+.product-card.city-of-mist:hover {
+  border-color: var(--rose-neon);
+  box-shadow: 0 0 30px rgba(255, 45, 85, 0.4);
+}
+
 .product-image {
   width: 100%;
-  height: 35rem;
+  height: 20rem;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   display: flex;
   align-items: center;
@@ -272,6 +346,16 @@ const openModal = () => {
   letter-spacing: 0.1em;
 }
 
+.product-badge.violet {
+  background: var(--violet-neon);
+  color: var(--blanc);
+}
+
+.product-badge.rose {
+  background: var(--rose-neon);
+  color: var(--blanc);
+}
+
 .product-content {
   padding: 2.5rem;
   position: relative;
@@ -284,6 +368,14 @@ const openModal = () => {
   text-transform: uppercase;
   letter-spacing: 0.2em;
   margin-bottom: 1rem;
+}
+
+.product-category.violet {
+  color: var(--violet-neon);
+}
+
+.product-category.rose {
+  color: var(--rose-neon);
 }
 
 .product-title {
@@ -309,10 +401,9 @@ const openModal = () => {
   border-top: 1px solid rgba(0, 217, 217, 0.2);
 }
 
-.product-price {
-  font-size: 2.4rem;
-  font-weight: 800;
-  color: var(--cyan-neon);
+.product-meta {
+  font-size: 1.4rem;
+  color: var(--gris-clair);
 }
 
 .product-btn {
@@ -348,9 +439,71 @@ const openModal = () => {
   transform: translateY(-2px);
 }
 
+.btn.violet {
+  background: var(--violet-neon);
+  border-color: var(--violet-neon);
+  color: var(--blanc);
+  box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+}
+
+.btn.violet:hover {
+  box-shadow: 0 0 25px rgba(157, 78, 221, 0.5);
+}
+
+.btn.rose {
+  background: var(--rose-neon);
+  border-color: var(--rose-neon);
+  color: var(--blanc);
+  box-shadow: 0 0 15px rgba(255, 45, 85, 0.3);
+}
+
+.btn.rose:hover {
+  box-shadow: 0 0 25px rgba(255, 45, 85, 0.5);
+}
+
 .btn span {
   position: relative;
   z-index: 1;
+}
+
+/* INFO BOX */
+.info-box {
+  display: flex;
+  gap: 2rem;
+  padding: 2.5rem;
+  background: rgba(0, 217, 217, 0.05);
+  border: 1px solid rgba(0, 217, 217, 0.3);
+}
+
+.info-icon {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-icon svg {
+  width: 3rem;
+  height: 3rem;
+  color: var(--cyan-neon);
+}
+
+.info-content h4 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--blanc);
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.info-content p {
+  color: var(--gris-clair);
+  font-size: 1.4rem;
+  line-height: 1.7;
+  margin: 0;
 }
 
 /* Transitions */
@@ -366,6 +519,10 @@ const openModal = () => {
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
+  .section {
+    padding: 6rem 1rem;
+  }
+
   .tabs {
     gap: 3rem;
     flex-wrap: wrap;
@@ -378,6 +535,16 @@ const openModal = () => {
 
   .products-grid {
     grid-template-columns: 1fr;
+  }
+
+  .info-box {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .info-icon {
+    margin: 0 auto;
   }
 }
 </style>

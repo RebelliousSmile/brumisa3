@@ -1,20 +1,19 @@
 <script setup lang="ts">
 /**
- * Menu Radial Playspaces - Navigation immersive inspirée arbres de compétences
+ * Menu Radial Playspaces - Selection/creation de playspace
  *
  * Features:
- * - Orbe flottant bottom-left avec déploiement radial
- * - Hover: pré-visualisation avec glow
- * - Click: déploiement arc 120° vers le haut
+ * - Orbe flottant bottom-left avec deploiement radial (couleur cyan)
+ * - Hover: pre-visualisation avec glow
+ * - Click: deploiement arc 120 deg vers le haut
  * - Animations GPU-accelerated (transform + opacity)
  * - Responsive: mobile = modal full-screen
- * - Accessibilité WCAG 2.1 AAA (keyboard, screen reader, reduced motion)
+ * - Accessibilite WCAG 2.1 AAA (keyboard, screen reader, reduced motion)
  *
- * Structure:
- * - Orbe central (72px desktop, 56px mobile)
- * - Options en arc radial (max 8 visibles, scroll si plus)
- * - Badge notification (nombre playspaces)
- * - Role badge (MJ/PJ) sur chaque option
+ * Comportement:
+ * - S'affiche sur toutes les pages utilisant layout 'playspace'
+ * - Invite l'utilisateur a selectionner un playspace s'il n'en a pas
+ * - Permet de switcher entre playspaces ou d'en creer un nouveau
  */
 
 interface Playspace {
@@ -207,17 +206,17 @@ onMounted(() => {
       />
     </Transition>
 
-    <!-- Central Orb -->
+    <!-- Central Orb (Cyan theme) -->
     <button
       type="button"
       :class="[
         'relative flex items-center justify-center rounded-full transition-all duration-200',
-        'bg-gradient-to-br from-brand-violet to-purple-700',
+        'bg-gradient-to-br from-cyan-500 to-cyan-700',
         'text-white shadow-lg hover:shadow-xl',
-        'focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2',
+        'focus:outline-none focus:ring-4 focus:ring-cyan-500/50 focus:ring-offset-2',
         isMobile ? 'h-14 w-14' : 'h-18 w-18',
         isHovering && !prefersReducedMotion ? 'scale-110' : 'scale-100',
-        isExpanded ? 'ring-4 ring-brand-violet/30' : ''
+        isExpanded ? 'ring-4 ring-cyan-500/30' : ''
       ]"
       :aria-expanded="isExpanded"
       aria-controls="playspace-menu"
@@ -251,7 +250,7 @@ onMounted(() => {
       <!-- Pulsing glow (decorative, hidden from screen readers) -->
       <span
         v-if="!prefersReducedMotion && isHovering"
-        class="absolute inset-0 rounded-full bg-brand-violet/50 animate-ping"
+        class="absolute inset-0 rounded-full bg-cyan-500/50 animate-ping"
         aria-hidden="true"
       />
     </button>
@@ -277,7 +276,7 @@ onMounted(() => {
             'transition-all duration-300',
             'focus:outline-none focus:ring-3 focus:ring-offset-2',
             playspace.isActive
-              ? 'bg-gradient-to-br from-brand-violet to-purple-700 text-white shadow-xl ring-2 ring-white focus:ring-brand-violet'
+              ? 'bg-gradient-to-br from-cyan-500 to-cyan-700 text-white shadow-xl ring-2 ring-white focus:ring-cyan-500'
               : 'bg-white text-gray-700 shadow-lg hover:shadow-xl hover:scale-110 focus:ring-gray-400'
           ]"
           role="menuitem"
@@ -295,7 +294,7 @@ onMounted(() => {
             :class="[
               'text-xs font-bold px-1.5 py-0.5 rounded-full',
               playspace.isActive
-                ? 'bg-white text-brand-violet'
+                ? 'bg-white text-cyan-600'
                 : playspace.role === 'MJ'
                   ? 'bg-orange-100 text-orange-800'
                   : 'bg-blue-100 text-blue-800'
@@ -328,12 +327,12 @@ onMounted(() => {
             'absolute top-1/2 left-1/2',
             'flex items-center justify-center',
             'h-16 w-16 rounded-full',
-            'bg-white text-brand-violet shadow-lg',
-            'border-2 border-dashed border-brand-violet',
-            'hover:bg-brand-violet hover:text-white hover:border-solid',
+            'bg-white text-cyan-600 shadow-lg',
+            'border-2 border-dashed border-cyan-500',
+            'hover:bg-cyan-500 hover:text-white hover:border-solid',
             'hover:shadow-xl hover:scale-110',
             'transition-all duration-300',
-            'focus:outline-none focus:ring-3 focus:ring-brand-violet focus:ring-offset-2'
+            'focus:outline-none focus:ring-3 focus:ring-cyan-500 focus:ring-offset-2'
           ]"
           role="menuitem"
           aria-label="Create new playspace"
@@ -359,7 +358,7 @@ onMounted(() => {
           </h2>
           <button
             type="button"
-            class="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-violet"
+            class="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             aria-label="Close menu"
             @click="closeMenu"
           >
@@ -375,9 +374,9 @@ onMounted(() => {
             type="button"
             :class="[
               'w-full flex items-center gap-4 p-4 rounded-xl transition-all',
-              'focus:outline-none focus:ring-2 focus:ring-brand-violet focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2',
               playspace.isActive
-                ? 'bg-gradient-to-r from-brand-violet to-purple-700 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-cyan-500 to-cyan-700 text-white shadow-lg'
                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
             ]"
             role="menuitem"
@@ -388,7 +387,7 @@ onMounted(() => {
               :class="[
                 'flex items-center justify-center h-12 w-12 rounded-full flex-shrink-0',
                 playspace.isActive
-                  ? 'bg-white text-brand-violet'
+                  ? 'bg-white text-cyan-600'
                   : 'bg-gray-200 text-gray-700'
               ]"
             >
@@ -415,7 +414,7 @@ onMounted(() => {
                   :class="[
                     'inline-flex items-center rounded-full border px-2 py-0.5 font-medium',
                     playspace.isActive
-                      ? 'bg-white text-brand-violet border-white'
+                      ? 'bg-white text-cyan-600 border-white'
                       : playspace.role === 'MJ'
                         ? 'bg-orange-100 text-orange-800 border-orange-300'
                         : 'bg-blue-100 text-blue-800 border-blue-300'
@@ -442,7 +441,7 @@ onMounted(() => {
           <!-- New Playspace -->
           <button
             type="button"
-            class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-brand-violet text-brand-violet hover:bg-brand-violet hover:text-white hover:border-solid transition-all focus:outline-none focus:ring-2 focus:ring-brand-violet focus:ring-offset-2"
+            class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-cyan-500 text-cyan-600 hover:bg-cyan-500 hover:text-white hover:border-solid transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
             role="menuitem"
             @click="createNewPlayspace"
           >

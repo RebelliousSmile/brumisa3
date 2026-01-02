@@ -8,12 +8,14 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(cuid())
-  email      String?     @unique
-  name       String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  playspaces Playspace[]
+  id            String      @id @default(cuid())
+  email         String?     @unique
+  name          String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  playspaces    Playspace[]
+  customActions Action[]    @relation("UserActions")
+  customDangers Danger[]    @relation("UserDangers")
 
   @@index([email])
   @@map("users")
@@ -34,10 +36,11 @@ model Playspace {
   universeId  String? // null = utilise defaultUniverse, ou ID custom
   isGM        Boolean @default(false) // false = PC (Player Character), true = GM (Game Master)
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  characters  Character[]
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  characters      Character[]
+  sessionTrackers SessionTracker[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([hackId])
@@ -63,26 +66,42 @@ model Character {
 }
 
 model ThemeCard {
-  id          String    @id @default(cuid())
-  name        String
-  type        ThemeType
-  description String?
-  attention   Int       @default(0)
-  characterId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  tags        Tag[]
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  name         String
+  type         ThemeType
+  description  String?
+  attention    Int           @default(0)
+  characterId  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tags         Tag[]
+  improvements Improvement[]
+  character    Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@index([characterId])
   @@index([characterId, createdAt])
   @@map("theme_cards")
 }
 
+model Improvement {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  unlocked    Boolean   @default(false)
+  themeCardId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  themeCard   ThemeCard @relation(fields: [themeCardId], references: [id], onDelete: Cascade)
+
+  @@index([themeCardId])
+  @@map("improvements")
+}
+
 model Tag {
   id          String    @id @default(cuid())
   name        String
   type        TagType
+  question    String?   // Question de creation associee (ex: "Qu'est-ce qui fait de toi un detective?")
   burned      Boolean   @default(false)
   inverted    Boolean   @default(false)
   themeCardId String
@@ -126,6 +145,10 @@ model Relationship {
 model Trackers {
   id          String       @id @default(cuid())
   characterId String       @unique
+  // Spectrum: progression entre deux poles (ex: Humanity <-> Monster, -3 a +3)
+  spectrumValue   Int      @default(0)  // Position actuelle (-3 a +3)
+  spectrumLeftPole  String?  // Pole gauche (ex: "Humanity")
+  spectrumRightPole String?  // Pole droit (ex: "Monster")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   statuses    Status[]
@@ -175,16 +198,87 @@ model StoryTheme {
   @@map("story_themes")
 }
 
-model Danger {
+// ===========================================
+// SESSION TRACKERS (Suivi de scene/session)
+// ===========================================
+
+model SessionTracker {
   id          String   @id @default(cuid())
   name        String
   description String?
   playspaceId String
+  statuses    Json     @default("[]") // Array de {name, tier, positive}
+  storyTags   Json     @default("[]") // Array de {name}
+  storyThemes Json     @default("[]") // Array de {name}
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  playspace   Playspace @relation(fields: [playspaceId], references: [id], onDelete: Cascade)
 
   @@index([playspaceId])
+  @@index([createdAt])
+  @@map("session_trackers")
+}
+
+// ===========================================
+// COLLECTION DE DANGERS (officiel + personnalise)
+// ===========================================
+
+model Danger {
+  id              String   @id @default(cuid())
+  name            String
+  type            String   // CHALLENGE, JOURNEY, VIGNETTE
+  category        String   // CREATURE, NPC, ENVIRONMENT, SOCIAL, MYTHIC
+  subcategory     String?
+  role            String?  // ADVERSARY, OBSTACLE, HAZARD, CHARGE, TIMER, PUZZLE
+  rating          Int      @default(1) // 1-5 (difficulte)
+  description     String?  @db.Text
+  threats         Json     @default("[]") // Array de Threat objects
+  consequences    Json     @default("[]") // Array de Consequence objects
+  limits          Json     @default("[]") // Array de Limit objects
+  tags            Json     @default("[]") // Array de strings
+  statuses        Json     @default("[]") // Array de Status objects
+  might           Json     @default("[]") // Array de Might objects
+  specialFeatures Json     @default("[]") // Array de SpecialFeature objects
+  hackIds         Json     @default("[]") // Array de hack IDs compatibles
+  isOfficial      Boolean  @default(false)
+  userId          String?  // null = officiel, FK = personnalise
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User?    @relation("UserDangers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([rating])
+  @@index([type])
+  @@index([isOfficial])
+  @@index([userId])
   @@map("dangers")
+}
+
+// ===========================================
+// ACTION DATABASE (officiel + personnalise)
+// ===========================================
+
+model Action {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // COMBAT, EXPLORATION, SOCIAL, MYTHOS, CYBERSPACE
+  subcategory String
+  description String   @db.Text
+  examples    Json?    // Array de strings
+  tags        Json?    // Array de strings
+  statuses    Json?    // Array de strings (statuts pouvant resulter)
+  hackIds     Json     @default("[]") // Array de hack IDs compatibles
+  isOfficial  Boolean  @default(false)
+  userId      String?  // null = officiel, FK = personnalise
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation("UserActions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([name])
+  @@index([isOfficial])
+  @@index([userId])
+  @@map("actions")
 }
 
 model logs_activite {

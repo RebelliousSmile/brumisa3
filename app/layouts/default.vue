@@ -1,17 +1,19 @@
 <script setup lang="ts">
 /**
- * Layout Default - Layout par defaut
+ * Layout Default - Layout par defaut avec menu radial playspace
  *
  * Structure :
- * - Header (navigation principale)
+ * - Header (navigation principale avec 4 outils)
+ * - Menu radial playspace (bottom-left) : selection/creation playspace
  * - Slot (contenu page)
  * - Footer (liens utilitaires)
  *
  * Utilise par :
- * - Pages publiques (/, /decouverte, /support, /about, /legal)
+ * - Pages publiques (/, /support, /about, /legal)
  * - Pages auth (/auth/login, /auth/register)
  * - Pages profile (/profile, /settings)
  * - Pages playspaces (/playspaces)
+ * - Pages outils (/dangers, /actions)
  */
 </script>
 
@@ -21,8 +23,11 @@
     <CommonHeader />
 
     <!-- Main Content -->
-    <main class="flex-1 bg-otherscape-noir-profond">
+    <main class="flex-1 bg-otherscape-noir-profond relative">
       <slot />
+
+      <!-- Menu Radial Playspace (selection/creation) -->
+      <CommonRadialPlayspaceMenu position="bottom-left" />
     </main>
 
     <!-- Footer -->

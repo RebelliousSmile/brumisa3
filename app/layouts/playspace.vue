@@ -1,22 +1,15 @@
 <script setup lang="ts">
 /**
- * Layout Playspace Radial - Layout immersif avec navigation radiale
+ * Layout Playspace - Layout avec menu radial playspace
  *
  * Structure:
- * - Header (navigation principale en haut)
- * - Menus radiaux flottants:
- *   - RadialPlayspaceMenu (bottom-left)
- *   - RadialActionMenu (bottom-right)
- * - Slot (contenu page plein écran)
+ * - Header (navigation principale avec 4 outils)
+ * - Menu radial playspace (bottom-left) : selection/creation playspace
+ * - Slot (contenu page plein ecran)
  * - Footer (liens utilitaires)
  *
- * Remplace: playspace.vue (sidebar classique)
- *
- * Avantages:
- * - Plus d'espace pour le contenu (pas de sidebar fixe)
- * - Navigation immersive (arbre de compétences)
- * - Responsive mobile (modales full-screen)
- * - Accessibilité complète (keyboard + screen reader)
+ * Note: Le menu radial droit (actions) a ete supprime car les pages
+ * /trackers, /dangers et /actions offrent ces fonctionnalites.
  */
 </script>
 
@@ -25,16 +18,15 @@
     <!-- Header -->
     <CommonHeader />
 
-    <!-- Main Content (plein écran, pas de margin-left) -->
+    <!-- Main Content (plein ecran) -->
     <main class="flex-1 bg-otherscape-noir-profond relative">
       <!-- Page content -->
       <div class="min-h-full">
         <slot />
       </div>
 
-      <!-- Radial Navigation Menus (flottants) -->
+      <!-- Menu Radial Playspace (selection/creation) -->
       <CommonRadialPlayspaceMenu position="bottom-left" />
-      <CommonRadialActionMenu position="bottom-right" />
     </main>
 
     <!-- Footer -->
