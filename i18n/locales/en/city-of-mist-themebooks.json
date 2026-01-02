@@ -1,0 +1,40 @@
+{
+  "_source": "taragnor/city-of-mist + Son of Oak Game Studio",
+  "_license": "CC BY-NC-SA 4.0",
+  "_hack": "city-of-mist",
+
+  "themebook": {
+    "adaptation": "Adaptation",
+    "bastion": "Bastion",
+    "divination": "Divination",
+    "expression": "Expression",
+    "mobility": "Mobility",
+    "relic": "Relic",
+    "subversion": "Subversion",
+    "training": "Training",
+
+    "defining_event": "Defining Event",
+    "defining_relationship": "Defining Relationship",
+    "mission": "Mission",
+    "personality": "Personality",
+    "possessions": "Possessions",
+    "routine": "Routine",
+    "turf": "Turf"
+  },
+
+  "themeTypes": {
+    "Mythos": "Mythos",
+    "Logos": "Logos",
+    "Mist": "Mist",
+    "Crew": "Crew"
+  },
+
+  "cards": {
+    "power": "POWER TAG",
+    "weakness": "WEAKNESS TAG",
+    "mysteryQuestion": "Mystery Question",
+    "identityQuestion": "Identity Question",
+    "fade": "Fade",
+    "crack": "Crack"
+  }
+}

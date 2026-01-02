@@ -460,3 +460,55 @@ enum TagType {
   WEAKNESS
   STORY
 }
+
+// ===========================================
+// SYSTEME DE TRADUCTIONS MULTI-NIVEAUX
+// Herite en cascade: System -> Hack -> Universe
+// ===========================================
+
+enum TranslationLevel {
+  SYSTEM   // Base commune (Mist Engine)
+  HACK     // Variante mecanique (LITM, Otherscape, City of Mist)
+  UNIVERSE // Setting narratif specifique (Obojima, Tokyo, custom)
+}
+
+enum TranslationCategory {
+  CHARACTER       // Termes lies aux personnages
+  PLAYSPACE       // Termes lies aux playspaces
+  GAME_MECHANICS  // Mecaniques de jeu
+  UI              // Interface utilisateur
+  THEMES          // Types de themes (Mythos, Logos, Origin, etc.)
+  MOVES           // Actions/Moves du systeme
+  STATUSES        // Statuts et conditions
+  TAGS            // Types de tags (Power, Weakness, Gift, etc.)
+}
+
+model TranslationEntry {
+  id          String              @id @default(cuid())
+  key         String              // Ex: "character.name", "theme.power_tags", "tag.type.power"
+  value       String              @db.Text
+  locale      String              @default("fr") @db.VarChar(5) // fr, en, es, etc.
+  category    TranslationCategory
+  description String?             @db.Text // Description pour les editeurs
+  level       TranslationLevel    // SYSTEM, HACK, UNIVERSE
+  priority    Int                 // 1 (System), 2 (Hack), 3 (Universe) - pour tri
+
+  // Polymorphisme: un seul champ non-null selon le level
+  systemId    String?             // Pour level=SYSTEM (ex: "mist-engine")
+  hackId      String?             // Pour level=HACK (ex: "litm", "otherscape")
+  universeId  String?             // Pour level=UNIVERSE (= playspaceId custom)
+
+  // Audit
+  createdBy   String?             // userId du createur (null = seed initial)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Contraintes
+  @@unique([key, locale, category, level, systemId, hackId, universeId])
+  @@index([systemId, locale, category])
+  @@index([hackId, locale, category])
+  @@index([universeId, locale, category])
+  @@index([key, locale])
+  @@index([category, locale])
+  @@map("translation_entries")
+}

@@ -1,10 +1,18 @@
 /**
  * Playspace Store - MVP v1.0
- * Gestion des playspaces (contextes de jeu)
+ *
+ * Un Playspace = ensemble des regles d'un systeme du Mist Engine
+ * necessaires pour creer des personnages et dangers.
  *
  * Architecture : hackId + universeId
- * - hackId : "city-of-mist" | "litm" | "otherscape"
- * - universeId : null (default) ou custom
+ * - hackId : systeme de regles ("city-of-mist" | "litm" | "otherscape")
+ * - universeId : univers specifique (null = default du hack)
+ *
+ * Contenu d'un Playspace :
+ * - Types de themes disponibles (Mythos/Logos, Self/Noise, etc.)
+ * - Moves du systeme
+ * - Statuts et spectres
+ * - Mecaniques specifiques au hack
  *
  * Support local (non-authentifie) et persiste (BDD)
  * - Local : id commence par "local_", stocke en localStorage

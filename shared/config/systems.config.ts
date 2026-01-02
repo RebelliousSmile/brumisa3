@@ -110,8 +110,36 @@ export const HACKS = {
 /**
  * Types dérivés pour TypeScript strict
  */
+/**
+ * Configuration des univers disponibles
+ * Noms d'affichage pour l'UI
+ *
+ * @constant
+ */
+export const UNIVERSES = {
+  // City of Mist
+  'the-city': {
+    id: 'the-city',
+    name: 'The City',
+    hackId: 'city-of-mist'
+  },
+  // Legends in the Mist
+  'obojima': {
+    id: 'obojima',
+    name: 'Obojima',
+    hackId: 'litm'
+  },
+  // Tokyo:Otherscape
+  'tokyo-otherscape': {
+    id: 'tokyo-otherscape',
+    name: 'Tokyo',
+    hackId: 'otherscape'
+  }
+} as const
+
 export type VersionId = keyof typeof SYSTEMS
 export type HackId = keyof typeof HACKS
+export type UniverseId = keyof typeof UNIVERSES
 
 /**
  * Valide qu'un hack est compatible avec une version
@@ -233,11 +261,11 @@ export function getValidHacksForVersion(versionId: string): HackConfig[] {
 }
 
 /**
- * Récupère le nom de l'univers (default ou custom)
+ * Récupère l'ID de l'univers (default ou custom)
  *
  * @param hackId - Identifiant du hack
  * @param universeId - ID univers custom (null = default)
- * @returns Nom de l'univers
+ * @returns ID de l'univers
  *
  * @example
  * ```typescript
@@ -250,6 +278,24 @@ export function getUniverseName(hackId: string, universeId: string | null): stri
 
   const hack = HACKS[hackId as HackId]
   return hack?.defaultUniverse ?? 'unknown'
+}
+
+/**
+ * Récupère le nom d'affichage d'un univers
+ *
+ * @param universeId - ID de l'univers
+ * @returns Nom d'affichage de l'univers
+ *
+ * @example
+ * ```typescript
+ * getUniverseDisplayName('tokyo-otherscape') // "Tokyo"
+ * getUniverseDisplayName('obojima')          // "Obojima"
+ * getUniverseDisplayName('custom-world')     // "custom-world" (fallback)
+ * ```
+ */
+export function getUniverseDisplayName(universeId: string | null): string {
+  if (!universeId) return 'Par défaut'
+  return UNIVERSES[universeId as UniverseId]?.name ?? universeId
 }
 
 /**

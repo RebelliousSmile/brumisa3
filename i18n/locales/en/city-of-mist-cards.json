@@ -1,0 +1,61 @@
+{
+  "_source": "taragnor/city-of-mist (FoundryVTT)",
+  "_license": "CC BY-NC-SA 4.0",
+  "_hack": "city-of-mist",
+
+  "themeCard": {
+    "power": "POWER TAG",
+    "weakness": "WEAKNESS TAG",
+    "storyTag": "STORY TAG",
+    "mysteryQuestion": "Mystery Question",
+    "identityQuestion": "Identity Question",
+    "fade": "Fade",
+    "crack": "Crack",
+    "attention": "Attention",
+    "improvements": "Improvements"
+  },
+
+  "terms": {
+    "logos": "Logos",
+    "mythos": "Mythos",
+    "mist": "Mist",
+    "crew": "Crew",
+    "theme": "Theme",
+    "themes": "Themes",
+    "powerTags": "Power Tags",
+    "weaknessTags": "Weakness Tags",
+    "storyTags": "Story Tags",
+    "permanentStoryTag": "Permanent Story Tag",
+    "temporaryTag": "Temporary Tag",
+    "broadTag": "Broad Tag",
+    "crispyTag": "Crispy Tag",
+    "status": "Status",
+    "statuses": "Statuses",
+    "clue": "Clue",
+    "clues": "Clues",
+    "juice": "Juice",
+    "move": "Move",
+    "moves": "Moves",
+    "coreMoves": "Core Moves",
+    "specialMoves": "Special Moves",
+    "customMoves": "Custom Moves",
+    "downtimeMoves": "Downtime Moves",
+    "softMove": "Soft Move",
+    "hardMove": "Hard Move",
+    "intrusion": "Intrusion",
+    "MoEs": "Moments of Evolution",
+    "buildUpPoints": "Build-Up Points",
+    "mythosThemes": "Mythos Themes",
+    "logosThemes": "Logos Themes",
+    "mistThemes": "Mist Themes",
+    "shb": "Stop Holding Back",
+    "strike": "Strike"
+  },
+
+  "outcomes": {
+    "miss": "Miss",
+    "partial": "Partial Success",
+    "success": "Success",
+    "dynamite": "Dynamite"
+  }
+}

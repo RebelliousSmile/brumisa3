@@ -18,7 +18,12 @@ export default defineNuxtPlugin(async () => {
     playspaceStore.onPlayspaceChange(async (playspace) => {
       if (playspace) {
         console.log(`[Plugin] Loading data for playspace: ${playspace.name}`)
-        await loadPlayspaceData(playspace)
+        try {
+          await loadPlayspaceData(playspace)
+          console.log('[Plugin] Playspace data loaded successfully')
+        } catch (err) {
+          console.error('[Plugin] Error loading playspace data:', err)
+        }
       } else {
         console.log('[Plugin] No active playspace, clearing data')
         clearPlayspaceData()

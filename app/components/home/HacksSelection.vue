@@ -3,10 +3,11 @@
  * Hacks Selection - Choix du hack/univers de jeu
  * Section avec tabs pour filtrer entre Mist Engine et City of Mist
  * Style Otherscape cyberpunk
- * Mode collapsed: resume compact cliquable pour deplier
+ * Mode collapsed: résumé compact cliquable pour déplier
  */
 
 import CreatePlayspaceModal from '~/components/playspace/CreatePlayspaceModal.vue'
+import { getHackName, getUniverseDisplayName } from '#shared/config/systems.config'
 
 // Props
 const props = defineProps<{
@@ -21,31 +22,16 @@ const emit = defineEmits<{
   expand: []
 }>()
 
-// Etat local pour expansion manuelle
+// État local pour expansion manuelle
 const isExpanded = ref(false)
 
 // Computed pour afficher le contenu complet
 const showFullContent = computed(() => !props.collapsed || isExpanded.value)
 
-// Noms lisibles pour le resume
+// Noms lisibles pour le résumé (utilise systems.config)
 const getHackDisplayName = (hackId: string | undefined): string => {
-  if (!hackId) return 'Non defini'
-  const names: Record<string, string> = {
-    'litm': 'Legends in the Mist',
-    'otherscape': 'Tokyo:Otherscape',
-    'city-of-mist': 'City of Mist'
-  }
-  return names[hackId] || hackId
-}
-
-const getUniverseDisplayName = (universeId: string | null | undefined): string => {
-  if (!universeId) return 'Par defaut'
-  const names: Record<string, string> = {
-    'obojima': 'Obojima',
-    'tokyo-otherscape': 'Tokyo',
-    'the-city': 'The City'
-  }
-  return names[universeId] || universeId
+  if (!hackId) return 'Non défini'
+  return getHackName(hackId)
 }
 
 const activeSystem = ref('mist-engine')
@@ -80,37 +66,40 @@ const handleExpand = () => {
 <template>
   <section id="hacks" class="section" :class="{ 'section-collapsed': collapsed && !isExpanded }">
     <div class="container">
-      <!-- Mode Replie - Resume compact -->
-      <Transition name="collapse">
-        <div v-if="collapsed && !isExpanded" class="collapsed-summary">
-          <div class="summary-content">
-            <div class="summary-badge">
-              <Icon name="heroicons:check-circle" class="summary-icon" />
-              <span>PLAYSPACE ACTIF</span>
-            </div>
-            <div class="summary-info">
-              <span class="summary-hack">{{ getHackDisplayName(activeHackName) }}</span>
-              <span class="summary-separator">/</span>
-              <span class="summary-universe">{{ getUniverseDisplayName(activeUniverseName) }}</span>
-            </div>
-            <div class="summary-role">
-              <span v-if="isGM" class="role-indicator mj">MJ - Dangers</span>
-              <span v-else class="role-indicator pj">PJ - Personnages</span>
+      <!-- Mode Replie - Resume compact (client-only pour eviter hydration mismatch) -->
+      <ClientOnly>
+        <Transition name="collapse">
+          <div v-if="collapsed && !isExpanded" class="collapsed-summary">
+            <div class="summary-content">
+              <div class="summary-badge">
+                <Icon name="heroicons:check-circle" class="summary-icon" />
+                <span>PLAYSPACE ACTIF</span>
+              </div>
+              <div class="summary-info">
+                <span class="summary-hack">{{ getHackDisplayName(activeHackName) }}</span>
+                <span class="summary-separator">/</span>
+                <span class="summary-universe">{{ getUniverseDisplayName(activeUniverseName) }}</span>
+              </div>
+              <div class="summary-role">
+                <span v-if="isGM" class="role-indicator mj">MJ - Dangers</span>
+                <span v-else class="role-indicator pj">PJ - Personnages</span>
+              </div>
             </div>
           </div>
-        </div>
-      </Transition>
+        </Transition>
+      </ClientOnly>
 
       <!-- Contenu Complet (visible si pas replie ou si expandu) -->
-      <Transition name="expand">
-        <div v-if="showFullContent">
+      <ClientOnly>
+        <Transition name="expand">
+          <div v-if="showFullContent">
           <!-- Header -->
           <div class="section-header">
-            <span class="section-subtitle">Etape 1</span>
-            <h2 class="section-title">Choisissez votre systeme</h2>
+            <span class="section-subtitle">Étape 1</span>
+            <h2 class="section-title">Choisissez votre système</h2>
             <p class="section-description">
-              Chaque systeme propose des mecaniques de jeu et des univers uniques.
-              Selectionnez celui qui correspond a votre style de jeu pour creer votre premier Playspace.
+              Chaque système propose des mécaniques de jeu et des univers uniques.
+              Sélectionnez celui qui correspond à votre style de jeu pour créer votre premier Playspace.
             </p>
             <!-- Bouton replier si on a expandu manuellement -->
             <button v-if="collapsed && isExpanded" class="collapse-btn" type="button" @click="isExpanded = false">
@@ -151,13 +140,13 @@ const handleExpand = () => {
                   <div class="product-category">Mist Engine</div>
                   <h3 class="product-title">Legends in the Mist</h3>
                   <p class="product-description">
-                    Systeme complet avec Theme Cards (identite, pouvoir, faiblesse), Hero Card et Trackers.
-                    Ideal pour des recits heroiques et epiques.
+                    Système complet avec Theme Cards (identité, pouvoir, faiblesse), Hero Card et Trackers.
+                    Idéal pour des récits héroïques et épiques.
                   </p>
                   <div class="product-footer">
                     <div class="product-meta">4 univers disponibles</div>
                     <button class="btn product-btn">
-                      <span>Creer un Playspace</span>
+                      <span>Créer un Playspace</span>
                     </button>
                   </div>
                 </div>
@@ -172,13 +161,13 @@ const handleExpand = () => {
                   <div class="product-category violet">Mist Engine</div>
                   <h3 class="product-title">Tokyo:Otherscape</h3>
                   <p class="product-description">
-                    Hack cyberpunk japonais. Megapoles futuristes, technologie mystique
-                    et identites fragmentees dans un Tokyo alternatif.
+                    Hack cyberpunk japonais. Mégapoles futuristes, technologie mystique
+                    et identités fragmentées dans un Tokyo alternatif.
                   </p>
                   <div class="product-footer">
                     <div class="product-meta">2 univers disponibles</div>
                     <button class="btn product-btn violet">
-                      <span>Creer un Playspace</span>
+                      <span>Créer un Playspace</span>
                     </button>
                   </div>
                 </div>
@@ -198,14 +187,14 @@ const handleExpand = () => {
                   <div class="product-category rose">City of Mist</div>
                   <h3 class="product-title">City of Mist</h3>
                   <p class="product-description">
-                    Le systeme original avec Mythos, Logos et spectrum d'identite.
-                    Enquetes urbaines, mysteres et identites mythologiques fragmentees
-                    dans une ville brumeuse ou les legendes prennent vie.
+                    Le système original avec Mythos, Logos et spectrum d'identité.
+                    Enquêtes urbaines, mystères et identités mythologiques fragmentées
+                    dans une ville brumeuse où les légendes prennent vie.
                   </p>
                   <div class="product-footer">
                     <div class="product-meta">2 univers disponibles</div>
                     <button class="btn product-btn rose">
-                      <span>Creer un Playspace</span>
+                      <span>Créer un Playspace</span>
                     </button>
                   </div>
                 </div>
@@ -224,13 +213,14 @@ const handleExpand = () => {
             <div class="info-content">
               <h4>Qu'est-ce qu'un Playspace ?</h4>
               <p>
-                Un Playspace est votre espace de jeu personnel. Il contient vos personnages, vos notes et votre progression.
-                Vous pouvez creer plusieurs Playspaces pour differentes campagnes ou groupes de joueurs.
+                Un Playspace est un ensemble de règles d'un système du Mist Engine (LITM, Otherscape, City of Mist).
+                Il contient les types de thèmes, moves et mécaniques nécessaires pour créer vos personnages et dangers.
               </p>
             </div>
           </div>
         </div>
-      </Transition>
+        </Transition>
+      </ClientOnly>
     </div>
 
     <!-- Modal de création -->

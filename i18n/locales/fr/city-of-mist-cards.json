@@ -1,0 +1,61 @@
+{
+  "_source": "taragnor/city-of-mist (FoundryVTT)",
+  "_license": "CC BY-NC-SA 4.0",
+  "_hack": "city-of-mist",
+
+  "themeCard": {
+    "power": "TRAIT D'ATOUT",
+    "weakness": "TRAIT DE CONTRAINTE",
+    "storyTag": "TRAIT D'INTRIGUE",
+    "mysteryQuestion": "Question du Mystere",
+    "identityQuestion": "Question d'Identite",
+    "fade": "Declin",
+    "crack": "Trauma",
+    "attention": "Attention",
+    "improvements": "Ameliorations"
+  },
+
+  "terms": {
+    "logos": "Logos",
+    "mythos": "Mythos",
+    "mist": "Brume",
+    "crew": "Equipe",
+    "theme": "Theme",
+    "themes": "Themes",
+    "powerTags": "Traits d'Atout",
+    "weaknessTags": "Traits de Contrainte",
+    "storyTags": "Traits d'Intrigue",
+    "permanentStoryTag": "Trait d'Intrigue Permanent",
+    "temporaryTag": "Trait Temporaire",
+    "broadTag": "Trait Generique",
+    "crispyTag": "Trait Fragile",
+    "status": "Statut",
+    "statuses": "Statuts",
+    "clue": "Indice",
+    "clues": "Indices",
+    "juice": "Punch",
+    "move": "Manoeuvre",
+    "moves": "Manoeuvres",
+    "coreMoves": "Manoeuvres de Base",
+    "specialMoves": "Manoeuvres Speciales",
+    "customMoves": "Manoeuvres Personnalisees",
+    "downtimeMoves": "Manoeuvres de Pause",
+    "softMove": "Manoeuvre Mineure",
+    "hardMove": "Manoeuvre Majeure",
+    "intrusion": "Intrusion",
+    "MoEs": "Moments d'Evolution",
+    "buildUpPoints": "Points de Progression",
+    "mythosThemes": "Themes de Mythos",
+    "logosThemes": "Themes de Logos",
+    "mistThemes": "Themes de Brume",
+    "shb": "Tenter le Tout pour le Tout",
+    "strike": "Blame"
+  },
+
+  "outcomes": {
+    "miss": "Echec",
+    "partial": "Succes Partiel",
+    "success": "Succes",
+    "dynamite": "Explosion"
+  }
+}

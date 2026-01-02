@@ -1,0 +1,31 @@
+{
+  "_source": "taragnor/city-of-mist (FoundryVTT)",
+  "_license": "CC BY-NC-SA 4.0",
+  "_hack": "otherscape",
+
+  "themebook": {
+    "affiliation": "Affiliation",
+    "artifact": "Artefact",
+    "assets": "Avoirs",
+    "augmentation": "Augmentation",
+    "companion": "Compagnon",
+    "cuttingEdge": "Pointe",
+    "cyberspace": "Cyberespace",
+    "drones": "Drones",
+    "esoterica": "Esoterica",
+    "expertise": "Expertise",
+    "exposure": "Exposition",
+    "horizon": "Horizon",
+    "loadout": "Equipement",
+    "personality": "Personnalite",
+    "troubledPast": "Passe Trouble"
+  },
+
+  "themeTypes": {
+    "Noise": "Noise",
+    "Self": "Self",
+    "Mythos": "Mythos",
+    "Crew": "Crew",
+    "Loadout": "Loadout"
+  }
+}
